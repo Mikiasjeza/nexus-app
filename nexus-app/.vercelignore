@@ -1,0 +1,21 @@
+# Exclude Windows user folders that can break cloud builds (symlinks/junctions fail on Linux)
+/My Music
+/My Music/**
+/My Pictures
+/My Pictures/**
+/My Videos
+/My Videos/**
+My Music
+My Music/**
+My Pictures
+My Pictures/**
+My Videos
+My Videos/**
+
+# Standard exclusions
+node_modules
+.next
+.git
+*.log
+.env
+.env.*

@@ -1,0 +1,17 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.env
+.env*.local
+.next
+.git
+.gitignore
+.vscode
+.idea
+*.md
+!.gitkeep
+My Music
+My Pictures
+My Videos
