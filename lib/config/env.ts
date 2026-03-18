@@ -19,6 +19,11 @@ export function getAppUrl(): string {
       return raw
     }
   } catch {}
+  // Vercel sets VERCEL_URL during build (e.g. "nexus-app-xxx.vercel.app")
+  const vercelUrl = process.env.VERCEL_URL
+  if (vercelUrl) {
+    return `https://${vercelUrl}`
+  }
   return mode === 'production' ? 'https://nexus.ai' : 'http://localhost:3000'
 }
 
