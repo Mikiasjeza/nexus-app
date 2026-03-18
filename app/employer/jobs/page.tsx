@@ -7,7 +7,6 @@ import {
   Plus,
   MapPin,
   DollarSign,
-  Trash2,
   Building2,
 } from 'lucide-react'
 import Button from '@/components/UI/Button'
@@ -28,36 +27,53 @@ interface Job {
   createdAt: string
 }
 
+type JobType = 'full-time' | 'part-time' | 'contract' | 'internship'
+
+interface JobFormData {
+  title: string
+  description: string
+  skills: string
+  location: string
+  type: JobType
+  salary: string
+}
+
 export default function EmployerJobsPage() {
   const { addToast } = useToast()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<JobFormData>({
     title: '',
     description: '',
     skills: '',
     location: '',
-    type: 'full-time' as const,
+    type: 'full-time',
     salary: '',
   })
   const [submitting, setSubmitting] = useState(false)
 
-  const loadJobs = () => {
-    fetch('/api/employer/company', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.company) {
-          return fetch(
-            `/api/jobs?companyId=${data.company.id}`,
-            { credentials: 'include' }
-          )
-        }
-        return { json: () => ({ jobs: [] }) }
+  const loadJobs = async () => {
+    try {
+      const companyRes = await fetch('/api/employer/company', {
+        credentials: 'include',
       })
-      .then((r) => (r instanceof Response ? r.json() : r))
-      .then((data) => setJobs(data.jobs || []))
-      .finally(() => setLoading(false))
+      const companyData = await companyRes.json()
+
+      if (!companyData.company) {
+        setJobs([])
+        return
+      }
+
+      const jobsRes = await fetch(
+        `/api/jobs?companyId=${companyData.company.id}`,
+        { credentials: 'include' }
+      )
+      const jobsData = await jobsRes.json()
+      setJobs(jobsData.jobs || [])
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -199,11 +215,7 @@ export default function EmployerJobsPage() {
                     onChange={(e) =>
                       setFormData((p) => ({
                         ...p,
-                        type: e.target.value as
-                          | 'full-time'
-                          | 'part-time'
-                          | 'contract'
-                          | 'internship',
+                        type: e.target.value as JobType,
                       }))
                     }
                     className="px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white"

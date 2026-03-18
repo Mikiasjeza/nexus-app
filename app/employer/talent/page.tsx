@@ -48,8 +48,46 @@ export default function EmployerTalentPage() {
       .finally(() => setLoading(false))
   }
 
+  const loadPools = () => {
+    fetch('/api/employer/pools', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.pools) setPools(data.pools)
+      })
+      .catch(() => setPools([]))
+  }
+
+  const addToPool = async (poolId: string, candidateId: string) => {
+    try {
+      const res = await fetch(`/api/employer/pools/${poolId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ addCandidateId: candidateId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to add candidate')
+
+      setPools((prev) =>
+        prev.map((pool) =>
+          pool.id === poolId
+            ? { ...pool, candidateCount: data.candidateCount ?? pool.candidateCount }
+            : pool
+        )
+      )
+      addToast({ type: 'success', title: 'Candidate added to pool' })
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Could not add candidate',
+        message: err instanceof Error ? err.message : 'Please try again.',
+      })
+    }
+  }
+
   useEffect(() => {
     search()
+    loadPools()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
