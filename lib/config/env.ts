@@ -12,13 +12,15 @@ function getRequired(name: string): string {
 
 /** Returns a validated app URL; never throws. Use when constructing URLs. */
 export function getAppUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_APP_URL || ''
-  try {
-    if (raw && raw.startsWith('http')) {
+  const raw = (process.env.NEXT_PUBLIC_APP_URL || '').trim()
+  // Reject placeholder/invalid values (e.g. user set value to variable name)
+  const looksLikeUrl = raw.startsWith('http://') || raw.startsWith('https://')
+  if (looksLikeUrl) {
+    try {
       new URL(raw)
       return raw
-    }
-  } catch {}
+    } catch {}
+  }
   // Vercel sets VERCEL_URL during build (e.g. "nexus-app-xxx.vercel.app")
   const vercelUrl = process.env.VERCEL_URL
   if (vercelUrl) {
