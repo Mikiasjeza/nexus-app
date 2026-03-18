@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react'
@@ -10,7 +10,7 @@ import { useToast } from '@/components/UI/ToastProvider'
 import { easing } from '@/lib/utils/animations'
 import { fetchApi } from '@/lib/api/fetcher'
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { addToast } = useToast()
@@ -183,5 +183,13 @@ export default function ResetPasswordPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white dark:bg-black" />}>
+      <ResetPasswordPageContent />
+    </Suspense>
   )
 }

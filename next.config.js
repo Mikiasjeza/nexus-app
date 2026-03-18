@@ -1,11 +1,14 @@
 /** @type {import('next').NextConfig} */
 
-// Sanitize NEXT_PUBLIC_APP_URL at build time - invalid values cause "TypeError: Invalid URL"
-const raw = process.env.NEXT_PUBLIC_APP_URL || ''
-const validAppUrl = raw && raw.startsWith('http') ? raw : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus-app.vercel.app')
+// Sanitize NEXT_PUBLIC_APP_URL - invalid values cause "TypeError: Invalid URL" during build.
+// Always override with a valid URL so Vercel builds succeed even if user misconfigures the env var.
+const raw = (process.env.NEXT_PUBLIC_APP_URL || '').trim()
+const isValidUrl = raw && (raw.startsWith('http://') || raw.startsWith('https://'))
+const validAppUrl = isValidUrl ? raw : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus-app.vercel.app')
 
 const nextConfig = {
   env: {
+    // Force valid URL - overrides any invalid value from Vercel env vars
     NEXT_PUBLIC_APP_URL: validAppUrl,
   },
   reactStrictMode: true,

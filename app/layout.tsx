@@ -6,6 +6,7 @@ import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import dynamic from 'next/dynamic'
 import Header from '@/components/Layout/Header'
+import CookieConsent from '@/components/UI/CookieConsent'
 import { ToastProvider } from '@/components/UI/ToastProvider'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { OnboardingGuard } from '@/components/Auth/OnboardingGuard'
@@ -17,9 +18,6 @@ const Footer = dynamic(() => import('@/components/Layout/Footer'), {
 const PageTransition = dynamic(() => import('@/components/PageTransition'), {
   ssr: true,
 })
-const CookieConsent = dynamic(() => import('@/components/UI/CookieConsent'), {
-  ssr: false,
-})
 
 // Optimize font loading with display swap for faster rendering
 const inter = Inter({ 
@@ -27,6 +25,14 @@ const inter = Inter({
   display: 'swap',
   preload: true,
 })
+
+function getSafeMetadataBase(): URL {
+  try {
+    return getMetadataBase()
+  } catch {
+    return new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus-app.vercel.app')
+  }
+}
 
 const baseMetadata: Metadata = {
   title: {
@@ -43,7 +49,7 @@ const baseMetadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: getMetadataBase(),
+  metadataBase: getSafeMetadataBase(),
   openGraph: {
     type: 'website',
     locale: 'en_US',

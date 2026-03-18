@@ -7,14 +7,15 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: "https://7a3e35930c4c317e018006f3fc868dbb@o4511005851910144.ingest.us.sentry.io/4511005858660352",
 
+  tracePropagationTargets: [
+    'localhost',
+    /^\//, // Same-origin (API routes, etc.)
+    /^https:\/\/api\.stripe\.com/,
+    /^https:\/\/(.*\.)?sentry\.io/,
+  ],
+
   integrations: [
     Sentry.browserTracingIntegration({
-      tracePropagationTargets: [
-        'localhost',
-        /^\//, // Same-origin (API routes, etc.)
-        /^https:\/\/api\.stripe\.com/,
-        /^https:\/\/(.*\.)?sentry\.io/,
-      ],
       shouldCreateSpanForRequest: (url) => {
         // Exclude health checks and Sentry tunnel from spans
         return !url.match(/\/health\/?$/) && !url.match(/\/monitoring\/?/);
