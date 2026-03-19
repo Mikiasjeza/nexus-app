@@ -12,15 +12,14 @@ const nextConfig = {
     NEXT_PUBLIC_APP_URL: validAppUrl,
   },
   reactStrictMode: true,
-  swcMinify: true,
   
   // Image optimization
   images: {
-    domains: [
-      'localhost',
-      'images.unsplash.com',
-      'via.placeholder.com',
-      'cdn.skillpassport.ai',
+    remotePatterns: [
+      { protocol: 'http', hostname: 'localhost' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'via.placeholder.com' },
+      { protocol: 'https', hostname: 'cdn.skillpassport.ai' },
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -31,13 +30,13 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,
     optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts', 'date-fns'],
-    // Enable faster refresh
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  turbopack: {
+    root: __dirname,
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
@@ -45,9 +44,6 @@ const nextConfig = {
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
-  
-  // Optimize font loading
-  optimizeFonts: true,
   
   // Optimize production builds
   productionBrowserSourceMaps: false,
@@ -177,14 +173,9 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // ESLint configuration
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
 }
 
 module.exports = nextConfig
-
 
 // Injected content via Sentry wizard below
 
