@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Video,
@@ -19,10 +19,11 @@ import {
 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
-import AnimatedCard from '@/components/UI/AnimatedCard'
 import { useToast } from '@/components/UI/ToastProvider'
 import Confetti from '@/components/UI/Confetti'
-import { easing } from '@/lib/utils/animations'
+import { authApi } from '@/lib/api'
+import type { User } from '@/lib/types'
+import { useRouter } from 'next/navigation'
 
 const evidenceTypes = [
   {
@@ -125,10 +126,12 @@ interface CompletedVerification {
 }
 
 export default function VerificationPage() {
+  const router = useRouter()
   const [selectedType, setSelectedType] = useState<string | null>(null)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
   const [pendingVerifications] = useState<PendingVerification[]>([
     {
       id: '1',
@@ -174,8 +177,26 @@ export default function VerificationPage() {
     },
   ])
   const { addToast } = useToast()
+  const isGuestPreview = user?.id === 'guest-user'
+
+  useEffect(() => {
+    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+  }, [])
+
+  const requireAccount = () => {
+    addToast({
+      type: 'info',
+      title: 'Sign in required',
+      message: 'Create an account or sign in to submit verification evidence.',
+    })
+    router.push('/auth/login?next=/verification')
+  }
 
   const handleFileUpload = async (files: FileList | null) => {
+    if (isGuestPreview || !user) {
+      requireAccount()
+      return
+    }
     if (!files || files.length === 0) return
 
     setIsUploading(true)
@@ -197,6 +218,10 @@ export default function VerificationPage() {
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
+    if (isGuestPreview || !user) {
+      requireAccount()
+      return
+    }
     if (e.dataTransfer?.files) {
       handleFileUpload(e.dataTransfer.files)
     }
@@ -209,7 +234,7 @@ export default function VerificationPage() {
   const selectedEvidenceType = evidenceTypes.find((t) => t.id === selectedType)
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="aurora-shell min-h-screen bg-black">
       <Confetti trigger={showConfetti} />
       
       <div className="page-shell">
@@ -222,25 +247,33 @@ export default function VerificationPage() {
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="mb-10 md:mb-16"
         >
-          <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 border border-black/10 dark:border-white/10">
-              <Brain className="w-8 h-8 text-black dark:text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl md:text-6xl font-bold text-black dark:text-white mb-2 tracking-tight leading-[1.1] max-w-[14ch] md:max-w-none">
-                AI Verification
-              </h1>
-              <p className="text-base md:text-lg text-black/60 dark:text-white/60 max-w-[38ch] md:max-w-2xl">
-                Submit evidence and get your skills verified by multimodal AI
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
-            {['Evidence quality', 'AI confidence', 'Verification speed'].map((item) => (
-              <div key={item} className="border border-black/10 dark:border-white/10 bg-white/70 dark:bg-black/45 px-4 py-3 text-sm text-black/70 dark:text-white/70">
-                {item}
+          <div className="hero-panel p-8 md:p-10">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 border border-white/10 bg-white/5">
+                <Brain className="w-8 h-8 text-white" />
               </div>
-            ))}
+              <div>
+                <div className="hero-kicker mb-4">Trust Engine</div>
+                <h1 className="text-4xl md:text-6xl font-bold text-white mb-2 tracking-tight leading-[1.1] max-w-[14ch] md:max-w-none">
+                  AI Verification
+                </h1>
+                <p className="text-base md:text-lg text-white/68 max-w-[38ch] md:max-w-2xl">
+                  Submit evidence, run multimodal evaluation, and turn your strongest work into visible credibility.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
+              {['Evidence quality', 'AI confidence', 'Verification speed'].map((item) => (
+                <div key={item} className="insight-card px-4 py-3 text-sm text-white/72">
+                  {item}
+                </div>
+              ))}
+            </div>
+            {isGuestPreview && (
+              <div className="mt-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
+                You are browsing as a guest. Sign in or create an account to submit evidence and run AI verification.
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -255,15 +288,15 @@ export default function VerificationPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <div className="border border-black/10 dark:border-white/10 p-6 text-center bg-white/75 dark:bg-black/50">
-                  <div className="w-12 h-12 border border-black/10 dark:border-white/10 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-black dark:text-white" />
+                <div className="gradient-border-card p-6 text-center">
+                  <div className="w-12 h-12 border border-white/10 bg-white/5 flex items-center justify-center mx-auto mb-4">
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-2xl font-bold text-black dark:text-white mb-2">
+                  <div className="text-2xl font-bold text-white mb-2">
                     {step.step}
                   </div>
-                  <h3 className="font-medium text-black dark:text-white mb-1">{step.title}</h3>
-                  <p className="text-sm text-black/60 dark:text-white/60">
+                  <h3 className="font-medium text-white mb-1">{step.title}</h3>
+                  <p className="text-sm text-white/60">
                     {step.description}
                   </p>
                 </div>
@@ -276,8 +309,8 @@ export default function VerificationPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6 md:space-y-8">
             {/* Evidence Type Selection */}
-            <div className="border border-black/10 dark:border-white/10 p-8 bg-white/75 dark:bg-black/50">
-              <h2 className="text-2xl font-bold text-black dark:text-white mb-6">Select Evidence Type</h2>
+            <div className="gradient-border-card p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">Select Evidence Type</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {evidenceTypes.map((type) => {
                   const Icon = type.icon
@@ -285,18 +318,24 @@ export default function VerificationPage() {
                   return (
                     <button
                       key={type.id}
-                      onClick={() => setSelectedType(type.id)}
+                      onClick={() => {
+                        if (isGuestPreview || !user) {
+                          requireAccount()
+                          return
+                        }
+                        setSelectedType(type.id)
+                      }}
                       className={`p-6 text-left border transition-colors ${
                         isSelected
-                          ? 'border-black dark:border-white bg-black/5 dark:bg-white/5'
-                          : 'border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white'
+                          ? 'border-cyan-300/60 bg-white/5'
+                          : 'border-white/10 hover:border-white/40'
                       }`}
                     >
-                      <div className="w-12 h-12 border border-black/10 dark:border-white/10 flex items-center justify-center mb-4">
-                        <Icon className="w-6 h-6 text-black dark:text-white" />
+                      <div className="w-12 h-12 border border-white/10 bg-white/5 flex items-center justify-center mb-4">
+                        <Icon className="w-6 h-6 text-white" />
                       </div>
-                      <h3 className="font-medium text-black dark:text-white mb-1">{type.name}</h3>
-                      <p className="text-sm text-black/60 dark:text-white/60">
+                      <h3 className="font-medium text-white mb-1">{type.name}</h3>
+                      <p className="text-sm text-white/60">
                         {type.description}
                       </p>
                     </button>
@@ -314,13 +353,13 @@ export default function VerificationPage() {
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className="border border-black/10 dark:border-white/10 p-8 bg-white/75 dark:bg-black/50">
+                  <div className="gradient-border-card p-8">
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h2 className="text-2xl font-bold text-black dark:text-white mb-2">
+                        <h2 className="text-2xl font-bold text-white mb-2">
                           Upload {selectedEvidenceType?.name}
                         </h2>
-                        <p className="text-black/60 dark:text-white/60">
+                        <p className="text-white/60">
                           {selectedEvidenceType?.description}
                         </p>
                       </div>
@@ -328,17 +367,17 @@ export default function VerificationPage() {
                         onClick={() => setSelectedType(null)}
                         className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center hover:opacity-70 transition-opacity"
                       >
-                        <X className="w-5 h-5 text-black dark:text-white" />
+                        <X className="w-5 h-5 text-white" />
                       </button>
                     </div>
 
                     {/* Requirements */}
-                    <div className="mb-6 p-4 border border-black/10 dark:border-white/10">
-                      <h4 className="font-medium text-black dark:text-white mb-3">Requirements:</h4>
+                    <div className="mb-6 p-4 border border-white/10 bg-white/5">
+                      <h4 className="font-medium text-white mb-3">Requirements:</h4>
                       <ul className="space-y-2">
                         {selectedEvidenceType?.requirements.map((req, index) => (
-                          <li key={index} className="flex items-center gap-2 text-sm text-black/60 dark:text-white/60">
-                            <CheckCircle className="w-4 h-4 text-black dark:text-white" />
+                          <li key={index} className="flex items-center gap-2 text-sm text-white/60">
+                            <CheckCircle className="w-4 h-4 text-white" />
                             {req}
                           </li>
                         ))}
@@ -461,6 +500,10 @@ export default function VerificationPage() {
                   <Button
                     leftIcon={<Play className="w-5 h-5" />}
                     onClick={() => {
+                      if (isGuestPreview || !user) {
+                        requireAccount()
+                        return
+                      }
                       addToast({
                         type: 'info',
                         title: 'Simulation Starting',

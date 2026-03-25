@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { getSessionUserId, hasGuestPreviewSession } from '@/lib/auth/session'
 import { mapSkill } from '@/lib/skills-mapper'
 import { dbErrorResponse } from '@/lib/db-error'
 import { env } from '@/lib/config/env'
@@ -8,7 +8,7 @@ import { guestSkills } from '@/lib/mock/guest'
 
 export async function GET() {
   try {
-    if (env.isGuestMode) {
+    if (env.isGuestMode || await hasGuestPreviewSession()) {
       return NextResponse.json(guestSkills)
     }
 

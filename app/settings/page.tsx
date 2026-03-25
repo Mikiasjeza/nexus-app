@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { User } from '@/lib/types'
 import { authApi, billingApi } from '@/lib/api'
 import ToggleSwitch from '@/components/UI/ToggleSwitch'
-import AnimatedCard from '@/components/UI/AnimatedCard'
 import { motion } from 'framer-motion'
 import { Save, User as UserIcon, Mail, Globe, Lock } from 'lucide-react'
 import Loader from '@/components/UI/Loader'
@@ -123,14 +122,14 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-black/60 dark:text-white/60">Please log in to view settings</p>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <p className="text-white/60">Please log in to view settings</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="aurora-shell min-h-screen bg-black">
       <div className="max-w-4xl mx-auto px-6 lg:px-12 py-16">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -139,17 +138,20 @@ export default function SettingsPage() {
           transition={{ duration: 0.8, ease: easing.primary }}
           className="mb-12"
         >
-          <h1 className="text-5xl md:text-6xl font-bold text-black dark:text-white mb-4 tracking-tight leading-[1.1]">
-            Settings
-          </h1>
-          <p className="text-lg text-black/60 dark:text-white/60 max-w-2xl">
-            Manage your account and preferences
-          </p>
+          <div className="hero-panel p-8 md:p-10">
+            <div className="hero-kicker mb-5">Identity Controls</div>
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight leading-[1.1]">
+              Settings
+            </h1>
+            <p className="text-lg text-white/68 max-w-2xl">
+              Shape how your profile appears, how employers discover you, and how your Nexus identity behaves.
+            </p>
+          </div>
         </motion.div>
 
         <div className="space-y-8">
           {isGuestPreview && (
-            <div className="border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-black dark:text-white">
+            <div className="border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
               You are viewing Settings in guest preview mode. Actions that change account data are disabled.
             </div>
           )}
@@ -160,14 +162,14 @@ export default function SettingsPage() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.8, delay: 0.1, ease: easing.primary }}
           >
-            <div className="border border-black/10 dark:border-white/10 p-8">
+            <div className="gradient-border-card p-8">
               <div className="flex items-center gap-3 mb-8">
-                <div className="p-2 border border-black/10 dark:border-white/10">
-                  <UserIcon className="w-5 h-5 text-black dark:text-white" />
+                <div className="p-2 border border-white/10 bg-white/5">
+                  <UserIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight">Profile Information</h2>
-                  <p className="text-sm text-black/60 dark:text-white/60 mt-1">Update your personal details</p>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">Profile Information</h2>
+                  <p className="text-sm text-white/60 mt-1">Update your personal details</p>
                 </div>
               </div>
               <div className="space-y-6">

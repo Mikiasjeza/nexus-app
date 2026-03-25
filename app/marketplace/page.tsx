@@ -17,6 +17,9 @@ import Badge from '@/components/UI/Badge'
 import { useSkills } from '@/lib/hooks/useSkills'
 import { easing } from '@/lib/utils/animations'
 import { formatDistanceToNow } from 'date-fns'
+import { authApi } from '@/lib/api'
+import type { User } from '@/lib/types'
+import { useRouter } from 'next/navigation'
 
 interface ApiJob {
   id: string
@@ -32,20 +35,28 @@ interface ApiJob {
 }
 
 export default function MarketplacePage() {
+  const router = useRouter()
   const { skills } = useSkills()
+  const [user, setUser] = useState<User | null>(null)
   const [jobs, setJobs] = useState<ApiJob[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [showFilters, setShowFilters] = useState(false)
+  const isGuestPreview = user?.id === 'guest-user'
 
   useEffect(() => {
+    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
     fetch('/api/jobs', { credentials: 'include' })
       .then((r) => r.json())
       .then((data) => setJobs(data.jobs || []))
       .catch(() => setJobs([]))
       .finally(() => setLoading(false))
   }, [])
+
+  const promptSignIn = () => {
+    router.push('/auth/login?next=/marketplace')
+  }
 
   const userSkills = skills.map((s) => s.name)
   const matchedJobs = jobs.map((job) => {
@@ -82,8 +93,16 @@ export default function MarketplacePage() {
     return true
   }).sort((a, b) => b.match - a.match)
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-white/70">Loading opportunities...</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-white dark:bg-black py-16">
+    <div className="aurora-shell min-h-screen bg-black py-16">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <motion.div
@@ -93,55 +112,77 @@ export default function MarketplacePage() {
           transition={{ duration: 0.8, ease: easing.primary }}
           className="mb-12"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-5xl md:text-6xl font-bold text-black dark:text-white mb-2 tracking-tight">
-                Career Marketplace
-              </h1>
-              <p className="text-lg text-black/60 dark:text-white/60">
-                Discover opportunities matched to your verified skills
-              </p>
-            </div>
-            <Badge variant="primary" size="lg">
-              {matchedJobs.length} Matched Jobs
-            </Badge>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40" />
-              <input
-                type="text"
-                placeholder="Search jobs..."
-                value={searchQuery}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
-              />
+          <div className="hero-panel p-8 md:p-10">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between mb-6">
+              <div>
+                <div className="hero-kicker mb-4">Opportunity Radar</div>
+                <h1 className="text-5xl md:text-6xl font-bold text-white mb-2 tracking-tight">
+                  Career Marketplace
+                </h1>
+                <p className="text-lg text-white/68 max-w-2xl">
+                  Discover openings matched to your verified strengths, not just keywords on a resume.
+                </p>
+              </div>
+              <Badge variant="primary" size="lg">
+                {matchedJobs.length} Matched Jobs
+              </Badge>
             </div>
 
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                leftIcon={<Filter className="w-4 h-4" />}
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                Filters
-              </Button>
-              <div className="flex gap-2">
-                {['all', 'full-time', 'part-time', 'contract', 'internship'].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setSelectedType(type)}
-                    className={`px-4 py-2 text-sm font-medium transition-opacity ${
-                      selectedType === type
-                        ? 'bg-black dark:bg-white text-white dark:text-black opacity-100'
-                        : 'border border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:opacity-100 opacity-60'
-                    }`}
-                  >
-                    {type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
-                  </button>
-                ))}
+            {isGuestPreview && (
+              <div className="mb-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
+                You are browsing as a guest. Sign in or create an account to save jobs or apply.
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-6">
+              {[
+                { label: 'Open roles', value: matchedJobs.length },
+                { label: 'Strong matches', value: matchedJobs.filter((job) => job.match >= 80).length },
+                { label: 'Skills detected', value: userSkills.length },
+              ].map((item) => (
+                <div key={item.label} className="insight-card p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                  <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Search and Filters */}
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                <input
+                  type="text"
+                  placeholder="Search jobs..."
+                  value={searchQuery}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-white/10 bg-black/55 text-white placeholder:text-white/40 focus:outline-none focus:border-cyan-300/60 transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+                <Button
+                  variant="outline"
+                  leftIcon={<Filter className="w-4 h-4" />}
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  Filters
+                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {['all', 'full-time', 'part-time', 'contract', 'internship'].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setSelectedType(type)}
+                      className={`px-4 py-2 text-sm font-medium transition-opacity ${
+                        selectedType === type
+                          ? 'bg-white text-black opacity-100'
+                          : 'border border-white/10 text-white/65 hover:opacity-100 opacity-70'
+                      }`}
+                    >
+                      {type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -158,13 +199,13 @@ export default function MarketplacePage() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
               >
-                <div className="border border-black/10 dark:border-white/10 p-6">
+                <div className="gradient-border-card p-6">
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h3 className="text-2xl font-bold text-black dark:text-white mb-2">{job.title}</h3>
-                          <div className="flex items-center gap-4 text-black/60 dark:text-white/60 mb-3">
+                          <h3 className="text-2xl font-bold text-white mb-2">{job.title}</h3>
+                          <div className="flex items-center gap-4 text-white/60 mb-3">
                             <a
                               href={`/company/${job.company.slug}`}
                               className="flex items-center gap-1 hover:underline"
@@ -188,7 +229,7 @@ export default function MarketplacePage() {
 
                       <div className="flex flex-wrap items-center gap-4 mb-4">
                         {job.salary && (
-                          <div className="flex items-center gap-2 text-black/60 dark:text-white/60">
+                          <div className="flex items-center gap-2 text-white/60">
                             <DollarSign className="w-4 h-4" />
                             <span className="font-medium">{job.salary}</span>
                           </div>
@@ -196,7 +237,7 @@ export default function MarketplacePage() {
                         <Badge variant="default" size="sm">
                           {job.type.replace('-', ' ')}
                         </Badge>
-                        <div className="flex items-center gap-2 text-black/60 dark:text-white/60">
+                        <div className="flex items-center gap-2 text-white/60">
                           <Calendar className="w-4 h-4" />
                           <span>{job.posted}</span>
                         </div>
@@ -224,10 +265,23 @@ export default function MarketplacePage() {
                           variant="primary"
                           rightIcon={<ExternalLink className="w-4 h-4" />}
                           fullWidth
+                          onClick={() => {
+                            if (isGuestPreview || !user) {
+                              promptSignIn()
+                            }
+                          }}
                         >
                           Apply Now
                         </Button>
-                        <Button variant="outline" fullWidth>
+                        <Button
+                          variant="outline"
+                          fullWidth
+                          onClick={() => {
+                            if (isGuestPreview || !user) {
+                              promptSignIn()
+                            }
+                          }}
+                        >
                           Save Job
                         </Button>
                       </div>
@@ -239,10 +293,10 @@ export default function MarketplacePage() {
           </AnimatePresence>
 
           {filteredJobs.length === 0 && (
-            <div className="border border-black/10 dark:border-white/10 p-12 text-center">
-              <Briefcase className="w-16 h-16 mx-auto mb-4 text-black/40 dark:text-white/40" />
-              <h3 className="text-xl font-medium text-black dark:text-white mb-2">No jobs found</h3>
-              <p className="text-black/60 dark:text-white/60">
+            <div className="gradient-border-card p-12 text-center">
+              <Briefcase className="w-16 h-16 mx-auto mb-4 text-white/40" />
+              <h3 className="text-xl font-medium text-white mb-2">No jobs found</h3>
+              <p className="text-white/60">
                 Try adjusting your search or filters
               </p>
             </div>
@@ -257,21 +311,21 @@ export default function MarketplacePage() {
                 transition={{ duration: 0.8, ease: easing.primary }}
           className="mt-16"
         >
-          <div className="border border-black/10 dark:border-white/10 p-8">
+          <div className="gradient-border-card p-8">
             <div className="grid md:grid-cols-3 gap-8 text-center">
               <div>
-                <div className="text-4xl font-bold text-black dark:text-white mb-2">
+                <div className="text-4xl font-bold text-white mb-2">
                   {jobs.length}
                 </div>
-                <div className="text-black/60 dark:text-white/60">Active Jobs</div>
+                <div className="text-white/60">Active Jobs</div>
               </div>
               <div>
-                <div className="text-4xl font-bold text-black dark:text-white mb-2">5K+</div>
-                <div className="text-black/60 dark:text-white/60">Companies</div>
+                <div className="text-4xl font-bold text-white mb-2">5K+</div>
+                <div className="text-white/60">Companies</div>
               </div>
               <div>
-                <div className="text-4xl font-bold text-black dark:text-white mb-2">95%</div>
-                <div className="text-black/60 dark:text-white/60">Match Accuracy</div>
+                <div className="text-4xl font-bold text-white mb-2">95%</div>
+                <div className="text-white/60">Match Accuracy</div>
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useSkills } from '@/lib/hooks/useSkills'
 import { motion } from 'framer-motion'
@@ -8,6 +8,8 @@ import Loader from '@/components/UI/Loader'
 import { TrendingUp, Download, Filter, Calendar, BarChart3, PieChart } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import { easing } from '@/lib/utils/animations'
+import { authApi } from '@/lib/api'
+import type { User } from '@/lib/types'
 
 // Lazy load heavy chart components
 const ProgressChart = dynamic(() => import('@/components/Analytics/ProgressChart'), {
@@ -32,9 +34,16 @@ const GapAnalysis = dynamic(() => import('@/components/Analytics/GapAnalysis'), 
 
 export default function AnalyticsPage() {
   const { skills, loading } = useSkills()
+  const [user, setUser] = useState<User | null>(null)
   const [exporting, setExporting] = useState(false)
+  const isGuestPreview = user?.id === 'guest-user'
+
+  useEffect(() => {
+    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+  }, [])
 
   const handleExport = async () => {
+    if (isGuestPreview) return
     setExporting(true)
     try {
       const res = await fetch('/api/analytics/export?format=json', { credentials: 'include' })
@@ -62,41 +71,61 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-20">
+    <div className="aurora-shell min-h-screen bg-black">
+      <div className="page-shell">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: easing.primary }}
-          className="mb-20"
+          className="mb-16"
         >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-3 tracking-tight leading-[1.1]">
-                Analytics
-              </h1>
-              <p className="text-lg text-black/60 dark:text-white/60 max-w-xl">
-                How your skills are growing
-              </p>
+          <div className="hero-panel p-8 md:p-10">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="flex-1">
+                <div className="hero-kicker mb-5">Growth Intelligence</div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight leading-[1.1]">
+                  Analytics
+                </h1>
+                <p className="text-lg text-white/68 max-w-xl">
+                  See how credibility compounds across your profile, where momentum is building, and what needs proof next.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Filter className="w-4 h-4" />}
+                >
+                  Filter
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Download className="w-4 h-4" />}
+                  onClick={handleExport}
+                  disabled={exporting || isGuestPreview}
+                  isLoading={exporting}
+                >
+                  Export
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Filter className="w-4 h-4" />}
-              >
-                Filter
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Download className="w-4 h-4" />}
-                onClick={handleExport}
-                disabled={exporting}
-                isLoading={exporting}
-              >
-                Export
-              </Button>
+            {isGuestPreview && (
+              <div className="mt-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
+                You are browsing a guest preview. Sign in or create an account to export analytics.
+              </div>
+            )}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mt-6">
+              {[
+                { label: 'Average progress', value: skills.length > 0 ? `${Math.round(skills.reduce((sum, s) => sum + s.progress, 0) / skills.length)}%` : '0%' },
+                { label: 'Verified skills', value: `${skills.filter((s) => s.verified).length}` },
+                { label: 'Active categories', value: `${new Set(skills.map((s) => s.category)).size}` },
+              ].map((item) => (
+                <div key={item.label} className="insight-card p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                  <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                </div>
+              ))}
             </div>
           </div>
         </motion.div>
@@ -136,16 +165,16 @@ export default function AnalyticsPage() {
             const Icon = stat.icon
             return (
               <div key={stat.label}>
-                <div className="border border-black/10 dark:border-white/10 p-6">
+                <div className="gradient-border-card p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 border border-black/10 dark:border-white/10">
-                      <Icon className="w-5 h-5 text-black dark:text-white" />
+                    <div className="p-3 border border-white/10 bg-white/5">
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="text-4xl font-bold text-black dark:text-white mb-2 tracking-tight tabular-nums">
+                  <div className="text-4xl font-bold text-white mb-2 tracking-tight tabular-nums">
                     {stat.value}{stat.suffix || ''}
                   </div>
-                  <div className="text-xs text-black/60 dark:text-white/60 uppercase tracking-wider font-medium">{stat.label}</div>
+                  <div className="text-xs text-white/60 uppercase tracking-wider font-medium">{stat.label}</div>
                 </div>
               </div>
             )

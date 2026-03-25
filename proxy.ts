@@ -47,7 +47,9 @@ function isAuthRoute(pathname: string): boolean {
 }
 
 export function proxy(request: NextRequest) {
-  if (env.isGuestMode) {
+  const guestPreview = request.cookies.get('nexus_guest_preview')?.value === 'true'
+
+  if (env.isGuestMode || guestPreview) {
     return NextResponse.next()
   }
 

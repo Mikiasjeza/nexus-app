@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { getSessionUserId, hasGuestPreviewSession } from '@/lib/auth/session'
 import type { SkillInsight } from '@/lib/types'
 import { env } from '@/lib/config/env'
 import { guestInsights } from '@/lib/mock/guest'
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    if (env.isGuestMode) {
+    if (env.isGuestMode || await hasGuestPreviewSession()) {
       return NextResponse.json(guestInsights)
     }
 

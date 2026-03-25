@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
-import { createSession, setSessionCookie } from '@/lib/auth/session'
+import {
+  createSession,
+  setSessionCookie,
+  clearGuestPreviewCookie,
+} from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
 import { env } from '@/lib/config/env'
@@ -48,6 +52,7 @@ export async function POST(request: Request) {
     }
 
     const token = await createSession(user.id)
+    await clearGuestPreviewCookie()
     await setSessionCookie(token)
 
     return NextResponse.json(userToJson(user))

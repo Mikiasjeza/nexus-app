@@ -7,6 +7,7 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/db'
 
 const COOKIE_NAME = 'nexus_session'
+const GUEST_PREVIEW_COOKIE_NAME = 'nexus_guest_preview'
 const SESSION_MAX_AGE_DAYS = 7
 
 function getToken(): string {
@@ -24,6 +25,11 @@ export async function getSessionToken(): Promise<string | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get(COOKIE_NAME)?.value ?? null
   return token
+}
+
+export async function hasGuestPreviewSession(): Promise<boolean> {
+  const cookieStore = await cookies()
+  return cookieStore.get(GUEST_PREVIEW_COOKIE_NAME)?.value === 'true'
 }
 
 export async function getSessionUserId(): Promise<string | null> {
@@ -70,4 +76,20 @@ export async function clearSessionCookie(): Promise<void> {
   cookieStore.delete(COOKIE_NAME)
 }
 
-export { COOKIE_NAME, SESSION_MAX_AGE_DAYS }
+export async function setGuestPreviewCookie(): Promise<void> {
+  const cookieStore = await cookies()
+  cookieStore.set(GUEST_PREVIEW_COOKIE_NAME, 'true', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60,
+    path: '/',
+  })
+}
+
+export async function clearGuestPreviewCookie(): Promise<void> {
+  const cookieStore = await cookies()
+  cookieStore.delete(GUEST_PREVIEW_COOKIE_NAME)
+}
+
+export { COOKIE_NAME, GUEST_PREVIEW_COOKIE_NAME, SESSION_MAX_AGE_DAYS }

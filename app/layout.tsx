@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import * as Sentry from '@sentry/nextjs'
-import { Inter } from 'next/font/google'
 import { getMetadataBase, getAppUrl } from '@/lib/config/env'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
@@ -17,13 +16,6 @@ const Footer = dynamic(() => import('@/components/Layout/Footer'), {
 })
 const PageTransition = dynamic(() => import('@/components/PageTransition'), {
   ssr: true,
-})
-
-// Optimize font loading with display swap for faster rendering
-const inter = Inter({ 
-  subsets: ['latin'],
-  display: 'swap',
-  preload: true,
 })
 
 function getSafeMetadataBase(): URL {
@@ -105,7 +97,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark smooth-scroll">
-      <body className={`${inter.className} bg-white dark:bg-black text-black dark:text-white min-h-screen flex flex-col transition-colors duration-500`}>
+      <body className="bg-black text-white min-h-screen flex flex-col transition-colors duration-500">
         <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
           <div className="ambient-orb ambient-orb-cyan" />
           <div className="ambient-orb ambient-orb-violet" />

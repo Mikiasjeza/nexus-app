@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { getSessionUserId, hasGuestPreviewSession } from '@/lib/auth/session'
 import { mapActivity } from '@/lib/skills-mapper'
 import { env } from '@/lib/config/env'
 import { guestActivities } from '@/lib/mock/guest'
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
-    if (env.isGuestMode) {
+    if (env.isGuestMode || await hasGuestPreviewSession()) {
       const { searchParams } = new URL(request.url)
       const limitParam = searchParams.get('limit')
       const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 50, 100) : guestActivities.length

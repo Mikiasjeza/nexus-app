@@ -3,8 +3,9 @@ import {
   getSessionToken,
   deleteSession,
   clearSessionCookie,
-  clearGuestPreviewCookie,
+  setGuestPreviewCookie,
 } from '@/lib/auth/session'
+import { guestUser } from '@/lib/mock/guest'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,12 +16,14 @@ export async function POST() {
       await deleteSession(token)
     }
     await clearSessionCookie()
-    await clearGuestPreviewCookie()
-    return NextResponse.json({ ok: true })
+    await setGuestPreviewCookie()
+
+    return NextResponse.json({ user: guestUser })
   } catch (e) {
-    console.error('Logout error:', e)
-    await clearSessionCookie()
-    await clearGuestPreviewCookie()
-    return NextResponse.json({ ok: true })
+    console.error('Guest login error:', e)
+    return NextResponse.json(
+      { error: 'Unable to start guest preview' },
+      { status: 500 }
+    )
   }
 }

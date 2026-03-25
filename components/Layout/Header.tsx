@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { motion, useScroll, useTransform, useMotionTemplate } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { navHover, easing } from '@/lib/utils/animations'
+import { easing } from '@/lib/utils/animations'
 import NexusLogo from '@/components/UI/NexusLogo'
 
 export default function Header() {
@@ -34,9 +34,9 @@ export default function Header() {
   ]
 
   const borderOpacity = useTransform(scrollY, [0, 50], [0, 1])
-  const headerBackground = useMotionTemplate`rgba(255, 255, 255, ${headerOpacity})`
+  const headerBackground = useMotionTemplate`rgba(5, 7, 12, ${headerOpacity})`
   const headerBackdrop = useMotionTemplate`blur(${headerBlur}px)`
-  const headerBorder = useMotionTemplate`1px solid rgba(0, 0, 0, ${borderOpacity})`
+  const headerBorder = useMotionTemplate`1px solid rgba(255, 255, 255, ${borderOpacity})`
 
   return (
     <motion.header
@@ -76,7 +76,7 @@ export default function Header() {
                 >
                   <Link
                     href={item.href}
-                    className="relative text-sm font-medium text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors duration-300"
+                    className="relative text-sm font-medium text-white/60 hover:text-white transition-colors duration-300"
                   >
                     <motion.span
                       className="relative inline-block"
@@ -88,14 +88,14 @@ export default function Header() {
                       {isActive && (
                         <motion.span
                           layoutId="nav-indicator"
-                          className="absolute -bottom-1 left-0 right-0 h-[1px] bg-black dark:bg-white"
+                          className="absolute -bottom-1 left-0 right-0 h-[1px] bg-gradient-to-r from-cyan-400 via-violet-400 to-rose-400"
                           initial={false}
                           transition={{ duration: 0.3, ease: easing.primary }}
                         />
                       )}
                       {/* Underline draw on hover - left to right */}
                       <motion.span
-                        className="absolute -bottom-1 left-0 h-[1px] bg-black dark:bg-white origin-left"
+                        className="absolute -bottom-1 left-0 h-[1px] bg-gradient-to-r from-cyan-400 via-violet-400 to-rose-400 origin-left"
                         initial={{ scaleX: 0 }}
                         whileHover={{ scaleX: 1 }}
                         transition={{ duration: 0.2, ease: easing.primary }}
@@ -112,7 +112,7 @@ export default function Header() {
             initial={isMounted ? { opacity: 0 } : false}
             animate={isMounted ? { opacity: 1 } : {}}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="md:hidden p-2 text-black dark:text-white hover:opacity-70 transition-opacity"
+            className="md:hidden p-2 text-white hover:opacity-70 transition-opacity"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -128,7 +128,7 @@ export default function Header() {
             opacity: mobileMenuOpen ? 1 : 0,
           }}
           transition={{ duration: 0.3, ease: easing.primary }}
-          className="md:hidden overflow-hidden border-t border-black/10 dark:border-white/10"
+          className="md:hidden overflow-hidden border-t border-white/10 bg-black/85 backdrop-blur-xl"
         >
           <div className="flex flex-col gap-4 py-6">
             {navItems.map((item) => {
@@ -141,8 +141,8 @@ export default function Header() {
                   className={`
                     text-sm font-medium transition-colors
                     ${isActive
-                      ? 'text-black dark:text-white'
-                      : 'text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
+                      ? 'text-white'
+                      : 'text-white/65 hover:text-white'
                     }
                   `}
                 >

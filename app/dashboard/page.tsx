@@ -3,21 +3,13 @@
 import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Stats, Activity, SkillInsight } from '@/lib/types'
-import { skillsApi, authApi } from '@/lib/api'
+import { skillsApi } from '@/lib/api'
 import { useSkills } from '@/lib/hooks/useSkills'
 import Loader from '@/components/UI/Loader'
 import { motion } from 'framer-motion'
-import { sectionReveal, passportSlide, easing } from '@/lib/utils/animations'
-import { useMemo, useCallback } from 'react'
+import { easing } from '@/lib/utils/animations'
+import { useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-
-// MetaLab scroll animation pattern
-const metalabScroll = {
-  initial: { opacity: 0 },
-  whileInView: { opacity: 1 },
-  viewport: { once: true, margin: '-100px' },
-  transition: { duration: 0.8, ease: easing.primary },
-}
 
 // Lazy load all dashboard components for better initial load
 const SkillGraph = dynamic(() => import('@/components/Skills/SkillGraph'), {
@@ -89,16 +81,16 @@ export default function DashboardPage() {
 
   if (error || !stats) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center px-6">
-        <div className="max-w-xl w-full border border-black/10 dark:border-white/10 p-8 text-center">
-          <h1 className="text-2xl font-bold text-black dark:text-white mb-3">Dashboard unavailable</h1>
-          <p className="text-black/60 dark:text-white/60 mb-6">
+      <div className="min-h-screen bg-black flex items-center justify-center px-6">
+        <div className="max-w-xl w-full gradient-border-card p-8 text-center">
+          <h1 className="text-2xl font-bold text-white mb-3">Dashboard unavailable</h1>
+          <p className="text-white/65 mb-6">
             {error ?? 'Unable to load your dashboard data right now.'}
           </p>
           <button
             type="button"
             onClick={loadData}
-            className="min-h-[44px] px-5 py-2 border border-black/20 dark:border-white/20 text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+            className="min-h-[44px] px-5 py-2 border border-white/15 text-white hover:bg-white hover:text-black transition-colors"
           >
             Retry
           </button>
@@ -108,7 +100,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
+    <div className="aurora-shell relative min-h-screen bg-black overflow-hidden">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <motion.div
           className="absolute -top-20 -left-20 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-25 dark:opacity-35"
@@ -131,24 +123,40 @@ export default function DashboardPage() {
           transition={{ duration: 0.5, ease: easing.primary }}
           className="mb-14 md:mb-24"
         >
-          <div className="inline-flex items-center gap-2 border border-violet-500/25 bg-violet-500/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-violet-700 dark:text-violet-200 mb-6">
-            Live Passport Overview
-          </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4 text-black dark:text-white tracking-tight leading-[1.1] max-w-[14ch] md:max-w-none">
-            Your{' '}
-            <span className="bg-gradient-to-r from-cyan-500 via-violet-500 to-rose-500 dark:from-cyan-300 dark:via-violet-300 dark:to-rose-300 bg-clip-text text-transparent">
-              passport
-            </span>
-          </h1>
-          <p className="text-base md:text-lg text-black/60 dark:text-white/60 max-w-[34ch] md:max-w-xl">
-            A living record of what you can do
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 md:mt-6 max-w-3xl">
-            {['Signal confidence', 'Growth velocity', 'Verification health'].map((item) => (
-              <div key={item} className="border border-black/10 dark:border-white/10 bg-white/70 dark:bg-black/45 px-4 py-3 text-sm text-black/70 dark:text-white/70">
-                {item}
+          <div className="hero-panel p-8 md:p-10">
+            <div className="hero-kicker mb-6">Live Passport Overview</div>
+            <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
+              <div>
+                <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4 text-white tracking-tight leading-[1.1] max-w-[14ch] md:max-w-none">
+                  Your{' '}
+                  <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">
+                    passport
+                  </span>
+                </h1>
+                <p className="text-base md:text-lg text-white/68 max-w-[34ch] md:max-w-xl">
+                  A living record of what you can do, where you are leveling up, and what proof is making your profile stronger.
+                </p>
               </div>
-            ))}
+              <div className="grid grid-cols-1 gap-3">
+                {[
+                  { label: 'Tracked skills', value: skills.length },
+                  { label: 'Recent signals', value: activities.length },
+                  { label: 'AI insights', value: insights.length },
+                ].map((item) => (
+                  <div key={item.label} className="insight-card p-4">
+                    <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                    <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 md:mt-6 max-w-3xl">
+              {['Signal confidence', 'Growth velocity', 'Verification health'].map((item) => (
+                <div key={item} className="insight-card px-4 py-3 text-sm text-white/72">
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
 
@@ -197,13 +205,13 @@ export default function DashboardPage() {
             className="passport-page"
           >
             <motion.div
-              className="border border-black/10 dark:border-white/10 p-8 bg-white/60 dark:bg-black/60 backdrop-blur-[2px]"
+              className="gradient-border-card p-8"
               whileHover={{ y: -4 }}
               transition={{ duration: 0.3, ease: easing.primary }}
             >
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-black dark:text-white mb-2 tracking-tight">Skills by Category</h2>
-                <p className="text-sm text-black/60 dark:text-white/60">Distribution across skill domains</p>
+                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Skills by Category</h2>
+                <p className="text-sm text-white/60">Distribution across skill domains</p>
               </div>
               <SkillGraph skills={skills} type="category" />
             </motion.div>
@@ -217,13 +225,13 @@ export default function DashboardPage() {
             className="passport-page"
           >
             <motion.div
-              className="border border-black/10 dark:border-white/10 p-8 bg-white/60 dark:bg-black/60 backdrop-blur-[2px]"
+              className="gradient-border-card p-8"
               whileHover={{ y: -4 }}
               transition={{ duration: 0.3, ease: easing.primary }}
             >
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-black dark:text-white mb-2 tracking-tight">Skills by Level</h2>
-                <p className="text-sm text-black/60 dark:text-white/60">Progression and expertise breakdown</p>
+                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Skills by Level</h2>
+                <p className="text-sm text-white/60">Progression and expertise breakdown</p>
               </div>
               <SkillGraph skills={skills} type="level" />
             </motion.div>
@@ -238,10 +246,10 @@ export default function DashboardPage() {
           transition={{ duration: 0.6, delay: 0.2, ease: easing.primary }}
           className="mt-12 md:mt-16"
         >
-          <div className="border border-black/10 dark:border-white/10 p-8">
+          <div className="gradient-border-card p-8">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-black dark:text-white mb-3 tracking-tight">Performance Insights</h2>
-              <p className="text-black/60 dark:text-white/60">AI-powered analysis of your skill development</p>
+              <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">Performance Insights</h2>
+              <p className="text-white/60">AI-powered analysis of your skill development</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               <motion.div

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Suspense, useState, useEffect } from 'react'
+import React, { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
@@ -14,7 +14,6 @@ function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { addToast } = useToast()
-  const [guestModeEnabled, setGuestModeEnabled] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,13 +21,6 @@ function LoginPageContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-
-  useEffect(() => {
-    fetch('/api/guest-mode', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((data) => setGuestModeEnabled(data.guestMode === true))
-      .catch(() => setGuestModeEnabled(false))
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -58,6 +50,33 @@ function LoginPageContent() {
     }
   }
 
+  const handleGuestContinue = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/auth/guest', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        throw new Error('Guest preview is unavailable right now')
+      }
+      const next = searchParams.get('next')
+      router.push(next || '/dashboard')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Guest preview is unavailable right now'
+      setError(errorMessage)
+      addToast({
+        type: 'error',
+        title: 'Guest preview unavailable',
+        message: errorMessage,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center p-4">
       <motion.div
@@ -75,11 +94,13 @@ function LoginPageContent() {
             <p className="text-lg text-black/60 dark:text-white/60">
               Sign in to your account
             </p>
-            {guestModeEnabled && (
-              <Link href="/dashboard" className="mt-3 inline-block text-sm underline">
-                Continue as guest
-              </Link>
-            )}
+            <button
+              type="button"
+              onClick={handleGuestContinue}
+              className="mt-3 inline-block text-sm underline"
+            >
+              Continue as guest
+            </button>
           </div>
 
           {error && (

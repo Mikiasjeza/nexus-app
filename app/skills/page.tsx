@@ -1,22 +1,23 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Skill, SkillCategory, SkillLevel } from '@/lib/types'
+import React, { useEffect, useState } from 'react'
+import { Skill, User } from '@/lib/types'
 import { useSkills } from '@/lib/hooks/useSkills'
 import SkillGrid from '@/components/Skills/SkillGrid'
 import SkillForm from '@/components/Skills/SkillForm'
-import { Plus, Filter, X, Search, Download, Share2, Grid, List } from 'lucide-react'
+import { Plus, Filter, Search, Grid, List } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SKILL_CATEGORIES, SKILL_LEVELS } from '@/lib/utils/constants'
 import Loader from '@/components/UI/Loader'
 import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
 import { useToast } from '@/components/UI/ToastProvider'
 import { easing } from '@/lib/utils/animations'
+import { authApi } from '@/lib/api'
 
 export default function SkillsPage() {
   const { skills, loading, addSkill, updateSkill, deleteSkill } = useSkills()
   const { addToast } = useToast()
+  const [user, setUser] = useState<User | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null)
   const [filterCategory, setFilterCategory] = useState<string>('')
@@ -24,8 +25,25 @@ export default function SkillsPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const isGuestPreview = user?.id === 'guest-user'
+
+  useEffect(() => {
+    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+  }, [])
+
+  const showGuestPreviewMessage = () => {
+    addToast({
+      type: 'info',
+      title: 'Guest preview mode',
+      message: 'Sign in or create an account to change your skills.',
+    })
+  }
 
   const handleSave = async (skillData: Omit<Skill, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (isGuestPreview) {
+      showGuestPreviewMessage()
+      return
+    }
     try {
       if (editingSkill) {
         await updateSkill(editingSkill.id, skillData)
@@ -55,11 +73,19 @@ export default function SkillsPage() {
   }
 
   const handleEdit = (skill: Skill) => {
+    if (isGuestPreview) {
+      showGuestPreviewMessage()
+      return
+    }
     setEditingSkill(skill)
     setShowForm(true)
   }
 
   const handleDelete = async (id: string) => {
+    if (isGuestPreview) {
+      showGuestPreviewMessage()
+      return
+    }
     const skill = skills.find(s => s.id === id)
     if (window.confirm(`Are you sure you want to delete "${skill?.name || 'this skill'}"?`)) {
       try {
@@ -101,53 +127,69 @@ export default function SkillsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="aurora-shell min-h-screen bg-black">
       <div className="page-shell">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 md:mb-12 gap-5 md:gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6, delay: 0.1, ease: easing.primary }}
-            className="flex-1"
-          >
-            <h1 className="text-4xl md:text-6xl font-bold text-black dark:text-white mb-3 md:mb-4 tracking-tight leading-[1.1] max-w-[12ch] md:max-w-none">
-              Skills
-            </h1>
-            <p className="text-base md:text-lg text-black/60 dark:text-white/60 max-w-[36ch] md:max-w-2xl">
-              Manage and track your skill portfolio
-            </p>
-          </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6, delay: 0.1, ease: easing.primary }}
+          className="mb-8 md:mb-12"
+        >
+          <div className="hero-panel p-8 md:p-10">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <div className="hero-kicker mb-5">Skill Passport Studio</div>
+                <h1 className="text-4xl md:text-6xl font-bold text-white mb-3 md:mb-4 tracking-tight leading-[1.1] max-w-[12ch] md:max-w-none">
+                  Skills
+                </h1>
+                <p className="text-base md:text-lg text-white/68 max-w-[36ch] md:max-w-2xl">
+                  Turn scattered experience into a vivid, verified portfolio that shows momentum, depth, and proof.
+                </p>
+              </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6, delay: 0.2, ease: easing.primary }}
-            className="flex flex-wrap items-center gap-3"
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<Filter className="w-4 h-4" />}
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              Filters
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<Plus className="w-4 h-4" />}
-              onClick={() => {
-                setEditingSkill(null)
-                setShowForm(true)
-              }}
-            >
-              Add Skill
-            </Button>
-          </motion.div>
-        </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Filter className="w-4 h-4" />}
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  Filters
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Plus className="w-4 h-4" />}
+                  onClick={() => {
+                    if (isGuestPreview) {
+                      showGuestPreviewMessage()
+                      return
+                    }
+                    setEditingSkill(null)
+                    setShowForm(true)
+                  }}
+                >
+                  Add Skill
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mt-6">
+              {[
+                { label: 'Skills tracked', value: skills.length },
+                { label: 'Verified signals', value: skills.filter((skill) => skill.verified).length },
+                { label: 'Categories', value: new Set(skills.map((skill) => skill.category)).size },
+              ].map((item) => (
+                <div key={item.label} className="insight-card px-4 py-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                  <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -156,11 +198,17 @@ export default function SkillsPage() {
           className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 md:mb-8"
         >
           {['Track', 'Verify', 'Share'].map((item) => (
-            <div key={item} className="border border-black/10 dark:border-white/10 bg-white/70 dark:bg-black/45 px-4 py-3 text-sm text-black/70 dark:text-white/70 text-center">
+            <div key={item} className="insight-card px-4 py-3 text-sm text-white/72 text-center">
               {item}
             </div>
           ))}
         </motion.div>
+
+        {isGuestPreview && (
+          <div className="mb-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
+            You are browsing a guest preview. Sign in or create an account to add, edit, and delete skills.
+          </div>
+        )}
 
         {/* Search Bar */}
         <motion.div
@@ -170,13 +218,13 @@ export default function SkillsPage() {
           className="mb-6 md:mb-8"
         >
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
             <input
               type="text"
               placeholder="Search skills..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-5 py-3 border border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/55 backdrop-blur-[2px] text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+              className="w-full pl-12 pr-5 py-3 border border-white/10 bg-black/55 backdrop-blur-xl text-white placeholder:text-white/40 focus:outline-none focus:border-cyan-300/60 transition-colors"
             />
           </div>
         </motion.div>
@@ -188,13 +236,13 @@ export default function SkillsPage() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex items-center justify-between mb-6 md:mb-8"
         >
-          <div className="flex items-center gap-2 border border-black/10 dark:border-white/10 p-1">
+          <div className="flex items-center gap-2 border border-white/10 bg-black/45 p-1 backdrop-blur-xl">
             <button
               onClick={() => setViewMode('grid')}
               className={`min-h-[44px] min-w-[44px] p-2.5 transition-opacity ${
                 viewMode === 'grid'
-                  ? 'bg-black dark:bg-white text-white dark:text-black opacity-100'
-                  : 'text-black/60 dark:text-white/60 hover:opacity-100 opacity-60'
+                  ? 'bg-white text-black opacity-100'
+                  : 'text-white/60 hover:opacity-100 opacity-60'
               }`}
             >
               <Grid className="w-5 h-5" />
@@ -203,15 +251,15 @@ export default function SkillsPage() {
               onClick={() => setViewMode('list')}
               className={`min-h-[44px] min-w-[44px] p-2.5 transition-opacity ${
                 viewMode === 'list'
-                  ? 'bg-black dark:bg-white text-white dark:text-black opacity-100'
-                  : 'text-black/60 dark:text-white/60 hover:opacity-100 opacity-60'
+                  ? 'bg-white text-black opacity-100'
+                  : 'text-white/60 hover:opacity-100 opacity-60'
               }`}
             >
               <List className="w-5 h-5" />
             </button>
           </div>
-          <div className="text-sm text-black/60 dark:text-white/60">
-            <span className="font-medium text-black dark:text-white">{skills.length}</span> {skills.length === 1 ? 'skill' : 'skills'}
+          <div className="text-sm text-white/60">
+            <span className="font-medium text-white">{skills.length}</span> {skills.length === 1 ? 'skill' : 'skills'}
           </div>
         </motion.div>
 
