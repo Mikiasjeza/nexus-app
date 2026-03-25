@@ -1,28 +1,17 @@
-import { fetchApi } from '@/lib/api/fetcher'
+import { browserLocation, fetchApi } from '@/lib/api/fetcher'
 
 describe('fetchApi', () => {
   const originalFetch = global.fetch
-  const originalLocation = window.location
+  let assignSpy: jest.SpiedFunction<typeof browserLocation.assign>
 
   beforeEach(() => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        pathname: '/dashboard',
-        search: '?tab=overview',
-        assign: jest.fn(),
-      },
-      writable: true,
-      configurable: true,
-    })
+    window.history.replaceState({}, '', '/dashboard?tab=overview')
+    assignSpy = jest.spyOn(browserLocation, 'assign').mockImplementation(() => {})
   })
 
   afterEach(() => {
     global.fetch = originalFetch
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-      configurable: true,
-    })
+    assignSpy.mockRestore()
     jest.clearAllMocks()
   })
 
@@ -35,6 +24,6 @@ describe('fetchApi', () => {
     } as any)
 
     await expect(fetchApi('/api/skills/stats')).rejects.toThrow('Not authenticated')
-    expect(window.location.assign).toHaveBeenCalledWith('/auth/login?next=%2Fdashboard%3Ftab%3Doverview')
+    expect(assignSpy).toHaveBeenCalledWith('/auth/login?next=%2Fdashboard%3Ftab%3Doverview')
   })
 })

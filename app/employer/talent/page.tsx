@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Search, User, Shield, Plus } from 'lucide-react'
 import Button from '@/components/UI/Button'
@@ -157,9 +158,12 @@ export default function EmployerTalentPage() {
                   <div className="flex items-start gap-4 flex-1">
                     <div className="w-14 h-14 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center shrink-0">
                       {c.avatar ? (
-                        <img
+                        <Image
                           src={c.avatar}
-                          alt=""
+                          alt={`${c.name} avatar`}
+                          width={56}
+                          height={56}
+                          unoptimized
                           className="w-14 h-14 rounded-full object-cover"
                         />
                       ) : (

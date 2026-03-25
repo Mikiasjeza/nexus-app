@@ -46,7 +46,7 @@ function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some(p => pathname.startsWith(p))
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (env.isGuestMode) {
     return NextResponse.next()
   }

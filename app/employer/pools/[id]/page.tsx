@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { User, Shield, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -107,9 +108,12 @@ export default function EmployerPoolDetailPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center">
                     {c.avatar ? (
-                      <img
+                      <Image
                         src={c.avatar}
-                        alt=""
+                        alt={`${c.name} avatar`}
+                        width={48}
+                        height={48}
+                        unoptimized
                         className="w-12 h-12 rounded-full object-cover"
                       />
                     ) : (

@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node scripts/remove-windows-dirs.js && NEXT_PUBLIC_APP_URL=https://nexus-app-smoky.vercel.app npm run build",
+  "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install && node scripts/remove-windows-dirs.js",
   "framework": "nextjs",

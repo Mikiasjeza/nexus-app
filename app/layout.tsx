@@ -30,7 +30,7 @@ function getSafeMetadataBase(): URL {
   try {
     return getMetadataBase()
   } catch {
-    return new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus-app.vercel.app')
+    return new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus.ai')
   }
 }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -97,9 +98,12 @@ export default function CompanyPage() {
           <div className="flex items-start gap-6">
             <div className="w-20 h-20 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center shrink-0">
               {company.logo ? (
-                <img
+                <Image
                   src={company.logo}
-                  alt=""
+                  alt={`${company.name} logo`}
+                  width={80}
+                  height={80}
+                  unoptimized
                   className="w-20 h-20 rounded-2xl object-cover"
                 />
               ) : (

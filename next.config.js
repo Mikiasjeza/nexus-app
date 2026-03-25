@@ -4,7 +4,9 @@
 // Always override with a valid URL so Vercel builds succeed even if user misconfigures the env var.
 const raw = (process.env.NEXT_PUBLIC_APP_URL || '').trim()
 const isValidUrl = raw && (raw.startsWith('http://') || raw.startsWith('https://'))
-const validAppUrl = isValidUrl ? raw : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus-app.vercel.app')
+const validAppUrl = isValidUrl
+  ? raw
+  : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus.ai')
 
 const nextConfig = {
   env: {
@@ -194,8 +196,9 @@ module.exports = withSentryConfig(module.exports, {
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+  sourcemaps: {
+    assets: ['.next/**/*.map'],
+  },
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase your server load as well as your hosting bill.
