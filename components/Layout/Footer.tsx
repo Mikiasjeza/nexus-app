@@ -61,6 +61,11 @@ export default function Footer() {
                   Marketplace
                 </Link>
               </li>
+              <li>
+                <Link href="/how-it-works" className="text-sm text-white/65 hover:text-white transition-colors">
+                  How It Works
+                </Link>
+              </li>
             </ul>
           </div>
 

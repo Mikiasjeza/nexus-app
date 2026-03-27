@@ -7,6 +7,8 @@ import AnimatedCard from '@/components/UI/AnimatedCard'
 import { easing } from '@/lib/utils/animations'
 
 export default function PrivacyPage() {
+  const lastUpdated = 'March 19, 2026'
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,7 +26,7 @@ export default function PrivacyPage() {
             <h1 className="text-4xl font-bold">Privacy Policy</h1>
           </div>
           <p className="text-gray-600 dark:text-gray-400">
-            Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            Last updated: {lastUpdated}
           </p>
         </motion.div>
 

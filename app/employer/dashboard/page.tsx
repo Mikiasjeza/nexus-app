@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   Building2,
@@ -8,10 +8,8 @@ import {
   Briefcase,
   Search,
   ArrowRight,
-  Plus,
 } from 'lucide-react'
 import Link from 'next/link'
-import Button from '@/components/UI/Button'
 import AnimatedCard from '@/components/UI/AnimatedCard'
 import { easing } from '@/lib/utils/animations'
 
@@ -27,21 +25,63 @@ interface Company {
 export default function EmployerDashboardPage() {
   const [company, setCompany] = useState<Company | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const loadCompany = useCallback(() => {
+    setLoading(true)
+    setError(null)
+
     fetch('/api/employer/company', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.company) setCompany(data.company)
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}))
+        if (!r.ok) {
+          throw new Error(
+            typeof data.error === 'string'
+              ? data.error
+              : 'Unable to load your employer workspace.'
+          )
+        }
+        if (!data.company) {
+          throw new Error('No employer profile was found for this account yet.')
+        }
+        setCompany(data.company)
+      })
+      .catch((err: unknown) => {
+        setCompany(null)
+        setError(err instanceof Error ? err.message : 'Unable to load your employer workspace.')
       })
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading || !company) {
+  useEffect(() => {
+    loadCompany()
+  }, [loadCompany])
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-black/40 dark:text-white/40">
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-pulse text-white/40">
           Loading...
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !company) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center px-6">
+        <div className="max-w-xl w-full gradient-border-card p-8 text-center">
+          <h1 className="text-2xl font-bold text-white mb-3">Employer dashboard unavailable</h1>
+          <p className="text-white/60 mb-6">
+            {error ?? 'We could not load your employer workspace right now.'}
+          </p>
+          <button
+            type="button"
+            onClick={loadCompany}
+            className="min-h-[44px] px-5 py-2 border border-white/15 text-white hover:bg-white hover:text-black transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     )

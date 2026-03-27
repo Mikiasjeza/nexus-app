@@ -16,7 +16,6 @@ import {
   TrendingUp
 } from 'lucide-react'
 import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
 import AnimatedCard from '@/components/UI/AnimatedCard'
 import { useToast } from '@/components/UI/ToastProvider'
 import Confetti from '@/components/UI/Confetti'
@@ -152,7 +151,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="aurora-shell min-h-screen bg-black flex items-center justify-center p-4">
       <Confetti trigger={showConfetti} />
       
       <div className="w-full max-w-4xl">
@@ -168,8 +167,8 @@ export default function OnboardingPage() {
                     transition={{ delay: index * 0.1 }}
                     className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors ${
                       currentStep >= step.id
-                        ? 'bg-primary-500 text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                        ? 'bg-white text-black'
+                        : 'bg-white/10 text-white/45'
                     }`}
                   >
                     {currentStep > step.id ? (
@@ -179,14 +178,14 @@ export default function OnboardingPage() {
                     )}
                   </motion.div>
                   <span className={`text-xs font-medium ${
-                    currentStep >= step.id ? 'text-primary-600' : 'text-gray-500'
+                    currentStep >= step.id ? 'text-cyan-200' : 'text-white/45'
                   }`}>
                     {step.title}
                   </span>
                 </div>
                 {index < steps.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-2 ${
-                    currentStep > step.id ? 'bg-primary-500' : 'bg-gray-200 dark:bg-gray-700'
+                    currentStep > step.id ? 'bg-cyan-300/80' : 'bg-white/10'
                   }`} />
                 )}
               </Fragment>
@@ -195,7 +194,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Content */}
-        <AnimatedCard className="p-8 md:p-12">
+        <AnimatedCard className="gradient-border-card p-8 md:p-12">
           <AnimatePresence mode="wait">
             {/* Step 1: Welcome */}
             {currentStep === 1 && (
@@ -210,23 +209,23 @@ export default function OnboardingPage() {
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-6">
                   <Sparkles className="w-10 h-10 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold mb-4">Welcome to Nexus!</h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+                <h2 className="text-3xl font-bold text-white mb-4">Welcome to Nexus</h2>
+                <p className="text-white/60 mb-8 max-w-2xl mx-auto">
                   We&apos;ll help you create a verified skill profile in just a few steps. 
                   This takes about 2 minutes.
                 </p>
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
-                  <div className="p-4 rounded-xl bg-primary-50 dark:bg-primary-900/20">
+                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium">AI-Verified</p>
+                    <p className="text-sm font-medium text-white">AI-Verified</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20">
+                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium">Global Recognition</p>
+                    <p className="text-sm font-medium text-white">Global Recognition</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20">
+                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium">Career Matching</p>
+                    <p className="text-sm font-medium text-white">Career Matching</p>
                   </div>
                 </div>
               </motion.div>
@@ -245,8 +244,8 @@ export default function OnboardingPage() {
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
                     <Target className="w-8 h-8 text-white" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-2">What are your goals?</h2>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <h2 className="text-3xl font-bold text-white mb-2">What are your goals?</h2>
+                  <p className="text-white/60">
                     Select all that apply (you can change this later)
                   </p>
                 </div>
@@ -259,15 +258,15 @@ export default function OnboardingPage() {
                       onClick={() => handleGoalToggle(goal.id)}
                       className={`p-6 rounded-xl border-2 transition-all text-left ${
                         selectedGoals.includes(goal.id)
-                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                          ? 'border-cyan-300/70 bg-white/10'
+                          : 'border-white/10 hover:border-cyan-300/40'
                       }`}
                     >
                       <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${goal.color} flex items-center justify-center text-white mb-4`}>
                         {goal.icon}
                       </div>
-                      <h3 className="font-semibold mb-1">{goal.title}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{goal.description}</p>
+                      <h3 className="font-semibold text-white mb-1">{goal.title}</h3>
+                      <p className="text-sm text-white/60">{goal.description}</p>
                     </motion.button>
                   ))}
                 </div>
@@ -287,8 +286,8 @@ export default function OnboardingPage() {
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
                     <Plus className="w-8 h-8 text-white" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-2">Add Your Skills</h2>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <h2 className="text-3xl font-bold text-white mb-2">Add Your Skills</h2>
+                  <p className="text-white/60">
                     Select your skills (you can add more later)
                   </p>
                 </div>
@@ -301,15 +300,15 @@ export default function OnboardingPage() {
                       onClick={() => handleSkillToggle(skill)}
                       className={`px-4 py-2 rounded-full font-medium transition-all ${
                         selectedSkills.includes(skill)
-                          ? 'bg-primary-500 text-white'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/75 hover:bg-white/10'
                       }`}
                     >
                       {skill}
                     </motion.button>
                   ))}
                 </div>
-                <p className="text-center text-sm text-gray-500 mt-6">
+                <p className="text-center text-sm text-white/45 mt-6">
                   Selected: {selectedSkills.length} skills
                 </p>
               </motion.div>
@@ -333,8 +332,8 @@ export default function OnboardingPage() {
                 >
                   <CheckCircle className="w-10 h-10 text-white" />
                 </motion.div>
-                <h2 className="text-3xl font-bold mb-4">You&apos;re All Set! 🎉</h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+                <h2 className="text-3xl font-bold text-white mb-4">You&apos;re All Set</h2>
+                <p className="text-white/60 mb-8 max-w-2xl mx-auto">
                   Your Nexus profile is ready. Start adding more skills, get verified, 
                   and discover career opportunities matched to your profile.
                 </p>
@@ -357,7 +356,7 @@ export default function OnboardingPage() {
           </AnimatePresence>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mt-8 pt-8 border-t border-white/10">
             <Button
               variant="outline"
               leftIcon={<ArrowLeft className="w-5 h-5" />}
@@ -366,7 +365,7 @@ export default function OnboardingPage() {
             >
               Back
             </Button>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-white/45">
               Step {currentStep} of {steps.length}
             </div>
             <Button

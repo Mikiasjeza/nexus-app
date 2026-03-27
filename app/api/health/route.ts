@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getLaunchReadinessIssues } from '@/lib/config/env'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,9 +17,11 @@ export async function GET() {
       dbLatencyMs = Date.now() - start
     }
 
+    const readinessIssues = getLaunchReadinessIssues()
+
     // Basic health check
     const health = {
-      status: db === 'up' ? 'ok' : 'degraded',
+      status: db === 'up' && readinessIssues.length === 0 ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment: process.env.NODE_ENV || 'development',
@@ -26,11 +29,16 @@ export async function GET() {
       checks: {
         database: db,
         dbLatencyMs,
+        configuration: readinessIssues.length === 0 ? 'ready' : 'issues',
+        readinessIssues,
       },
     }
 
-    return NextResponse.json(health, { status: db === 'up' ? 200 : 503 })
-  } catch (error) {
+    return NextResponse.json(
+      health,
+      { status: db === 'up' && readinessIssues.length === 0 ? 200 : 503 }
+    )
+  } catch {
     return NextResponse.json(
       {
         status: 'error',

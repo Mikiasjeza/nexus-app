@@ -10,6 +10,17 @@ function getRequired(name: string): string {
   return value
 }
 
+function isValidHttpUrl(value: string, requireHttps = false): boolean {
+  try {
+    const parsed = new URL(value)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false
+    if (requireHttps && parsed.protocol !== 'https:') return false
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Returns a validated app URL; never throws. Use when constructing URLs. */
 export function getAppUrl(): string {
   const raw = (process.env.NEXT_PUBLIC_APP_URL || '').trim()
@@ -57,6 +68,61 @@ export const env = {
     openAiKey: process.env.OPENAI_API_KEY || '',
     anthropicKey: process.env.ANTHROPIC_API_KEY || '',
   },
+}
+
+export function getSupportInbox(): string {
+  return (
+    process.env.CONTACT_EMAIL ||
+    process.env.EMAIL_FROM ||
+    'support@nexus.ai'
+  ).trim()
+}
+
+export function getLaunchReadinessIssues(): string[] {
+  const issues: string[] = []
+
+  if (env.isProd) {
+    if (!process.env.NEXTAUTH_SECRET) {
+      issues.push('NEXTAUTH_SECRET is missing')
+    }
+
+    if (!process.env.DATABASE_URL) {
+      issues.push('DATABASE_URL is missing')
+    }
+
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || '').trim()
+    if (!appUrl) {
+      issues.push('NEXT_PUBLIC_APP_URL is missing')
+    } else if (!isValidHttpUrl(appUrl, true)) {
+      issues.push('NEXT_PUBLIC_APP_URL must be a valid https URL in production')
+    }
+  }
+
+  const provider = (process.env.EMAIL_PROVIDER || 'resend').trim()
+  if (!process.env.EMAIL_FROM) {
+    issues.push('EMAIL_FROM is missing')
+  }
+  if (provider === 'resend' && !process.env.RESEND_API_KEY) {
+    issues.push('RESEND_API_KEY is missing')
+  }
+  if (provider === 'sendgrid' && !process.env.SENDGRID_API_KEY) {
+    issues.push('SENDGRID_API_KEY is missing')
+  }
+  if (provider !== 'resend' && provider !== 'sendgrid') {
+    issues.push(`EMAIL_PROVIDER "${provider}" is not supported`)
+  }
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    issues.push('STRIPE_SECRET_KEY is missing')
+  }
+  if (!process.env.STRIPE_PRO_PRICE_ID) {
+    issues.push('STRIPE_PRO_PRICE_ID is missing')
+  }
+  if (!process.env.STRIPE_ENTERPRISE_PRICE_ID) {
+    issues.push('STRIPE_ENTERPRISE_PRICE_ID is missing')
+  }
+
+  return issues
 }
 
 export function assertProductionEnv(): void {

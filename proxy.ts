@@ -24,14 +24,13 @@ const PUBLIC_PATHS = [
   '/share/',              // Public shareable profiles
   '/api/health',
   '/api/version',
+  '/api/contact',
   '/api/guest-mode',
   '/api/auth/',           // Login, register, etc. handle own auth
   '/api/stripe/webhook',  // Stripe webhooks (verified by signature)
   '/api/share/',          // Public share API
   '/api/jobs',            // Public job listings for marketplace
   '/api/company/',        // Public company profiles
-  '/sentry-example-page', // Sentry test page (dev/verification)
-  '/api/sentry-example-api', // Sentry test API (used by example page)
 ]
 
 /** Auth routes - redirect to dashboard if already logged in */

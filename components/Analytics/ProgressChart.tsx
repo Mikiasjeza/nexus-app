@@ -2,7 +2,7 @@
 
 import { Skill } from '@/lib/types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { format, subDays } from 'date-fns'
 import { motion } from 'framer-motion'
 import { useCursorReactive } from '@/lib/hooks/useCursorReactive'
@@ -13,7 +13,6 @@ interface ProgressChartProps {
 }
 
 export default function ProgressChart({ skills, days = 30 }: ProgressChartProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const cursor = useCursorReactive()
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -70,6 +69,9 @@ export default function ProgressChart({ skills, days = 30 }: ProgressChartProps)
           aria-hidden
         />
         <h2 className="text-xl font-bold text-black dark:text-white mb-6">Progress Over Time</h2>
+        <p className="text-sm text-black/60 dark:text-white/60 mb-6">
+          Illustrative trend based on your current skills. Historical tracking becomes exact once long-term progress snapshots are stored.
+        </p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <defs>

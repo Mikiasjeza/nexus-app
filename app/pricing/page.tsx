@@ -1,15 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Sparkles, Users, Building2, Zap, Shield, Globe, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
-import { easing } from '@/lib/utils/animations'
-import { billingApi } from '@/lib/api'
+import { authApi, billingApi } from '@/lib/api'
 import { useToast } from '@/components/UI/ToastProvider'
-import { useState } from 'react'
+import type { User } from '@/lib/types'
 
 const plans = [
   {
@@ -96,6 +95,12 @@ const features = [
 export default function PricingPage() {
   const { addToast } = useToast()
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const isSignedIn = !!user && user.id !== 'guest-user'
+
+  useEffect(() => {
+    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+  }, [])
 
   const handleCheckout = async (planId: 'professional' | 'enterprise') => {
     try {
@@ -114,8 +119,8 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 md:py-16">
+    <div className="aurora-shell min-h-screen bg-black">
+      <div className="page-shell">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -123,17 +128,24 @@ export default function PricingPage() {
           viewport={{ once: true, margin: '-100px' }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-16"
+          className="mb-16"
         >
-          <Badge variant="primary" size="lg" className="mb-4">
-            Flexible Pricing
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold text-black dark:text-white mb-4 md:mb-6 tracking-tight max-w-[12ch] md:max-w-none mx-auto">
-            Choose Your Plan
-          </h1>
-          <p className="text-base md:text-lg text-black/60 dark:text-white/60 max-w-[42ch] md:max-w-3xl mx-auto">
-            Start free and upgrade as you grow. All plans include AI-powered skill verification.
-          </p>
+          <div className="hero-panel p-8 md:p-10 text-center">
+            <Badge variant="primary" size="lg" className="mb-4">
+              Flexible Pricing
+            </Badge>
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 md:mb-6 tracking-tight max-w-[12ch] md:max-w-none mx-auto">
+              Choose Your Plan
+            </h1>
+            <p className="text-base md:text-lg text-white/68 max-w-[42ch] md:max-w-3xl mx-auto">
+              Start with the free plan, prove your capabilities, and upgrade when you are ready for paid verification and billing features.
+            </p>
+            <div className="mt-6 text-sm text-white/58">
+              {isSignedIn
+                ? 'You are signed in. Paid upgrades go straight to secure Stripe checkout.'
+                : 'Create an account first, then upgrade when you are ready to start billing.'}
+            </div>
+          </div>
         </motion.div>
 
         <motion.div
@@ -147,7 +159,7 @@ export default function PricingPage() {
             'Growing professionals',
             'Hiring teams',
           ].map((item) => (
-            <div key={item} className="border border-black/10 dark:border-white/10 bg-white/70 dark:bg-black/45 px-4 py-3 text-sm text-black/70 dark:text-white/70 text-center">
+            <div key={item} className="insight-card px-4 py-3 text-sm text-white/72 text-center">
               {item}
             </div>
           ))}
@@ -172,15 +184,15 @@ export default function PricingPage() {
                     </Badge>
                   </div>
                 )}
-                <div className={`border border-black/10 dark:border-white/10 p-8 h-full bg-gradient-to-br from-white/85 to-black/[0.02] dark:from-white/[0.05] dark:to-white/[0.01] ${plan.popular ? 'border-black dark:border-white' : ''}`}>
-                  <div className="w-16 h-16 border border-black/10 dark:border-white/10 flex items-center justify-center mb-6">
-                    <Icon className="w-8 h-8 text-black dark:text-white" />
+                <div className={`gradient-border-card p-8 h-full ${plan.popular ? 'ring-1 ring-cyan-300/30' : ''}`}>
+                  <div className="w-16 h-16 border border-white/10 bg-white/5 flex items-center justify-center mb-6">
+                    <Icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-black dark:text-white mb-2">{plan.name}</h3>
+                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                   <div className="mb-4">
-                    <span className="text-4xl font-bold text-black dark:text-white">{plan.price}</span>
+                    <span className="text-4xl font-bold text-white">{plan.price}</span>
                     {plan.period !== 'forever' && plan.period !== 'pricing' && (
-                      <span className="text-black/60 dark:text-white/60">/{plan.period}</span>
+                      <span className="text-white/60">/{plan.period}</span>
                     )}
                   </div>
                   {plan.savings && (
@@ -188,13 +200,13 @@ export default function PricingPage() {
                       {plan.savings}
                     </Badge>
                   )}
-                  <p className="text-black/60 dark:text-white/60 mb-6">{plan.description}</p>
+                  <p className="text-white/60 mb-6">{plan.description}</p>
                   
                   <ul className="space-y-4 mb-8">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-black dark:text-white flex-shrink-0 mt-0.5" />
-                        <span className="text-black dark:text-white">{feature}</span>
+                        <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
+                        <span className="text-white">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -212,35 +224,40 @@ export default function PricingPage() {
                     </Link>
                   ) : plan.id === 'enterprise' ? (
                     <div className="space-y-3">
+                      <Link href="/contact">
+                        <Button variant={plan.popular ? 'primary' : 'outline'} fullWidth size="lg" rightIcon={<ArrowRight className="w-5 h-5" />}>
+                          Contact Sales
+                        </Button>
+                      </Link>
+                      <p className="text-xs text-white/45 text-center">
+                        Enterprise setup is handled with a custom conversation.
+                      </p>
+                    </div>
+                  ) : (
+                    isSignedIn ? (
                       <Button
                         variant={plan.popular ? 'primary' : 'outline'}
                         fullWidth
                         size="lg"
                         rightIcon={<ArrowRight className="w-5 h-5" />}
-                        onClick={() => handleCheckout('enterprise')}
-                        isLoading={loadingPlan === 'enterprise'}
+                        onClick={() => handleCheckout('professional')}
+                        isLoading={loadingPlan === 'professional'}
                         disabled={loadingPlan !== null}
                       >
-                        Start Enterprise
+                        Upgrade to Professional
                       </Button>
-                      <Link href="/contact">
-                        <Button variant="ghost" fullWidth size="sm">
-                          Contact Sales
+                    ) : (
+                      <Link href="/auth/register">
+                        <Button
+                          variant={plan.popular ? 'primary' : 'outline'}
+                          fullWidth
+                          size="lg"
+                          rightIcon={<ArrowRight className="w-5 h-5" />}
+                        >
+                          Create Account First
                         </Button>
                       </Link>
-                    </div>
-                  ) : (
-                    <Button
-                      variant={plan.popular ? 'primary' : 'outline'}
-                      fullWidth
-                      size="lg"
-                      rightIcon={<ArrowRight className="w-5 h-5" />}
-                      onClick={() => handleCheckout('professional')}
-                      isLoading={loadingPlan === 'professional'}
-                      disabled={loadingPlan !== null}
-                    >
-                      {plan.cta}
-                    </Button>
+                    )
                   )}
                 </div>
               </motion.div>
@@ -257,17 +274,17 @@ export default function PricingPage() {
           transition={{ duration: 0.5, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="mb-16"
         >
-          <h2 className="text-3xl font-bold text-black dark:text-white text-center mb-12">All Plans Include</h2>
+          <h2 className="text-3xl font-bold text-white text-center mb-12">All Plans Include</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon
               return (
-                <div key={index} className="border border-black/10 dark:border-white/10 p-6 text-center">
-                  <div className="w-12 h-12 border border-black/10 dark:border-white/10 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-black dark:text-white" />
+                <div key={index} className="gradient-border-card p-6 text-center">
+                  <div className="w-12 h-12 border border-white/10 bg-white/5 flex items-center justify-center mx-auto mb-4">
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="font-medium text-black dark:text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-black/60 dark:text-white/60">{feature.description}</p>
+                  <h3 className="font-medium text-white mb-2">{feature.title}</h3>
+                  <p className="text-sm text-white/60">{feature.description}</p>
                 </div>
               )
             })}
@@ -283,24 +300,24 @@ export default function PricingPage() {
           transition={{ duration: 0.5, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center"
         >
-          <h2 className="text-3xl font-bold text-black dark:text-white mb-8">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
           <div className="max-w-3xl mx-auto space-y-6">
-            <div className="border border-black/10 dark:border-white/10 p-6 text-left">
-              <h3 className="font-medium text-black dark:text-white mb-2">Can I change plans later?</h3>
-              <p className="text-black/60 dark:text-white/60">
-                Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.
+            <div className="gradient-border-card p-6 text-left">
+              <h3 className="font-medium text-white mb-2">Can I change plans later?</h3>
+              <p className="text-white/60">
+                Yes. You can manage your subscription from the billing section in Settings once billing is enabled on your account.
               </p>
             </div>
-            <div className="border border-black/10 dark:border-white/10 p-6 text-left">
-              <h3 className="font-medium text-black dark:text-white mb-2">What payment methods do you accept?</h3>
-              <p className="text-black/60 dark:text-white/60">
-                We accept all major credit cards, PayPal, and bank transfers for Enterprise plans.
+            <div className="gradient-border-card p-6 text-left">
+              <h3 className="font-medium text-white mb-2">How is billing handled?</h3>
+              <p className="text-white/60">
+                Paid subscriptions are processed securely through Stripe after you sign in and choose an upgrade.
               </p>
             </div>
-            <div className="border border-black/10 dark:border-white/10 p-6 text-left">
-              <h3 className="font-medium text-black dark:text-white mb-2">Is there a free trial?</h3>
-              <p className="text-black/60 dark:text-white/60">
-                Yes! Professional plan comes with a 14-day free trial. No credit card required.
+            <div className="gradient-border-card p-6 text-left">
+              <h3 className="font-medium text-white mb-2">What is the no-risk way to start?</h3>
+              <p className="text-white/60">
+                Start on the free Starter plan, explore the product, and upgrade only when you are ready for paid verification and billing features.
               </p>
             </div>
           </div>
@@ -315,26 +332,32 @@ export default function PricingPage() {
           transition={{ duration: 0.5, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="mt-16 text-center"
         >
-          <div className="border border-black/10 dark:border-white/10 p-12">
-            <h2 className="text-3xl font-bold text-black dark:text-white mb-4">Ready to get started?</h2>
-            <p className="text-black/60 dark:text-white/60 mb-8">
-              Join thousands of professionals who trust Nexus for skill verification.
+          <div className="gradient-border-card p-12">
+            <h2 className="text-3xl font-bold text-white mb-4">Ready to get started?</h2>
+            <p className="text-white/60 mb-8">
+              Launch with the free plan today and upgrade when you want billing, deeper analytics, and higher-volume verification.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/register">
+              {isSignedIn ? (
                 <Button
                   size="lg"
                   rightIcon={<ArrowRight className="w-5 h-5" />}
-                  onClick={(e: React.MouseEvent) => {
-                    e.preventDefault()
-                    handleCheckout('professional')
-                  }}
+                  onClick={() => handleCheckout('professional')}
                   isLoading={loadingPlan === 'professional'}
                   disabled={loadingPlan !== null}
                 >
-                  Start Free Trial
+                  Upgrade to Professional
                 </Button>
-              </Link>
+              ) : (
+                <Link href="/auth/register">
+                  <Button
+                    size="lg"
+                    rightIcon={<ArrowRight className="w-5 h-5" />}
+                  >
+                    Create Your Account
+                  </Button>
+                </Link>
+              )}
               <Link href="/contact">
                 <Button variant="outline" size="lg">
                   Contact Sales

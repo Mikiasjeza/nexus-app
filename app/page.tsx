@@ -3,7 +3,6 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import * as Sentry from '@sentry/nextjs'
 import { ArrowRight, Brain, Shield, BarChart3, Users, CheckCircle2, Play, Sparkles } from 'lucide-react'
 import { easing } from '@/lib/utils/animations'
 import NexusLogo from '@/components/UI/NexusLogo'
@@ -32,11 +31,11 @@ export default function HomePage() {
   const rotateNexus = useTransform(scrollYProgress, [0, 1], [0, -4])
   const [isMarqueePaused, setIsMarqueePaused] = useState(false)
   const testimonials = [
-    '“Nexus turned my portfolio into proof.” — Product Designer',
-    '“Recruiters finally see evidence, not hype.” — Frontend Engineer',
-    '“The AI feedback gave me a real growth path.” — Data Analyst',
-    '“My skills feel measurable now, not vague.” — PM',
-    '“Best way to show progress over time.” — Developer',
+    'Built for real proof: live passports, verification, and shareable credibility.',
+    'Guests can explore the platform before creating an account.',
+    'Upgrade only when you need billing-backed premium verification features.',
+    'Analytics, skills, and marketplace stay connected in one flow.',
+    'Stripe, health checks, and deploy tooling are wired for production.',
   ]
 
   return (

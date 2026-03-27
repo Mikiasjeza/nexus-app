@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { Stats, Activity, SkillInsight } from '@/lib/types'
-import { skillsApi } from '@/lib/api'
+import { Stats, Activity, SkillInsight, User } from '@/lib/types'
+import { authApi, skillsApi } from '@/lib/api'
 import { useSkills } from '@/lib/hooks/useSkills'
 import Loader from '@/components/UI/Loader'
 import { motion } from 'framer-motion'
@@ -40,6 +40,8 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<SkillInsight[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const isGuestPreview = user?.id === 'guest-user'
 
   // Memoize data loading function to prevent unnecessary re-renders
   const loadData = useCallback(async () => {
@@ -69,6 +71,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData()
+    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
   }, [loadData])
 
   if (loading || skillsLoading) {
@@ -157,6 +160,11 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
+            {isGuestPreview && (
+              <div className="mt-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
+                You are browsing a guest preview with sample signals and read-only product data. Sign in or create an account to track your real progress.
+              </div>
+            )}
           </div>
         </motion.div>
 
