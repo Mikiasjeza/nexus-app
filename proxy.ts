@@ -38,7 +38,7 @@ const AUTH_ROUTES = ['/auth/login', '/auth/register']
 
 function isPublicPath(pathname: string): boolean {
   if (pathname === '/') return true
-  return PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p))
+  return PUBLIC_PATHS.some(p => p !== '/' && (pathname === p || pathname.startsWith(p)))
 }
 
 function isAuthRoute(pathname: string): boolean {
