@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
         title: 'Reset Link Sent',
         message: 'Check your email for password reset instructions.',
       })
-    } catch (err) {
+    } catch {
       addToast({
         type: 'error',
         title: 'Error',

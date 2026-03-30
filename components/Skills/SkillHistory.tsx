@@ -10,7 +10,7 @@ interface SkillHistoryProps {
   skillName: string
 }
 
-export default function SkillHistory({ history, skillName }: SkillHistoryProps) {
+export default function SkillHistory({ history }: SkillHistoryProps) {
   if (history.length === 0) {
     return (
       <div className="text-center py-8 text-black/60 dark:text-white/60">

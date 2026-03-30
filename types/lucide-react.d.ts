@@ -1,5 +1,5 @@
 declare module 'lucide-react' {
-  import { Component, ReactNode, FC } from 'react';
+  import { FC } from 'react';
   
   export interface IconProps {
     className?: string;

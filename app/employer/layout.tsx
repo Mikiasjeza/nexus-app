@@ -12,7 +12,6 @@ export default function EmployerLayout({
   const pathname = usePathname()
   const router = useRouter()
   const [checking, setChecking] = useState(true)
-  const [hasCompany, setHasCompany] = useState(false)
 
   useEffect(() => {
     if (pathname?.startsWith('/employer/signup')) {
@@ -24,7 +23,7 @@ export default function EmployerLayout({
       .then((r) => r.json())
       .then((data) => {
         if (data.company) {
-          setHasCompany(true)
+          return
         } else {
           router.replace('/employer/signup')
         }

@@ -3,7 +3,7 @@
 import { Skill } from '@/lib/types'
 import { LEVEL_COLORS, LEVEL_LABELS, CATEGORY_COLORS } from '@/lib/utils/constants'
 import { motion } from 'framer-motion'
-import { Edit2, Trash2, CheckCircle2, Circle, TrendingUp } from 'lucide-react'
+import { Edit2, Trash2, CheckCircle2, TrendingUp } from 'lucide-react'
 import ProgressBar from '../UI/ProgressBar'
 import AnimatedCard from '../UI/AnimatedCard'
 import { format } from 'date-fns'

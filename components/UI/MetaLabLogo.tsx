@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { easing } from '@/lib/utils/animations'
 
 /**
  * MetaLab-style 3D logo animation

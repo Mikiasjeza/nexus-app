@@ -80,9 +80,33 @@ const goals = [
 ]
 
 const initialSkills = [
-  'JavaScript', 'Python', 'React', 'TypeScript', 'Node.js',
-  'Design', 'Leadership', 'Communication', 'Problem Solving',
+  {
+    label: 'Engineering',
+    skills: ['JavaScript', 'TypeScript', 'React', 'Next.js', 'Node.js', 'Python', 'Java', 'SQL'],
+  },
+  {
+    label: 'Data & AI',
+    skills: ['Data Analysis', 'Machine Learning', 'Prompt Engineering', 'Power BI', 'Tableau', 'Excel'],
+  },
+  {
+    label: 'Design & Product',
+    skills: ['UI Design', 'UX Research', 'Figma', 'Product Strategy', 'Wireframing', 'Accessibility'],
+  },
+  {
+    label: 'Business & Growth',
+    skills: ['Project Management', 'Marketing', 'Sales', 'Operations', 'Customer Success', 'Analytics'],
+  },
+  {
+    label: 'Leadership',
+    skills: ['Leadership', 'Communication', 'Problem Solving', 'Coaching', 'Public Speaking', 'Negotiation'],
+  },
 ]
+
+const MAX_ONBOARDING_SKILLS = 15
+
+function normalizeSkillName(skill: string) {
+  return skill.trim().replace(/\s+/g, ' ')
+}
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -90,6 +114,10 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedGoals, setSelectedGoals] = useState<string[]>([])
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
+  const [customSkill, setCustomSkill] = useState('')
+  const [customSkillError, setCustomSkillError] = useState<string | null>(null)
+  const [completionError, setCompletionError] = useState<string | null>(null)
+  const [isCompleting, setIsCompleting] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
 
   const handleGoalToggle = (goalId: string) => {
@@ -101,18 +129,57 @@ export default function OnboardingPage() {
   }
 
   const handleSkillToggle = (skill: string) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) 
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
-    )
+    const normalizedSkill = normalizeSkillName(skill)
+    setCustomSkillError(null)
+    setSelectedSkills(prev => {
+      const hasSkill = prev.some(existing => existing.toLowerCase() === normalizedSkill.toLowerCase())
+
+      if (hasSkill) {
+        return prev.filter(existing => existing.toLowerCase() !== normalizedSkill.toLowerCase())
+      }
+
+      if (prev.length >= MAX_ONBOARDING_SKILLS) {
+        setCustomSkillError(`Choose up to ${MAX_ONBOARDING_SKILLS} skills for now.`)
+        return prev
+      }
+
+      return [...prev, normalizedSkill]
+    })
   }
 
-  const handleNext = () => {
+  const handleCustomSkillAdd = () => {
+    const normalizedSkill = normalizeSkillName(customSkill)
+
+    if (!normalizedSkill) {
+      setCustomSkillError('Type a skill name first.')
+      return
+    }
+
+    if (normalizedSkill.length < 2) {
+      setCustomSkillError('Skill names should be at least 2 characters.')
+      return
+    }
+
+    if (selectedSkills.some(skill => skill.toLowerCase() === normalizedSkill.toLowerCase())) {
+      setCustomSkillError('That skill is already selected.')
+      return
+    }
+
+    if (selectedSkills.length >= MAX_ONBOARDING_SKILLS) {
+      setCustomSkillError(`Choose up to ${MAX_ONBOARDING_SKILLS} skills for now.`)
+      return
+    }
+
+    setSelectedSkills(prev => [...prev, normalizedSkill])
+    setCustomSkill('')
+    setCustomSkillError(null)
+  }
+
+  const handleNext = async () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1)
     } else {
-      handleComplete()
+      await handleComplete()
     }
   }
 
@@ -123,25 +190,54 @@ export default function OnboardingPage() {
   }
 
   const handleComplete = async () => {
-    setShowConfetti(true)
-    addToast({
-      type: 'success',
-      title: 'Welcome to Nexus!',
-      message: 'Your account is set up. Start adding skills to get verified.',
-    })
     try {
-      await fetch('/api/auth/onboarding', {
+      setIsCompleting(true)
+      setCompletionError(null)
+
+      const response = await fetch('/api/auth/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ goals: selectedGoals, skills: selectedSkills }),
       })
-    } catch {
-      // Non-blocking: user can still proceed
+
+      if (response.status === 401) {
+        router.replace('/auth/login?next=/onboarding')
+        return
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(
+          typeof data?.error === 'string'
+            ? data.error
+            : 'We could not finish onboarding. Please try again.'
+        )
+      }
+
+      setShowConfetti(true)
+      addToast({
+        type: 'success',
+        title: 'Welcome to Nexus!',
+        message: 'Your profile is ready. Opening your dashboard now.',
+      })
+
+      await new Promise(resolve => window.setTimeout(resolve, 1200))
+      router.replace('/dashboard')
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'We could not finish onboarding. Please try again.'
+      setCompletionError(message)
+      addToast({
+        type: 'error',
+        title: 'Onboarding could not finish',
+        message,
+      })
+    } finally {
+      setIsCompleting(false)
     }
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 2000)
   }
 
   const canProceed = () => {
@@ -288,28 +384,95 @@ export default function OnboardingPage() {
                   </div>
                   <h2 className="text-3xl font-bold text-white mb-2">Add Your Skills</h2>
                   <p className="text-white/60">
-                    Select your skills (you can add more later)
+                    Choose from the list below or add your own custom skills
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-3 justify-center">
-                  {initialSkills.map((skill) => (
-                    <motion.button
-                      key={skill}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleSkillToggle(skill)}
-                      className={`px-4 py-2 rounded-full font-medium transition-all ${
-                        selectedSkills.includes(skill)
-                          ? 'bg-white text-black'
-                          : 'bg-white/5 text-white/75 hover:bg-white/10'
-                      }`}
-                    >
-                      {skill}
-                    </motion.button>
-                  ))}
+                <div className="max-w-3xl mx-auto">
+                  <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="flex flex-col gap-3 md:flex-row">
+                      <input
+                        type="text"
+                        value={customSkill}
+                        onChange={(event) => {
+                          setCustomSkill(event.target.value)
+                          if (customSkillError) {
+                            setCustomSkillError(null)
+                          }
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            event.preventDefault()
+                            handleCustomSkillAdd()
+                          }
+                        }}
+                        className="min-h-[48px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none transition focus:border-cyan-300/60"
+                        placeholder="Add your own skill, like Salesforce, C++, or Recruiting"
+                      />
+                      <Button type="button" onClick={handleCustomSkillAdd}>
+                        Add Skill
+                      </Button>
+                    </div>
+                    {customSkillError && (
+                      <p className="mt-3 text-sm text-rose-300">{customSkillError}</p>
+                    )}
+                  </div>
+
+                  {selectedSkills.length > 0 && (
+                    <div className="mb-6">
+                      <div className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-white/45">
+                        Selected skills
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        {selectedSkills.map((skill) => (
+                          <button
+                            key={skill}
+                            type="button"
+                            onClick={() => handleSkillToggle(skill)}
+                            className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-white transition hover:border-cyan-200 hover:bg-cyan-300/15"
+                          >
+                            {skill} x
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-5">
+                    {initialSkills.map((group) => (
+                      <div key={group.label}>
+                        <div className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-white/45">
+                          {group.label}
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          {group.skills.map((skill) => {
+                            const isSelected = selectedSkills.some(
+                              selectedSkill => selectedSkill.toLowerCase() === skill.toLowerCase()
+                            )
+
+                            return (
+                              <motion.button
+                                key={skill}
+                                type="button"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleSkillToggle(skill)}
+                                className={`px-4 py-2 rounded-full font-medium transition-all ${
+                                  isSelected
+                                    ? 'bg-white text-black'
+                                    : 'bg-white/5 text-white/75 hover:bg-white/10'
+                                }`}
+                              >
+                                {skill}
+                              </motion.button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <p className="text-center text-sm text-white/45 mt-6">
-                  Selected: {selectedSkills.length} skills
+                  Selected: {selectedSkills.length} of {MAX_ONBOARDING_SKILLS} skills
                 </p>
               </motion.div>
             )}
@@ -337,6 +500,11 @@ export default function OnboardingPage() {
                   Your Nexus profile is ready. Start adding more skills, get verified, 
                   and discover career opportunities matched to your profile.
                 </p>
+                {completionError && (
+                  <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                    {completionError}
+                  </div>
+                )}
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
                   <AnimatedCard className="p-4">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
@@ -361,7 +529,7 @@ export default function OnboardingPage() {
               variant="outline"
               leftIcon={<ArrowLeft className="w-5 h-5" />}
               onClick={handleBack}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isCompleting}
             >
               Back
             </Button>
@@ -371,7 +539,8 @@ export default function OnboardingPage() {
             <Button
               rightIcon={currentStep === steps.length ? undefined : <ArrowRight className="w-5 h-5" />}
               onClick={handleNext}
-              disabled={!canProceed()}
+              isLoading={isCompleting}
+              disabled={!canProceed() || isCompleting}
             >
               {currentStep === steps.length ? 'Get Started' : 'Next'}
             </Button>

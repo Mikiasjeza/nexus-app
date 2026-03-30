@@ -59,7 +59,8 @@ export const authApi = {
     })
   },
 
-  verifyEmail: async (_token: string): Promise<void> => {
+  verifyEmail: async (token: string): Promise<void> => {
+    void token
     await Promise.resolve()
   },
 

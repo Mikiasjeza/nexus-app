@@ -64,7 +64,7 @@ export const env = {
   },
   ai: {
     provider: process.env.AI_PROVIDER || 'openai',
-    model: process.env.AI_MODEL || 'gpt-4-turbo-preview',
+    model: process.env.AI_MODEL || 'gpt-4o-mini',
     openAiKey: process.env.OPENAI_API_KEY || '',
     anthropicKey: process.env.ANTHROPIC_API_KEY || '',
   },

@@ -4,7 +4,6 @@ import { Skill } from '@/lib/types'
 import { LEVEL_COLORS, LEVEL_LABELS } from '@/lib/utils/constants'
 import { motion } from 'framer-motion'
 import { format } from 'date-fns'
-import { easing } from '@/lib/utils/animations'
 
 interface TimelineViewProps {
   skills: Skill[]

@@ -5,14 +5,6 @@ import Link from 'next/link'
 import { ArrowRight, Target, Shield, Globe, Zap, Users, Sparkles } from 'lucide-react'
 import { easing } from '@/lib/utils/animations'
 
-// MetaLab scroll animation pattern
-const metalabScroll = {
-  initial: { opacity: 0, y: 40 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-100px' },
-  transition: { duration: 0.8, ease: easing.primary },
-}
-
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-black">

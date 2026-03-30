@@ -71,7 +71,7 @@ function ResetPasswordPageContent() {
         message: 'Your password has been reset successfully.',
       })
       router.push('/auth/login')
-    } catch (err) {
+    } catch {
       addToast({
         type: 'error',
         title: 'Error',

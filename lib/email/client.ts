@@ -80,6 +80,7 @@ class EmailService {
   }
 
   private async sendWithSendGrid(options: EmailOptions): Promise<void> {
+    void options
     // TODO: Implement SendGrid
     // const sgMail = require('@sendgrid/mail')
     // sgMail.setApiKey(process.env.SENDGRID_API_KEY)

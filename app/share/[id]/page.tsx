@@ -8,16 +8,7 @@ import { Globe, User as UserIcon, Share2, Download, CheckCircle2, TrendingUp } f
 import Loader from '@/components/UI/Loader'
 import { LEVEL_COLORS, LEVEL_LABELS } from '@/lib/utils/constants'
 import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
 import { easing } from '@/lib/utils/animations'
-
-// MetaLab scroll animation pattern
-const metalabScroll = {
-  initial: { opacity: 0, y: 40 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-100px' },
-  transition: { duration: 0.8, ease: easing.primary },
-}
 
 export default function SharePage() {
   const params = useParams()

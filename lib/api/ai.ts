@@ -27,6 +27,8 @@ export interface AnalyzeResponse {
   success: boolean
   data: {
     id: string
+    skillId: string
+    skillName: string
     confidenceScore: number
     explanation: string
     suggestedLevel?: SkillLevel
@@ -34,7 +36,29 @@ export interface AnalyzeResponse {
     tokensUsed: number
     cost: number
     model: string
+    verified: boolean
+    createdAt: string
   }
+}
+
+export interface AnalysisHistoryItem {
+  id: string
+  skillId: string
+  skillName: string
+  skillLevel: SkillLevel
+  confidenceScore: number
+  explanation: string
+  suggestedLevel?: SkillLevel
+  improvements: string[]
+  tokensUsed: number | null
+  cost: number | null
+  model: string
+  verified: boolean
+  createdAt: string
+}
+
+export interface AnalysisHistoryResponse {
+  data: AnalysisHistoryItem[]
 }
 
 export const aiApi = {
@@ -43,5 +67,10 @@ export const aiApi = {
       method: 'POST',
       body: JSON.stringify(payload),
     })
+  },
+
+  getHistory: async (limit = 6): Promise<AnalysisHistoryItem[]> => {
+    const response = await fetchApi<AnalysisHistoryResponse>(`/api/ai/analyze?limit=${limit}`)
+    return response.data
   },
 }

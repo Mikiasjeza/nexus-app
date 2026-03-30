@@ -53,7 +53,6 @@ export function useScrollMotion() {
  * Returns progress of element through viewport
  */
 export function useElementScrollProgress(ref: React.RefObject<HTMLElement>) {
-  const { scrollY } = useScrollMotion()
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {

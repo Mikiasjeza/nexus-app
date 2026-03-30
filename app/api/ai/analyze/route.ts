@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { getSessionUserId, hasGuestPreviewSession } from '@/lib/auth/session'
 import { aiClient, EvidenceInput } from '@/lib/ai/client'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
@@ -45,6 +45,66 @@ const AI_ANALYSIS_LIMITS: Record<string, number> = {
   free: 10,
   pro: 50,
   enterprise: -1,
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    if (env.isGuestMode || await hasGuestPreviewSession()) {
+      return NextResponse.json({ data: [] })
+    }
+
+    const userId = await getSessionUserId()
+    if (!userId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const limitParam = Number(request.nextUrl.searchParams.get('limit') || '6')
+    const limit = Number.isFinite(limitParam)
+      ? Math.max(1, Math.min(12, Math.floor(limitParam)))
+      : 6
+
+    const analyses = await prisma.aIAnalysis.findMany({
+      where: { userId },
+      include: {
+        skill: {
+          select: {
+            id: true,
+            name: true,
+            level: true,
+            verified: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    })
+
+    return NextResponse.json({
+      data: analyses.map((analysis) => ({
+        id: analysis.id,
+        skillId: analysis.skillId,
+        skillName: analysis.skill.name,
+        skillLevel: analysis.skill.level,
+        confidenceScore: analysis.confidenceScore,
+        explanation: analysis.explanation,
+        suggestedLevel: analysis.suggestedLevel,
+        improvements: analysis.improvements,
+        tokensUsed: analysis.tokensUsed,
+        cost: analysis.cost,
+        model: analysis.model,
+        verified: analysis.skill.verified,
+        createdAt: analysis.createdAt.toISOString(),
+      })),
+    })
+  } catch (e) {
+    console.error('AI analysis history error:', e)
+    const dbErr = dbErrorResponse(e)
+    if (dbErr) return dbErr
+    return NextResponse.json(
+      { error: 'Failed to load AI analyses' },
+      { status: 500 }
+    )
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -113,8 +173,8 @@ export async function POST(request: NextRequest) {
 
     const result = (await Promise.race([
       aiClient.analyzeEvidence(
-        validated.skillName,
-        validated.skillLevel,
+        skill.name,
+        skill.level,
         validated.evidence as EvidenceInput[],
         validated.provider
       ),
@@ -123,33 +183,62 @@ export async function POST(request: NextRequest) {
       }),
     ])) as Awaited<ReturnType<typeof aiClient.analyzeEvidence>>
 
-    const analysis = await prisma.aIAnalysis.create({
-      data: {
-        skillId: validated.skillId,
-        userId,
-        evidenceId: validated.evidenceId ?? null,
-        model: result.model,
-        confidenceScore: result.confidenceScore,
-        explanation: result.explanation,
-        suggestedLevel: result.suggestedLevel ?? null,
-        improvements: result.improvements,
-        rawResponse: result.rawResponse ? JSON.parse(JSON.stringify(result.rawResponse)) : null,
-        tokensUsed: result.tokensUsed,
-        cost: result.cost,
-      },
+    const analysis = await prisma.$transaction(async (tx) => {
+      const createdAnalysis = await tx.aIAnalysis.create({
+        data: {
+          skillId: validated.skillId,
+          userId,
+          evidenceId: validated.evidenceId ?? null,
+          model: result.model,
+          confidenceScore: result.confidenceScore,
+          explanation: result.explanation,
+          suggestedLevel: result.suggestedLevel ?? null,
+          improvements: result.improvements,
+          rawResponse: result.rawResponse ? JSON.parse(JSON.stringify(result.rawResponse)) : null,
+          tokensUsed: result.tokensUsed,
+          cost: result.cost,
+        },
+      })
+
+      const shouldVerifySkill = result.confidenceScore >= 0.8
+      let verified = skill.verified
+
+      if (shouldVerifySkill && !skill.verified) {
+        await tx.skill.update({
+          where: { id: skill.id },
+          data: { verified: true },
+        })
+        verified = true
+
+        await tx.activity.create({
+          data: {
+            userId,
+            type: 'skill_updated',
+            skillId: skill.id,
+            skillName: skill.name,
+            message: `AI verified ${skill.name}`,
+          },
+        })
+      }
+
+      return { createdAnalysis, verified }
     })
 
     return NextResponse.json({
       success: true,
       data: {
-        id: analysis.id,
-        confidenceScore: analysis.confidenceScore,
-        explanation: analysis.explanation,
-        suggestedLevel: analysis.suggestedLevel,
-        improvements: analysis.improvements,
-        tokensUsed: analysis.tokensUsed,
-        cost: analysis.cost,
-        model: analysis.model,
+        id: analysis.createdAnalysis.id,
+        skillId: skill.id,
+        skillName: skill.name,
+        confidenceScore: analysis.createdAnalysis.confidenceScore,
+        explanation: analysis.createdAnalysis.explanation,
+        suggestedLevel: analysis.createdAnalysis.suggestedLevel,
+        improvements: analysis.createdAnalysis.improvements,
+        tokensUsed: analysis.createdAnalysis.tokensUsed,
+        cost: analysis.createdAnalysis.cost,
+        model: analysis.createdAnalysis.model,
+        verified: analysis.verified,
+        createdAt: analysis.createdAnalysis.createdAt.toISOString(),
       },
     })
   } catch (e) {

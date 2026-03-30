@@ -129,6 +129,10 @@ class StorageService {
     mimeType: string,
     folder?: string
   ): Promise<UploadResult> {
+    void file
+    void fileName
+    void mimeType
+    void folder
     // TODO: Implement Cloudinary upload
     // const cloudinary = require('cloudinary').v2
     // cloudinary.config({
@@ -177,6 +181,7 @@ class StorageService {
    * Delete file from storage
    */
   async deleteFile(key: string): Promise<void> {
+    void key
     // TODO: Implement file deletion
     throw new Error('File deletion not yet implemented')
   }

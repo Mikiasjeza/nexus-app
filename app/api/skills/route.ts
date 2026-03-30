@@ -51,7 +51,6 @@ export async function POST(request: Request) {
       verified = false,
       visibility = 'public',
       status = 'published',
-      evidence = [],
     } = body
 
     if (!name || !level || !category) {

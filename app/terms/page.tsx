@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Shield, FileText } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import AnimatedCard from '@/components/UI/AnimatedCard'
 import { easing } from '@/lib/utils/animations'
 

@@ -18,7 +18,9 @@ jest.mock('@/lib/hooks/useSkills', () => ({
 }))
 
 jest.mock('@/lib/api', () => ({
-  authApi: {},
+  authApi: {
+    getCurrentUser: jest.fn().mockResolvedValue(null),
+  },
   skillsApi: {
     getStats: jest.fn().mockRejectedValue(new Error('Not authenticated')),
     getActivities: jest.fn().mockResolvedValue([]),
