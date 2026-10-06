@@ -99,7 +99,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "engines": {
-    "node": "20.x",
+    "node": "24.x",
     "npm": ">=9.0.0"
   },
   "browserslist": {
