@@ -4,8 +4,8 @@
 --
 -- AIAnalysis.rawResponse held the AI provider's full response "for debugging";
 -- the app only needs the parsed score/explanation/suggestions.
-ALTER TABLE "AIAnalysis" DROP COLUMN IF EXISTS "rawResponse";
+ALTER TABLE IF EXISTS "AIAnalysis" DROP COLUMN IF EXISTS "rawResponse";
 
 -- OAuthConnection tokens were stored in plaintext and never used after sign-in.
-ALTER TABLE "OAuthConnection" DROP COLUMN IF EXISTS "accessToken";
-ALTER TABLE "OAuthConnection" DROP COLUMN IF EXISTS "refreshToken";
+ALTER TABLE IF EXISTS "OAuthConnection" DROP COLUMN IF EXISTS "accessToken";
+ALTER TABLE IF EXISTS "OAuthConnection" DROP COLUMN IF EXISTS "refreshToken";
