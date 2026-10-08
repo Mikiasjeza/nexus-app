@@ -23,9 +23,17 @@ export default function Error({
           <AlertCircle className="h-8 w-8 text-red-300" />
         </div>
 
-        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-white">Something went wrong</h1>
-        <p className="mb-2 text-sm text-white/60">{error.message || 'An unexpected error occurred'}</p>
-        {error.digest ? <p className="mb-8 font-mono text-xs text-white/40">ID · {error.digest}</p> : <div className="mb-8" />}
+        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-white">
+          Something went wrong
+        </h1>
+        <p className="mb-2 text-sm text-white/60">
+          {error.message || 'An unexpected error occurred'}
+        </p>
+        {error.digest ? (
+          <p className="mb-8 font-mono text-xs text-white/40">ID · {error.digest}</p>
+        ) : (
+          <div className="mb-8" />
+        )}
 
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <button

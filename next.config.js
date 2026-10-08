@@ -6,7 +6,9 @@ const raw = (process.env.NEXT_PUBLIC_APP_URL || '').trim()
 const isValidUrl = raw && (raw.startsWith('http://') || raw.startsWith('https://'))
 const validAppUrl = isValidUrl
   ? raw
-  : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus.ai')
+  : process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'https://nexus.ai'
 
 const nextConfig = {
   env: {
@@ -14,7 +16,7 @@ const nextConfig = {
     NEXT_PUBLIC_APP_URL: validAppUrl,
   },
   reactStrictMode: true,
-  
+
   // Image optimization
   images: {
     remotePatterns: [
@@ -42,19 +44,22 @@ const nextConfig = {
       },
     },
   },
-  
+
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
-  
+
   // Optimize production builds
   productionBrowserSourceMaps: false,
 
   // Compiler options
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'],
-    } : false,
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? {
+            exclude: ['error', 'warn'],
+          }
+        : false,
   },
 
   // Headers for security and performance
@@ -65,31 +70,31 @@ const nextConfig = {
         headers: [
           {
             key: 'X-DNS-Prefetch-Control',
-            value: 'on'
+            value: 'on',
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload'
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
             key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
+            value: 'SAMEORIGIN',
           },
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            value: 'nosniff',
           },
           {
             key: 'X-XSS-Protection',
-            value: '1; mode=block'
+            value: '1; mode=block',
           },
           {
             key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin',
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()'
+            value: 'camera=(), microphone=(), geolocation=()',
           },
           {
             key: 'Content-Security-Policy',
@@ -111,8 +116,8 @@ const nextConfig = {
               "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self'",
-            ].join('; ')
-          }
+            ].join('; '),
+          },
         ],
       },
     ]
@@ -129,19 +134,16 @@ const nextConfig = {
         tls: false,
       }
     }
-    
+
     // Limit watcher ignores to development-safe paths.
     // Avoid environment-specific folders that can break cloud builds.
     if (dev) {
       config.watchOptions = {
         ...config.watchOptions,
-        ignored: [
-          '**/node_modules/**',
-          '**/.next/**',
-        ],
+        ignored: ['**/node_modules/**', '**/.next/**'],
       }
     }
-    
+
     // Performance optimizations
     if (!dev && !isServer) {
       config.optimization = {
@@ -169,7 +171,7 @@ const nextConfig = {
         },
       }
     }
-    
+
     return config
   },
 
@@ -180,21 +182,20 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-
 }
 
 module.exports = nextConfig
 
 // Injected content via Sentry wizard below
 
-const { withSentryConfig } = require("@sentry/nextjs");
+const { withSentryConfig } = require('@sentry/nextjs')
 
 module.exports = withSentryConfig(module.exports, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-  org: "nexus-ki",
-  project: "javascript-nextjs",
+  org: 'nexus-ki',
+  project: 'javascript-nextjs',
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
@@ -210,7 +211,7 @@ module.exports = withSentryConfig(module.exports, {
   // This can increase your server load as well as your hosting bill.
   // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
   // side errors will fail.
-  tunnelRoute: "/monitoring",
+  tunnelRoute: '/monitoring',
 
   webpack: {
     // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
@@ -225,4 +226,4 @@ module.exports = withSentryConfig(module.exports, {
       removeDebugLogging: true,
     },
   },
-});
+})

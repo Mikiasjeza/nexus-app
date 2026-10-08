@@ -2,7 +2,17 @@
 
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronDown, Sparkles, Users, Building2, Zap, Shield, Lock, ArrowRight } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  Sparkles,
+  Users,
+  Building2,
+  Zap,
+  Shield,
+  Lock,
+  ArrowRight,
+} from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/components/UI/Button'
 import { PLAN_INFO, formatPlanPrice } from '@/lib/plans'
@@ -86,7 +96,10 @@ export default function PricingPage() {
     )
 
   useEffect(() => {
-    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+    authApi
+      .getCurrentUser()
+      .then(setUser)
+      .catch(() => setUser(null))
   }, [])
 
   const handleCheckout = async (planId: 'professional' | 'enterprise') => {
@@ -121,10 +134,13 @@ export default function PricingPage() {
             <div className="hero-kicker mx-auto mb-6 inline-flex">Flexible pricing</div>
             <h1 className="mx-auto mb-4 max-w-[12ch] text-4xl font-semibold tracking-tight text-white md:mb-6 md:max-w-none md:text-6xl">
               Choose your{' '}
-              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">plan</span>
+              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">
+                plan
+              </span>
             </h1>
             <p className="text-base md:text-lg text-white/68 max-w-[42ch] md:max-w-3xl mx-auto">
-              Start with the free plan, prove your capabilities, and upgrade when you are ready for paid verification and billing features.
+              Start with the free plan, prove your capabilities, and upgrade when you are ready for
+              paid verification and billing features.
             </p>
             <div className="mt-6 text-sm text-white/58">
               {isSignedIn
@@ -140,11 +156,7 @@ export default function PricingPage() {
           transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="grid sm:grid-cols-3 gap-3 mb-10"
         >
-          {[
-            'Solo builders',
-            'Growing professionals',
-            'Hiring teams',
-          ].map((item) => (
+          {['Solo builders', 'Growing professionals', 'Hiring teams'].map((item) => (
             <div key={item} className="insight-card px-4 py-3 text-sm text-white/72 text-center">
               {item}
             </div>
@@ -170,10 +182,15 @@ export default function PricingPage() {
                   <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                   <div className="mb-4">
                     <span className="text-4xl font-bold text-white">{plan.displayPrice}</span>
-                    {plan.period && <span className="text-white/60"> {plan.period === 'forever' ? 'forever' : `/ ${plan.period}`}</span>}
+                    {plan.period && (
+                      <span className="text-white/60">
+                        {' '}
+                        {plan.period === 'forever' ? 'forever' : `/ ${plan.period}`}
+                      </span>
+                    )}
                   </div>
                   <p className="text-white/60 mb-6">{plan.description}</p>
-                  
+
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3">
@@ -219,8 +236,8 @@ export default function PricingPage() {
                         </Link>
                       )}
                       <p className="text-xs leading-relaxed text-white/50">
-                        {plan.displayPrice}/month plus applicable tax, billed when you subscribe and renewing monthly
-                        until you cancel. Cancel any time in Settings.
+                        {plan.displayPrice}/month plus applicable tax, billed when you subscribe and
+                        renewing monthly until you cancel. Cancel any time in Settings.
                       </p>
                     </div>
                   )}
@@ -324,12 +341,18 @@ export default function PricingPage() {
                   Upgrade to Professional
                 </Button>
               ) : (
-                <Link href="/auth/register" className="button-base button-primary min-h-[48px] rounded-lg px-5 text-base">
+                <Link
+                  href="/auth/register"
+                  className="button-base button-primary min-h-[48px] rounded-lg px-5 text-base"
+                >
                   Create Your Account
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               )}
-              <Link href="/contact" className="button-base button-secondary min-h-[48px] rounded-lg px-5 text-base">
+              <Link
+                href="/contact"
+                className="button-base button-secondary min-h-[48px] rounded-lg px-5 text-base"
+              >
                 Contact Sales
               </Link>
             </div>

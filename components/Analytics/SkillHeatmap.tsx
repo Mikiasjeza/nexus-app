@@ -12,16 +12,19 @@ interface SkillHeatmapProps {
 }
 
 export default function SkillHeatmap({ skills, type = 'category' }: SkillHeatmapProps) {
-  const grouped = skills.reduce((acc, skill) => {
-    const key = type === 'category' ? normalizeSkillCategory(skill.category) : skill.level
-    if (!acc[key]) {
-      acc[key] = []
-    }
-    acc[key].push(skill)
-    return acc
-  }, {} as Record<string, Skill[]>)
+  const grouped = skills.reduce(
+    (acc, skill) => {
+      const key = type === 'category' ? normalizeSkillCategory(skill.category) : skill.level
+      if (!acc[key]) {
+        acc[key] = []
+      }
+      acc[key].push(skill)
+      return acc
+    },
+    {} as Record<string, Skill[]>
+  )
 
-  const maxCount = Math.max(...Object.values(grouped).map(g => g.length), 1)
+  const maxCount = Math.max(...Object.values(grouped).map((g) => g.length), 1)
 
   return (
     <AnimatedCard className="p-6">
@@ -30,12 +33,13 @@ export default function SkillHeatmap({ skills, type = 'category' }: SkillHeatmap
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {Object.entries(grouped).map(([key, skillList], index) => {
-          const color = type === 'category' 
-            ? CATEGORY_COLORS[key as keyof typeof CATEGORY_COLORS]
-            : LEVEL_COLORS[key as keyof typeof LEVEL_COLORS]
-          
+          const color =
+            type === 'category'
+              ? CATEGORY_COLORS[key as keyof typeof CATEGORY_COLORS]
+              : LEVEL_COLORS[key as keyof typeof LEVEL_COLORS]
+
           const intensity = skillList.length / maxCount
-          
+
           return (
             <motion.div
               key={key}
@@ -47,7 +51,9 @@ export default function SkillHeatmap({ skills, type = 'category' }: SkillHeatmap
               <div
                 className="p-6 rounded-xl text-center cursor-pointer transition-transform hover:scale-105"
                 style={{
-                  backgroundColor: `${color}${Math.floor(intensity * 15).toString(16).padStart(2, '0')}`,
+                  backgroundColor: `${color}${Math.floor(intensity * 15)
+                    .toString(16)
+                    .padStart(2, '0')}`,
                   border: `2px solid ${color}`,
                 }}
               >

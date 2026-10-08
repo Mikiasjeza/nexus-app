@@ -5,12 +5,12 @@
 // Privacy: no PII, URLs scrubbed (lib/sentry-scrub.ts), and Session Replay is
 // only loaded after the visitor opts in to the "analytics" cookie category.
 
-import * as Sentry from "@sentry/nextjs";
-import { sentryPrivacyOptions } from "@/lib/sentry-scrub";
-import { CONSENT_CHANGED_EVENT, hasConsent, type ConsentChoices } from "@/lib/consent";
+import * as Sentry from '@sentry/nextjs'
+import { sentryPrivacyOptions } from '@/lib/sentry-scrub'
+import { CONSENT_CHANGED_EVENT, hasConsent, type ConsentChoices } from '@/lib/consent'
 
 Sentry.init({
-  dsn: "https://7a3e35930c4c317e018006f3fc868dbb@o4511005851910144.ingest.us.sentry.io/4511005858660352",
+  dsn: 'https://7a3e35930c4c317e018006f3fc868dbb@o4511005851910144.ingest.us.sentry.io/4511005858660352',
 
   ...sentryPrivacyOptions,
 
@@ -21,7 +21,7 @@ Sentry.init({
     Sentry.browserTracingIntegration({
       shouldCreateSpanForRequest: (url) => {
         // Exclude health checks and Sentry tunnel from spans
-        return !url.match(/\/health\/?$/) && !url.match(/\/monitoring\/?/);
+        return !url.match(/\/health\/?$/) && !url.match(/\/monitoring\/?/)
       },
     }),
   ],
@@ -36,21 +36,21 @@ Sentry.init({
   // send it only when an error happens.
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 1.0,
-});
+})
 
 function enableReplay() {
-  if (Sentry.getReplay()) return;
+  if (Sentry.getReplay()) return
   Sentry.addIntegration(
     Sentry.replayIntegration({ maskAllText: true, maskAllInputs: true, blockAllMedia: true })
-  );
+  )
 }
 
-if (hasConsent('analytics')) enableReplay();
+if (hasConsent('analytics')) enableReplay()
 
 window.addEventListener(CONSENT_CHANGED_EVENT, (event) => {
-  const choices = (event as CustomEvent<ConsentChoices>).detail;
-  if (choices.analytics) enableReplay();
-  else void Sentry.getReplay()?.stop();
-});
+  const choices = (event as CustomEvent<ConsentChoices>).detail
+  if (choices.analytics) enableReplay()
+  else void Sentry.getReplay()?.stop()
+})
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart

@@ -37,12 +37,12 @@ export default class ErrorBoundary extends Component<Props, State> {
             <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-6">
               <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
-            
+
             <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => window.location.reload()}
@@ -51,7 +51,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw className="w-5 h-5" />
                 Reload Page
               </button>
-              
+
               <Link
                 href="/dashboard"
                 className="flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-300 dark:border-gray-700 hover:border-primary-500 transition-colors"

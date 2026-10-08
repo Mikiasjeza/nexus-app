@@ -13,7 +13,8 @@ export default function Footer() {
             <NexusLogo size="default" />
           </div>
           <p className="max-w-xl text-[13px] leading-relaxed text-white/45">
-            Nexus turns claims into proof with living skill passports, AI verification, and shareable credibility organized across five skill pillars.
+            Nexus turns claims into proof with living skill passports, AI verification, and
+            shareable credibility organized across five skill pillars.
           </p>
         </div>
 
@@ -24,22 +25,34 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/dashboard" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/dashboard"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Dashboard
                 </Link>
               </li>
               <li>
-                <Link href="/skills" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/skills"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Skills
                 </Link>
               </li>
               <li>
-                <Link href="/verification" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/verification"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Verification
                 </Link>
               </li>
               <li>
-                <Link href="/analytics" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/analytics"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Analytics
                 </Link>
               </li>
@@ -52,22 +65,34 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/about" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/about"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   About
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/pricing"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link href="/marketplace" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/marketplace"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Marketplace
                 </Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/how-it-works"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   How It Works
                 </Link>
               </li>
@@ -80,17 +105,26 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/terms" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/terms"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Terms
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/privacy"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Privacy
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/cookies"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Cookies
                 </Link>
               </li>
@@ -106,7 +140,10 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/contact" className="text-[13px] text-white/58 transition-colors hover:text-white">
+                <Link
+                  href="/contact"
+                  className="text-[13px] text-white/58 transition-colors hover:text-white"
+                >
                   Contact
                 </Link>
               </li>

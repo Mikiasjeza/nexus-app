@@ -23,7 +23,10 @@ export async function GET() {
 
     const rl = rateLimit(`account:export:${userId}`, { maxRequests: 5, windowMs: 60000 })
     if (!rl.allowed) {
-      return NextResponse.json({ error: 'Too many export requests. Try again later.' }, { status: 429 })
+      return NextResponse.json(
+        { error: 'Too many export requests. Try again later.' },
+        { status: 429 }
+      )
     }
 
     const user = await prisma.user.findUnique({
@@ -82,7 +85,11 @@ export async function GET() {
 
     const date = new Date().toISOString().slice(0, 10)
     return new NextResponse(
-      JSON.stringify({ exportedAt: new Date().toISOString(), format: 'nexus-export-v1', account: user }, null, 2),
+      JSON.stringify(
+        { exportedAt: new Date().toISOString(), format: 'nexus-export-v1', account: user },
+        null,
+        2
+      ),
       {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',

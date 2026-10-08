@@ -44,7 +44,8 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
-    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
 
     document.body.style.overflow = 'hidden'
     window.setTimeout(() => dialogRef.current?.focus(), 0)
@@ -82,7 +83,7 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
   const removeTag = (tag: string) => {
     setFormData({
       ...formData,
-      tags: formData.tags.filter(t => t !== tag),
+      tags: formData.tags.filter((t) => t !== tag),
     })
   }
 
@@ -139,7 +140,9 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
                   id="skill-category"
                   required
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value as SkillCategory })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value as SkillCategory })
+                  }
                   className="metalab-input"
                 >
                   {SKILL_CATEGORIES.map((cat) => (
@@ -158,7 +161,9 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
                   id="skill-level"
                   required
                   value={formData.level}
-                  onChange={(e) => setFormData({ ...formData, level: e.target.value as SkillLevel })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, level: e.target.value as SkillLevel })
+                  }
                   className="metalab-input"
                 >
                   {SKILL_LEVELS.map((level) => (
@@ -283,10 +288,7 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="button-base button-primary flex-1"
-              >
+              <button type="submit" className="button-base button-primary flex-1">
                 {skill ? 'Update Skill' : 'Add Skill'}
               </button>
             </div>

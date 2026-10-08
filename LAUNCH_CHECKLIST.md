@@ -5,6 +5,7 @@ Use this checklist before launching Nexus to production.
 ## Pre-Launch
 
 ### Hard Gates (Block Release if Any Fail)
+
 - [ ] `npm run lint` passes
 - [ ] `npm run type-check` passes
 - [ ] `npm test -- --runInBand` passes
@@ -16,6 +17,7 @@ Use this checklist before launching Nexus to production.
 - [ ] `npm run smoke:prod` passes against production URL
 
 ### Configuration
+
 - [ ] All environment variables configured in production
 - [ ] `GUEST_MODE` is unset or explicitly `false` in production
 - [ ] Database connection configured (when backend is ready)
@@ -27,6 +29,7 @@ Use this checklist before launching Nexus to production.
 - [ ] SSL/HTTPS certificate installed
 
 ### Security
+
 - [ ] Security headers verified (CSP, HSTS, etc.)
 - [ ] Rate limiting configured
 - [ ] Input validation tested
@@ -40,6 +43,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Security audit completed
 
 ### Performance
+
 - [ ] Production build tested
 - [ ] Image optimization verified
 - [ ] Code splitting working
@@ -50,6 +54,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Database queries optimized (when ready)
 
 ### Functionality
+
 - [ ] All features tested
 - [ ] Authentication flow tested
 - [ ] Unauthenticated protected-route access redirects to `/auth/login`
@@ -63,6 +68,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Edge cases handled
 
 ### Content
+
 - [ ] Privacy policy reviewed and accurate
 - [ ] Terms of service reviewed and accurate
 - [ ] About page content accurate
@@ -73,6 +79,7 @@ Use this checklist before launching Nexus to production.
 - [ ] GDPR compliance verified (if applicable)
 
 ### SEO & Analytics
+
 - [ ] Meta tags configured
 - [ ] Open Graph tags configured
 - [ ] Sitemap generated and submitted
@@ -83,6 +90,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Social sharing previews tested
 
 ### Monitoring & Logging
+
 - [ ] Error tracking configured (Sentry, etc.)
 - [ ] Application logging configured
 - [ ] Health checks configured (`/api/health`)
@@ -92,6 +100,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Log retention policy set
 
 ### Backup & Recovery
+
 - [ ] Database backup strategy in place
 - [ ] Backup restoration tested
 - [ ] Disaster recovery plan documented
@@ -99,6 +108,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Data export functionality tested
 
 ### Documentation
+
 - [ ] README.md updated
 - [ ] API documentation complete
 - [ ] Deployment guide complete
@@ -107,6 +117,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Internal documentation updated
 
 ### Testing
+
 - [ ] Unit tests written (when implemented)
 - [ ] Integration tests written (when implemented)
 - [ ] E2E tests written (when implemented)
@@ -116,6 +127,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Accessibility testing completed
 
 ### Compliance
+
 - [ ] GDPR compliance (if applicable)
 - [ ] CCPA compliance (if applicable)
 - [ ] Privacy policy accessible
@@ -125,6 +137,7 @@ Use this checklist before launching Nexus to production.
 - [ ] User data rights implemented
 
 ### Marketing
+
 - [ ] Landing page optimized
 - [ ] Social media accounts created
 - [ ] Press kit prepared
@@ -135,6 +148,7 @@ Use this checklist before launching Nexus to production.
 ## Post-Launch
 
 ### Immediate
+
 - [ ] Monitor error logs
 - [ ] Monitor performance metrics
 - [ ] Check health endpoints
@@ -143,6 +157,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Check analytics data
 
 ### First 24 Hours
+
 - [ ] Review error rates
 - [ ] Monitor server resources
 - [ ] Check database performance
@@ -151,6 +166,7 @@ Use this checklist before launching Nexus to production.
 - [ ] Check social media mentions
 
 ### First Week
+
 - [ ] Review user feedback
 - [ ] Fix critical bugs
 - [ ] Optimize based on analytics

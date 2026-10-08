@@ -1,4 +1,7 @@
-import { handleSubscriptionUpdated, handleSubscriptionDeleted } from '@/lib/integrations/stripe-webhook-handlers'
+import {
+  handleSubscriptionUpdated,
+  handleSubscriptionDeleted,
+} from '@/lib/integrations/stripe-webhook-handlers'
 
 jest.mock('@/lib/db', () => ({
   prisma: {

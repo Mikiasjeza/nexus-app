@@ -30,10 +30,7 @@ export default function Dropdown({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
@@ -75,9 +72,7 @@ export default function Dropdown({
               <div className="py-2">
                 {items.map((item, index) => (
                   <div key={index}>
-                    {item.divider && index > 0 && (
-                      <div className="my-1 border-t border-white/10" />
-                    )}
+                    {item.divider && index > 0 && <div className="my-1 border-t border-white/10" />}
                     <button
                       onClick={() => {
                         item.onClick?.()

@@ -76,10 +76,7 @@ export async function POST(request: Request) {
 
     const rl = rateLimit(`gap:${userId}`, { maxRequests: 20, windowMs: 60000 })
     if (!rl.allowed) {
-      return NextResponse.json(
-        { error: 'Too many requests. Try again later.' },
-        { status: 429 }
-      )
+      return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
     }
 
     const body = await request.json().catch(() => ({}))
@@ -92,7 +89,10 @@ export async function POST(request: Request) {
     }
     if (requiredSkills.length === 0) {
       return NextResponse.json(
-        { error: 'Provide targetSkills array or targetRole (frontend-developer, full-stack, data-scientist, product-manager)' },
+        {
+          error:
+            'Provide targetSkills array or targetRole (frontend-developer, full-stack, data-scientist, product-manager)',
+        },
         { status: 400 }
       )
     }
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
     const missing: { target: string; recommendation: string }[] = []
 
     for (const target of requiredSkills) {
-      const found = userSkills.find(s => skillMatches(s.name, target))
+      const found = userSkills.find((s) => skillMatches(s.name, target))
       if (found) {
         matched.push({
           target,
@@ -122,9 +122,8 @@ export async function POST(request: Request) {
       }
     }
 
-    const coverage = requiredSkills.length > 0
-      ? Math.round((matched.length / requiredSkills.length) * 100)
-      : 0
+    const coverage =
+      requiredSkills.length > 0 ? Math.round((matched.length / requiredSkills.length) * 100) : 0
 
     return NextResponse.json({
       targetRole: targetRole ?? 'custom',

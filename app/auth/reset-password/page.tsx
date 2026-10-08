@@ -87,7 +87,10 @@ function ResetPasswordPageContent() {
   }
 
   const backLink = (
-    <Link href="/auth/login" className="inline-flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white">
+    <Link
+      href="/auth/login"
+      className="inline-flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white"
+    >
       <ArrowLeft className="h-4 w-4" />
       Back to login
     </Link>
@@ -97,7 +100,9 @@ function ResetPasswordPageContent() {
     <AuthShell beforeCard={backLink}>
       <div className="hero-kicker mb-6">New credentials</div>
       <h1 className="mb-3 text-3xl font-semibold tracking-tight text-white">Choose a password</h1>
-      <p className="mb-8 text-sm leading-relaxed metalab-muted">Use at least 8 characters you haven&apos;t used elsewhere.</p>
+      <p className="mb-8 text-sm leading-relaxed metalab-muted">
+        Use at least 8 characters you haven&apos;t used elsewhere.
+      </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>

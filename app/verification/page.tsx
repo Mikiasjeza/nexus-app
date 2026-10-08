@@ -24,7 +24,11 @@ import type { AnalysisHistoryItem, EvidenceInput } from '@/lib/api/ai'
 import type { Skill, User } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
-import { getSkillPillarDetail, getSkillPillarForName, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import {
+  getSkillPillarDetail,
+  getSkillPillarForName,
+  SKILL_PILLAR_DETAILS,
+} from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
 
 type EvidenceTypeId = 'code' | 'video' | 'document' | 'audio' | 'project'
@@ -45,8 +49,13 @@ const evidenceTypes: Array<{
     id: 'code',
     name: 'Code Proof',
     icon: Code,
-    description: 'Paste a code sample, repository context, or implementation notes for AI to assess.',
-    requirements: ['Include real code', 'Add context on what you built', 'Mention your specific contribution'],
+    description:
+      'Paste a code sample, repository context, or implementation notes for AI to assess.',
+    requirements: [
+      'Include real code',
+      'Add context on what you built',
+      'Mention your specific contribution',
+    ],
     examples: ['API endpoint', 'Component implementation', 'Automation script', 'Data pipeline'],
     primaryLabel: 'Code sample',
     helperText: 'Paste the most important code or architecture excerpt.',
@@ -57,7 +66,8 @@ const evidenceTypes: Array<{
     id: 'video',
     name: 'Video Walkthrough',
     icon: Video,
-    description: 'Share a walkthrough link plus a concise summary of what the reviewer should notice.',
+    description:
+      'Share a walkthrough link plus a concise summary of what the reviewer should notice.',
     requirements: ['Explain what was built', 'Call out your role', 'Highlight outcomes or impact'],
     examples: ['Demo video', 'Recorded presentation', 'Tutorial clip', 'Pitch walkthrough'],
     primaryLabel: 'Summary for the AI reviewer',
@@ -69,8 +79,13 @@ const evidenceTypes: Array<{
     id: 'document',
     name: 'Document Evidence',
     icon: FileText,
-    description: 'Summarize a case study, report, or written artifact and optionally add a public link.',
-    requirements: ['Mention scope', 'Explain decisions made', 'Show measurable outcomes when possible'],
+    description:
+      'Summarize a case study, report, or written artifact and optionally add a public link.',
+    requirements: [
+      'Mention scope',
+      'Explain decisions made',
+      'Show measurable outcomes when possible',
+    ],
     examples: ['Case study', 'Research paper', 'Strategy memo', 'Presentation deck'],
     primaryLabel: 'Document summary',
     helperText: 'Give the AI enough detail to understand what the document proves.',
@@ -94,7 +109,11 @@ const evidenceTypes: Array<{
     name: 'Project Proof',
     icon: File,
     description: 'Point to a live project or portfolio piece and summarize the proof behind it.',
-    requirements: ['Include a live URL or repository', 'State your contribution', 'Mention business or user impact'],
+    requirements: [
+      'Include a live URL or repository',
+      'State your contribution',
+      'Mention business or user impact',
+    ],
     examples: ['Web app', 'Mobile app', 'Design system', 'Marketing campaign'],
     primaryLabel: 'Project summary',
     helperText: 'Focus on the result, your scope, and the evidence of quality.',
@@ -104,10 +123,30 @@ const evidenceTypes: Array<{
 ]
 
 const verificationSteps = [
-  { step: 1, title: 'Choose Skill', description: 'Pick the capability you want to prove', icon: Sparkles },
-  { step: 2, title: 'Add Evidence', description: 'Paste code, notes, links, or project context', icon: FileText },
-  { step: 3, title: 'AI Review', description: 'Run an objective skill analysis on your proof', icon: Brain },
-  { step: 4, title: 'Save Result', description: 'Store the analysis and upgrade profile trust', icon: Shield },
+  {
+    step: 1,
+    title: 'Choose Skill',
+    description: 'Pick the capability you want to prove',
+    icon: Sparkles,
+  },
+  {
+    step: 2,
+    title: 'Add Evidence',
+    description: 'Paste code, notes, links, or project context',
+    icon: FileText,
+  },
+  {
+    step: 3,
+    title: 'AI Review',
+    description: 'Run an objective skill analysis on your proof',
+    icon: Brain,
+  },
+  {
+    step: 4,
+    title: 'Save Result',
+    description: 'Store the analysis and upgrade profile trust',
+    icon: Shield,
+  },
 ]
 
 const guestSampleAnalyses: AnalysisHistoryItem[] = [
@@ -117,7 +156,8 @@ const guestSampleAnalyses: AnalysisHistoryItem[] = [
     skillName: 'React Development',
     skillLevel: 'advanced',
     confidenceScore: 0.91,
-    explanation: 'The evidence shows solid component structure, clear state handling, and product thinking around UX polish and maintainability.',
+    explanation:
+      'The evidence shows solid component structure, clear state handling, and product thinking around UX polish and maintainability.',
     suggestedLevel: 'advanced',
     improvements: ['Add stronger testing proof', 'Include performance profiling notes'],
     tokensUsed: 1180,
@@ -132,7 +172,8 @@ const guestSampleAnalyses: AnalysisHistoryItem[] = [
     skillName: 'Public Speaking',
     skillLevel: 'intermediate',
     confidenceScore: 0.83,
-    explanation: 'The walkthrough demonstrates confidence and clear communication, but could use more proof of audience impact or adaptation under pressure.',
+    explanation:
+      'The walkthrough demonstrates confidence and clear communication, but could use more proof of audience impact or adaptation under pressure.',
     suggestedLevel: 'advanced',
     improvements: ['Add audience outcomes', 'Include a second example in a different setting'],
     tokensUsed: 940,
@@ -176,7 +217,8 @@ export default function VerificationPage() {
   const [showConfetti, setShowConfetti] = useState(false)
 
   const isGuestPreview = user?.id === 'guest-user'
-  const selectedEvidenceType = evidenceTypes.find((type) => type.id === selectedType) ?? evidenceTypes[0]
+  const selectedEvidenceType =
+    evidenceTypes.find((type) => type.id === selectedType) ?? evidenceTypes[0]
   const selectedSkill = skills.find((skill) => skill.id === selectedSkillId) ?? null
   const displayedAnalyses = isGuestPreview ? guestSampleAnalyses : recentAnalyses
   const selectedPillar = selectedSkill ? getSkillPillarDetail(selectedSkill.category) : null
@@ -283,7 +325,8 @@ export default function VerificationPage() {
       if (trimmedUrl) {
         payload.push({
           type: 'link',
-          content: trimmedText || `Repository or live proof for ${selectedSkill?.name ?? 'this skill'}`,
+          content:
+            trimmedText || `Repository or live proof for ${selectedSkill?.name ?? 'this skill'}`,
           metadata: { url: trimmedUrl },
         })
       }
@@ -294,7 +337,9 @@ export default function VerificationPage() {
     if (trimmedUrl) {
       payload.push({
         type: 'link',
-        content: trimmedText || `${selectedEvidenceType.name} evidence for ${selectedSkill?.name ?? 'this skill'}`,
+        content:
+          trimmedText ||
+          `${selectedEvidenceType.name} evidence for ${selectedSkill?.name ?? 'this skill'}`,
         metadata: { url: trimmedUrl },
       })
     }
@@ -401,7 +446,9 @@ export default function VerificationPage() {
       }
 
       setAnalysisResult(savedAnalysis)
-      setRecentAnalyses((prev) => [savedAnalysis, ...prev.filter((item) => item.id !== savedAnalysis.id)].slice(0, 8))
+      setRecentAnalyses((prev) =>
+        [savedAnalysis, ...prev.filter((item) => item.id !== savedAnalysis.id)].slice(0, 8)
+      )
       setSkills((prev) =>
         prev.map((skill) =>
           skill.id === selectedSkill.id
@@ -460,16 +507,20 @@ export default function VerificationPage() {
                   AI Verification
                 </h1>
                 <p className="text-base md:text-lg text-white/68 max-w-2xl">
-                  Turn real work into proof. Nexus reviews each skill through one of five pillars so the evidence for code, creative work, communication, leadership, or growth gets scored in the right context.
+                  Turn real work into proof. Nexus reviews each skill through one of five pillars so
+                  the evidence for code, creative work, communication, leadership, or growth gets
+                  scored in the right context.
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
-              {['Skill-aware scoring', 'Saved AI feedback', 'Verification-ready trust signals'].map((item) => (
-                <div key={item} className="insight-card px-4 py-3 text-sm text-white/72">
-                  {item}
-                </div>
-              ))}
+              {['Skill-aware scoring', 'Saved AI feedback', 'Verification-ready trust signals'].map(
+                (item) => (
+                  <div key={item} className="insight-card px-4 py-3 text-sm text-white/72">
+                    {item}
+                  </div>
+                )
+              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 mt-6">
               {SKILL_PILLAR_DETAILS.map((pillar) => (
@@ -478,19 +529,23 @@ export default function VerificationPage() {
                   className="insight-card px-4 py-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {pillar.shortLabel}
+                  </div>
                   <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
                 </div>
               ))}
             </div>
             {isGuestPreview && (
               <div className="mt-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
-                Guest preview is enabled. You can explore the interface, but running AI verification requires a signed-in account.
+                Guest preview is enabled. You can explore the interface, but running AI verification
+                requires a signed-in account.
               </div>
             )}
             {!user && !isLoadingData && (
               <div className="mt-6 border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-                Sign in to load your skills and run real AI analyses. Guests can still preview the workflow and sample results.
+                Sign in to load your skills and run real AI analyses. Guests can still preview the
+                workflow and sample results.
               </div>
             )}
           </div>
@@ -553,7 +608,9 @@ export default function VerificationPage() {
             <div className="gradient-border-card p-8">
               <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">{selectedEvidenceType.name}</h2>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    {selectedEvidenceType.name}
+                  </h2>
                   <p className="text-white/60">
                     {selectedPillar
                       ? `${selectedEvidenceType.helperText} The AI will apply the ${selectedPillar.category.toLowerCase()} lens to this review.`
@@ -573,8 +630,12 @@ export default function VerificationPage() {
                     backgroundColor: `${CATEGORY_COLORS[selectedPillar.category]}12`,
                   }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{selectedPillar.shortLabel}</div>
-                  <div className="mt-2 text-lg font-semibold text-white">{selectedPillar.category}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {selectedPillar.shortLabel}
+                  </div>
+                  <div className="mt-2 text-lg font-semibold text-white">
+                    {selectedPillar.category}
+                  </div>
                   <p className="mt-2 text-sm text-white/72">{selectedPillar.summary}</p>
                   <p className="mt-3 text-sm text-white/58">{selectedPillar.proofFocus}</p>
                 </div>
@@ -601,7 +662,9 @@ export default function VerificationPage() {
 
               <div className="grid gap-5">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-white">Skill to verify</label>
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    Skill to verify
+                  </label>
                   <select
                     value={selectedSkillId}
                     onChange={(event) => setSelectedSkillId(event.target.value)}
@@ -612,10 +675,10 @@ export default function VerificationPage() {
                       {isLoadingData
                         ? 'Loading your skills...'
                         : skills.length > 0
-                        ? 'Choose a skill'
-                        : user
-                        ? 'Add skills first to run verification'
-                        : 'Sign in to load your skills'}
+                          ? 'Choose a skill'
+                          : user
+                            ? 'Add skills first to run verification'
+                            : 'Sign in to load your skills'}
                     </option>
                     {skills.map((skill) => (
                       <option key={skill.id} value={skill.id}>
@@ -628,7 +691,9 @@ export default function VerificationPage() {
                 {selectedType === 'code' ? (
                   <>
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-white">Code sample</label>
+                      <label className="mb-2 block text-sm font-medium text-white">
+                        Code sample
+                      </label>
                       <textarea
                         value={codeSnippet}
                         onChange={(event) => setCodeSnippet(event.target.value)}
@@ -670,7 +735,9 @@ export default function VerificationPage() {
                 {selectedEvidenceType.supportsUrl && (
                   <div>
                     <label className="mb-2 block text-sm font-medium text-white">
-                      {selectedEvidenceType.needsUrl ? 'Live URL or repository' : 'Optional supporting URL'}
+                      {selectedEvidenceType.needsUrl
+                        ? 'Live URL or repository'
+                        : 'Optional supporting URL'}
                     </label>
                     <input
                       type="url"
@@ -704,7 +771,8 @@ export default function VerificationPage() {
 
               {!user && (
                 <p className="mt-4 text-sm text-white/55">
-                  You can explore the workflow here. Sign in to load real skills and save actual verification results.
+                  You can explore the workflow here. Sign in to load real skills and save actual
+                  verification results.
                 </p>
               )}
             </div>
@@ -738,19 +806,25 @@ export default function VerificationPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                     <div className="insight-card p-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">Confidence</div>
+                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">
+                        Confidence
+                      </div>
                       <div className="mt-2 text-3xl font-semibold text-white">
                         {formatConfidence(analysisResult.confidenceScore)}
                       </div>
                     </div>
                     <div className="insight-card p-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">Suggested level</div>
+                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">
+                        Suggested level
+                      </div>
                       <div className="mt-2 text-3xl font-semibold text-white capitalize">
                         {analysisResult.suggestedLevel ?? selectedSkill?.level ?? 'unchanged'}
                       </div>
                     </div>
                     <div className="insight-card p-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">Estimated cost</div>
+                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">
+                        Estimated cost
+                      </div>
                       <div className="mt-2 text-3xl font-semibold text-white">
                         ${Number(analysisResult.cost ?? 0).toFixed(2)}
                       </div>
@@ -776,7 +850,10 @@ export default function VerificationPage() {
                         </div>
                       ))}
                       {analysisResult.improvements.length === 0 && (
-                        <p className="text-white/60">The current evidence already looks strong, so no major follow-up suggestions were returned.</p>
+                        <p className="text-white/60">
+                          The current evidence already looks strong, so no major follow-up
+                          suggestions were returned.
+                        </p>
                       )}
                     </div>
                   </div>
@@ -801,7 +878,10 @@ export default function VerificationPage() {
                     <span className="font-medium">{stats.verifiedRate}%</span>
                   </div>
                   <div className="h-2 bg-white/10 overflow-hidden rounded-full">
-                    <div className="h-full bg-white rounded-full" style={{ width: `${stats.verifiedRate}%` }} />
+                    <div
+                      className="h-full bg-white rounded-full"
+                      style={{ width: `${stats.verifiedRate}%` }}
+                    />
                   </div>
                 </div>
                 <div>
@@ -810,11 +890,16 @@ export default function VerificationPage() {
                     <span className="font-medium">{stats.avgConfidence}%</span>
                   </div>
                   <div className="h-2 bg-white/10 overflow-hidden rounded-full">
-                    <div className="h-full bg-cyan-200 rounded-full" style={{ width: `${stats.avgConfidence}%` }} />
+                    <div
+                      className="h-full bg-cyan-200 rounded-full"
+                      style={{ width: `${stats.avgConfidence}%` }}
+                    />
                   </div>
                 </div>
                 <div className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.2em] text-white/45">Saved analyses</div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-white/45">
+                    Saved analyses
+                  </div>
                   <div className="mt-2 text-3xl font-semibold text-white">{stats.total}</div>
                 </div>
               </div>
@@ -827,19 +912,25 @@ export default function VerificationPage() {
               <div className="space-y-4">
                 {displayedAnalyses.length === 0 && (
                   <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/60">
-                    No saved analyses yet. Run your first AI verification to start building trust signals.
+                    No saved analyses yet. Run your first AI verification to start building trust
+                    signals.
                   </div>
                 )}
 
                 {displayedAnalyses.map((analysis) => (
-                  <div key={analysis.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <div
+                    key={analysis.id}
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                  >
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
                         <div className="font-medium text-white">{analysis.skillName}</div>
                         <div className="text-xs uppercase tracking-[0.18em] text-white/45 mt-1">
                           {getSkillPillarForName(analysis.skillName).category}
                         </div>
-                        <div className="text-xs text-white/50">{formatRelativeTime(analysis.createdAt)}</div>
+                        <div className="text-xs text-white/50">
+                          {formatRelativeTime(analysis.createdAt)}
+                        </div>
                       </div>
                       <Badge variant={analysis.verified ? 'success' : 'info'} size="sm">
                         {formatConfidence(analysis.confidenceScore)}
@@ -850,7 +941,10 @@ export default function VerificationPage() {
                     </p>
                     <div className="space-y-2">
                       {analysis.improvements.slice(0, 2).map((improvement) => (
-                        <div key={improvement} className="flex items-start gap-2 text-sm text-white/60">
+                        <div
+                          key={improvement}
+                          className="flex items-start gap-2 text-sm text-white/60"
+                        >
                           <CheckCircle className="mt-0.5 h-3.5 w-3.5 text-cyan-200" />
                           <span>{improvement}</span>
                         </div>
@@ -877,7 +971,8 @@ export default function VerificationPage() {
                   Smarter evidence extraction from uploaded files, repos, and live project URLs.
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  Profile-wide recommendations that tell users which proof would move their passport the most.
+                  Profile-wide recommendations that tell users which proof would move their passport
+                  the most.
                 </div>
               </div>
             </div>

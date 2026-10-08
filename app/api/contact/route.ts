@@ -25,9 +25,7 @@ function escapeHtml(value: string): string {
 export async function POST(request: Request) {
   try {
     const ip =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown'
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
 
     const body = await request.json().catch(() => null)
     const parsed = bodySchema.safeParse(body)
@@ -84,14 +82,16 @@ export async function POST(request: Request) {
       {
         error:
           error instanceof Error &&
-          (error.message.includes('not initialized') || error.message.includes('not yet implemented'))
+          (error.message.includes('not initialized') ||
+            error.message.includes('not yet implemented'))
             ? 'Contact inbox is not configured yet. Please use the direct support email for now.'
             : 'Unable to send your message right now. Please try again later.',
       },
       {
         status:
           error instanceof Error &&
-          (error.message.includes('not initialized') || error.message.includes('not yet implemented'))
+          (error.message.includes('not initialized') ||
+            error.message.includes('not yet implemented'))
             ? 503
             : 500,
       }

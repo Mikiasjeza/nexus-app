@@ -22,7 +22,9 @@ function getSafeMetadataBase(): URL {
   try {
     return getMetadataBase()
   } catch {
-    return new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus.ai')
+    return new URL(
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus.ai'
+    )
   }
 }
 
@@ -31,8 +33,17 @@ const baseMetadata: Metadata = {
     default: 'Nexus | Universal Capability Verification',
     template: '%s | Nexus',
   },
-  description: 'Revolutionary AI-powered platform for universal skill verification and talent intelligence.',
-  keywords: ['AI', 'Skill Verification', 'Talent Analytics', 'HR Tech', 'EdTech', 'Skill Assessment', 'Professional Development'],
+  description:
+    'Revolutionary AI-powered platform for universal skill verification and talent intelligence.',
+  keywords: [
+    'AI',
+    'Skill Verification',
+    'Talent Analytics',
+    'HR Tech',
+    'EdTech',
+    'Skill Assessment',
+    'Professional Development',
+  ],
   authors: [{ name: 'Nexus Team' }],
   creator: 'Nexus',
   publisher: 'Nexus',
@@ -48,7 +59,8 @@ const baseMetadata: Metadata = {
     url: getAppUrl(),
     siteName: 'Nexus',
     title: 'Nexus | Universal Capability Verification',
-    description: 'Revolutionary AI-powered platform for universal skill verification and talent intelligence.',
+    description:
+      'Revolutionary AI-powered platform for universal skill verification and talent intelligence.',
     images: [
       {
         url: '/og-image.png',
@@ -61,7 +73,8 @@ const baseMetadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Nexus | Universal Capability Verification',
-    description: 'Revolutionary AI-powered platform for universal skill verification and talent intelligence.',
+    description:
+      'Revolutionary AI-powered platform for universal skill verification and talent intelligence.',
     images: ['/og-image.png'],
     creator: '@nexus',
   },
@@ -90,11 +103,7 @@ export function generateMetadata(): Metadata {
   }
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark smooth-scroll">
       <body className="bg-black text-white min-h-screen flex flex-col transition-colors duration-500">
@@ -108,14 +117,12 @@ export default function RootLayout({
             <Header />
             <main className="flex-1 w-full pt-16">
               <OnboardingGuard>
-                <PageTransition>
-                  {children}
-                </PageTransition>
+                <PageTransition>{children}</PageTransition>
               </OnboardingGuard>
             </main>
             <Footer />
             <CookieConsent />
-            <Toaster 
+            <Toaster
               position="top-right"
               toastOptions={{
                 duration: 4000,

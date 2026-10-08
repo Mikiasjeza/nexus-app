@@ -56,65 +56,65 @@ In the Vercel project setup, expand **Environment Variables** and add:
 
 ### Required (minimum to run)
 
-| Variable | Value | Notes |
-|----------|-------|-------|
-| `DATABASE_URL` | `postgresql://...` | Use [Vercel Postgres](https://vercel.com/storage/postgres) or [Neon](https://neon.tech), [Supabase](https://supabase.com), etc. |
-| `NEXT_PUBLIC_APP_URL` | `https://your-project.vercel.app` | Your Vercel URL (update after first deploy) |
-| `NEXTAUTH_SECRET` | Long random string | Generate with `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | `https://your-project.vercel.app` | Same as `NEXT_PUBLIC_APP_URL` |
+| Variable              | Value                             | Notes                                                                                                                           |
+| --------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`        | `postgresql://...`                | Use [Vercel Postgres](https://vercel.com/storage/postgres) or [Neon](https://neon.tech), [Supabase](https://supabase.com), etc. |
+| `NEXT_PUBLIC_APP_URL` | `https://your-project.vercel.app` | Your Vercel URL (update after first deploy)                                                                                     |
+| `NEXTAUTH_SECRET`     | Long random string                | Generate with `openssl rand -base64 32`                                                                                         |
+| `NEXTAUTH_URL`        | `https://your-project.vercel.app` | Same as `NEXT_PUBLIC_APP_URL`                                                                                                   |
 
 ### AI (at least one)
 
-| Variable | Value |
-|----------|-------|
-| `GEMINI_API_KEY` | `AIza...` |
-| `OPENAI_API_KEY` | `sk-...` |
-| `ANTHROPIC_API_KEY` | `sk-ant-...` |
-| `AI_PROVIDER` | `gemini`, `openai`, or `anthropic` |
-| `AI_MODEL` | `gemini-2.5-flash` |
+| Variable            | Value                              |
+| ------------------- | ---------------------------------- |
+| `GEMINI_API_KEY`    | `AIza...`                          |
+| `OPENAI_API_KEY`    | `sk-...`                           |
+| `ANTHROPIC_API_KEY` | `sk-ant-...`                       |
+| `AI_PROVIDER`       | `gemini`, `openai`, or `anthropic` |
+| `AI_MODEL`          | `gemini-2.5-flash`                 |
 
 ### Auth & OAuth
 
-| Variable | Value |
-|----------|-------|
-| `GITHUB_CLIENT_ID` | From GitHub OAuth app |
-| `GITHUB_CLIENT_SECRET` | From GitHub OAuth app |
-| `GITHUB_REDIRECT_URI` | `https://your-project.vercel.app/api/auth/github/callback` |
+| Variable               | Value                                                      |
+| ---------------------- | ---------------------------------------------------------- |
+| `GITHUB_CLIENT_ID`     | From GitHub OAuth app                                      |
+| `GITHUB_CLIENT_SECRET` | From GitHub OAuth app                                      |
+| `GITHUB_REDIRECT_URI`  | `https://your-project.vercel.app/api/auth/github/callback` |
 
 ### Stripe (if using payments)
 
-| Variable | Value |
-|----------|-------|
-| `STRIPE_SECRET_KEY` | `sk_live_...` or `sk_test_...` |
-| `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` or `pk_test_...` |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_...` (create webhook for your Vercel URL) |
-| `STRIPE_PRO_PRICE_ID` | `price_...` |
-| `STRIPE_ENTERPRISE_PRICE_ID` | `price_...` |
+| Variable                     | Value                                            |
+| ---------------------------- | ------------------------------------------------ |
+| `STRIPE_SECRET_KEY`          | `sk_live_...` or `sk_test_...`                   |
+| `STRIPE_PUBLISHABLE_KEY`     | `pk_live_...` or `pk_test_...`                   |
+| `STRIPE_WEBHOOK_SECRET`      | `whsec_...` (create webhook for your Vercel URL) |
+| `STRIPE_PRO_PRICE_ID`        | `price_...`                                      |
+| `STRIPE_ENTERPRISE_PRICE_ID` | `price_...`                                      |
 
 ### Storage (S3)
 
-| Variable | Value |
-|----------|-------|
-| `STORAGE_PROVIDER` | `s3` |
-| `AWS_ACCESS_KEY_ID` | Your AWS key |
-| `AWS_SECRET_ACCESS_KEY` | Your AWS secret |
-| `AWS_REGION` | `us-east-1` |
-| `AWS_S3_BUCKET` | Your bucket name |
+| Variable                | Value            |
+| ----------------------- | ---------------- |
+| `STORAGE_PROVIDER`      | `s3`             |
+| `AWS_ACCESS_KEY_ID`     | Your AWS key     |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS secret  |
+| `AWS_REGION`            | `us-east-1`      |
+| `AWS_S3_BUCKET`         | Your bucket name |
 
 ### Email
 
-| Variable | Value |
-|----------|-------|
-| `EMAIL_PROVIDER` | `resend` |
-| `RESEND_API_KEY` | `re_...` |
-| `EMAIL_FROM` | `noreply@yourdomain.com` |
+| Variable         | Value                    |
+| ---------------- | ------------------------ |
+| `EMAIL_PROVIDER` | `resend`                 |
+| `RESEND_API_KEY` | `re_...`                 |
+| `EMAIL_FROM`     | `noreply@yourdomain.com` |
 
 ### Optional
 
-| Variable | Value |
-|----------|-------|
-| `GUEST_MODE` | `false` (or `true` to allow unauthenticated access) |
-| `NEXT_PUBLIC_GOOGLE_VERIFICATION` | For Google Search Console |
+| Variable                          | Value                                               |
+| --------------------------------- | --------------------------------------------------- |
+| `GUEST_MODE`                      | `false` (or `true` to allow unauthenticated access) |
+| `NEXT_PUBLIC_GOOGLE_VERIFICATION` | For Google Search Console                           |
 
 ---
 
@@ -201,21 +201,21 @@ For source maps and error tracking:
 
 ## Quick Reference
 
-| Action | Where |
-|--------|-------|
-| View deployments | Vercel Dashboard → Project → Deployments |
-| View logs | Vercel Dashboard → Project → Deployments → [deployment] → Logs |
-| Env vars | Vercel Dashboard → Project → Settings → Environment Variables |
-| Redeploy | Deployments → ⋮ → Redeploy |
+| Action           | Where                                                          |
+| ---------------- | -------------------------------------------------------------- |
+| View deployments | Vercel Dashboard → Project → Deployments                       |
+| View logs        | Vercel Dashboard → Project → Deployments → [deployment] → Logs |
+| Env vars         | Vercel Dashboard → Project → Settings → Environment Variables  |
+| Redeploy         | Deployments → ⋮ → Redeploy                                     |
 
 ---
 
 ## Troubleshooting
 
-| Issue | Fix |
-|-------|-----|
-| Build fails | Check build logs; ensure `npm run build` works locally |
-| "Invalid URL" | Set `NEXT_PUBLIC_APP_URL` to your Vercel URL (e.g. `https://xxx.vercel.app`) |
-| DB connection errors | Ensure `DATABASE_URL` is correct and DB allows connections from Vercel IPs |
-| Auth redirects | Ensure `NEXTAUTH_URL` and `NEXTAUTH_SECRET` are set |
-| Stripe webhook 401 | Check `STRIPE_WEBHOOK_SECRET` matches your webhook |
+| Issue                | Fix                                                                          |
+| -------------------- | ---------------------------------------------------------------------------- |
+| Build fails          | Check build logs; ensure `npm run build` works locally                       |
+| "Invalid URL"        | Set `NEXT_PUBLIC_APP_URL` to your Vercel URL (e.g. `https://xxx.vercel.app`) |
+| DB connection errors | Ensure `DATABASE_URL` is correct and DB allows connections from Vercel IPs   |
+| Auth redirects       | Ensure `NEXTAUTH_URL` and `NEXTAUTH_SECRET` are set                          |
+| Stripe webhook 401   | Check `STRIPE_WEBHOOK_SECRET` matches your webhook                           |

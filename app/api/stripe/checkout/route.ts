@@ -8,9 +8,9 @@ import { rateLimit } from '@/lib/utils/rateLimit'
 export const dynamic = 'force-dynamic'
 
 const bodySchema = z.object({
-  planId: z.enum(['pro', 'enterprise', 'professional']).transform((v) =>
-    v === 'professional' ? 'pro' : v
-  ),
+  planId: z
+    .enum(['pro', 'enterprise', 'professional'])
+    .transform((v) => (v === 'professional' ? 'pro' : v)),
 })
 
 export async function POST(request: Request) {
@@ -20,10 +20,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const ip =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const rl = rateLimit(`stripe:checkout:${userId}:${ip}`, { maxRequests: 10, windowMs: 60000 })
     if (!rl.allowed) {
-      return NextResponse.json({ error: 'Too many checkout attempts. Try again later.' }, { status: 429 })
+      return NextResponse.json(
+        { error: 'Too many checkout attempts. Try again later.' },
+        { status: 429 }
+      )
     }
 
     const body = await request.json()
@@ -44,10 +48,7 @@ export async function POST(request: Request) {
         gateway: 'stripe',
         planId,
       })
-      return NextResponse.json(
-        { error: 'Unable to create checkout session' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Unable to create checkout session' }, { status: 500 })
     }
 
     return NextResponse.json({ url })

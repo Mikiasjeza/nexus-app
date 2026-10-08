@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Building2,
-  Users,
-  Briefcase,
-  Search,
-  ArrowRight,
-} from 'lucide-react'
+import { Building2, Users, Briefcase, Search, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import AnimatedCard from '@/components/UI/AnimatedCard'
 import { easing } from '@/lib/utils/animations'
@@ -39,9 +33,7 @@ export default function EmployerDashboardPage() {
         const data = await r.json().catch(() => ({}))
         if (!r.ok) {
           throw new Error(
-            typeof data.error === 'string'
-              ? data.error
-              : 'Unable to load your employer workspace.'
+            typeof data.error === 'string' ? data.error : 'Unable to load your employer workspace.'
           )
         }
         if (!data.company) {
@@ -63,9 +55,7 @@ export default function EmployerDashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="animate-pulse text-white/40">
-          Loading...
-        </div>
+        <div className="animate-pulse text-white/40">Loading...</div>
       </div>
     )
   }
@@ -93,7 +83,8 @@ export default function EmployerDashboardPage() {
   const actions = [
     {
       title: 'Search Talent',
-      description: 'Find candidates by their strongest pillars, verified signals, and proof of execution.',
+      description:
+        'Find candidates by their strongest pillars, verified signals, and proof of execution.',
       icon: Search,
       href: '/employer/talent',
       primary: true,
@@ -130,19 +121,17 @@ export default function EmployerDashboardPage() {
               </div>
               <div>
                 <div className="hero-kicker mb-2">Employer Workspace</div>
-                <h1 className="text-4xl font-bold text-white">
-                  {company.name}
-                </h1>
-                <p className="text-white/60">
-                  Hiring dashboard · {company.role}
-                </p>
+                <h1 className="text-4xl font-bold text-white">{company.name}</h1>
+                <p className="text-white/60">Hiring dashboard · {company.role}</p>
               </div>
             </div>
 
             <div className="grid gap-8 lg:grid-cols-[1.3fr_0.9fr]">
               <div>
                 <p className="text-lg text-white/68 max-w-3xl">
-                  Source talent through the same five-pillar system used across Nexus so your team can quickly spot what a candidate builds, creates, explains, leads, and improves over time.
+                  Source talent through the same five-pillar system used across Nexus so your team
+                  can quickly spot what a candidate builds, creates, explains, leads, and improves
+                  over time.
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-3">
@@ -152,7 +141,9 @@ export default function EmployerDashboardPage() {
                   { label: 'Hiring lens', value: 5 },
                 ].map((item) => (
                   <div key={item.label} className="insight-card p-4">
-                    <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                    <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                      {item.label}
+                    </div>
                     <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
                   </div>
                 ))}
@@ -166,7 +157,9 @@ export default function EmployerDashboardPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {pillar.shortLabel}
+                  </div>
                   <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
                 </div>
               ))}
@@ -185,9 +178,7 @@ export default function EmployerDashboardPage() {
               <Link href={action.href}>
                 <AnimatedCard
                   className={`p-6 h-full flex flex-col ${
-                    action.primary
-                      ? 'border-cyan-300/25 bg-cyan-400/10'
-                      : ''
+                    action.primary ? 'border-cyan-300/25 bg-cyan-400/10' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -195,17 +186,11 @@ export default function EmployerDashboardPage() {
                       <action.icon className="w-6 h-6 text-white" />
                     </div>
                     {action.count !== undefined && (
-                      <span className="text-2xl font-bold text-white">
-                        {action.count}
-                      </span>
+                      <span className="text-2xl font-bold text-white">{action.count}</span>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {action.title}
-                  </h3>
-                  <p className="text-white/60 mb-4 flex-1">
-                    {action.description}
-                  </p>
+                  <h3 className="text-xl font-semibold text-white mb-2">{action.title}</h3>
+                  <p className="text-white/60 mb-4 flex-1">{action.description}</p>
                   <div className="flex items-center gap-2 text-cyan-200 font-medium">
                     <span>Open</span>
                     <ArrowRight className="w-4 h-4" />

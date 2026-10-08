@@ -6,16 +6,16 @@ _Audited 2026-10-08 against the deployed app (repo root). Re-run this checklist 
 
 ## 1. Third-party SDK inventory
 
-| Package | Runs | Sends data to | What | Status |
-|---|---|---|---|---|
-| `@google/genai`, `openai`, `@anthropic-ai/sdk` | Server (`lib/ai/client.ts`) | Google / OpenAI / Anthropic | Evidence, skill names/levels, chat messages, public job listings. Never name/email. | Disclosed. **Use paid API tiers** (the Privacy Policy says providers don't train on our data; Gemini's free tier does). |
-| `@sentry/nextjs` | **Browser** + server + edge | Sentry (browser via `/monitoring` tunnel) | Errors, URLs, browser info | Fixed: `sendDefaultPii: false`, secrets/emails scrubbed from URLs (`lib/sentry-scrub.ts`), Session Replay removed from default and only loaded with "Diagnostics" consent, masked. |
-| `stripe` | Server | Stripe | Name, email, userId metadata | Disclosed. |
-| `@aws-sdk/*` | Server | AWS S3 | Uploaded evidence files | SSE (AES256) on upload; `deleteFile` implemented; files removed on account deletion. |
-| `resend` | Server | Resend | Email + message (password reset, contact form) | Disclosed. |
-| `octokit` | Server | GitHub | Sign-in only | Scope `read:user user:email` (was `repo`), token not stored. |
-| `next/font/google` | Build | — | Self-hosted at build | No runtime Google request. |
-| `next-auth`, `jsonwebtoken`, `uuid`, `react-hook-form`, `@hookform/resolvers` | — | — | — | **Removed** (never imported). |
+| Package                                                                       | Runs                        | Sends data to                             | What                                                                                | Status                                                                                                                                                                             |
+| ----------------------------------------------------------------------------- | --------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@google/genai`, `openai`, `@anthropic-ai/sdk`                                | Server (`lib/ai/client.ts`) | Google / OpenAI / Anthropic               | Evidence, skill names/levels, chat messages, public job listings. Never name/email. | Disclosed. **Use paid API tiers** (the Privacy Policy says providers don't train on our data; Gemini's free tier does).                                                            |
+| `@sentry/nextjs`                                                              | **Browser** + server + edge | Sentry (browser via `/monitoring` tunnel) | Errors, URLs, browser info                                                          | Fixed: `sendDefaultPii: false`, secrets/emails scrubbed from URLs (`lib/sentry-scrub.ts`), Session Replay removed from default and only loaded with "Diagnostics" consent, masked. |
+| `stripe`                                                                      | Server                      | Stripe                                    | Name, email, userId metadata                                                        | Disclosed.                                                                                                                                                                         |
+| `@aws-sdk/*`                                                                  | Server                      | AWS S3                                    | Uploaded evidence files                                                             | SSE (AES256) on upload; `deleteFile` implemented; files removed on account deletion.                                                                                               |
+| `resend`                                                                      | Server                      | Resend                                    | Email + message (password reset, contact form)                                      | Disclosed.                                                                                                                                                                         |
+| `octokit`                                                                     | Server                      | GitHub                                    | Sign-in only                                                                        | Scope `read:user user:email` (was `repo`), token not stored.                                                                                                                       |
+| `next/font/google`                                                            | Build                       | —                                         | Self-hosted at build                                                                | No runtime Google request.                                                                                                                                                         |
+| `next-auth`, `jsonwebtoken`, `uuid`, `react-hook-form`, `@hookform/resolvers` | —                           | —                                         | —                                                                                   | **Removed** (never imported).                                                                                                                                                      |
 
 Production CSP: `connect-src 'self'`, so browser code can only talk to our origin. Adding any client-side vendor requires a deliberate CSP change.
 
@@ -27,27 +27,27 @@ Production CSP: `connect-src 'self'`, so browser code can only talk to our origi
 
 ## 3. Data minimisation
 
-| Was | Now |
-|---|---|
-| `AIAnalysis.rawResponse` stored the full provider response | Not written; column dropped by migration `20261008120000_drop_unneeded_personal_data` |
-| `OAuthConnection.accessToken/refreshToken` stored in plaintext | Not written; columns dropped by the same migration |
-| Public share API returned internal `user.id` | Removed |
-| Sentry sent IPs/cookies/headers and recorded 10% of all sessions | No PII; replay only on error, opt-in, masked |
-| `Referrer-Policy: origin-when-cross-origin` | `strict-origin-when-cross-origin` |
+| Was                                                              | Now                                                                                   |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `AIAnalysis.rawResponse` stored the full provider response       | Not written; column dropped by migration `20261008120000_drop_unneeded_personal_data` |
+| `OAuthConnection.accessToken/refreshToken` stored in plaintext   | Not written; columns dropped by the same migration                                    |
+| Public share API returned internal `user.id`                     | Removed                                                                               |
+| Sentry sent IPs/cookies/headers and recorded 10% of all sessions | No PII; replay only on error, opt-in, masked                                          |
+| `Referrer-Policy: origin-when-cross-origin`                      | `strict-origin-when-cross-origin`                                                     |
 
 ## 4. Dark patterns removed
 
-| Pattern | Fix |
-|---|---|
-| Cookie banner: unequal buttons, "dismiss" recorded as a choice, claimed marketing cookies | Equal Reject/Accept, Customize, off by default, 12-month versioned choice, re-open from footer/Settings/`/cookies` |
-| Delete Account did nothing (route missing) | `DELETE /api/auth/account`: typed confirmation, cancels Stripe, removes from talent pools, deletes sole-member companies, deletes S3 files |
-| No data export | `GET /api/auth/account/export` + Settings → Download my data |
-| Pricing: $29 shown vs $9.99 charged; fake 14-day trial; "Save 20% annually"; "Most Popular"; "accepted worldwide by employers"; "multimodal video/audio" | Renders from `lib/plans.ts` (same source as Stripe + AI quota); honest FAQ; renewal/cancel terms beside the paid CTA |
-| Home stats "2.1k+ / 94% / 4.9 rating" | Replaced with verifiable product facts |
-| Onboarding blocked until goals & skills picked; "N Skills Added" before saving | Steps skippable; "N skills to add" |
-| "Response in 24h" promise | "We reply by email" |
-| No terms/privacy notice at sign-up | Plain notice, no pre-ticked box |
-| Terms: "AI decisions are final and binding" | Re-run / human-review path; employer obligations added |
+| Pattern                                                                                                                                                  | Fix                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Cookie banner: unequal buttons, "dismiss" recorded as a choice, claimed marketing cookies                                                                | Equal Reject/Accept, Customize, off by default, 12-month versioned choice, re-open from footer/Settings/`/cookies`                         |
+| Delete Account did nothing (route missing)                                                                                                               | `DELETE /api/auth/account`: typed confirmation, cancels Stripe, removes from talent pools, deletes sole-member companies, deletes S3 files |
+| No data export                                                                                                                                           | `GET /api/auth/account/export` + Settings → Download my data                                                                               |
+| Pricing: $29 shown vs $9.99 charged; fake 14-day trial; "Save 20% annually"; "Most Popular"; "accepted worldwide by employers"; "multimodal video/audio" | Renders from `lib/plans.ts` (same source as Stripe + AI quota); honest FAQ; renewal/cancel terms beside the paid CTA                       |
+| Home stats "2.1k+ / 94% / 4.9 rating"                                                                                                                    | Replaced with verifiable product facts                                                                                                     |
+| Onboarding blocked until goals & skills picked; "N Skills Added" before saving                                                                           | Steps skippable; "N skills to add"                                                                                                         |
+| "Response in 24h" promise                                                                                                                                | "We reply by email"                                                                                                                        |
+| No terms/privacy notice at sign-up                                                                                                                       | Plain notice, no pre-ticked box                                                                                                            |
+| Terms: "AI decisions are final and binding"                                                                                                              | Re-run / human-review path; employer obligations added                                                                                     |
 
 ## 5. Owner to-dos
 

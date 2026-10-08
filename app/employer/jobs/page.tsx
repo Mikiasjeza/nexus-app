@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Briefcase,
-  Plus,
-  MapPin,
-  DollarSign,
-  Building2,
-} from 'lucide-react'
+import { Briefcase, Plus, MapPin, DollarSign, Building2 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
 import { useToast } from '@/components/UI/ToastProvider'
@@ -61,9 +55,7 @@ export default function EmployerJobsPage() {
     .map((skill) => skill.trim())
     .filter(Boolean)
     .slice(0, 8)
-  const pillarPreview = Array.from(
-    new Set(skillPreview.map((skill) => inferSkillCategory(skill)))
-  )
+  const pillarPreview = Array.from(new Set(skillPreview.map((skill) => inferSkillCategory(skill))))
 
   const loadJobs = async () => {
     try {
@@ -77,10 +69,9 @@ export default function EmployerJobsPage() {
         return
       }
 
-      const jobsRes = await fetch(
-        `/api/jobs?companyId=${companyData.company.id}`,
-        { credentials: 'include' }
-      )
+      const jobsRes = await fetch(`/api/jobs?companyId=${companyData.company.id}`, {
+        credentials: 'include',
+      })
       const jobsData = await jobsRes.json()
       setJobs(jobsData.jobs || [])
     } finally {
@@ -140,9 +131,7 @@ export default function EmployerJobsPage() {
         credentials: 'include',
         body: JSON.stringify({ status: 'closed' }),
       })
-      setJobs((prev) =>
-        prev.map((j) => (j.id === id ? { ...j, status: 'closed' } : j))
-      )
+      setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status: 'closed' } : j)))
       addToast({ type: 'success', title: 'Job closed' })
     } catch {
       addToast({ type: 'error', title: 'Failed to close' })
@@ -161,11 +150,10 @@ export default function EmployerJobsPage() {
           <div className="hero-panel p-8 md:p-10">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">
-                  Job Listings
-                </h1>
+                <h1 className="text-4xl font-bold text-white mb-2">Job Listings</h1>
                 <p className="text-lg text-white/60 max-w-3xl">
-                  Post roles with clear skill expectations so Nexus can connect them to candidates across build, create, explain, lead, and grow.
+                  Post roles with clear skill expectations so Nexus can connect them to candidates
+                  across build, create, explain, lead, and grow.
                 </p>
               </div>
               <Button
@@ -183,7 +171,9 @@ export default function EmployerJobsPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {pillar.shortLabel}
+                  </div>
                   <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
                 </div>
               ))}
@@ -204,17 +194,13 @@ export default function EmployerJobsPage() {
                   required
                   placeholder="Job title"
                   value={formData.title}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, title: e.target.value }))
-                  }
+                  onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
                   className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
                 />
                 <textarea
                   placeholder="Description"
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, description: e.target.value }))
-                  }
+                  onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
                   className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
                   rows={3}
                 />
@@ -222,9 +208,7 @@ export default function EmployerJobsPage() {
                   type="text"
                   placeholder="Skills (comma-separated: React, TypeScript, Storytelling, Leadership)"
                   value={formData.skills}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, skills: e.target.value }))
-                  }
+                  onChange={(e) => setFormData((p) => ({ ...p, skills: e.target.value }))}
                   className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
                 />
                 <p className="text-sm text-white/55">
@@ -244,9 +228,7 @@ export default function EmployerJobsPage() {
                     type="text"
                     placeholder="Location"
                     value={formData.location}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, location: e.target.value }))
-                    }
+                    onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
                     className="px-4 py-3 border border-white/10 bg-black/40 text-white"
                   />
                   <select
@@ -268,9 +250,7 @@ export default function EmployerJobsPage() {
                     type="text"
                     placeholder="Salary range"
                     value={formData.salary}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, salary: e.target.value }))
-                    }
+                    onChange={(e) => setFormData((p) => ({ ...p, salary: e.target.value }))}
                     className="px-4 py-3 border border-white/10 bg-black/40 text-white"
                   />
                 </div>
@@ -287,9 +267,7 @@ export default function EmployerJobsPage() {
         ) : jobs.length === 0 ? (
           <div className="gradient-border-card p-12 text-center">
             <Briefcase className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <h3 className="text-xl font-medium text-white mb-2">
-              No jobs posted yet
-            </h3>
+            <h3 className="text-xl font-medium text-white mb-2">No jobs posted yet</h3>
             <p className="text-white/60 mb-4">
               Post your first job to reach candidates on the marketplace
             </p>
@@ -309,9 +287,7 @@ export default function EmployerJobsPage() {
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-xl font-semibold text-white">
-                      {job.title}
-                    </h3>
+                    <h3 className="text-xl font-semibold text-white">{job.title}</h3>
                     <div className="flex items-center gap-4 mt-2 text-white/60 text-sm">
                       <span className="flex items-center gap-1">
                         <Building2 className="w-4 h-4" />
@@ -334,7 +310,9 @@ export default function EmployerJobsPage() {
                       <Badge variant="default" size="sm">
                         {job.type}
                       </Badge>
-                      {Array.from(new Set(job.skills.map((skill) => inferSkillCategory(skill)))).map((pillar) => (
+                      {Array.from(
+                        new Set(job.skills.map((skill) => inferSkillCategory(skill)))
+                      ).map((pillar) => (
                         <Badge key={pillar} variant="default" size="sm">
                           {pillar}
                         </Badge>
@@ -348,11 +326,7 @@ export default function EmployerJobsPage() {
                   </div>
                   <div className="flex gap-2 shrink-0">
                     {job.status === 'active' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleClose(job.id)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleClose(job.id)}>
                         Close
                       </Button>
                     )}

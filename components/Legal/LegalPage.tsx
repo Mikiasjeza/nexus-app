@@ -22,10 +22,12 @@ export default function LegalPage({ title, summary, current, children }: LegalPa
       <div className="page-shell pb-28">
         <div className="hero-panel mb-10 p-8 md:p-10">
           <div className="hero-kicker mb-2">Legal</div>
-          <h1 className="mb-3 text-3xl font-semibold tracking-tight text-white md:text-4xl lg:text-5xl">{title}</h1>
+          <h1 className="mb-3 text-3xl font-semibold tracking-tight text-white md:text-4xl lg:text-5xl">
+            {title}
+          </h1>
           <p className="text-sm metalab-muted md:text-base">Effective {LEGAL.effectiveDate}</p>
           <nav aria-label="Legal documents" className="mt-6 flex flex-wrap gap-2">
-            {LEGAL_NAV.map(item => (
+            {LEGAL_NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -47,14 +49,24 @@ export default function LegalPage({ title, summary, current, children }: LegalPa
         </div>
 
         <div className="gradient-border-card p-8 md:p-12">
-          <article className="space-y-10 text-[15px] leading-relaxed text-white/70">{children}</article>
+          <article className="space-y-10 text-[15px] leading-relaxed text-white/70">
+            {children}
+          </article>
         </div>
       </div>
     </AppPageShell>
   )
 }
 
-export function Section({ id, title, children }: { id?: string; title: string; children: ReactNode }) {
+export function Section({
+  id,
+  title,
+  children,
+}: {
+  id?: string
+  title: string
+  children: ReactNode
+}) {
   return (
     <section id={id} className="scroll-mt-24">
       <h2 className="mb-4 text-xl font-semibold tracking-tight text-white">{title}</h2>
@@ -69,7 +81,10 @@ export function List({ children }: { children: ReactNode }) {
 
 export function Mail({ to }: { to: string }) {
   return (
-    <a href={`mailto:${to}`} className="text-cyan-200 underline decoration-white/20 underline-offset-2 hover:text-cyan-100">
+    <a
+      href={`mailto:${to}`}
+      className="text-cyan-200 underline decoration-white/20 underline-offset-2 hover:text-cyan-100"
+    >
       {to}
     </a>
   )

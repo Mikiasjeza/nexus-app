@@ -10,7 +10,12 @@ import { useToast } from '@/components/UI/ToastProvider'
 import { easing } from '@/lib/utils/animations'
 import Link from 'next/link'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
-import { getSkillPillarDetail, inferSkillCategory, normalizeSkillCategory, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import {
+  getSkillPillarDetail,
+  inferSkillCategory,
+  normalizeSkillCategory,
+  SKILL_PILLAR_DETAILS,
+} from '@/lib/skills-taxonomy'
 import type { SkillCategory } from '@/lib/types'
 import AppPageShell from '@/components/Layout/AppPageShell'
 
@@ -41,11 +46,14 @@ interface JobOption {
 function getCandidatePillars(
   skills: Candidate['skills']
 ): Array<{ category: SkillCategory; count: number; shortLabel: string }> {
-  const counts = skills.reduce((acc, skill) => {
-    const category = normalizeSkillCategory(skill.category)
-    acc[category] = (acc[category] ?? 0) + 1
-    return acc
-  }, {} as Record<SkillCategory, number>)
+  const counts = skills.reduce(
+    (acc, skill) => {
+      const category = normalizeSkillCategory(skill.category)
+      acc[category] = (acc[category] ?? 0) + 1
+      return acc
+    },
+    {} as Record<SkillCategory, number>
+  )
 
   return Object.entries(counts)
     .map(([category, count]) => {
@@ -179,16 +187,17 @@ export default function EmployerTalentPage() {
           className="mb-12"
         >
           <div className="hero-panel p-8 md:p-10">
-            <h1 className="text-4xl font-bold text-white mb-2">
-              Talent Search
-            </h1>
+            <h1 className="text-4xl font-bold text-white mb-2">Talent Search</h1>
             <p className="text-lg text-white/60 mb-8 max-w-3xl">
-              Find candidates by verified proof and the pillars that matter most to your team, from technical execution to communication, leadership, and growth.
+              Find candidates by verified proof and the pillars that matter most to your team, from
+              technical execution to communication, leadership, and growth.
             </p>
 
             {selectedJobTitle && (
               <div className="mb-6 rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.06] px-4 py-3 text-sm text-cyan-100">
-                Matching candidates against <span className="font-semibold">{selectedJobTitle}</span> using role skills, pillar coverage, and verified proof.
+                Matching candidates against{' '}
+                <span className="font-semibold">{selectedJobTitle}</span> using role skills, pillar
+                coverage, and verified proof.
               </div>
             )}
 
@@ -199,7 +208,9 @@ export default function EmployerTalentPage() {
                 { label: 'Saved pools', value: pools.length },
               ].map((item) => (
                 <div key={item.label} className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {item.label}
+                  </div>
                   <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
                 </div>
               ))}
@@ -212,7 +223,9 @@ export default function EmployerTalentPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {pillar.shortLabel}
+                  </div>
                   <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
                   <div className="mt-3 text-2xl font-semibold text-white">{pillar.count}</div>
                 </div>
@@ -261,7 +274,13 @@ export default function EmployerTalentPage() {
             </div>
             {selectedJob && selectedJob.skills.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {Array.from(new Set(selectedJob.skills.map((skill) => getSkillPillarDetail(inferSkillCategory(skill)).shortLabel))).map((shortLabel) => (
+                {Array.from(
+                  new Set(
+                    selectedJob.skills.map(
+                      (skill) => getSkillPillarDetail(inferSkillCategory(skill)).shortLabel
+                    )
+                  )
+                ).map((shortLabel) => (
                   <Badge key={shortLabel} variant="default" size="sm">
                     {shortLabel}
                   </Badge>
@@ -272,9 +291,7 @@ export default function EmployerTalentPage() {
         </motion.div>
 
         {loading ? (
-          <div className="text-center py-16 text-white/40">
-            Searching...
-          </div>
+          <div className="text-center py-16 text-white/40">Searching...</div>
         ) : (
           <div className="space-y-6">
             {candidates.map((c, index) => (
@@ -303,32 +320,26 @@ export default function EmployerTalentPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-white">
-                          {c.name}
-                        </h3>
-                        <Badge
-                          variant={c.matchScore >= 80 ? 'primary' : 'default'}
-                          size="sm"
-                        >
+                        <h3 className="text-xl font-semibold text-white">{c.name}</h3>
+                        <Badge variant={c.matchScore >= 80 ? 'primary' : 'default'} size="sm">
                           {c.matchScore}% match
                         </Badge>
                       </div>
-                      {c.bio && (
-                        <p className="text-white/60 text-sm mb-4 line-clamp-2">
-                          {c.bio}
-                        </p>
-                      )}
+                      {c.bio && <p className="text-white/60 text-sm mb-4 line-clamp-2">{c.bio}</p>}
                       <div className="mb-4 flex flex-wrap gap-2">
-                        {getCandidatePillars(c.skills).slice(0, 3).map((pillar) => (
-                          <Badge key={pillar.category} variant="default" size="sm">
-                            {pillar.shortLabel} {pillar.count}
-                          </Badge>
-                        ))}
-                        {typeof c.matchedVerifiedSignals === 'number' && c.matchedVerifiedSignals > 0 && (
-                          <Badge variant="primary" size="sm">
-                            Verified matches {c.matchedVerifiedSignals}
-                          </Badge>
-                        )}
+                        {getCandidatePillars(c.skills)
+                          .slice(0, 3)
+                          .map((pillar) => (
+                            <Badge key={pillar.category} variant="default" size="sm">
+                              {pillar.shortLabel} {pillar.count}
+                            </Badge>
+                          ))}
+                        {typeof c.matchedVerifiedSignals === 'number' &&
+                          c.matchedVerifiedSignals > 0 && (
+                            <Badge variant="primary" size="sm">
+                              Verified matches {c.matchedVerifiedSignals}
+                            </Badge>
+                          )}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {c.skills.slice(0, 8).map((s) => (
@@ -338,17 +349,13 @@ export default function EmployerTalentPage() {
                             size="sm"
                           >
                             <span className="flex items-center gap-1">
-                              {s.verified && (
-                                <Shield className="w-3 h-3" />
-                              )}
+                              {s.verified && <Shield className="w-3 h-3" />}
                               {s.name} ({s.level})
                             </span>
                           </Badge>
                         ))}
                         {c.skills.length > 8 && (
-                          <span className="text-sm text-white/40">
-                            +{c.skills.length - 8} more
-                          </span>
+                          <span className="text-sm text-white/40">+{c.skills.length - 8} more</span>
                         )}
                       </div>
                     </div>
@@ -387,12 +394,10 @@ export default function EmployerTalentPage() {
             {candidates.length === 0 && (
               <div className="gradient-border-card p-12 text-center">
                 <User className="w-16 h-16 mx-auto mb-4 text-white/40" />
-                <h3 className="text-xl font-medium text-white mb-2">
-                  No candidates found
-                </h3>
+                <h3 className="text-xl font-medium text-white mb-2">No candidates found</h3>
                 <p className="text-white/60 mb-4">
-                  Try adjusting your search. Candidates must have public profiles
-                  and opt-in to employer discovery.
+                  Try adjusting your search. Candidates must have public profiles and opt-in to
+                  employer discovery.
                 </p>
                 <Link href="/employer/dashboard">
                   <Button variant="outline">Back to Dashboard</Button>

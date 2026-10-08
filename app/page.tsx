@@ -17,11 +17,22 @@ import {
 } from 'lucide-react'
 import { easing } from '@/lib/utils/animations'
 import { useUser } from '@/lib/hooks/useUser'
-import { DEMO_SKILL_NODES, DEMO_SKILL_CONNECTIONS, type SkillNode } from '@/components/UI/SkillBrain'
-import { useState, useCallback, useRef, type MouseEvent, type ReactNode, type CSSProperties } from 'react'
+import {
+  DEMO_SKILL_NODES,
+  DEMO_SKILL_CONNECTIONS,
+  type SkillNode,
+} from '@/components/UI/SkillBrain'
+import {
+  useState,
+  useCallback,
+  useRef,
+  type MouseEvent,
+  type ReactNode,
+  type CSSProperties,
+} from 'react'
 
 const SkillBrain = dynamic(
-  () => import('@/components/UI/SkillBrain').then(m => ({ default: m.SkillBrain })),
+  () => import('@/components/UI/SkillBrain').then((m) => ({ default: m.SkillBrain })),
   { ssr: false, loading: () => <div className="w-full h-full" /> }
 )
 
@@ -140,31 +151,32 @@ export default function HomePage() {
   const ctaHref = user ? '/dashboard' : '/auth/register'
 
   const handleSkillClick = useCallback((skill: SkillNode) => {
-    setActiveSkill(prev => (prev?.id === skill.id ? null : skill))
+    setActiveSkill((prev) => (prev?.id === skill.id ? null : skill))
   }, [])
 
   return (
     <div className="min-h-screen" style={{ background: '#09090b' }}>
-
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative flex min-h-screen items-center overflow-hidden pt-16">
-
         {/* Conic gradient mesh */}
         <div className="pointer-events-none absolute inset-0" aria-hidden>
           <div
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[900px] w-[900px] rounded-full opacity-[0.07] blur-[160px]"
-            style={{ background: 'conic-gradient(from 200deg at 50% 50%, #22d3ee, #a78bfa, #f472b6, #22d3ee)' }}
+            style={{
+              background:
+                'conic-gradient(from 200deg at 50% 50%, #22d3ee, #a78bfa, #f472b6, #22d3ee)',
+            }}
           />
-          <div className="absolute -top-40 -left-20 h-[500px] w-[500px] rounded-full opacity-[0.04] blur-[100px]"
-            style={{ background: 'radial-gradient(circle, #22d3ee, transparent 70%)' }} />
+          <div
+            className="absolute -top-40 -left-20 h-[500px] w-[500px] rounded-full opacity-[0.04] blur-[100px]"
+            style={{ background: 'radial-gradient(circle, #22d3ee, transparent 70%)' }}
+          />
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-12">
           <div className="grid min-h-[calc(100vh-4rem)] grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.15fr]">
-
             {/* Left */}
             <div className="flex flex-col justify-center py-16 lg:py-0">
-
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -188,7 +200,10 @@ export default function HomePage() {
                 <br />
                 <span
                   className="bg-clip-text text-transparent"
-                  style={{ backgroundImage: 'linear-gradient(135deg, #22d3ee 0%, #a78bfa 50%, #f472b6 100%)' }}
+                  style={{
+                    backgroundImage:
+                      'linear-gradient(135deg, #22d3ee 0%, #a78bfa 50%, #f472b6 100%)',
+                  }}
                 >
                   Verified.
                 </span>
@@ -213,7 +228,8 @@ export default function HomePage() {
                   href={ctaHref}
                   className="group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.03]"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(34,211,238,0.9), rgba(139,92,246,0.9))',
+                    background:
+                      'linear-gradient(135deg, rgba(34,211,238,0.9), rgba(139,92,246,0.9))',
                     boxShadow: '0 0 32px rgba(34,211,238,0.18)',
                   }}
                 >
@@ -241,9 +257,11 @@ export default function HomePage() {
                   { value: '17', label: 'Skills mapped' },
                   { value: '28', label: 'Connections' },
                   { value: '5', label: 'Skill pillars' },
-                ].map(stat => (
+                ].map((stat) => (
                   <div key={stat.label} className="pl-6 first:pl-0">
-                    <div className="text-3xl font-black tracking-tight text-white">{stat.value}</div>
+                    <div className="text-3xl font-black tracking-tight text-white">
+                      {stat.value}
+                    </div>
                     <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">
                       {stat.label}
                     </div>
@@ -295,7 +313,9 @@ export default function HomePage() {
 
                   {!activeSkill && (
                     <div className="absolute bottom-4 right-4">
-                      <span className="text-[10px] tracking-[0.18em] uppercase text-white/20">Hover to explore</span>
+                      <span className="text-[10px] tracking-[0.18em] uppercase text-white/20">
+                        Hover to explore
+                      </span>
                     </div>
                   )}
                 </motion.div>
@@ -306,7 +326,9 @@ export default function HomePage() {
                 {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
                   <div key={cat} className="flex items-center gap-1.5">
                     <div className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
-                    <span className="text-[10px] uppercase tracking-[0.15em] text-white/30">{cat}</span>
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-white/30">
+                      {cat}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -318,7 +340,11 @@ export default function HomePage() {
       {/* ── MARQUEE TICKER ───────────────────────────────────── */}
       <div
         className="overflow-hidden select-none"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 0' }}
+        style={{
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          padding: '16px 0',
+        }}
       >
         <div className="marquee-track flex items-center gap-0">
           {[...TICKER, ...TICKER].map((item, i) => (
@@ -333,9 +359,11 @@ export default function HomePage() {
       </div>
 
       {/* ── FEATURES BENTO ───────────────────────────────────── */}
-      <section className="relative py-28 md:py-36" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section
+        className="relative py-28 md:py-36"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+      >
         <div className="mx-auto max-w-6xl px-6 lg:px-12">
-
           <motion.div
             className="mb-16"
             initial={{ opacity: 0, y: 24 }}
@@ -344,9 +372,13 @@ export default function HomePage() {
             transition={{ duration: 0.6, ease: easing.primary }}
           >
             <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">01</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+                01
+              </span>
               <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">Capabilities</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+                Capabilities
+              </span>
             </div>
             <h2
               className="font-black tracking-[-0.03em] text-white"
@@ -360,62 +392,66 @@ export default function HomePage() {
 
           {/* Bento grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ gridAutoRows: '280px' }}>
-
             {/* Large card */}
             {(() => {
               const HeroIcon = FEATURES[0].icon
               return (
-            <motion.div
-              className="md:col-span-2 md:row-span-2"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, ease: easing.primary }}
-            >
-              <TiltCard
-                strength={4}
-                className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 flex flex-col justify-between overflow-hidden relative"
-              >
-                {/* Ambient color blob */}
-                <div
-                  className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-[0.12] blur-[80px]"
-                  style={{ background: FEATURES[0].color }}
-                />
-
-                <div>
-                  <div
-                    className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl"
-                    style={{ background: FEATURES[0].accent, border: `1px solid ${FEATURES[0].border}` }}
+                <motion.div
+                  className="md:col-span-2 md:row-span-2"
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55, ease: easing.primary }}
+                >
+                  <TiltCard
+                    strength={4}
+                    className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 flex flex-col justify-between overflow-hidden relative"
                   >
-                    <HeroIcon className="h-6 w-6" style={{ color: FEATURES[0].color }} />
-                  </div>
-                  <h3 className="mb-3 text-2xl font-bold text-white">{FEATURES[0].title}</h3>
-                  <p className="max-w-sm text-base leading-relaxed text-white/45">{FEATURES[0].desc}</p>
-                </div>
+                    {/* Ambient color blob */}
+                    <div
+                      className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-[0.12] blur-[80px]"
+                      style={{ background: FEATURES[0].color }}
+                    />
 
-                {/* Mini progress bar */}
-                <div className="space-y-3">
-                  {[
-                    { label: 'Code analysis', pct: 94 },
-                    { label: 'Video evidence', pct: 88 },
-                    { label: 'Project output', pct: 91 },
-                  ].map(bar => (
-                    <div key={bar.label}>
-                      <div className="mb-1 flex justify-between">
-                        <span className="text-[11px] text-white/35">{bar.label}</span>
-                        <span className="text-[11px] text-white/35">{bar.pct}%</span>
+                    <div>
+                      <div
+                        className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl"
+                        style={{
+                          background: FEATURES[0].accent,
+                          border: `1px solid ${FEATURES[0].border}`,
+                        }}
+                      >
+                        <HeroIcon className="h-6 w-6" style={{ color: FEATURES[0].color }} />
                       </div>
-                      <div className="h-px w-full bg-white/[0.06]">
-                        <div
-                          className="h-px rounded-full"
-                          style={{ width: `${bar.pct}%`, background: FEATURES[0].color }}
-                        />
-                      </div>
+                      <h3 className="mb-3 text-2xl font-bold text-white">{FEATURES[0].title}</h3>
+                      <p className="max-w-sm text-base leading-relaxed text-white/45">
+                        {FEATURES[0].desc}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </TiltCard>
-            </motion.div>
+
+                    {/* Mini progress bar */}
+                    <div className="space-y-3">
+                      {[
+                        { label: 'Code analysis', pct: 94 },
+                        { label: 'Video evidence', pct: 88 },
+                        { label: 'Project output', pct: 91 },
+                      ].map((bar) => (
+                        <div key={bar.label}>
+                          <div className="mb-1 flex justify-between">
+                            <span className="text-[11px] text-white/35">{bar.label}</span>
+                            <span className="text-[11px] text-white/35">{bar.pct}%</span>
+                          </div>
+                          <div className="h-px w-full bg-white/[0.06]">
+                            <div
+                              className="h-px rounded-full"
+                              style={{ width: `${bar.pct}%`, background: FEATURES[0].color }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </TiltCard>
+                </motion.div>
               )
             })()}
 
@@ -454,9 +490,11 @@ export default function HomePage() {
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
-      <section className="relative py-28 md:py-36" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section
+        className="relative py-28 md:py-36"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+      >
         <div className="mx-auto max-w-5xl px-6 lg:px-12">
-
           <motion.div
             className="mb-16"
             initial={{ opacity: 0, y: 24 }}
@@ -465,9 +503,13 @@ export default function HomePage() {
             transition={{ duration: 0.6, ease: easing.primary }}
           >
             <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">02</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+                02
+              </span>
               <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">Process</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+                Process
+              </span>
             </div>
             <h2
               className="font-black tracking-[-0.03em] text-white"
@@ -546,7 +588,12 @@ export default function HomePage() {
       </section>
 
       {/* ── STATS ────────────────────────────────────────────── */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div
+        style={{
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
         <div className="mx-auto max-w-5xl">
           <div className="grid grid-cols-2 divide-x divide-y md:grid-cols-4 md:divide-y-0 divide-white/[0.06]">
             {[
@@ -554,7 +601,7 @@ export default function HomePage() {
               { value: '0', label: 'Ad trackers' },
               { value: 'Private', label: 'Until you share' },
               { value: '1-click', label: 'Data export' },
-              { value: '24/7',  label: 'Passport access' },
+              { value: '24/7', label: 'Passport access' },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -565,7 +612,9 @@ export default function HomePage() {
                 transition={{ duration: 0.4, delay: i * 0.07 }}
               >
                 <p className="text-5xl font-black tracking-tight text-white">{stat.value}</p>
-                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">{stat.label}</p>
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">
+                  {stat.label}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -575,7 +624,6 @@ export default function HomePage() {
       {/* ── COMPARISON ───────────────────────────────────────── */}
       <section className="py-28 md:py-36" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="mx-auto max-w-4xl px-6 lg:px-12">
-
           <motion.div
             className="mb-16"
             initial={{ opacity: 0, y: 24 }}
@@ -584,9 +632,13 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">03</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+                03
+              </span>
               <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">Signal comparison</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+                Signal comparison
+              </span>
             </div>
             <h2
               className="font-black tracking-[-0.03em] text-white"
@@ -614,7 +666,7 @@ export default function HomePage() {
                   'Static bullet points with no confidence signal',
                   'Self-reported skills with zero verification',
                   'One-size-fits-all presentation',
-                ].map(line => (
+                ].map((line) => (
                   <li key={line} className="flex items-start gap-3 text-sm text-white/35">
                     <span className="mt-2.5 h-px w-3 flex-shrink-0 bg-white/20" />
                     {line}
@@ -638,7 +690,7 @@ export default function HomePage() {
                   'Evidence-backed skills with AI confidence scores',
                   'Continuous updates from real project proof',
                   'Portable, shareable neural graph for any context',
-                ].map(line => (
+                ].map((line) => (
                   <li key={line} className="flex items-start gap-3 text-sm text-white/75">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" />
                     {line}
@@ -655,10 +707,16 @@ export default function HomePage() {
         className="relative overflow-hidden py-44 md:py-56"
         style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
       >
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden>
+        <div
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          aria-hidden
+        >
           <div
             className="h-[600px] w-[600px] rounded-full opacity-[0.07] blur-[120px]"
-            style={{ background: 'conic-gradient(from 0deg at 50% 50%, #22d3ee, #a78bfa, #f472b6, #22d3ee)' }}
+            style={{
+              background:
+                'conic-gradient(from 0deg at 50% 50%, #22d3ee, #a78bfa, #f472b6, #22d3ee)',
+            }}
           />
         </div>
 
@@ -669,7 +727,9 @@ export default function HomePage() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.6, ease: easing.primary }}
           >
-            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">Get started</p>
+            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              Get started
+            </p>
             <h2
               className="mb-6 font-black tracking-[-0.04em] text-white"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}
@@ -683,7 +743,8 @@ export default function HomePage() {
               </span>
             </h2>
             <p className="mb-10 text-lg text-white/40">
-              Every skill node you add becomes part of a living, verifiable record that employers can trust.
+              Every skill node you add becomes part of a living, verifiable record that employers
+              can trust.
             </p>
 
             <Link

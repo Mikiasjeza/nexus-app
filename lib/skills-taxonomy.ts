@@ -76,43 +76,141 @@ const LEGACY_CATEGORY_MAP: Record<string, SkillCategory> = {
 }
 
 const CATEGORY_PATTERNS: Array<{ category: SkillCategory; pattern: RegExp }> = [
-  { category: 'Technical Skills', pattern: /(react|next|node|javascript|typescript|python|java|c\+\+|c#|go|rust|sql|graphql|api|aws|docker|kubernetes|devops|testing|qa|security|cyber|data|analytics|machine learning|ml|ai|prompt|bi|tableau|power bi|statistics|nlp|computer vision)/ },
-  { category: 'Creative Skills', pattern: /(design|ux|ui|figma|prototype|wireframe|research|accessibility|brand|design systems|creative|copywriting|video|motion|illustration|photography|branding|marketing|seo|content|social media|campaign)/ },
-  { category: 'Communication Skills', pattern: /(communication|public speaking|writing|negotiation|presentation|storytelling|facilitation|speaking|messaging)/ },
-  { category: 'Professional Skills', pattern: /(leadership|management|coaching|mentoring|stakeholder|sales|finance|strategy|operations|customer success|product management|project management|business analysis|crm|collaboration|teamwork)/ },
-  { category: 'Learning & Growth', pattern: /(learning|upskilling|adaptability|consistency|improvement|growth|curiosity|self-learning|practice|iteration|resilience)/ },
+  {
+    category: 'Technical Skills',
+    pattern:
+      /(react|next|node|javascript|typescript|python|java|c\+\+|c#|go|rust|sql|graphql|api|aws|docker|kubernetes|devops|testing|qa|security|cyber|data|analytics|machine learning|ml|ai|prompt|bi|tableau|power bi|statistics|nlp|computer vision)/,
+  },
+  {
+    category: 'Creative Skills',
+    pattern:
+      /(design|ux|ui|figma|prototype|wireframe|research|accessibility|brand|design systems|creative|copywriting|video|motion|illustration|photography|branding|marketing|seo|content|social media|campaign)/,
+  },
+  {
+    category: 'Communication Skills',
+    pattern:
+      /(communication|public speaking|writing|negotiation|presentation|storytelling|facilitation|speaking|messaging)/,
+  },
+  {
+    category: 'Professional Skills',
+    pattern:
+      /(leadership|management|coaching|mentoring|stakeholder|sales|finance|strategy|operations|customer success|product management|project management|business analysis|crm|collaboration|teamwork)/,
+  },
+  {
+    category: 'Learning & Growth',
+    pattern:
+      /(learning|upskilling|adaptability|consistency|improvement|growth|curiosity|self-learning|practice|iteration|resilience)/,
+  },
 ]
 
 export const SKILL_SUGGESTION_GROUPS: SkillSuggestionGroup[] = [
   {
     id: 'technical-skills',
     label: 'Technical Skills',
-    description: 'Programming, software delivery, data systems, AI workflows, infrastructure, and hands-on technical execution.',
-    skills: ['JavaScript', 'TypeScript', 'React', 'Next.js', 'Node.js', 'Python', 'Java', 'C#', 'C++', 'SQL', 'AWS', 'Docker', 'DevOps', 'Cybersecurity', 'Data Analysis', 'Machine Learning'],
+    description:
+      'Programming, software delivery, data systems, AI workflows, infrastructure, and hands-on technical execution.',
+    skills: [
+      'JavaScript',
+      'TypeScript',
+      'React',
+      'Next.js',
+      'Node.js',
+      'Python',
+      'Java',
+      'C#',
+      'C++',
+      'SQL',
+      'AWS',
+      'Docker',
+      'DevOps',
+      'Cybersecurity',
+      'Data Analysis',
+      'Machine Learning',
+    ],
   },
   {
     id: 'creative-skills',
     label: 'Creative Skills',
-    description: 'Design, storytelling, content creation, visual craft, and portfolio-based proof of execution.',
-    skills: ['Product Design', 'UI Design', 'UX Research', 'Figma', 'Design Systems', 'Brand Design', 'Wireframing', 'Accessibility', 'Copywriting', 'Video Editing', 'Motion Design', 'Marketing', 'SEO', 'Photography', 'Illustration', 'Content Strategy'],
+    description:
+      'Design, storytelling, content creation, visual craft, and portfolio-based proof of execution.',
+    skills: [
+      'Product Design',
+      'UI Design',
+      'UX Research',
+      'Figma',
+      'Design Systems',
+      'Brand Design',
+      'Wireframing',
+      'Accessibility',
+      'Copywriting',
+      'Video Editing',
+      'Motion Design',
+      'Marketing',
+      'SEO',
+      'Photography',
+      'Illustration',
+      'Content Strategy',
+    ],
   },
   {
     id: 'communication-skills',
     label: 'Communication Skills',
-    description: 'Public speaking, writing clarity, persuasion, presentations, and how well ideas are explained to others.',
-    skills: ['Communication', 'Public Speaking', 'Storytelling', 'Negotiation', 'Technical Writing', 'Presentation Skills', 'Facilitation', 'Persuasion', 'Speech Writing', 'Interviewing', 'Active Listening', 'Messaging'],
+    description:
+      'Public speaking, writing clarity, persuasion, presentations, and how well ideas are explained to others.',
+    skills: [
+      'Communication',
+      'Public Speaking',
+      'Storytelling',
+      'Negotiation',
+      'Technical Writing',
+      'Presentation Skills',
+      'Facilitation',
+      'Persuasion',
+      'Speech Writing',
+      'Interviewing',
+      'Active Listening',
+      'Messaging',
+    ],
   },
   {
     id: 'professional-skills',
     label: 'Professional Skills',
-    description: 'Leadership, project delivery, collaboration, operations, ownership, and measurable workplace impact.',
-    skills: ['Leadership', 'Project Management', 'Team Collaboration', 'Problem Solving', 'Stakeholder Management', 'Operations', 'Customer Success', 'Product Management', 'Strategic Planning', 'Decision Making', 'People Management', 'Execution'],
+    description:
+      'Leadership, project delivery, collaboration, operations, ownership, and measurable workplace impact.',
+    skills: [
+      'Leadership',
+      'Project Management',
+      'Team Collaboration',
+      'Problem Solving',
+      'Stakeholder Management',
+      'Operations',
+      'Customer Success',
+      'Product Management',
+      'Strategic Planning',
+      'Decision Making',
+      'People Management',
+      'Execution',
+    ],
   },
   {
     id: 'learning-growth',
     label: 'Learning & Growth',
-    description: 'Learning speed, consistency, adaptability, improvement over time, and the discipline to keep leveling up.',
-    skills: ['Learning Agility', 'Consistency', 'Skill Growth', 'Adaptability', 'Practice Discipline', 'Self-Learning', 'Curiosity', 'Improvement Tracking', 'Resilience', 'Iteration', 'Self-Reflection', 'Habit Building'],
+    description:
+      'Learning speed, consistency, adaptability, improvement over time, and the discipline to keep leveling up.',
+    skills: [
+      'Learning Agility',
+      'Consistency',
+      'Skill Growth',
+      'Adaptability',
+      'Practice Discipline',
+      'Self-Learning',
+      'Curiosity',
+      'Improvement Tracking',
+      'Resilience',
+      'Iteration',
+      'Self-Reflection',
+      'Habit Building',
+    ],
   },
 ]
 
@@ -121,31 +219,36 @@ export const SKILL_PILLAR_DETAILS: SkillPillarDetail[] = [
     category: 'Technical Skills',
     shortLabel: 'Build',
     summary: 'Show what you can build, ship, debug, automate, and analyze.',
-    proofFocus: 'Best verified through code, repositories, projects, data work, architecture, and technical problem-solving.',
+    proofFocus:
+      'Best verified through code, repositories, projects, data work, architecture, and technical problem-solving.',
   },
   {
     category: 'Creative Skills',
     shortLabel: 'Create',
     summary: 'Show taste, originality, craft, and how well your work connects with people.',
-    proofFocus: 'Best verified through portfolios, case studies, visuals, content quality, and finished creative output.',
+    proofFocus:
+      'Best verified through portfolios, case studies, visuals, content quality, and finished creative output.',
   },
   {
     category: 'Communication Skills',
     shortLabel: 'Explain',
     summary: 'Show how clearly you write, speak, persuade, and tell compelling stories.',
-    proofFocus: 'Best verified through talks, writing samples, recordings, presentations, and audience engagement.',
+    proofFocus:
+      'Best verified through talks, writing samples, recordings, presentations, and audience engagement.',
   },
   {
     category: 'Professional Skills',
     shortLabel: 'Lead',
     summary: 'Show ownership, collaboration, execution, and the outcomes you drive with others.',
-    proofFocus: 'Best verified through project history, team delivery, stakeholder work, leadership signals, and measurable results.',
+    proofFocus:
+      'Best verified through project history, team delivery, stakeholder work, leadership signals, and measurable results.',
   },
   {
     category: 'Learning & Growth',
     shortLabel: 'Grow',
     summary: 'Show how quickly you improve, adapt, and keep momentum over time.',
-    proofFocus: 'Best verified through timeline evidence, before-and-after progress, repeated practice, and consistency.',
+    proofFocus:
+      'Best verified through timeline evidence, before-and-after progress, repeated practice, and consistency.',
   },
 ]
 

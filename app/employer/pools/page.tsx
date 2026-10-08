@@ -90,11 +90,10 @@ export default function EmployerPoolsPage() {
           className="mb-12"
         >
           <div className="hero-panel p-8 md:p-10">
-            <h1 className="text-4xl font-bold text-white mb-2">
-              Talent Pools
-            </h1>
+            <h1 className="text-4xl font-bold text-white mb-2">Talent Pools</h1>
             <p className="text-lg text-white/60 mb-8 max-w-3xl">
-              Organize candidates by the pillars your team hires for most often, then revisit the strongest profiles without losing context.
+              Organize candidates by the pillars your team hires for most often, then revisit the
+              strongest profiles without losing context.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 mb-8">
@@ -104,7 +103,9 @@ export default function EmployerPoolsPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {pillar.shortLabel}
+                  </div>
                   <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
                 </div>
               ))}
@@ -131,9 +132,7 @@ export default function EmployerPoolsPage() {
         ) : pools.length === 0 ? (
           <div className="gradient-border-card p-12 text-center">
             <Users className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <h3 className="text-xl font-medium text-white mb-2">
-              No talent pools yet
-            </h3>
+            <h3 className="text-xl font-medium text-white mb-2">No talent pools yet</h3>
             <p className="text-white/60 mb-4">
               Create a pool to save candidates from your talent search
             </p>
@@ -152,18 +151,12 @@ export default function EmployerPoolsPage() {
                 className="gradient-border-card p-6 flex items-center justify-between"
               >
                 <Link href={`/employer/pools/${pool.id}`} className="flex-1">
-                  <h3 className="text-xl font-semibold text-white">
-                    {pool.name}
-                  </h3>
+                  <h3 className="text-xl font-semibold text-white">{pool.name}</h3>
                   <p className="text-white/60 text-sm mt-1">
                     {pool.candidateCount} candidate{pool.candidateCount !== 1 ? 's' : ''}
                   </p>
                 </Link>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(pool.id)}
-                >
+                <Button variant="outline" size="sm" onClick={() => handleDelete(pool.id)}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </motion.div>

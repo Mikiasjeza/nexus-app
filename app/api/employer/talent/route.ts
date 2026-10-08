@@ -127,7 +127,10 @@ export async function GET(request: Request) {
         normalizedSkills.some((userSkill) => skillsLooselyMatch(userSkill.name, jobSkill))
       )
       const matchedJobPillars = targetJobPillars.filter((pillar) => userCategories.includes(pillar))
-      const jobRequirementCoverage = computeJobRequirementCoverage(targetJobSkills, normalizedSkills)
+      const jobRequirementCoverage = computeJobRequirementCoverage(
+        targetJobSkills,
+        normalizedSkills
+      )
       const matchedVerifiedSignals = normalizedSkills.filter((skill) => {
         if (!skill.verified) return false
         return (
@@ -150,8 +153,10 @@ export async function GET(request: Request) {
           : 0
       const verifiedCoverage =
         matchedJobSkills.length + matchedQuerySkills.length > 0
-          ? matchedVerifiedSignals / Math.max(1, matchedJobSkills.length + matchedQuerySkills.length)
-          : normalizedSkills.filter((skill) => skill.verified).length / Math.max(1, normalizedSkills.length)
+          ? matchedVerifiedSignals /
+            Math.max(1, matchedJobSkills.length + matchedQuerySkills.length)
+          : normalizedSkills.filter((skill) => skill.verified).length /
+            Math.max(1, normalizedSkills.length)
 
       let matchScore = 100
       if (targetJob) {
@@ -163,15 +168,17 @@ export async function GET(request: Request) {
           Math.min(1, verifiedCoverage) * 5
       } else if (skillNames.length > 0 || pillarQueries.length > 0) {
         matchScore =
-          querySkillCoverage * 70 +
-          queryPillarCoverage * 20 +
-          Math.min(1, verifiedCoverage) * 10
+          querySkillCoverage * 70 + queryPillarCoverage * 20 + Math.min(1, verifiedCoverage) * 10
       } else {
         const verifiedRatio =
-          normalizedSkills.filter((skill) => skill.verified).length / Math.max(1, normalizedSkills.length)
+          normalizedSkills.filter((skill) => skill.verified).length /
+          Math.max(1, normalizedSkills.length)
         matchScore = Math.min(
           100,
-          45 + verifiedRatio * 25 + Math.min(20, normalizedSkills.length * 4) + Math.min(10, userCategories.length * 2)
+          45 +
+            verifiedRatio * 25 +
+            Math.min(20, normalizedSkills.length * 4) +
+            Math.min(10, userCategories.length * 2)
         )
       }
 
@@ -212,9 +219,6 @@ export async function GET(request: Request) {
     })
   } catch (e) {
     console.error('Employer talent search error:', e)
-    return NextResponse.json(
-      { error: 'Failed to search talent' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to search talent' }, { status: 500 })
   }
 }

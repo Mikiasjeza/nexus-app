@@ -1,6 +1,6 @@
 /**
  * Database Client
- * 
+ *
  * Prisma client singleton for database access
  */
 

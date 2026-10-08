@@ -147,6 +147,7 @@ export const SUBPROCESSORS: Subprocessor[] = [
     purpose: 'Optional "Continue with GitHub" sign-in',
     data: 'Your public GitHub profile (username, name, avatar, email)',
     when: 'Only if you choose GitHub sign-in',
-    policyUrl: 'https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement',
+    policyUrl:
+      'https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement',
   },
 ]

@@ -79,9 +79,6 @@ export async function POST(request: Request) {
     })
   } catch (e) {
     console.error('Employer register error:', e)
-    return NextResponse.json(
-      { error: 'Failed to register as employer' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to register as employer' }, { status: 500 })
   }
 }

@@ -11,13 +11,13 @@ let fetchPromise: Promise<void> | null = null
 const listeners = new Set<(s: UserState) => void>()
 
 function notify(s: UserState) {
-  listeners.forEach(fn => fn(s))
+  listeners.forEach((fn) => fn(s))
 }
 
 function fetchSession(): Promise<void> {
   if (fetchPromise) return fetchPromise
   fetchPromise = fetch('/api/auth/session', { credentials: 'include' })
-    .then(r => r.json())
+    .then((r) => r.json())
     .then((data: { user: User | null }) => {
       cached = { user: data.user ?? null }
       notify({ user: cached.user, loading: false })
@@ -39,7 +39,9 @@ export function useUser(): UserState {
     const update = (s: UserState) => setState(s)
     listeners.add(update)
     if (cached === null) fetchSession()
-    return () => { listeners.delete(update) }
+    return () => {
+      listeners.delete(update)
+    }
   }, [])
 
   return state

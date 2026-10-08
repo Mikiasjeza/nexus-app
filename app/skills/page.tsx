@@ -6,7 +6,18 @@ import { useSkills } from '@/lib/hooks/useSkills'
 import SkillGrid from '@/components/Skills/SkillGrid'
 import SkillForm from '@/components/Skills/SkillForm'
 import Modal from '@/components/UI/Modal'
-import { Plus, Filter, Search, Grid, List, Code, Palette, MessageSquare, Briefcase, TrendingUp } from 'lucide-react'
+import {
+  Plus,
+  Filter,
+  Search,
+  Grid,
+  List,
+  Code,
+  Palette,
+  MessageSquare,
+  Briefcase,
+  TrendingUp,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CATEGORY_COLORS, SKILL_CATEGORIES, SKILL_LEVELS } from '@/lib/utils/constants'
 import Loader from '@/components/UI/Loader'
@@ -40,7 +51,10 @@ export default function SkillsPage() {
   const isGuestPreview = user?.id === 'guest-user'
 
   useEffect(() => {
-    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+    authApi
+      .getCurrentUser()
+      .then(setUser)
+      .catch(() => setUser(null))
   }, [])
 
   const showGuestPreviewMessage = () => {
@@ -135,17 +149,21 @@ export default function SkillsPage() {
     )
   }
 
-  const filteredSkills = skills.filter(skill => {
-    const matchesSearch = searchQuery === '' || skill.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSkills = skills.filter((skill) => {
+    const matchesSearch =
+      searchQuery === '' || skill.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = filterCategory === '' || skill.category === filterCategory
     const matchesLevel = filterLevel === '' || skill.level === filterLevel
     return matchesSearch && matchesCategory && matchesLevel
   })
 
-  const pillarCounts = skills.reduce((acc, skill) => {
-    acc[skill.category] = (acc[skill.category] ?? 0) + 1
-    return acc
-  }, {} as Record<SkillCategory, number>)
+  const pillarCounts = skills.reduce(
+    (acc, skill) => {
+      acc[skill.category] = (acc[skill.category] ?? 0) + 1
+      return acc
+    },
+    {} as Record<SkillCategory, number>
+  )
 
   return (
     <AppPageShell className="min-h-screen bg-black">
@@ -166,7 +184,8 @@ export default function SkillsPage() {
                   Skills
                 </h1>
                 <p className="text-base md:text-lg text-white/68 max-w-[36ch] md:max-w-2xl">
-                  Turn scattered experience into a vivid skill passport organized around what you build, create, explain, lead, and improve over time.
+                  Turn scattered experience into a vivid skill passport organized around what you
+                  build, create, explain, lead, and improve over time.
                 </p>
               </div>
 
@@ -200,11 +219,19 @@ export default function SkillsPage() {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mt-6">
               {[
                 { label: 'Skills tracked', value: skills.length },
-                { label: 'Verified signals', value: skills.filter((skill) => skill.verified).length },
-                { label: 'Pillars represented', value: new Set(skills.map((skill) => skill.category)).size },
+                {
+                  label: 'Verified signals',
+                  value: skills.filter((skill) => skill.verified).length,
+                },
+                {
+                  label: 'Pillars represented',
+                  value: new Set(skills.map((skill) => skill.category)).size,
+                },
               ].map((item) => (
                 <div key={item.label} className="insight-card px-4 py-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {item.label}
+                  </div>
                   <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
                 </div>
               ))}
@@ -227,14 +254,18 @@ export default function SkillsPage() {
                 style={{ borderColor: `${color}30`, boxShadow: `inset 0 0 0 1px ${color}15` }}
               >
                 <div className="flex items-center justify-between">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {pillar.shortLabel}
+                  </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-2 text-white">
                     {pillarIcons[pillar.category]}
                   </div>
                 </div>
                 <div className="mt-3 text-base font-semibold text-white">{pillar.category}</div>
                 <p className="mt-2 text-sm text-white/62">{pillar.summary}</p>
-                <div className="mt-4 text-2xl font-semibold text-white">{pillarCounts[pillar.category] ?? 0}</div>
+                <div className="mt-4 text-2xl font-semibold text-white">
+                  {pillarCounts[pillar.category] ?? 0}
+                </div>
               </div>
             )
           })}
@@ -242,7 +273,8 @@ export default function SkillsPage() {
 
         {isGuestPreview && (
           <div className="mb-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
-            You are browsing a guest preview. Sign in or create an account to add, edit, and delete skills.
+            You are browsing a guest preview. Sign in or create an account to add, edit, and delete
+            skills.
           </div>
         )}
 
@@ -295,7 +327,8 @@ export default function SkillsPage() {
             </button>
           </div>
           <div className="text-sm text-white/60">
-            <span className="font-medium text-white">{skills.length}</span> {skills.length === 1 ? 'skill' : 'skills'}
+            <span className="font-medium text-white">{skills.length}</span>{' '}
+            {skills.length === 1 ? 'skill' : 'skills'}
           </div>
         </motion.div>
 
@@ -386,7 +419,7 @@ export default function SkillsPage() {
             <p className="text-sm text-white/60 leading-relaxed">
               Are you sure you want to delete{' '}
               <span className="font-semibold text-white">
-                {skills.find(s => s.id === deleteConfirmId)?.name ?? 'this skill'}
+                {skills.find((s) => s.id === deleteConfirmId)?.name ?? 'this skill'}
               </span>
               ? This cannot be undone.
             </p>

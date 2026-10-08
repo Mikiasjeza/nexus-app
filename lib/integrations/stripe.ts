@@ -118,10 +118,7 @@ class StripeService {
           })
           return false
         } catch (error) {
-          if (
-            error instanceof Prisma.PrismaClientKnownRequestError &&
-            error.code === 'P2002'
-          ) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             return true
           }
           throw error
@@ -247,17 +244,16 @@ class StripeService {
       return session.url || ''
     } catch (error) {
       console.error('Stripe checkout error:', error)
-      throw new Error(`Failed to create checkout session: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to create checkout session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Create billing portal session
    */
-  async createBillingPortalSession(
-    userId: string,
-    returnUrl: string
-  ): Promise<string> {
+  async createBillingPortalSession(userId: string, returnUrl: string): Promise<string> {
     this.assertConfigured()
     const customerId = await this.getOrCreateCustomer(userId)
     const safeReturnUrl = this.ensureValidAppUrl(returnUrl)
@@ -271,17 +267,16 @@ class StripeService {
       return session.url
     } catch (error) {
       console.error('Stripe portal error:', error)
-      throw new Error(`Failed to create portal session: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to create portal session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Handle webhook events
    */
-  async handleWebhook(
-    payload: string | Buffer,
-    signature: string
-  ): Promise<Stripe.Event> {
+  async handleWebhook(payload: string | Buffer, signature: string): Promise<Stripe.Event> {
     this.assertConfigured()
     assertStripeWebhookEnv()
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string
@@ -289,11 +284,7 @@ class StripeService {
     let event: Stripe.Event | null = null
 
     try {
-      event = stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        webhookSecret
-      )
+      event = stripe.webhooks.constructEvent(payload, signature, webhookSecret)
       const shouldSkip = await this.beginWebhookProcessing(event)
       if (shouldSkip) {
         return event
@@ -340,21 +331,28 @@ class StripeService {
         }
       }
       console.error('Stripe webhook error:', error)
-      throw new Error(`Webhook processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Webhook processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Cancel subscription
    */
-  async cancelSubscription(subscriptionId: string, cancelAtPeriodEnd: boolean = true): Promise<void> {
+  async cancelSubscription(
+    subscriptionId: string,
+    cancelAtPeriodEnd: boolean = true
+  ): Promise<void> {
     try {
       await stripe.subscriptions.update(subscriptionId, {
         cancel_at_period_end: cancelAtPeriodEnd,
       })
     } catch (error) {
       console.error('Stripe cancel error:', error)
-      throw new Error(`Failed to cancel subscription: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to cancel subscription: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 }

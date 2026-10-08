@@ -4,7 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Nexus',
     short_name: 'Nexus',
-    description: 'Revolutionary AI-powered platform for universal skill verification and talent intelligence.',
+    description:
+      'Revolutionary AI-powered platform for universal skill verification and talent intelligence.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

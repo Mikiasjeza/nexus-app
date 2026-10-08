@@ -17,22 +17,38 @@ import AppPageShell from '@/components/Layout/AppPageShell'
 
 // Lazy load heavy chart components
 const ProgressChart = dynamic(() => import('@/components/Analytics/ProgressChart'), {
-  loading: () => <div className="h-64 flex items-center justify-center"><Loader /></div>,
+  loading: () => (
+    <div className="h-64 flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
   ssr: false,
 })
 
 const SkillHeatmap = dynamic(() => import('@/components/Analytics/SkillHeatmap'), {
-  loading: () => <div className="h-64 flex items-center justify-center"><Loader /></div>,
+  loading: () => (
+    <div className="h-64 flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
   ssr: false,
 })
 
 const TimelineView = dynamic(() => import('@/components/Analytics/TimelineView'), {
-  loading: () => <div className="h-64 flex items-center justify-center"><Loader /></div>,
+  loading: () => (
+    <div className="h-64 flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
   ssr: false,
 })
 
 const GapAnalysis = dynamic(() => import('@/components/Analytics/GapAnalysis'), {
-  loading: () => <div className="h-64 flex items-center justify-center"><Loader /></div>,
+  loading: () => (
+    <div className="h-64 flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
   ssr: false,
 })
 
@@ -45,24 +61,30 @@ export default function AnalyticsPage() {
   const isGuestPreview = user?.id === 'guest-user'
 
   useEffect(() => {
-    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+    authApi
+      .getCurrentUser()
+      .then(setUser)
+      .catch(() => setUser(null))
   }, [])
 
   const analyticsSummary = useMemo(() => {
     const pillarCounts = SKILL_PILLAR_DETAILS.map((pillar) => ({
       ...pillar,
-      count: skills.filter(
-        (skill) => normalizeSkillCategory(skill.category) === pillar.category
-      ).length,
+      count: skills.filter((skill) => normalizeSkillCategory(skill.category) === pillar.category)
+        .length,
       color: CATEGORY_COLORS[pillar.category],
     }))
     const strongestPillar = [...pillarCounts].sort((a, b) => b.count - a.count)[0]
     const weakestPillar = [...pillarCounts].sort((a, b) => a.count - b.count)[0]
     const averageProgress =
-      skills.length > 0 ? Math.round(skills.reduce((sum, s) => sum + s.progress, 0) / skills.length) : 0
+      skills.length > 0
+        ? Math.round(skills.reduce((sum, s) => sum + s.progress, 0) / skills.length)
+        : 0
     const verifiedCoverage =
-      skills.length > 0 ? Math.round((skills.filter((skill) => skill.verified).length / skills.length) * 100) : 0
-    const updatedThisMonth = skills.filter(s => {
+      skills.length > 0
+        ? Math.round((skills.filter((skill) => skill.verified).length / skills.length) * 100)
+        : 0
+    const updatedThisMonth = skills.filter((s) => {
       const updateDate = new Date(s.updatedAt)
       const monthAgo = new Date()
       monthAgo.setMonth(monthAgo.getMonth() - 1)
@@ -75,9 +97,7 @@ export default function AnalyticsPage() {
     const total = skills.length
     const pillarSpread = pillarCounts.filter((pillar) => pillar.count > 0).length
     const topPillarConcentration =
-      total > 0 && strongestPillar
-        ? Math.round((strongestPillar.count / total) * 100)
-        : 0
+      total > 0 && strongestPillar ? Math.round((strongestPillar.count / total) * 100) : 0
     const verifiedByPillar = SKILL_PILLAR_DETAILS.map((pillar) => {
       const inPillar = skills.filter(
         (skill) => normalizeSkillCategory(skill.category) === pillar.category
@@ -122,7 +142,9 @@ export default function AnalyticsPage() {
     if (isGuestPreview) return
     setExporting(true)
     try {
-      const res = await fetch(`/api/analytics/export?format=${exportFormat}`, { credentials: 'include' })
+      const res = await fetch(`/api/analytics/export?format=${exportFormat}`, {
+        credentials: 'include',
+      })
       if (!res.ok) throw new Error('Export failed')
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
@@ -172,7 +194,8 @@ export default function AnalyticsPage() {
                   Analytics
                 </h1>
                 <p className="text-lg text-white/68 max-w-xl">
-                  See how credibility compounds across your profile, where momentum is building, and what needs proof next.
+                  See how credibility compounds across your profile, where momentum is building, and
+                  what needs proof next.
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -211,7 +234,9 @@ export default function AnalyticsPage() {
                 },
               ].map((item) => (
                 <div key={item.label} className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {item.label}
+                  </div>
                   <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
                 </div>
               ))}
@@ -220,8 +245,12 @@ export default function AnalyticsPage() {
         </motion.div>
 
         <div className="gradient-border-card p-8 mb-12">
-          <div className="text-xs uppercase tracking-[0.22em] text-white/45 mb-3">Signal narrative</div>
-          <p className="text-lg text-white/85 leading-relaxed max-w-4xl">{analyticsSummary.insightLead}</p>
+          <div className="text-xs uppercase tracking-[0.22em] text-white/45 mb-3">
+            Signal narrative
+          </div>
+          <p className="text-lg text-white/85 leading-relaxed max-w-4xl">
+            {analyticsSummary.insightLead}
+          </p>
           {skills.length > 0 && (
             <div className="mt-8 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
@@ -266,15 +295,13 @@ export default function AnalyticsPage() {
           {[
             {
               icon: TrendingUp,
-              value: skills.length > 0
-                ? analyticsSummary.averageProgress
-                : 0,
+              value: skills.length > 0 ? analyticsSummary.averageProgress : 0,
               label: 'Average Progress',
               suffix: '%',
             },
             {
               icon: BarChart3,
-              value: skills.filter(s => s.verified).length,
+              value: skills.filter((s) => s.verified).length,
               label: 'Verified Skills',
             },
             {
@@ -284,7 +311,7 @@ export default function AnalyticsPage() {
             },
             {
               icon: Calendar,
-              value: skills.filter(s => {
+              value: skills.filter((s) => {
                 const updateDate = new Date(s.updatedAt)
                 const monthAgo = new Date()
                 monthAgo.setMonth(monthAgo.getMonth() - 1)
@@ -292,7 +319,7 @@ export default function AnalyticsPage() {
               }).length,
               label: 'Updated This Month',
             },
-            ].map((stat) => {
+          ].map((stat) => {
             const Icon = stat.icon
             return (
               <div key={stat.label}>
@@ -303,9 +330,12 @@ export default function AnalyticsPage() {
                     </div>
                   </div>
                   <div className="text-4xl font-bold text-white mb-2 tracking-tight tabular-nums">
-                    {stat.value}{stat.suffix || ''}
+                    {stat.value}
+                    {stat.suffix || ''}
                   </div>
-                  <div className="text-xs text-white/60 uppercase tracking-wider font-medium">{stat.label}</div>
+                  <div className="text-xs text-white/60 uppercase tracking-wider font-medium">
+                    {stat.label}
+                  </div>
                 </div>
               </div>
             )
@@ -316,17 +346,29 @@ export default function AnalyticsPage() {
           <div className="gradient-border-card p-8">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-white mb-2">Insight Summary</h2>
-              <p className="text-white/60">A quick read on where your proof is strongest and what deserves attention next.</p>
+              <p className="text-white/60">
+                A quick read on where your proof is strongest and what deserves attention next.
+              </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">Strongest pillar</div>
-                <div className="mt-2 text-xl font-semibold text-white">{analyticsSummary.strongestPillar?.category ?? 'None yet'}</div>
-                <div className="mt-2 text-sm text-white/60">{analyticsSummary.strongestPillar?.count ?? 0} skills represented</div>
+                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  Strongest pillar
+                </div>
+                <div className="mt-2 text-xl font-semibold text-white">
+                  {analyticsSummary.strongestPillar?.category ?? 'None yet'}
+                </div>
+                <div className="mt-2 text-sm text-white/60">
+                  {analyticsSummary.strongestPillar?.count ?? 0} skills represented
+                </div>
               </div>
               <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">Needs more proof</div>
-                <div className="mt-2 text-xl font-semibold text-white">{analyticsSummary.topProofOpportunity?.name ?? 'No obvious gap'}</div>
+                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  Needs more proof
+                </div>
+                <div className="mt-2 text-xl font-semibold text-white">
+                  {analyticsSummary.topProofOpportunity?.name ?? 'No obvious gap'}
+                </div>
                 <div className="mt-2 text-sm text-white/60">
                   {analyticsSummary.topProofOpportunity
                     ? `${analyticsSummary.topProofOpportunity.progress}% progress and still unverified`
@@ -334,17 +376,28 @@ export default function AnalyticsPage() {
                 </div>
               </div>
               <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">Verified coverage</div>
-                <div className="mt-2 text-xl font-semibold text-white">{analyticsSummary.verifiedCoverage}%</div>
-                <div className="mt-2 text-sm text-white/60">How much of your visible skill set is backed by verified signals.</div>
+                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  Verified coverage
+                </div>
+                <div className="mt-2 text-xl font-semibold text-white">
+                  {analyticsSummary.verifiedCoverage}%
+                </div>
+                <div className="mt-2 text-sm text-white/60">
+                  How much of your visible skill set is backed by verified signals.
+                </div>
               </div>
               <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">Underrepresented pillar</div>
-                <div className="mt-2 text-xl font-semibold text-white">{analyticsSummary.weakestPillar?.category ?? 'Learning & Growth'}</div>
+                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  Underrepresented pillar
+                </div>
+                <div className="mt-2 text-xl font-semibold text-white">
+                  {analyticsSummary.weakestPillar?.category ?? 'Learning & Growth'}
+                </div>
                 <div className="mt-2 text-sm text-white/60">
                   {analyticsSummary.weakestPillar?.count === 0
                     ? 'No skills in this pillar yet—add one to round out your passport.'
-                    : analyticsSummary.lowestVerifiedPillar && analyticsSummary.lowestVerifiedPillar.total > 0
+                    : analyticsSummary.lowestVerifiedPillar &&
+                        analyticsSummary.lowestVerifiedPillar.total > 0
                       ? `Lowest pillar verification is ${analyticsSummary.lowestVerifiedPillar.shortLabel} at ${analyticsSummary.lowestVerifiedPillar.rate}%—prioritize proof there.`
                       : 'Add stronger proof here to make your profile feel more balanced.'}
                 </div>
@@ -355,7 +408,9 @@ export default function AnalyticsPage() {
           <div className="gradient-border-card p-8">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-white mb-2">Pillar Recommendations</h2>
-              <p className="text-white/60">Three focused actions that would improve the quality of your passport fastest.</p>
+              <p className="text-white/60">
+                Three focused actions that would improve the quality of your passport fastest.
+              </p>
             </div>
             <div className="space-y-4">
               {[
@@ -369,7 +424,10 @@ export default function AnalyticsPage() {
                   ? `You updated ${analyticsSummary.updatedThisMonth} skills recently. Capture that momentum with a new verification run or share update.`
                   : 'Refresh one stale skill this month so your profile shows visible momentum.',
               ].map((line) => (
-                <div key={line} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/72">
+                <div
+                  key={line}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/72"
+                >
                   {line}
                 </div>
               ))}

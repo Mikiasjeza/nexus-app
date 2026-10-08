@@ -51,7 +51,9 @@ export function getMetadataBase(): URL {
 
 export const env = {
   mode,
-  isGuestMode: process.env.GUEST_MODE === 'true' || (mode !== 'production' && process.env.GUEST_MODE !== 'false'),
+  isGuestMode:
+    process.env.GUEST_MODE === 'true' ||
+    (mode !== 'production' && process.env.GUEST_MODE !== 'false'),
   isProd: mode === 'production',
   get appUrl() {
     return getAppUrl()
@@ -72,11 +74,7 @@ export const env = {
 }
 
 export function getSupportInbox(): string {
-  return (
-    process.env.CONTACT_EMAIL ||
-    process.env.EMAIL_FROM ||
-    'support@nexus.ai'
-  ).trim()
+  return (process.env.CONTACT_EMAIL || process.env.EMAIL_FROM || 'support@nexus.ai').trim()
 }
 
 export function getLaunchReadinessIssues(): string[] {

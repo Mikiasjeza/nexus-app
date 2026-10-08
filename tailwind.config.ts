@@ -47,14 +47,30 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: [
+          'var(--font-inter)',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
         display: ['var(--font-display)', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'display-2xl': ['4.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
-        'display-xl': ['3.75rem', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'display-2xl': [
+          '4.5rem',
+          { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' },
+        ],
+        'display-xl': [
+          '3.75rem',
+          { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' },
+        ],
         'display-lg': ['3rem', { lineHeight: '1.2', letterSpacing: '-0.01em', fontWeight: '600' }],
-        'display-md': ['2.25rem', { lineHeight: '1.3', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'display-md': [
+          '2.25rem',
+          { lineHeight: '1.3', letterSpacing: '-0.01em', fontWeight: '600' },
+        ],
       },
       spacing: {
         '18': '4.5rem',
@@ -68,12 +84,12 @@ const config: Config = {
         '4xl': '2rem',
       },
       boxShadow: {
-        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+        soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
         'soft-lg': '0 10px 40px -10px rgba(0, 0, 0, 0.1)',
-        'premium': '0 20px 60px -15px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1)',
+        premium: '0 20px 60px -15px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1)',
         'premium-lg': '0 30px 80px -20px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1)',
         'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
-        'glow': '0 0 20px rgba(99, 102, 241, 0.3)',
+        glow: '0 0 20px rgba(99, 102, 241, 0.3)',
         'glow-lg': '0 0 40px rgba(99, 102, 241, 0.4)',
       },
       backdropBlur: {
@@ -86,9 +102,9 @@ const config: Config = {
         'slide-down': 'slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-in-right': 'slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         'scale-in': 'scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-        'shimmer': 'shimmer 3s infinite',
+        shimmer: 'shimmer 3s infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'float': 'float 6s ease-in-out infinite',
+        float: 'float 6s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -121,7 +137,7 @@ const config: Config = {
         },
       },
       transitionTimingFunction: {
-        'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
         'bounce-soft': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       },
       transitionDuration: {

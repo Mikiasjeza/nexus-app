@@ -9,7 +9,7 @@ import Link from 'next/link'
  * MetaLab-style: Real, interactive, responds to cursor
  * Gradient shield with "S" negative space
  */
-export default function Logo3D({ 
+export default function Logo3D({
   size = 'default',
   interactive = true,
   className = '',
@@ -19,13 +19,19 @@ export default function Logo3D({
   className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  
+
   // Motion values for 3D rotation
   const x = useMotionValue(0)
   const y = useMotionValue(0)
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [15, -15]), { stiffness: 300, damping: 30 })
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-15, 15]), { stiffness: 300, damping: 30 })
-  
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [15, -15]), {
+    stiffness: 300,
+    damping: 30,
+  })
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-15, 15]), {
+    stiffness: 300,
+    damping: 30,
+  })
+
   // Scale on hover
   const scale = useSpring(useMotionValue(1), { stiffness: 300, damping: 30 })
 
@@ -34,15 +40,15 @@ export default function Logo3D({
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!ref.current) return
-      
+
       const rect = ref.current.getBoundingClientRect()
       const centerX = rect.left + rect.width / 2
       const centerY = rect.top + rect.height / 2
-      
+
       // Normalize to -0.5 to 0.5
       const normalizedX = (e.clientX - centerX) / rect.width
       const normalizedY = (e.clientY - centerY) / rect.height
-      
+
       x.set(normalizedX)
       y.set(normalizedY)
     }
@@ -116,7 +122,7 @@ export default function Logo3D({
               <stop offset="100%" stopColor="#a3e635" />
             </linearGradient>
           </defs>
-          
+
           {/* Shield shape with 3D layers */}
           {/* Back layer (shadow) */}
           <path
@@ -125,21 +131,21 @@ export default function Logo3D({
             opacity="0.3"
             transform="translate(2, 2)"
           />
-          
+
           {/* Main shield */}
           <path
             d="M 60 10 Q 90 10 105 30 Q 110 50 110 70 Q 110 100 90 120 Q 70 130 60 135 Q 50 130 30 120 Q 10 100 10 70 Q 10 50 15 30 Q 30 10 60 10 Z"
             fill="url(#shieldGradient)"
             className="transition-all duration-300"
           />
-          
+
           {/* Highlight layer for 3D effect */}
           <path
             d="M 60 10 Q 85 12 98 30 Q 105 45 108 65 Q 108 90 92 110 Q 75 125 60 130 Q 45 125 28 110 Q 12 90 12 65 Q 15 45 22 30 Q 35 12 60 10 Z"
             fill="url(#shieldGradientLight)"
             opacity="0.4"
           />
-          
+
           {/* Bold, flowing uppercase S - single continuous path for maximum visibility */}
           <path
             d="M 30 30
@@ -170,7 +176,7 @@ export default function Logo3D({
             strokeWidth="2"
             strokeLinejoin="round"
           />
-          
+
           {/* Inner highlight for depth and visibility */}
           <path
             d="M 35 35
@@ -200,7 +206,7 @@ export default function Logo3D({
           />
         </svg>
       </motion.div>
-      
+
       {/* Ambient glow effect */}
       <motion.div
         className="absolute inset-0 rounded-full blur-xl opacity-20"

@@ -26,7 +26,14 @@ function escapeCsv(val: unknown): string {
 }
 
 function generateCSV(
-  skills: { name: string; level: string; category: string; progress: number; createdAt: string; updatedAt: string }[],
+  skills: {
+    name: string
+    level: string
+    category: string
+    progress: number
+    createdAt: string
+    updatedAt: string
+  }[],
   activities: { type: string; skillName: string | null; message: string; timestamp: Date }[],
   summary: {
     totalSkills: number
@@ -36,7 +43,7 @@ function generateCSV(
   }
 ): string {
   const skillHeaders = ['Skill Name', 'Level', 'Pillar', 'Progress', 'Created At', 'Updated At']
-  const skillRows = skills.map(s => [
+  const skillRows = skills.map((s) => [
     escapeCsv(s.name),
     escapeCsv(s.level),
     escapeCsv(s.category),
@@ -45,7 +52,7 @@ function generateCSV(
     escapeCsv(s.updatedAt),
   ])
   const activityHeaders = ['Type', 'Skill', 'Message', 'Timestamp']
-  const activityRows = activities.map(a => [
+  const activityRows = activities.map((a) => [
     escapeCsv(a.type),
     escapeCsv(a.skillName),
     escapeCsv(a.message),
@@ -58,15 +65,17 @@ function generateCSV(
     '',
     'Pillars',
     'Pillar,Count',
-    ...Object.entries(summary.pillarCounts).map(([pillar, count]) => `${escapeCsv(pillar)},${escapeCsv(count)}`),
+    ...Object.entries(summary.pillarCounts).map(
+      ([pillar, count]) => `${escapeCsv(pillar)},${escapeCsv(count)}`
+    ),
     '',
     'Skills',
     skillHeaders.join(','),
-    ...skillRows.map(r => r.join(',')),
+    ...skillRows.map((r) => r.join(',')),
     '',
     'Activities',
     activityHeaders.join(','),
-    ...activityRows.map(r => r.join(',')),
+    ...activityRows.map((r) => r.join(',')),
   ].join('\n')
 }
 
@@ -106,7 +115,9 @@ export async function GET(request: NextRequest) {
       verifiedSkills: mappedSkills.filter((skill) => skill.verified).length,
       averageProgress:
         mappedSkills.length > 0
-          ? Math.round(mappedSkills.reduce((sum, skill) => sum + skill.progress, 0) / mappedSkills.length)
+          ? Math.round(
+              mappedSkills.reduce((sum, skill) => sum + skill.progress, 0) / mappedSkills.length
+            )
           : 0,
       pillarCounts: Object.fromEntries(
         SKILL_PILLAR_DETAILS.map((pillar) => [
@@ -131,7 +142,7 @@ export async function GET(request: NextRequest) {
         exportedAt: new Date().toISOString(),
         summary,
         skills: mappedSkills,
-        activities: activities.map(a => ({
+        activities: activities.map((a) => ({
           id: a.id,
           type: a.type,
           skillId: a.skillId,

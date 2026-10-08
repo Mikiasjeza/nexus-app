@@ -14,10 +14,7 @@ export const dynamic = 'force-dynamic'
 /** Same double opt-in the talent search uses (api/employer/talent). */
 const EMPLOYER_VISIBLE = { publicProfile: true, discoverableByEmployers: true } as const
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -67,10 +64,7 @@ export async function GET(
     })
   } catch (e) {
     console.error('Pool get error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load pool' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load pool' }, { status: 500 })
   }
 }
 
@@ -80,10 +74,7 @@ const patchSchema = z.object({
   removeCandidateId: z.string().optional(),
 })
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -145,17 +136,11 @@ export async function PATCH(
     })
   } catch (e) {
     console.error('Pool update error:', e)
-    return NextResponse.json(
-      { error: 'Failed to update pool' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to update pool' }, { status: 500 })
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -180,9 +165,6 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch (e) {
     console.error('Pool delete error:', e)
-    return NextResponse.json(
-      { error: 'Failed to delete pool' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to delete pool' }, { status: 500 })
   }
 }

@@ -68,7 +68,11 @@ export default function SettingsPage() {
     const result = new URLSearchParams(window.location.search).get('github')
     if (!result) return
     if (result === 'connected') {
-      addToast({ type: 'success', title: 'GitHub connected', message: 'You can now sign in with GitHub.' })
+      addToast({
+        type: 'success',
+        title: 'GitHub connected',
+        message: 'You can now sign in with GitHub.',
+      })
     } else if (result === 'already_linked') {
       addToast({
         type: 'error',
@@ -208,7 +212,8 @@ export default function SettingsPage() {
               Settings
             </h1>
             <p className="text-lg text-white/68 max-w-2xl">
-              Shape how your profile appears, how employers discover you, and how your Nexus identity behaves.
+              Shape how your profile appears, how employers discover you, and how your Nexus
+              identity behaves.
             </p>
           </div>
         </motion.div>
@@ -216,7 +221,8 @@ export default function SettingsPage() {
         <div className="space-y-8">
           {isGuestPreview && (
             <div className="border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
-              You are viewing Settings in guest preview mode. Actions that change account data are disabled.
+              You are viewing Settings in guest preview mode. Actions that change account data are
+              disabled.
             </div>
           )}
           {/* Profile Information */}
@@ -245,7 +251,9 @@ export default function SettingsPage() {
                     id="settings-name"
                     type="text"
                     value={formData.name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="metalab-input"
                     placeholder="Your full name"
                   />
@@ -273,7 +281,9 @@ export default function SettingsPage() {
                   <textarea
                     id="settings-bio"
                     value={formData.bio}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, bio: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setFormData({ ...formData, bio: e.target.value })
+                    }
                     rows={4}
                     className="metalab-input resize-none"
                     placeholder="Tell us about yourself..."
@@ -319,9 +329,9 @@ export default function SettingsPage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="mb-1 font-medium text-white">Discoverable by employers</h3>
                     <p className="text-sm leading-relaxed text-white/55">
-                      Let employer search include your profile when skills match. Requires Public Profile. Employers
-                      see your name, bio, avatar and public skills, never your email. Turning this off removes you
-                      from their results and shortlists.
+                      Let employer search include your profile when skills match. Requires Public
+                      Profile. Employers see your name, bio, avatar and public skills, never your
+                      email. Turning this off removes you from their results and shortlists.
                     </p>
                   </div>
                   <ToggleSwitch
@@ -338,7 +348,9 @@ export default function SettingsPage() {
                     transition={{ duration: 0.3 }}
                     className="rounded-xl border border-white/[0.08] bg-black/25 p-5"
                   >
-                    <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Shareable link</p>
+                    <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                      Shareable link
+                    </p>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <input
                         type="text"
@@ -385,7 +397,10 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="space-y-3">
-                <Link href="/auth/forgot-password" className={isGuestPreview ? 'pointer-events-none block' : 'block'}>
+                <Link
+                  href="/auth/forgot-password"
+                  className={isGuestPreview ? 'pointer-events-none block' : 'block'}
+                >
                   <Button
                     variant="outline"
                     fullWidth
@@ -396,7 +411,10 @@ export default function SettingsPage() {
                   </Button>
                 </Link>
                 {/* Full navigation (not <Link>): the OAuth flow leaves the app. */}
-                <a href="/api/auth/github/authorize" className={isGuestPreview ? 'pointer-events-none block' : 'block'}>
+                <a
+                  href="/api/auth/github/authorize"
+                  className={isGuestPreview ? 'pointer-events-none block' : 'block'}
+                >
                   <Button variant="outline" fullWidth disabled={isGuestPreview}>
                     Connect GitHub
                   </Button>
@@ -415,10 +433,15 @@ export default function SettingsPage() {
                 <Shield className="h-5 w-5 text-cyan-200/90" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold tracking-tight text-white">Privacy &amp; data</h2>
+                <h2 className="text-xl font-semibold tracking-tight text-white">
+                  Privacy &amp; data
+                </h2>
                 <p className="mt-1 text-sm text-white/55">
                   Your data, your call. See our{' '}
-                  <Link href="/privacy" className="underline decoration-white/20 underline-offset-2 hover:text-white">
+                  <Link
+                    href="/privacy"
+                    className="underline decoration-white/20 underline-offset-2 hover:text-white"
+                  >
                     Privacy Policy
                   </Link>
                   .
@@ -430,7 +453,8 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="mb-1 font-medium text-white">Download my data</h3>
                   <p className="text-sm text-white/55">
-                    A JSON copy of your account, skills, evidence, AI results, activity and company memberships.
+                    A JSON copy of your account, skills, evidence, AI results, activity and company
+                    memberships.
                   </p>
                 </div>
                 <Button
@@ -446,7 +470,9 @@ export default function SettingsPage() {
               <div className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-black/25 p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="mb-1 font-medium text-white">Cookie settings</h3>
-                  <p className="text-sm text-white/55">Essential cookies only, unless you turn on diagnostics.</p>
+                  <p className="text-sm text-white/55">
+                    Essential cookies only, unless you turn on diagnostics.
+                  </p>
                 </div>
                 <CookiePreferencesButton className="rounded-lg border border-white/15 px-4 py-2 text-sm text-white transition-colors hover:bg-white/5">
                   Manage cookies
@@ -455,9 +481,10 @@ export default function SettingsPage() {
               <div className="rounded-xl border border-red-500/30 bg-black/25 p-5">
                 <h3 className="mb-1 font-medium text-white">Delete account</h3>
                 <p className="mb-4 text-sm text-white/55">
-                  Permanently deletes your account, skills, evidence files and history, removes you from employer
-                  shortlists, and cancels any active subscription. Companies where you are the only member are deleted
-                  too. This can&apos;t be undone, so consider downloading your data first.
+                  Permanently deletes your account, skills, evidence files and history, removes you
+                  from employer shortlists, and cancels any active subscription. Companies where you
+                  are the only member are deleted too. This can&apos;t be undone, so consider
+                  downloading your data first.
                 </p>
                 {deleteOpen ? (
                   <div className="space-y-3">
@@ -469,7 +496,9 @@ export default function SettingsPage() {
                       type="text"
                       autoComplete="off"
                       value={deleteConfirm}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeleteConfirm(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setDeleteConfirm(e.target.value)
+                      }
                       className="metalab-input"
                     />
                     <div className="flex flex-wrap gap-3">
@@ -494,7 +523,11 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 ) : (
-                  <Button variant="danger" onClick={() => setDeleteOpen(true)} disabled={isGuestPreview}>
+                  <Button
+                    variant="danger"
+                    onClick={() => setDeleteOpen(true)}
+                    disabled={isGuestPreview}
+                  >
                     Delete account
                   </Button>
                 )}

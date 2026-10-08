@@ -12,7 +12,15 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json()
-    const allowed = ['name', 'bio', 'avatar', 'publicProfile', 'shareableId', 'customSlug', 'discoverableByEmployers'] as const
+    const allowed = [
+      'name',
+      'bio',
+      'avatar',
+      'publicProfile',
+      'shareableId',
+      'customSlug',
+      'discoverableByEmployers',
+    ] as const
     const updates: Record<string, unknown> = {}
     for (const key of allowed) {
       if (body[key] === undefined) continue
@@ -31,10 +39,7 @@ export async function PATCH(request: Request) {
           where: { shareableId: slug, id: { not: userId } },
         })
         if (existing) {
-          return NextResponse.json(
-            { error: 'This username is already taken' },
-            { status: 409 }
-          )
+          return NextResponse.json({ error: 'This username is already taken' }, { status: 409 })
         }
         updates.shareableId = slug
       } else {
@@ -63,9 +68,6 @@ export async function PATCH(request: Request) {
     })
   } catch (e) {
     console.error('Profile update error:', e)
-    return NextResponse.json(
-      { error: 'Something went wrong' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }

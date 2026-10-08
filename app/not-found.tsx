@@ -26,7 +26,9 @@ export default function NotFound() {
             404
           </motion.div>
 
-          <h1 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">Page not found</h1>
+          <h1 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
+            Page not found
+          </h1>
 
           <p className="mx-auto mb-10 max-w-md text-lg leading-relaxed text-white/60">
             The page you&apos;re looking for doesn&apos;t exist or has been moved.
@@ -37,7 +39,11 @@ export default function NotFound() {
               <Home className="h-4 w-4" />
               Go home
             </Link>
-            <Button variant="outline" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => window.history.back()}>
+            <Button
+              variant="outline"
+              leftIcon={<ArrowLeft className="h-4 w-4" />}
+              onClick={() => window.history.back()}
+            >
               Go back
             </Button>
           </div>

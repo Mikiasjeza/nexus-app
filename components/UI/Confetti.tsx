@@ -14,15 +14,17 @@ export default function Confetti({
   count = 100,
   colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899'],
 }: ConfettiProps) {
-  const [confetti, setConfetti] = useState<Array<{
-    id: number
-    x: number
-    y: number
-    rotation: number
-    scale: number
-    color: string
-    shape: 'circle' | 'square' | 'triangle'
-  }>>([])
+  const [confetti, setConfetti] = useState<
+    Array<{
+      id: number
+      x: number
+      y: number
+      rotation: number
+      scale: number
+      color: string
+      shape: 'circle' | 'square' | 'triangle'
+    }>
+  >([])
 
   useEffect(() => {
     if (trigger) {
@@ -33,7 +35,10 @@ export default function Confetti({
         rotation: Math.random() * 360,
         scale: Math.random() * 0.5 + 0.5,
         color: colors[Math.floor(Math.random() * colors.length)],
-        shape: ['circle', 'square', 'triangle'][Math.floor(Math.random() * 3)] as 'circle' | 'square' | 'triangle',
+        shape: ['circle', 'square', 'triangle'][Math.floor(Math.random() * 3)] as
+          | 'circle'
+          | 'square'
+          | 'triangle',
       }))
       setConfetti(newConfetti)
     }
@@ -68,16 +73,10 @@ export default function Confetti({
           }}
         >
           {piece.shape === 'circle' && (
-            <div
-              className="w-full h-full rounded-full"
-              style={{ backgroundColor: piece.color }}
-            />
+            <div className="w-full h-full rounded-full" style={{ backgroundColor: piece.color }} />
           )}
           {piece.shape === 'square' && (
-            <div
-              className="w-full h-full"
-              style={{ backgroundColor: piece.color }}
-            />
+            <div className="w-full h-full" style={{ backgroundColor: piece.color }} />
           )}
           {piece.shape === 'triangle' && (
             <div

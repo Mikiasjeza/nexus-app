@@ -4,11 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Loader from '@/components/UI/Loader'
 
-export default function EmployerLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function EmployerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [checking, setChecking] = useState(true)

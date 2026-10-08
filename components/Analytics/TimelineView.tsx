@@ -11,14 +11,14 @@ interface TimelineViewProps {
 
 export default function TimelineView({ skills }: TimelineViewProps) {
   // Sort skills by creation date for timeline
-  const sortedSkills = [...skills].sort((a, b) => 
-    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  const sortedSkills = [...skills].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   )
 
   return (
     <div className="border border-black/10 dark:border-white/10 p-6">
       <h2 className="text-xl font-bold text-black dark:text-white mb-6">Skill Timeline</h2>
-        <div className="relative">
+      <div className="relative">
         {/* Timeline line - animates from past to present */}
         <motion.div
           initial={{ scaleY: 0 }}
@@ -27,12 +27,12 @@ export default function TimelineView({ skills }: TimelineViewProps) {
           transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="absolute left-4 top-0 bottom-0 w-0.5 origin-top bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500"
         />
-        
+
         <div className="space-y-6">
           {sortedSkills.map((skill, index) => {
             const levelColor = LEVEL_COLORS[skill.level]
             const createdAt = new Date(skill.createdAt)
-            
+
             return (
               <motion.div
                 key={skill.id}
@@ -59,7 +59,7 @@ export default function TimelineView({ skills }: TimelineViewProps) {
                   className="absolute left-2 top-2 w-4 h-4 rounded-full border-2 border-white dark:border-black shadow-lg"
                   style={{ backgroundColor: levelColor }}
                 />
-                
+
                 {/* Skill card - historical milestones fade in */}
                 <div className="border border-black/10 dark:border-white/10 p-4 bg-white dark:bg-black hover:border-black dark:hover:border-white transition-colors">
                   <div className="flex items-start justify-between mb-2">

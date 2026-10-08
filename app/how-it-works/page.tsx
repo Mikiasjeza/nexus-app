@@ -29,7 +29,8 @@ export default function HowItWorksPage() {
               </span>
             </h1>
             <p className="max-w-[38ch] text-base leading-relaxed text-white/65 md:text-2xl md:max-w-2xl">
-              A simple process for turning skills across five pillars into proof you can verify and share.
+              A simple process for turning skills across five pillars into proof you can verify and
+              share.
             </p>
           </motion.div>
         </section>
@@ -56,7 +57,8 @@ export default function HowItWorksPage() {
                 From first skill to shared passport in under 10 minutes.
               </p>
               <p className="mt-2 text-sm text-white/45">
-                The four steps below are the workflow. Your skills still roll up into five pillars: build, create, explain, lead, and grow.
+                The four steps below are the workflow. Your skills still roll up into five pillars:
+                build, create, explain, lead, and grow.
               </p>
             </motion.div>
 
@@ -67,28 +69,48 @@ export default function HowItWorksPage() {
                   title: 'Add Your Skills',
                   description:
                     'Start by adding skills to your passport. Define your proficiency level, add descriptions, and attach evidence of your capabilities.',
-                  features: ['Five skill pillars', 'Progress tracking', 'Evidence attachments', 'Notes and descriptions'],
+                  features: [
+                    'Five skill pillars',
+                    'Progress tracking',
+                    'Evidence attachments',
+                    'Notes and descriptions',
+                  ],
                 },
                 {
                   icon: Brain,
                   title: 'AI Verification',
                   description:
                     'Our multimodal AI analyzes your evidence—code repositories, video demonstrations, portfolio pieces, and project outputs—to verify your skills objectively.',
-                  features: ['Multimodal analysis', 'Evidence-based verification', 'Objective assessment', 'Transparent results'],
+                  features: [
+                    'Multimodal analysis',
+                    'Evidence-based verification',
+                    'Objective assessment',
+                    'Transparent results',
+                  ],
                 },
                 {
                   icon: Shield,
                   title: 'Secure & Trusted',
                   description:
                     'Your skills are verified and stored securely. Privacy controls let you choose what to share publicly and what to keep private.',
-                  features: ['Secure storage', 'Privacy controls', 'Verified credentials', 'Trust indicators'],
+                  features: [
+                    'Secure storage',
+                    'Privacy controls',
+                    'Verified credentials',
+                    'Trust indicators',
+                  ],
                 },
                 {
                   icon: Share2,
                   title: 'Share Your Passport',
                   description:
                     'Generate a shareable link to your public skill passport. Share with employers, collaborators, or clients to showcase your verified capabilities.',
-                  features: ['Public profile URL', 'Custom branding', 'Export capabilities', 'Open Graph previews'],
+                  features: [
+                    'Public profile URL',
+                    'Custom branding',
+                    'Export capabilities',
+                    'Open Graph previews',
+                  ],
                 },
               ].map((step, index) => {
                 const Icon = step.icon
@@ -110,8 +132,12 @@ export default function HowItWorksPage() {
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h2 className="mb-4 text-3xl font-bold tracking-tight text-white md:mb-6 md:text-4xl">{step.title}</h2>
-                      <p className="mb-8 text-lg leading-relaxed text-white/65">{step.description}</p>
+                      <h2 className="mb-4 text-3xl font-bold tracking-tight text-white md:mb-6 md:text-4xl">
+                        {step.title}
+                      </h2>
+                      <p className="mb-8 text-lg leading-relaxed text-white/65">
+                        {step.description}
+                      </p>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {step.features.map((feature) => (
                           <div key={feature} className="flex items-start gap-3">
@@ -136,7 +162,9 @@ export default function HowItWorksPage() {
             transition={{ duration: 0.8, ease: easing.primary }}
             className="gradient-border-card mx-auto max-w-3xl p-10 text-center md:p-12"
           >
-            <h2 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-4xl">Ready to get started?</h2>
+            <h2 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-4xl">
+              Ready to get started?
+            </h2>
             <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-white/60">
               Create your Nexus profile in minutes and start verifying your capabilities.
             </p>

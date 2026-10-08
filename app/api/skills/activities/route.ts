@@ -9,10 +9,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
-    if (env.isGuestMode || await hasGuestPreviewSession()) {
+    if (env.isGuestMode || (await hasGuestPreviewSession())) {
       const { searchParams } = new URL(request.url)
       const limitParam = searchParams.get('limit')
-      const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 50, 100) : guestActivities.length
+      const limit = limitParam
+        ? Math.min(parseInt(limitParam, 10) || 50, 100)
+        : guestActivities.length
       return NextResponse.json(guestActivities.slice(0, limit))
     }
 
@@ -32,9 +34,6 @@ export async function GET(request: Request) {
     return NextResponse.json(activities.map(mapActivity))
   } catch (e) {
     console.error('Activities list error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load activities' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load activities' }, { status: 500 })
   }
 }

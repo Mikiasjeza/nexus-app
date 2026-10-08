@@ -5,6 +5,7 @@
 All pages now use MetaLab's exact scroll animation pattern:
 
 ### MetaLab Scroll Animation Pattern
+
 ```typescript
 {
   initial: { opacity: 0, y: 40 },
@@ -94,12 +95,14 @@ All pages now use MetaLab's exact scroll animation pattern:
 ## Key Features
 
 ### 3D Logo Animation (Homepage Only)
+
 - Continuous subtle rotation (20s loop)
 - 3D cube with all 6 faces
 - Ambient glow effect
 - Appears before text (MetaLab pattern)
 
 ### Scroll Animation Consistency
+
 - All sections fade in (opacity 0 → 1)
 - All sections rise (y: 40 → 0)
 - Viewport trigger: `margin: '-100px'`
@@ -110,6 +113,7 @@ All pages now use MetaLab's exact scroll animation pattern:
 ## Result
 
 Every page in the app now has:
+
 - ✅ MetaLab's exact scroll animation pattern
 - ✅ Consistent motion language
 - ✅ Premium, calm, intelligent feel

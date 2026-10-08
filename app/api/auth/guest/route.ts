@@ -21,9 +21,6 @@ export async function POST() {
     return NextResponse.json({ user: guestUser })
   } catch (e) {
     console.error('Guest login error:', e)
-    return NextResponse.json(
-      { error: 'Unable to start guest preview' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Unable to start guest preview' }, { status: 500 })
   }
 }

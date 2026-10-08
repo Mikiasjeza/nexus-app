@@ -52,10 +52,7 @@ export async function GET() {
     })
   } catch (e) {
     console.error('Pools list error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load pools' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load pools' }, { status: 500 })
   }
 }
 
@@ -99,9 +96,6 @@ export async function POST(request: Request) {
     })
   } catch (e) {
     console.error('Pool create error:', e)
-    return NextResponse.json(
-      { error: 'Failed to create pool' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create pool' }, { status: 500 })
   }
 }

@@ -46,11 +46,7 @@ export default function Tooltip({
   }
 
   return (
-    <div
-      className="relative inline-block"
-      onMouseEnter={showTooltip}
-      onMouseLeave={hideTooltip}
-    >
+    <div className="relative inline-block" onMouseEnter={showTooltip} onMouseLeave={hideTooltip}>
       {children}
       <AnimatePresence>
         {isVisible && (

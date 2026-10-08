@@ -15,13 +15,15 @@ export const dynamic = 'force-dynamic'
 
 const MAX_ONBOARDING_SKILLS = 15
 
-const bodySchema = z.object({
-  goals: z.array(z.string()).optional(),
-  skills: z.array(z.string()).optional(),
-}).transform((v) => ({
-  goals: v.goals ?? [],
-  skills: v.skills ?? [],
-}))
+const bodySchema = z
+  .object({
+    goals: z.array(z.string()).optional(),
+    skills: z.array(z.string()).optional(),
+  })
+  .transform((v) => ({
+    goals: v.goals ?? [],
+    skills: v.skills ?? [],
+  }))
 
 export async function POST(request: Request) {
   try {
@@ -37,15 +39,12 @@ export async function POST(request: Request) {
 
     const body = await request.json().catch(() => ({}))
     const parsed = bodySchema.safeParse(body)
-    const { goals, skills } = parsed.success ? parsed.data : { goals: [] as string[], skills: [] as string[] }
-    const sanitizedGoals = Array.from(new Set(goals.map(goal => goal.trim()).filter(Boolean)))
+    const { goals, skills } = parsed.success
+      ? parsed.data
+      : { goals: [] as string[], skills: [] as string[] }
+    const sanitizedGoals = Array.from(new Set(goals.map((goal) => goal.trim()).filter(Boolean)))
     const sanitizedSkills = Array.from(
-      new Set(
-        skills
-          .map(normalizeSkillName)
-          .filter(Boolean)
-          .slice(0, MAX_ONBOARDING_SKILLS)
-      )
+      new Set(skills.map(normalizeSkillName).filter(Boolean).slice(0, MAX_ONBOARDING_SKILLS))
     )
 
     const result = await prisma.$transaction(async (tx) => {
@@ -60,9 +59,7 @@ export async function POST(request: Request) {
         orderBy: { order: 'asc' },
       })
 
-      const existingSkillNames = new Set(
-        existingSkills.map(skill => skill.name.toLowerCase())
-      )
+      const existingSkillNames = new Set(existingSkills.map((skill) => skill.name.toLowerCase()))
 
       const createdSkills: string[] = []
       let nextOrder = existingSkills.length
@@ -89,7 +86,9 @@ export async function POST(request: Request) {
           data: {
             skillId: skill.id,
             userId,
-            changes: [{ field: 'created', oldValue: null, newValue: 'skill created during onboarding' }],
+            changes: [
+              { field: 'created', oldValue: null, newValue: 'skill created during onboarding' },
+            ],
           },
         })
 
@@ -102,9 +101,10 @@ export async function POST(request: Request) {
         data: {
           userId,
           type: 'onboarding_complete',
-          message: createdSkills.length > 0
-            ? `Completed onboarding and added ${createdSkills.length} skills`
-            : 'Completed onboarding',
+          message:
+            createdSkills.length > 0
+              ? `Completed onboarding and added ${createdSkills.length} skills`
+              : 'Completed onboarding',
           metadata: { goals: sanitizedGoals, skills: sanitizedSkills, createdSkills },
         },
       })
@@ -117,9 +117,6 @@ export async function POST(request: Request) {
     console.error('Onboarding complete error:', e)
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
-    return NextResponse.json(
-      { error: 'Failed to complete onboarding' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to complete onboarding' }, { status: 500 })
   }
 }

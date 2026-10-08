@@ -1,4 +1,4 @@
-const API_BASE = typeof window !== 'undefined' ? '' : process.env.NEXT_PUBLIC_APP_URL ?? ''
+const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_APP_URL ?? '')
 
 export const browserLocation = {
   get pathname() {

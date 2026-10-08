@@ -1,8 +1,8 @@
 /**
  * Stripe Webhook Handler
- * 
+ *
  * POST /api/stripe/webhook
- * 
+ *
  * Handles Stripe webhook events (subscription updates, payments, etc.)
  */
 
@@ -24,10 +24,7 @@ export async function POST(request: NextRequest) {
         route: 'api/stripe/webhook',
         gateway: 'stripe',
       })
-      return NextResponse.json(
-        { error: 'No signature provided' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'No signature provided' }, { status: 400 })
     }
 
     // Verify and handle webhook
@@ -48,10 +45,7 @@ export async function POST(request: NextRequest) {
       gateway: 'stripe',
       errorMessage: message,
     })
-    return NextResponse.json(
-      { error: 'Webhook processing failed', message },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'Webhook processing failed', message }, { status: 400 })
   }
 }
 

@@ -10,17 +10,10 @@ const DB_NOT_CONFIGURED =
 export function dbErrorResponse(error: unknown): NextResponse | null {
   if (error == null) return null
   const msg = error instanceof Error ? error.message : String(error)
-  const code = error && typeof error === 'object' && 'code' in error ? (error as { code: string }).code : ''
-  if (
-    !msg.includes('DATABASE_URL') &&
-    code !== 'P1001' &&
-    code !== 'P1002' &&
-    code !== 'P1017'
-  ) {
+  const code =
+    error && typeof error === 'object' && 'code' in error ? (error as { code: string }).code : ''
+  if (!msg.includes('DATABASE_URL') && code !== 'P1001' && code !== 'P1002' && code !== 'P1017') {
     return null
   }
-  return NextResponse.json(
-    { error: DB_NOT_CONFIGURED },
-    { status: 503 }
-  )
+  return NextResponse.json({ error: DB_NOT_CONFIGURED }, { status: 503 })
 }

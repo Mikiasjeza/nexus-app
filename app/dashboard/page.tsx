@@ -16,22 +16,38 @@ import AppPageShell from '@/components/Layout/AppPageShell'
 
 // Lazy load all dashboard components for better initial load
 const SkillGraph = dynamic(() => import('@/components/Skills/SkillGraph'), {
-  loading: () => <div className="h-64 flex items-center justify-center"><Loader /></div>,
+  loading: () => (
+    <div className="h-64 flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
   ssr: false,
 })
 
 const StatsCards = dynamic(() => import('@/components/Dashboard/StatsCards'), {
-  loading: () => <div className="h-32 flex items-center justify-center"><Loader /></div>,
+  loading: () => (
+    <div className="h-32 flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
   ssr: true,
 })
 
 const RecentActivity = dynamic(() => import('@/components/Dashboard/RecentActivity'), {
-  loading: () => <div className="h-64 flex items-center justify-center"><Loader /></div>,
+  loading: () => (
+    <div className="h-64 flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
   ssr: true,
 })
 
 const SkillInsights = dynamic(() => import('@/components/Dashboard/SkillInsights'), {
-  loading: () => <div className="h-64 flex items-center justify-center"><Loader /></div>,
+  loading: () => (
+    <div className="h-64 flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
   ssr: true,
 })
 
@@ -74,7 +90,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData()
-    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+    authApi
+      .getCurrentUser()
+      .then(setUser)
+      .catch(() => setUser(null))
   }, [loadData])
 
   const pillarCards = useMemo(() => {
@@ -87,18 +106,16 @@ export default function DashboardPage() {
   }, [stats])
 
   const dominantPillar = useMemo(() => {
-    return pillarCards.reduce<(typeof pillarCards)[number] | null>(
-      (best, pillar) => {
-        if (!best || pillar.count > best.count) return pillar
-        return best
-      },
-      null
-    )
+    return pillarCards.reduce<(typeof pillarCards)[number] | null>((best, pillar) => {
+      if (!best || pillar.count > best.count) return pillar
+      return best
+    }, null)
   }, [pillarCards])
 
-  const verifiedRate = stats && stats.totalSkills > 0
-    ? Math.round((stats.verifiedSkills / stats.totalSkills) * 100)
-    : 0
+  const verifiedRate =
+    stats && stats.totalSkills > 0
+      ? Math.round((stats.verifiedSkills / stats.totalSkills) * 100)
+      : 0
 
   if (loading || skillsLoading) {
     return (
@@ -179,19 +196,19 @@ export default function DashboardPage() {
           <div className="hud-panel p-8 md:p-10">
             <div className="mb-2 flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">Passport · Live</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">
+                Passport · Live
+              </span>
             </div>
 
             <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
               <div>
                 <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4 text-white tracking-tight leading-[1.1] max-w-[14ch] md:max-w-none">
-                  Your{' '}
-                  <span className="glow-cyan">
-                    passport
-                  </span>
+                  Your <span className="glow-cyan">passport</span>
                 </h1>
                 <p className="text-base md:text-lg text-white/55 max-w-[34ch] md:max-w-xl font-light">
-                  A living neural record of what you build, create, explain, lead, and improve over time — with proof attached to each node.
+                  A living neural record of what you build, create, explain, lead, and improve over
+                  time — with proof attached to each node.
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-3">
@@ -250,16 +267,12 @@ export default function DashboardPage() {
                     className="h-1.5 w-1.5 rounded-full flex-shrink-0"
                     style={{ background: pillar.color }}
                   />
-                  <span
-                    className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40"
-                  >
+                  <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40">
                     {pillar.shortLabel}
                   </span>
                 </div>
                 <div className="text-xs text-white/35 mb-1">{pillar.category}</div>
-                <div className="text-2xl font-bold text-white">
-                  {pillar.count}
-                </div>
+                <div className="text-2xl font-bold text-white">{pillar.count}</div>
                 <div className="mt-2 hud-progress">
                   <div
                     className="hud-progress-fill"
@@ -296,7 +309,7 @@ export default function DashboardPage() {
           >
             <RecentActivity activities={activities} />
           </motion.div>
-          
+
           {/* Skill Insights - MetaLab scroll animation */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -324,8 +337,12 @@ export default function DashboardPage() {
               transition={{ duration: 0.3, ease: easing.primary }}
             >
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Skills by Pillar</h2>
-                <p className="text-sm text-white/60">Distribution across the five Nexus skill pillars</p>
+                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
+                  Skills by Pillar
+                </h2>
+                <p className="text-sm text-white/60">
+                  Distribution across the five Nexus skill pillars
+                </p>
               </div>
               <SkillGraph skills={skills} type="category" />
             </motion.div>
@@ -344,7 +361,9 @@ export default function DashboardPage() {
               transition={{ duration: 0.3, ease: easing.primary }}
             >
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Skills by Level</h2>
+                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
+                  Skills by Level
+                </h2>
                 <p className="text-sm text-white/60">Progression and expertise breakdown</p>
               </div>
               <SkillGraph skills={skills} type="level" />
@@ -362,12 +381,18 @@ export default function DashboardPage() {
         >
           <div className="hud-panel p-8">
             <div className="mb-8">
-              <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">Performance</p>
+              <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">
+                Performance
+              </p>
               <h2 className="text-2xl font-bold text-white tracking-tight">Pillar Health</h2>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { value: `+${stats.recentGrowth}`, label: 'NEW NODES THIS MONTH', color: '#06b6d4' },
+                {
+                  value: `+${stats.recentGrowth}`,
+                  label: 'NEW NODES THIS MONTH',
+                  color: '#06b6d4',
+                },
                 { value: stats.verifiedSkills, label: 'VERIFIED SIGNALS', color: '#7c3aed' },
                 { value: `${stats.averageLevel}%`, label: 'AVERAGE PROGRESS', color: '#ec4899' },
               ].map((item, i) => (
@@ -378,15 +403,19 @@ export default function DashboardPage() {
                   transition={{ duration: 0.25, ease: easing.primary }}
                 >
                   <div className="hud-label mb-3">{item.label}</div>
-                  <div className="text-4xl font-bold mb-3 text-white">
-                    {item.value}
-                  </div>
+                  <div className="text-4xl font-bold mb-3 text-white">{item.value}</div>
                   <div className="hud-progress">
                     <motion.div
                       className="hud-progress-fill"
-                      style={{ background: `linear-gradient(90deg, ${item.color}, ${item.color}80)`, boxShadow: `0 0 8px ${item.color}60` }}
+                      style={{
+                        background: `linear-gradient(90deg, ${item.color}, ${item.color}80)`,
+                        boxShadow: `0 0 8px ${item.color}60`,
+                      }}
                       initial={{ width: 0 }}
-                      whileInView={{ width: i === 0 ? '60%' : i === 1 ? `${verifiedRate}%` : `${stats.averageLevel}%` }}
+                      whileInView={{
+                        width:
+                          i === 0 ? '60%' : i === 1 ? `${verifiedRate}%` : `${stats.averageLevel}%`,
+                      }}
                       viewport={{ once: true }}
                       transition={{ duration: 1, delay: i * 0.15, ease: 'easeOut' }}
                     />

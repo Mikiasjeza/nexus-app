@@ -15,16 +15,16 @@ export default function CookiesPage() {
       current="/cookies"
       summary={
         <p>
-          Nexus uses essential cookies to sign you in and keep your account secure. We don&apos;t use advertising
-          cookies, tracking pixels or analytics trackers. The only optional item is diagnostics (masked error replays),
-          which stays off unless you turn it on.
+          Nexus uses essential cookies to sign you in and keep your account secure. We don&apos;t
+          use advertising cookies, tracking pixels or analytics trackers. The only optional item is
+          diagnostics (masked error replays), which stays off unless you turn it on.
         </p>
       }
     >
       <Section title="What cookies are">
         <p>
-          Cookies are small text files a website stores in your browser. &quot;Local storage&quot; is a similar browser
-          feature. This policy covers both.
+          Cookies are small text files a website stores in your browser. &quot;Local storage&quot;
+          is a similar browser feature. This policy covers both.
         </p>
       </Section>
 
@@ -40,11 +40,13 @@ export default function CookiesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10 align-top">
-            {STORAGE_ITEMS.map(item => (
+            {STORAGE_ITEMS.map((item) => (
               <tr key={item.name}>
                 <td className="p-3 font-mono text-xs text-white/85">{item.name}</td>
                 <td className="p-3">{item.kind}</td>
-                <td className="p-3">{item.category === 'essential' ? 'Essential' : 'Diagnostics (optional)'}</td>
+                <td className="p-3">
+                  {item.category === 'essential' ? 'Essential' : 'Diagnostics (optional)'}
+                </td>
                 <td className="p-3">{item.purpose}</td>
                 <td className="p-3">{item.duration}</td>
               </tr>
@@ -57,15 +59,16 @@ export default function CookiesPage() {
       <Section title="Categories">
         <List>
           <li>
-            <strong className="text-white/85">Essential:</strong> required for sign-in, security and remembering your
-            cookie choice. These don&apos;t need consent and can&apos;t be switched off, but you can block them in your
-            browser (sign-in will then stop working).
+            <strong className="text-white/85">Essential:</strong> required for sign-in, security and
+            remembering your cookie choice. These don&apos;t need consent and can&apos;t be switched
+            off, but you can block them in your browser (sign-in will then stop working).
           </li>
           <li>
-            <strong className="text-white/85">Diagnostics (optional):</strong> if you turn it on, our error monitor
-            (Sentry) keeps a short, privacy-masked replay of the moments before an error (text, inputs and images
-            hidden) and sends it only if an error happens. Off by default. Error reports without replays are sent either
-            way and contain no personal data or cookies.
+            <strong className="text-white/85">Diagnostics (optional):</strong> if you turn it on,
+            our error monitor (Sentry) keeps a short, privacy-masked replay of the moments before an
+            error (text, inputs and images hidden) and sends it only if an error happens. Off by
+            default. Error reports without replays are sent either way and contain no personal data
+            or cookies.
           </li>
           <li>
             <strong className="text-white/85">Advertising:</strong> we don&apos;t use any.
@@ -75,14 +78,15 @@ export default function CookiesPage() {
 
       <Section title="Changing your choice">
         <p>
-          You can change or withdraw your choice at any time. Rejecting is as easy as accepting, and it doesn&apos;t limit
-          any feature.
+          You can change or withdraw your choice at any time. Rejecting is as easy as accepting, and
+          it doesn&apos;t limit any feature.
         </p>
         <CookiePreferencesButton className="button-base button-primary rounded-lg px-4 py-2 text-sm">
           Open cookie settings
         </CookiePreferencesButton>
         <p>
-          We store your choice for 12 months, then ask again. We also respect your browser&apos;s cookie controls.
+          We store your choice for 12 months, then ask again. We also respect your browser&apos;s
+          cookie controls.
         </p>
       </Section>
 

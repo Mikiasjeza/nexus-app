@@ -34,8 +34,8 @@ export default function SkillReorder({ skills, onReorder }: SkillReorderProps) {
 
   const handleDragEnd = () => {
     if (draggedItem === null) return
-    
-    const skillIds = items.map(skill => skill.id)
+
+    const skillIds = items.map((skill) => skill.id)
     onReorder(skillIds)
     setDraggedItem(null)
   }

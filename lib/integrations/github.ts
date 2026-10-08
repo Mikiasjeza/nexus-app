@@ -1,12 +1,12 @@
 /**
  * GitHub Integration
- * 
+ *
  * Analyzes GitHub repositories for skill evidence
- * 
+ *
  * TODO: Add GitHub OAuth app credentials to .env:
  * - GITHUB_CLIENT_ID
  * - GITHUB_CLIENT_SECRET
- * 
+ *
  * TODO: Configure OAuth callback URL
  * TODO: Add rate limiting for GitHub API
  */
@@ -74,7 +74,7 @@ class GitHubService {
         per_page: 100,
       })
 
-      return data.map(repo => ({
+      return data.map((repo) => ({
         id: repo.id,
         name: repo.name,
         fullName: repo.full_name,
@@ -88,7 +88,9 @@ class GitHubService {
       }))
     } catch (error) {
       console.error('GitHub API error:', error)
-      throw new Error(`Failed to fetch repositories: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to fetch repositories: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -120,7 +122,7 @@ class GitHubService {
         per_page: 30,
       })
 
-      const commits: GitHubCommit[] = commitsData.map(commit => ({
+      const commits: GitHubCommit[] = commitsData.map((commit) => ({
         sha: commit.sha,
         message: commit.commit.message,
         date: commit.commit.author?.date || '',
@@ -176,14 +178,22 @@ class GitHubService {
       }
     } catch (error) {
       console.error('GitHub analysis error:', error)
-      throw new Error(`Failed to analyze repository: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to analyze repository: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Get authenticated GitHub user
    */
-  async getUser(): Promise<{ id: number; login: string; name: string | null; email: string | null; avatar_url: string }> {
+  async getUser(): Promise<{
+    id: number
+    login: string
+    name: string | null
+    email: string | null
+    avatar_url: string
+  }> {
     if (!this.octokit) {
       throw new Error('GitHub client not initialized')
     }
@@ -207,7 +217,7 @@ class GitHubService {
       throw new Error('GitHub client not initialized')
     }
     const { data } = await this.octokit.rest.users.listEmailsForAuthenticatedUser({ per_page: 100 })
-    const primary = data.find(e => e.primary && e.verified)
+    const primary = data.find((e) => e.primary && e.verified)
     return primary ? primary.email.toLowerCase().trim() : null
   }
 
@@ -220,7 +230,9 @@ class GitHubService {
       throw new Error('GITHUB_CLIENT_ID not configured')
     }
 
-    const redirectUri = process.env.GITHUB_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/github/callback`
+    const redirectUri =
+      process.env.GITHUB_REDIRECT_URI ||
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/github/callback`
     // Least privilege: profile + email only. Public repos are readable without
     // extra scopes; never request `repo` (full read/write to private code).
     const scope = 'read:user user:email'
@@ -234,7 +246,9 @@ class GitHubService {
   async exchangeCodeForToken(code: string): Promise<string> {
     const clientId = process.env.GITHUB_CLIENT_ID
     const clientSecret = process.env.GITHUB_CLIENT_SECRET
-    const redirectUri = process.env.GITHUB_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/github/callback`
+    const redirectUri =
+      process.env.GITHUB_REDIRECT_URI ||
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/github/callback`
 
     if (!clientId || !clientSecret) {
       throw new Error('GitHub OAuth credentials not configured')
@@ -264,7 +278,9 @@ class GitHubService {
       return data.access_token
     } catch (error) {
       console.error('GitHub OAuth error:', error)
-      throw new Error(`Failed to exchange code for token: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to exchange code for token: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 }

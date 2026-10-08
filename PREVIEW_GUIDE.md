@@ -3,21 +3,24 @@
 ## Quick Start
 
 1. **Start the development server:**
+
    ```bash
    npm run dev
    ```
 
 2. **Open your browser and go to:**
+
    ```
    http://localhost:3000
    ```
-   
+
    **Note:** If port 3000 is busy, Next.js will automatically use port 3001, 3002, etc.
    Check the terminal output to see which port is being used.
 
 ## What You Should See
 
 ### Homepage (`http://localhost:3000`)
+
 - **Premium Navigation**: Fixed header that becomes solid on scroll
 - **Hero Section**: Three layers:
   - Narrative: "AI Skill Passport" title with clear statements
@@ -27,11 +30,13 @@
 - **Parallax Scrolling**: Foreground moves slightly faster than background
 
 ### Dashboard (`http://localhost:3000/dashboard`)
+
 - **Passport Metaphor**: Sections slide like passport pages
 - **Living Skill Cards**: Cards that breathe when recently updated
 - **Memory Trails**: Timeline expands downward like growth history
 
 ### Skills Page (`http://localhost:3000/skills`)
+
 - **Living Entities**: Skills animate when levels change
 - **Growth States**: Visual feedback when skills progress
 - **Docking Animation**: Cards dock into place on scroll
@@ -41,15 +46,18 @@
 ### Server Won't Start
 
 **Error: Port already in use**
+
 - Solution: The server will automatically try the next port (3001, 3002, etc.)
 - Check the terminal output to see which port is active
 
 **Error: Module not found**
+
 ```bash
 npm install
 ```
 
 **Error: TypeScript errors**
+
 ```bash
 npm run type-check
 ```
@@ -91,21 +99,25 @@ npm run format
 ## Testing Features
 
 ### Test Navigation
+
 - Scroll down → Header becomes solid
 - Hover over nav items → Underline draws, slight drift
 - Click logo → Should animate on load
 
 ### Test Homepage Hero
+
 - Move mouse around → Background mesh follows cursor
 - Scroll down → Parallax effect (foreground moves faster)
 - Look for "AI-assisted" indicator → Top right corner
 
 ### Test Skill Cards
+
 - Go to `/skills` or `/dashboard`
 - Hover over cards → Subtle lift and scale
 - Recently updated skills → Should have breathing animation
 
 ### Test Scroll Animations
+
 - Scroll through any page → Sections fade in smoothly
 - Cards should dock into place (slight rotation)
 - Lines should draw themselves

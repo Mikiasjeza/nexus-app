@@ -14,9 +14,7 @@ export const skillsApi = {
     }
   },
 
-  create: async (
-    skill: Omit<Skill, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<Skill> => {
+  create: async (skill: Omit<Skill, 'id' | 'createdAt' | 'updatedAt'>): Promise<Skill> => {
     return fetchApi<Skill>('/api/skills', {
       method: 'POST',
       body: JSON.stringify(skill),

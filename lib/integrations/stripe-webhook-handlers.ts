@@ -39,19 +39,14 @@ async function findUserIdForCustomer(customerId: string): Promise<string | null>
   return null
 }
 
-export async function handleCheckoutCompleted(
-  session: Stripe.Checkout.Session
-): Promise<void> {
+export async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const userId = session.metadata?.userId as string | undefined
   const planId = session.metadata?.planId as string | undefined
   if (!userId || !planId) return
 
   const subscriptionId =
-    typeof session.subscription === 'string'
-      ? session.subscription
-      : session.subscription?.id
-  const customerId =
-    typeof session.customer === 'string' ? session.customer : session.customer?.id
+    typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
+  const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
 
   if (!subscriptionId || !customerId) return
 
@@ -83,19 +78,14 @@ export async function handleCheckoutCompleted(
   })
 }
 
-export async function handleSubscriptionUpdated(
-  subscription: Stripe.Subscription
-): Promise<void> {
+export async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
   const customerId = subscription.customer as string
   const subscriptionId = typeof subscription.id === 'string' ? subscription.id : null
   if (!subscriptionId) return
 
   const subRecord = await prisma.subscription.findFirst({
     where: {
-      OR: [
-        { stripeSubscriptionId: subscriptionId },
-        { stripeCustomerId: customerId },
-      ],
+      OR: [{ stripeSubscriptionId: subscriptionId }, { stripeCustomerId: customerId }],
     },
   })
 
@@ -141,9 +131,7 @@ export async function handleSubscriptionUpdated(
   })
 }
 
-export async function handleSubscriptionDeleted(
-  subscription: Stripe.Subscription
-): Promise<void> {
+export async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
   const customerId = subscription.customer as string
   const subscriptionId = typeof subscription.id === 'string' ? subscription.id : null
 
@@ -192,13 +180,9 @@ export async function handleSubscriptionDeleted(
   })
 }
 
-export async function handlePaymentFailed(
-  invoice: Stripe.Invoice
-): Promise<void> {
+export async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
   const subscriptionId =
-    typeof invoice.subscription === 'string'
-      ? invoice.subscription
-      : invoice.subscription?.id
+    typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
   if (!subscriptionId) return
 
   const subRecord = await prisma.subscription.findFirst({

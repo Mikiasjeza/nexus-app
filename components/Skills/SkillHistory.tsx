@@ -21,9 +21,7 @@ export default function SkillHistory({ history }: SkillHistoryProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-black dark:text-white mb-4">
-        Change History
-      </h3>
+      <h3 className="text-lg font-bold text-black dark:text-white mb-4">Change History</h3>
       <div className="relative">
         <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-black/10 dark:bg-white/10" />
         <div className="space-y-6">
@@ -49,7 +47,7 @@ export default function SkillHistory({ history }: SkillHistoryProps) {
                         {change.field}:
                       </span>{' '}
                       <span className="text-black/50 dark:text-white/50 line-through">
-                        {typeof change.oldValue === 'object' 
+                        {typeof change.oldValue === 'object'
                           ? JSON.stringify(change.oldValue)
                           : String(change.oldValue || 'null')}
                       </span>

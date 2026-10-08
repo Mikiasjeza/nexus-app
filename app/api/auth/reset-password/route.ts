@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const ip =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const rl = rateLimit(`auth:reset-password:${ip}`, { maxRequests: 10, windowMs: 60000 })
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })

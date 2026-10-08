@@ -1,6 +1,6 @@
 export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert'
 
-export type SkillCategory = 
+export type SkillCategory =
   | 'Technical Skills'
   | 'Creative Skills'
   | 'Communication Skills'

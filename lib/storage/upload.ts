@@ -1,19 +1,24 @@
 /**
  * File Upload Service
- * 
+ *
  * Handles file uploads to S3 or Cloudinary
- * 
+ *
  * TODO: Choose storage provider (S3 or Cloudinary)
  * TODO: Add credentials to .env:
  * - AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET (for S3)
  * - CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET (for Cloudinary)
- * 
+ *
  * TODO: Implement file validation
  * TODO: Implement virus scanning
  * TODO: Implement file size limits
  */
 
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 export type StorageProvider = 's3' | 'cloudinary'
@@ -93,7 +98,9 @@ class StorageService {
     // Generate unique key
     const timestamp = Date.now()
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
-    const key = folder ? `${folder}/${timestamp}-${sanitizedFileName}` : `${timestamp}-${sanitizedFileName}`
+    const key = folder
+      ? `${folder}/${timestamp}-${sanitizedFileName}`
+      : `${timestamp}-${sanitizedFileName}`
 
     try {
       const command = new PutObjectCommand({
@@ -117,7 +124,9 @@ class StorageService {
       }
     } catch (error) {
       console.error('S3 upload error:', error)
-      throw new Error(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -138,12 +147,12 @@ class StorageService {
     //   api_key: process.env.CLOUDINARY_API_KEY,
     //   api_secret: process.env.CLOUDINARY_API_SECRET,
     // })
-    // 
+    //
     // const result = await cloudinary.uploader.upload(file, {
     //   folder: folder || 'skill-passport',
     //   resource_type: 'auto',
     // })
-    // 
+    //
     // return {
     //   url: result.secure_url,
     //   key: result.public_id,

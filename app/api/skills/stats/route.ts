@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    if (env.isGuestMode || await hasGuestPreviewSession()) {
+    if (env.isGuestMode || (await hasGuestPreviewSession())) {
       return NextResponse.json(guestStats)
     }
 
@@ -39,13 +39,10 @@ export async function GET() {
       skillsByLevel[s.level] = (skillsByLevel[s.level] ?? 0) + 1
       totalProgress += s.progress
     }
-    const averageLevel =
-      skills.length > 0 ? Math.round(totalProgress / skills.length) : 0
+    const averageLevel = skills.length > 0 ? Math.round(totalProgress / skills.length) : 0
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-    const recentGrowth = skills.filter(
-      s => s.createdAt >= thirtyDaysAgo
-    ).length
+    const recentGrowth = skills.filter((s) => s.createdAt >= thirtyDaysAgo).length
 
     return NextResponse.json({
       totalSkills: skills.length,
@@ -53,13 +50,10 @@ export async function GET() {
       skillsByCategory: skillsByCategory as Record<SkillCategory, number>,
       skillsByLevel: skillsByLevel as Record<SkillLevel, number>,
       recentGrowth,
-      verifiedSkills: skills.filter(s => s.verified).length,
+      verifiedSkills: skills.filter((s) => s.verified).length,
     })
   } catch (e) {
     console.error('Stats error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load stats' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load stats' }, { status: 500 })
   }
 }

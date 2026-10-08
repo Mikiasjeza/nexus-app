@@ -46,11 +46,7 @@ export const PLAN_INFO: Record<SubscriptionPlan, PlanInfo> = {
     name: 'Pro',
     price: 999,
     description: 'For professionals actively verifying their skills.',
-    features: [
-      'Everything in Free',
-      '50 AI verifications per month',
-      'Priority email support',
-    ],
+    features: ['Everything in Free', '50 AI verifications per month', 'Priority email support'],
     limits: {
       skills: -1,
       aiAnalyses: 50,
@@ -62,11 +58,7 @@ export const PLAN_INFO: Record<SubscriptionPlan, PlanInfo> = {
     name: 'Enterprise',
     price: 4999,
     description: 'For heavy usage and teams.',
-    features: [
-      'Everything in Pro',
-      'Unlimited AI verifications',
-      'Dedicated support contact',
-    ],
+    features: ['Everything in Pro', 'Unlimited AI verifications', 'Dedicated support contact'],
     limits: {
       skills: -1,
       aiAnalyses: -1,

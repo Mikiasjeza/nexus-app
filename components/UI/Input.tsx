@@ -13,7 +13,19 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, leftIcon: LeftIcon, rightIcon: RightIcon, fullWidth = true, className = '', ...props }, ref) => {
+  (
+    {
+      label,
+      error,
+      helperText,
+      leftIcon: LeftIcon,
+      rightIcon: RightIcon,
+      fullWidth = true,
+      className = '',
+      ...props
+    },
+    ref
+  ) => {
     return (
       <div className={fullWidth ? 'w-full' : ''}>
         {label && (
@@ -22,14 +34,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
-        
+
         <div className="relative">
           {LeftIcon && (
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
               <LeftIcon className="w-5 h-5" />
             </div>
           )}
-          
+
           <input
             ref={ref}
             className={`
@@ -49,18 +61,16 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             `}
             {...props}
           />
-          
+
           {RightIcon && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
               <RightIcon className="w-5 h-5" />
             </div>
           )}
         </div>
-        
-        {error && (
-          <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
-        )}
-        
+
+        {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
+
         {helperText && !error && (
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{helperText}</p>
         )}

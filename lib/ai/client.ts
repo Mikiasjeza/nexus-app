@@ -1,12 +1,12 @@
 /**
  * AI Client - Real AI Integration
  * Supports Gemini, OpenAI, and Anthropic APIs
- * 
+ *
  * TODO: Add API keys to environment variables:
  * - GEMINI_API_KEY
  * - OPENAI_API_KEY
  * - ANTHROPIC_API_KEY
- * 
+ *
  * TODO: Decide on default model (gpt-4, claude-3-opus, etc.)
  * TODO: Implement cost tracking and limits
  * TODO: Add rate limiting
@@ -153,15 +153,17 @@ class AIClient {
   ): Promise<AIAnalysisResult> {
     if (!this.gemini) throw new Error('Gemini client not initialized')
 
-    const evidenceText = evidence.map(e => {
-      if (e.type === 'code') {
-        return `Code (${e.metadata?.language || 'unknown'}):\n${e.content}`
-      } else if (e.type === 'link') {
-        return `Link: ${e.metadata?.url}\nDescription: ${e.content}`
-      } else {
-        return e.content
-      }
-    }).join('\n\n---\n\n')
+    const evidenceText = evidence
+      .map((e) => {
+        if (e.type === 'code') {
+          return `Code (${e.metadata?.language || 'unknown'}):\n${e.content}`
+        } else if (e.type === 'link') {
+          return `Link: ${e.metadata?.url}\nDescription: ${e.content}`
+        } else {
+          return e.content
+        }
+      })
+      .join('\n\n---\n\n')
 
     const prompt = `You are an expert skill assessor. Analyze the following evidence for a skill claim.
 
@@ -217,7 +219,9 @@ Respond in strict JSON format:
       }
     } catch (error) {
       console.error('Gemini analysis error:', error)
-      throw new Error(`AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -230,15 +234,17 @@ Respond in strict JSON format:
     if (!this.openai) throw new Error('OpenAI client not initialized')
 
     // Build evidence context
-    const evidenceText = evidence.map(e => {
-      if (e.type === 'code') {
-        return `Code (${e.metadata?.language || 'unknown'}):\n${e.content}`
-      } else if (e.type === 'link') {
-        return `Link: ${e.metadata?.url}\nDescription: ${e.content}`
-      } else {
-        return e.content
-      }
-    }).join('\n\n---\n\n')
+    const evidenceText = evidence
+      .map((e) => {
+        if (e.type === 'code') {
+          return `Code (${e.metadata?.language || 'unknown'}):\n${e.content}`
+        } else if (e.type === 'link') {
+          return `Link: ${e.metadata?.url}\nDescription: ${e.content}`
+        } else {
+          return e.content
+        }
+      })
+      .join('\n\n---\n\n')
 
     const prompt = `You are an expert skill assessor. Analyze the following evidence for a skill claim.
 
@@ -272,7 +278,8 @@ Respond in JSON format:
         messages: [
           {
             role: 'system',
-            content: 'You are an expert skill assessor. Analyze evidence objectively and provide constructive feedback.',
+            content:
+              'You are an expert skill assessor. Analyze evidence objectively and provide constructive feedback.',
           },
           {
             role: 'user',
@@ -289,7 +296,7 @@ Respond in JSON format:
 
       const parsed = JSON.parse(content)
       const tokensUsed = response.usage?.total_tokens || 0
-      
+
       // TODO: Calculate actual cost based on model pricing
       // This is approximate for gpt-4-turbo-preview
       const cost = (tokensUsed / 1000) * 0.01 // Rough estimate
@@ -306,7 +313,9 @@ Respond in JSON format:
       }
     } catch (error) {
       console.error('OpenAI analysis error:', error)
-      throw new Error(`AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -319,15 +328,17 @@ Respond in JSON format:
     if (!this.anthropic) throw new Error('Anthropic client not initialized')
 
     // Build evidence context
-    const evidenceText = evidence.map(e => {
-      if (e.type === 'code') {
-        return `Code (${e.metadata?.language || 'unknown'}):\n${e.content}`
-      } else if (e.type === 'link') {
-        return `Link: ${e.metadata?.url}\nDescription: ${e.content}`
-      } else {
-        return e.content
-      }
-    }).join('\n\n---\n\n')
+    const evidenceText = evidence
+      .map((e) => {
+        if (e.type === 'code') {
+          return `Code (${e.metadata?.language || 'unknown'}):\n${e.content}`
+        } else if (e.type === 'link') {
+          return `Link: ${e.metadata?.url}\nDescription: ${e.content}`
+        } else {
+          return e.content
+        }
+      })
+      .join('\n\n---\n\n')
 
     const prompt = `You are an expert skill assessor. Analyze the following evidence for a skill claim.
 
@@ -373,7 +384,7 @@ Respond in JSON format:
 
       const parsed = JSON.parse(content.text)
       const tokensUsed = response.usage.input_tokens + response.usage.output_tokens
-      
+
       // TODO: Calculate actual cost based on model pricing
       // This is approximate for claude-3-opus
       const cost = (tokensUsed / 1000) * 0.015 // Rough estimate
@@ -390,7 +401,9 @@ Respond in JSON format:
       }
     } catch (error) {
       console.error('Anthropic analysis error:', error)
-      throw new Error(`AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -457,7 +470,8 @@ Rules:
         messages: [
           {
             role: 'system',
-            content: 'You are a thoughtful recruiter who matches people to jobs based on evidence-backed skills.',
+            content:
+              'You are a thoughtful recruiter who matches people to jobs based on evidence-backed skills.',
           },
           {
             role: 'user',
@@ -477,21 +491,25 @@ Rules:
       const matches = Array.isArray(parsed.matches)
         ? parsed.matches
             .filter((item: { jobId?: string }) => item?.jobId && knownJobIds.has(item.jobId))
-            .map((item: {
-              jobId: string
-              matchScore?: number
-              reason?: string
-              matchingSkills?: string[]
-              gaps?: string[]
-              recommended?: boolean
-            }) => ({
-              jobId: item.jobId,
-              matchScore: Math.max(0, Math.min(100, Math.round(item.matchScore ?? 0))),
-              reason: item.reason || 'This role lines up with your current strengths.',
-              matchingSkills: Array.isArray(item.matchingSkills) ? item.matchingSkills.slice(0, 4) : [],
-              gaps: Array.isArray(item.gaps) ? item.gaps.slice(0, 3) : [],
-              recommended: Boolean(item.recommended),
-            }))
+            .map(
+              (item: {
+                jobId: string
+                matchScore?: number
+                reason?: string
+                matchingSkills?: string[]
+                gaps?: string[]
+                recommended?: boolean
+              }) => ({
+                jobId: item.jobId,
+                matchScore: Math.max(0, Math.min(100, Math.round(item.matchScore ?? 0))),
+                reason: item.reason || 'This role lines up with your current strengths.',
+                matchingSkills: Array.isArray(item.matchingSkills)
+                  ? item.matchingSkills.slice(0, 4)
+                  : [],
+                gaps: Array.isArray(item.gaps) ? item.gaps.slice(0, 3) : [],
+                recommended: Boolean(item.recommended),
+              })
+            )
             .sort((a: AIJobMatch, b: AIJobMatch) => b.matchScore - a.matchScore)
         : []
 
@@ -511,7 +529,9 @@ Rules:
       }
     } catch (error) {
       console.error('OpenAI job matching error:', error)
-      throw new Error(`AI job matching failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `AI job matching failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -587,21 +607,25 @@ Rules:
       const matches = Array.isArray(parsed.matches)
         ? parsed.matches
             .filter((item: { jobId?: string }) => item?.jobId && knownJobIds.has(item.jobId))
-            .map((item: {
-              jobId: string
-              matchScore?: number
-              reason?: string
-              matchingSkills?: string[]
-              gaps?: string[]
-              recommended?: boolean
-            }) => ({
-              jobId: item.jobId,
-              matchScore: Math.max(0, Math.min(100, Math.round(item.matchScore ?? 0))),
-              reason: item.reason || 'This role lines up with your current strengths.',
-              matchingSkills: Array.isArray(item.matchingSkills) ? item.matchingSkills.slice(0, 4) : [],
-              gaps: Array.isArray(item.gaps) ? item.gaps.slice(0, 3) : [],
-              recommended: Boolean(item.recommended),
-            }))
+            .map(
+              (item: {
+                jobId: string
+                matchScore?: number
+                reason?: string
+                matchingSkills?: string[]
+                gaps?: string[]
+                recommended?: boolean
+              }) => ({
+                jobId: item.jobId,
+                matchScore: Math.max(0, Math.min(100, Math.round(item.matchScore ?? 0))),
+                reason: item.reason || 'This role lines up with your current strengths.',
+                matchingSkills: Array.isArray(item.matchingSkills)
+                  ? item.matchingSkills.slice(0, 4)
+                  : [],
+                gaps: Array.isArray(item.gaps) ? item.gaps.slice(0, 3) : [],
+                recommended: Boolean(item.recommended),
+              })
+            )
             .sort((a: AIJobMatch, b: AIJobMatch) => b.matchScore - a.matchScore)
         : []
 
@@ -618,7 +642,9 @@ Rules:
       }
     } catch (error) {
       console.error('Gemini job matching error:', error)
-      throw new Error(`AI job matching failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `AI job matching failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -637,26 +663,26 @@ Rules:
 
 User skills:
 ${JSON.stringify(
-      skills.slice(0, 12).map((skill) => ({
-        name: skill.name,
-        level: skill.level,
-        verified: Boolean(skill.verified),
-      })),
-      null,
-      2
-    )}
+  skills.slice(0, 12).map((skill) => ({
+    name: skill.name,
+    level: skill.level,
+    verified: Boolean(skill.verified),
+  })),
+  null,
+  2
+)}
 
 Relevant jobs:
 ${JSON.stringify(
-      jobs.slice(0, 5).map((job) => ({
-        title: job.title,
-        companyName: job.companyName,
-        type: job.type,
-        skills: job.skills,
-      })),
-      null,
-      2
-    )}
+  jobs.slice(0, 5).map((job) => ({
+    title: job.title,
+    companyName: job.companyName,
+    type: job.type,
+    skills: job.skills,
+  })),
+  null,
+  2
+)}
 
 User message:
 ${message}
@@ -679,7 +705,8 @@ Rules:
         messages: [
           {
             role: 'system',
-            content: 'You are a concise AI career coach helping users turn their skills into better job outcomes.',
+            content:
+              'You are a concise AI career coach helping users turn their skills into better job outcomes.',
           },
           {
             role: 'user',
@@ -704,7 +731,9 @@ Rules:
             ? parsed.reply.trim()
             : 'Focus on presenting your strongest verified skills and the proof behind them.',
         suggestedPrompts: Array.isArray(parsed.suggestedPrompts)
-          ? parsed.suggestedPrompts.filter((item: unknown): item is string => typeof item === 'string').slice(0, 3)
+          ? parsed.suggestedPrompts
+              .filter((item: unknown): item is string => typeof item === 'string')
+              .slice(0, 3)
           : [],
         model: DEFAULT_MODEL,
         tokensUsed,
@@ -728,26 +757,26 @@ Rules:
 
 User skills:
 ${JSON.stringify(
-      skills.slice(0, 12).map((skill) => ({
-        name: skill.name,
-        level: skill.level,
-        verified: Boolean(skill.verified),
-      })),
-      null,
-      2
-    )}
+  skills.slice(0, 12).map((skill) => ({
+    name: skill.name,
+    level: skill.level,
+    verified: Boolean(skill.verified),
+  })),
+  null,
+  2
+)}
 
 Relevant jobs:
 ${JSON.stringify(
-      jobs.slice(0, 5).map((job) => ({
-        title: job.title,
-        companyName: job.companyName,
-        type: job.type,
-        skills: job.skills,
-      })),
-      null,
-      2
-    )}
+  jobs.slice(0, 5).map((job) => ({
+    title: job.title,
+    companyName: job.companyName,
+    type: job.type,
+    skills: job.skills,
+  })),
+  null,
+  2
+)}
 
 User message:
 ${message}
@@ -786,7 +815,9 @@ Rules:
             ? parsed.reply.trim()
             : 'Focus on presenting your strongest verified skills and the proof behind them.',
         suggestedPrompts: Array.isArray(parsed.suggestedPrompts)
-          ? parsed.suggestedPrompts.filter((item: unknown): item is string => typeof item === 'string').slice(0, 3)
+          ? parsed.suggestedPrompts
+              .filter((item: unknown): item is string => typeof item === 'string')
+              .slice(0, 3)
           : [],
         model: DEFAULT_MODEL,
         tokensUsed: 0,

@@ -46,9 +46,6 @@ export async function GET() {
     })
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
-    return NextResponse.json(
-      { error: 'Failed to load subscription' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load subscription' }, { status: 500 })
   }
 }

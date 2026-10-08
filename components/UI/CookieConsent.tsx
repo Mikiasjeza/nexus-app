@@ -68,13 +68,20 @@ export default function CookieConsent() {
                   <Cookie className="h-5 w-5 text-cyan-200/85" aria-hidden />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 id="cookie-consent-title" className="mb-1 text-sm font-semibold tracking-tight text-white">
+                  <h2
+                    id="cookie-consent-title"
+                    className="mb-1 text-sm font-semibold tracking-tight text-white"
+                  >
                     Your privacy choices
                   </h2>
                   <p id="cookie-consent-desc" className="text-[13px] leading-relaxed text-white/60">
-                    We use essential cookies to keep you signed in and secure. We don&apos;t run advertising or
-                    cross-site tracking. Optional diagnostics stay off unless you turn them on.{' '}
-                    <Link href="/cookies" className="text-cyan-200/90 underline decoration-white/15 underline-offset-2 hover:text-cyan-100">
+                    We use essential cookies to keep you signed in and secure. We don&apos;t run
+                    advertising or cross-site tracking. Optional diagnostics stay off unless you
+                    turn them on.{' '}
+                    <Link
+                      href="/cookies"
+                      className="text-cyan-200/90 underline decoration-white/15 underline-offset-2 hover:text-cyan-100"
+                    >
                       Cookie policy
                     </Link>
                   </p>
@@ -84,7 +91,9 @@ export default function CookieConsent() {
                       <div className="flex items-start justify-between gap-4 rounded-xl border border-white/10 p-3">
                         <div>
                           <p className="text-sm font-medium text-white">Essential</p>
-                          <p className="text-xs text-white/50">Sign-in, security and remembering this choice. Always on.</p>
+                          <p className="text-xs text-white/50">
+                            Sign-in, security and remembering this choice. Always on.
+                          </p>
                         </div>
                         <ToggleSwitch checked disabled onChange={() => {}} />
                       </div>
@@ -92,13 +101,14 @@ export default function CookieConsent() {
                         <div>
                           <p className="text-sm font-medium text-white">Diagnostics</p>
                           <p className="text-xs text-white/50">
-                            If something breaks, send our error monitor (Sentry) a short replay of the moments
-                            before it, with all text, inputs and images hidden. Helps us fix bugs faster.
+                            If something breaks, send our error monitor (Sentry) a short replay of
+                            the moments before it, with all text, inputs and images hidden. Helps us
+                            fix bugs faster.
                           </p>
                         </div>
                         <ToggleSwitch
                           checked={choices.analytics}
-                          onChange={analytics => setChoices({ ...choices, analytics })}
+                          onChange={(analytics) => setChoices({ ...choices, analytics })}
                         />
                       </div>
                     </div>

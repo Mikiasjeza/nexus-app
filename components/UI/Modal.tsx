@@ -19,7 +19,7 @@ const sizeClasses = {
   md: 'max-w-lg',
   lg: 'max-w-2xl',
   xl: 'max-w-4xl',
-  full: 'max-w-7xl'
+  full: 'max-w-7xl',
 }
 
 export default function Modal({
@@ -28,7 +28,7 @@ export default function Modal({
   title,
   children,
   size = 'md',
-  showCloseButton = true
+  showCloseButton = true,
 }: ModalProps) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -37,7 +37,8 @@ export default function Modal({
     if (!isOpen) return
 
     const previousOverflow = document.body.style.overflow
-    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
 
     document.body.style.overflow = 'hidden'
     window.setTimeout(() => dialogRef.current?.focus(), 0)
@@ -54,7 +55,7 @@ export default function Modal({
         onClose()
       }
     }
-    
+
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
@@ -71,7 +72,7 @@ export default function Modal({
             onClick={onClose}
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
           />
-          
+
           {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <motion.div
@@ -90,7 +91,9 @@ export default function Modal({
               {(title || showCloseButton) && (
                 <div className="flex items-center justify-between mb-6">
                   {title && (
-                    <h2 id={titleId} className="text-2xl font-bold text-white">{title}</h2>
+                    <h2 id={titleId} className="text-2xl font-bold text-white">
+                      {title}
+                    </h2>
                   )}
                   {showCloseButton && (
                     <button
@@ -104,7 +107,7 @@ export default function Modal({
                   )}
                 </div>
               )}
-              
+
               {/* Content */}
               {children}
             </motion.div>

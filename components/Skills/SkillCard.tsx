@@ -22,26 +22,38 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
   const categoryColor = CATEGORY_COLORS[skill.category] || '#64748b'
 
   // Memoize style objects to prevent React style issues
-  const iconStyle = useMemo(() => ({
-    background: `linear-gradient(135deg, ${levelColor}, ${levelColor}dd)`,
-    backgroundColor: levelColor,
-  }), [levelColor])
+  const iconStyle = useMemo(
+    () => ({
+      background: `linear-gradient(135deg, ${levelColor}, ${levelColor}dd)`,
+      backgroundColor: levelColor,
+    }),
+    [levelColor]
+  )
 
-  const categoryBadgeStyle = useMemo(() => ({
-    background: `linear-gradient(135deg, ${categoryColor}20, ${categoryColor}10)`,
-    color: categoryColor,
-    borderColor: `${categoryColor}30`,
-  }), [categoryColor])
+  const categoryBadgeStyle = useMemo(
+    () => ({
+      background: `linear-gradient(135deg, ${categoryColor}20, ${categoryColor}10)`,
+      color: categoryColor,
+      borderColor: `${categoryColor}30`,
+    }),
+    [categoryColor]
+  )
 
-  const levelBadgeStyle = useMemo(() => ({
-    background: `linear-gradient(135deg, ${levelColor}20, ${levelColor}10)`,
-    color: levelColor,
-    borderColor: `${levelColor}30`,
-  }), [levelColor])
+  const levelBadgeStyle = useMemo(
+    () => ({
+      background: `linear-gradient(135deg, ${levelColor}20, ${levelColor}10)`,
+      color: levelColor,
+      borderColor: `${levelColor}30`,
+    }),
+    [levelColor]
+  )
 
-  const hoverGradientStyle = useMemo(() => ({
-    background: `linear-gradient(135deg, ${levelColor}10, ${categoryColor}10)`,
-  }), [levelColor, categoryColor])
+  const hoverGradientStyle = useMemo(
+    () => ({
+      background: `linear-gradient(135deg, ${levelColor}10, ${categoryColor}10)`,
+    }),
+    [levelColor, categoryColor]
+  )
 
   // Determine if skill has grown (progress increased) - for state-change animation
   const hasGrown = useMemo(() => {
@@ -67,7 +79,9 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
             </motion.div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-3 flex-wrap">
-                <h3 className="text-xl font-bold text-neutral-100 group-hover:text-white transition-colors tracking-tight">{skill.name}</h3>
+                <h3 className="text-xl font-bold text-neutral-100 group-hover:text-white transition-colors tracking-tight">
+                  {skill.name}
+                </h3>
                 {skill.verified && (
                   <motion.div
                     initial={{ scale: 0 }}
@@ -92,12 +106,22 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                 </span>
               </div>
               {skill.description && (
-                <p className="text-sm text-neutral-400 mb-4 line-clamp-1 font-light leading-relaxed">{skill.description}</p>
+                <p className="text-sm text-neutral-400 mb-4 line-clamp-1 font-light leading-relaxed">
+                  {skill.description}
+                </p>
               )}
               <div className="flex items-center gap-6">
-                <ProgressBar progress={skill.progress} level={skill.level} className="flex-1 max-w-xs" />
-                <span className="text-sm font-bold text-neutral-200 tabular-nums min-w-[3rem]">{skill.progress}%</span>
-                <span className="text-xs text-neutral-500 font-light hidden sm:inline">Updated {format(new Date(skill.updatedAt), 'MMM d, yyyy')}</span>
+                <ProgressBar
+                  progress={skill.progress}
+                  level={skill.level}
+                  className="flex-1 max-w-xs"
+                />
+                <span className="text-sm font-bold text-neutral-200 tabular-nums min-w-[3rem]">
+                  {skill.progress}%
+                </span>
+                <span className="text-xs text-neutral-500 font-light hidden sm:inline">
+                  Updated {format(new Date(skill.updatedAt), 'MMM d, yyyy')}
+                </span>
               </div>
             </div>
           </div>
@@ -134,11 +158,11 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
     >
       <AnimatedCard className="p-6 lg:p-8 group hover:border-neutral-700/50 relative overflow-hidden h-full">
         {/* Subtle gradient background on hover - like digital credential */}
-        <div 
+        <div
           className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-500"
           style={hoverGradientStyle}
         />
-        
+
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1 min-w-0">
@@ -155,7 +179,9 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                 </motion.div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                    <h3 className="text-lg font-bold text-neutral-100 group-hover:text-white transition-colors tracking-tight">{skill.name}</h3>
+                    <h3 className="text-lg font-bold text-neutral-100 group-hover:text-white transition-colors tracking-tight">
+                      {skill.name}
+                    </h3>
                     {skill.verified && (
                       <motion.div
                         initial={{ scale: 0 }}
@@ -207,15 +233,14 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
           </div>
 
           {/* Progress bar - animates smoothly, shows growth */}
-          <motion.div
-            className="mb-6 relative"
-            {...(hasGrown ? skillGrowth : {})}
-          >
+          <motion.div className="mb-6 relative" {...(hasGrown ? skillGrowth : {})}>
             <ProgressBar progress={skill.progress} level={skill.level} />
           </motion.div>
 
           {skill.description && (
-            <p className="text-sm text-neutral-400 mb-4 line-clamp-2 font-light leading-relaxed">{skill.description}</p>
+            <p className="text-sm text-neutral-400 mb-4 line-clamp-2 font-light leading-relaxed">
+              {skill.description}
+            </p>
           )}
 
           {skill.notes && (
@@ -239,7 +264,9 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
 
           {skill.evidence && skill.evidence.length > 0 && (
             <div className="mb-4 p-3 rounded-xl bg-gradient-to-br from-primary-500/10 to-indigo-500/10 border border-primary-500/20 backdrop-blur-sm">
-              <p className="text-xs font-semibold text-primary-300 mb-2 uppercase tracking-wider">Evidence</p>
+              <p className="text-xs font-semibold text-primary-300 mb-2 uppercase tracking-wider">
+                Evidence
+              </p>
               <div className="flex flex-wrap gap-2">
                 {skill.evidence.map((ev, idx) => (
                   <span
@@ -254,7 +281,9 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
           )}
 
           <div className="flex items-center justify-between text-xs text-neutral-500 pt-4 border-t border-neutral-800/50">
-            <span className="font-light">Updated {format(new Date(skill.updatedAt), 'MMM d, yyyy')}</span>
+            <span className="font-light">
+              Updated {format(new Date(skill.updatedAt), 'MMM d, yyyy')}
+            </span>
             {skill.progress > 70 && (
               <motion.div
                 initial={{ scale: 0 }}

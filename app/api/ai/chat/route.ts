@@ -16,7 +16,7 @@ const bodySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const guestMode = env.isGuestMode || await hasGuestPreviewSession()
+    const guestMode = env.isGuestMode || (await hasGuestPreviewSession())
     const userId = guestMode ? 'guest-user' : await getSessionUserId()
 
     if (!userId) {

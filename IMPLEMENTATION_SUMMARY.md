@@ -123,17 +123,20 @@ All integrations are structured and ready. You need to:
 ## 🚀 Quick Start
 
 1. **Install Dependencies**
+
    ```bash
    npm install
    ```
 
 2. **Set Up Environment**
+
    ```bash
    cp ENV_SETUP.md .env.local
    # Edit .env.local with your values
    ```
 
 3. **Set Up Database**
+
    ```bash
    npm run db:generate
    npm run db:migrate
@@ -147,6 +150,7 @@ All integrations are structured and ready. You need to:
 ## 📝 Next Steps
 
 See `IMPLEMENTATION_GUIDE.md` for detailed next steps, including:
+
 - Database connection
 - Authentication implementation
 - Evidence upload completion

@@ -147,12 +147,12 @@ export const navHover = {
 }
 
 export const hoverMicroParallax = {
-  whileHover: { 
-    y: -6, 
+  whileHover: {
+    y: -6,
     scale: 1.01,
     rotateY: 2,
     rotateX: -1,
-    transition: { duration: 0.3, ease: easing.smooth }
+    transition: { duration: 0.3, ease: easing.smooth },
   },
 }
 

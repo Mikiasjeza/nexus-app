@@ -1,13 +1,13 @@
 /**
  * Email Service
- * 
+ *
  * Handles transactional emails (verification, password reset, etc.)
- * 
+ *
  * TODO: Choose email provider (Resend or SendGrid)
  * TODO: Add API keys to .env:
  * - RESEND_API_KEY (for Resend)
  * - SENDGRID_API_KEY (for SendGrid)
- * 
+ *
  * TODO: Create email templates
  * TODO: Add email queue for high volume
  */
@@ -75,7 +75,9 @@ class EmailService {
       })
     } catch (error) {
       console.error('Resend email error:', error)
-      throw new Error(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -84,7 +86,7 @@ class EmailService {
     // TODO: Implement SendGrid
     // const sgMail = require('@sendgrid/mail')
     // sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-    // 
+    //
     // await sgMail.send({
     //   to: options.to,
     //   from: options.from || process.env.EMAIL_FROM,

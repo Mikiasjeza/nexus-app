@@ -65,7 +65,9 @@ export default function EmployerSignupPage() {
         >
           <Building2 className="h-8 w-8 text-cyan-200/90" />
         </motion.div>
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">Register as employer</h1>
+        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+          Register as employer
+        </h1>
         <p className="text-sm leading-relaxed metalab-muted md:text-base">
           Create a company profile to search talent by verified proof and Nexus skill pillars.
         </p>
@@ -98,9 +100,14 @@ export default function EmployerSignupPage() {
 
         <p className="text-xs leading-relaxed metalab-muted">
           By creating an employer account you agree to our{' '}
-          <Link href="/terms" className="metalab-link">Terms of Service</Link>, including the employer rules on using
-          candidate data, and acknowledge our{' '}
-          <Link href="/privacy" className="metalab-link">Privacy Policy</Link>.
+          <Link href="/terms" className="metalab-link">
+            Terms of Service
+          </Link>
+          , including the employer rules on using candidate data, and acknowledge our{' '}
+          <Link href="/privacy" className="metalab-link">
+            Privacy Policy
+          </Link>
+          .
         </p>
 
         <Button type="submit" disabled={loading} isLoading={loading} fullWidth size="lg">

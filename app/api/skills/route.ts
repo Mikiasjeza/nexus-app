@@ -8,7 +8,7 @@ import { guestSkills } from '@/lib/mock/guest'
 
 export async function GET() {
   try {
-    if (env.isGuestMode || await hasGuestPreviewSession()) {
+    if (env.isGuestMode || (await hasGuestPreviewSession())) {
       return NextResponse.json(guestSkills)
     }
 
@@ -25,10 +25,7 @@ export async function GET() {
     return NextResponse.json(skills.map(mapSkill))
   } catch (e) {
     console.error('Skills list error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load skills' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load skills' }, { status: 500 })
   }
 }
 
@@ -54,10 +51,7 @@ export async function POST(request: Request) {
     } = body
 
     if (!name || !level || !category) {
-      return NextResponse.json(
-        { error: 'Name, level, and category are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Name, level, and category are required' }, { status: 400 })
     }
 
     const count = await prisma.skill.count({ where: { userId } })
@@ -68,10 +62,7 @@ export async function POST(request: Request) {
       },
     })
     if (duplicate) {
-      return NextResponse.json(
-        { error: 'A skill with this name already exists' },
-        { status: 409 }
-      )
+      return NextResponse.json({ error: 'A skill with this name already exists' }, { status: 409 })
     }
 
     const skill = await prisma.skill.create({
@@ -119,9 +110,6 @@ export async function POST(request: Request) {
     console.error('Skill create error:', e)
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
-    return NextResponse.json(
-      { error: 'Failed to create skill' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create skill' }, { status: 500 })
   }
 }

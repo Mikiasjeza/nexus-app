@@ -11,7 +11,11 @@ import { CATEGORY_COLORS, LEVEL_COLORS, LEVEL_LABELS } from '@/lib/utils/constan
 import Button from '@/components/UI/Button'
 import { cn } from '@/lib/utils/cn'
 import { easing } from '@/lib/utils/animations'
-import { getSkillPillarDetail, normalizeSkillCategory, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import {
+  getSkillPillarDetail,
+  normalizeSkillCategory,
+  SKILL_PILLAR_DETAILS,
+} from '@/lib/skills-taxonomy'
 import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
 
@@ -74,18 +78,25 @@ export default function SharePage() {
           transition={{ duration: 0.45, ease: easing.gentle }}
           className="gradient-border-card max-w-md p-10 text-center"
         >
-          <h1 className="mb-3 text-2xl font-semibold tracking-tight text-white md:text-3xl">Profile not found</h1>
-          <p className="text-sm leading-relaxed text-white/60">This profile is private or does not exist.</p>
+          <h1 className="mb-3 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+            Profile not found
+          </h1>
+          <p className="text-sm leading-relaxed text-white/60">
+            This profile is private or does not exist.
+          </p>
         </motion.div>
       </AppPageShell>
     )
   }
 
-  const pillarCounts = skills.reduce((acc, skill) => {
-    const category = normalizeSkillCategory(skill.category)
-    acc[category] = (acc[category] ?? 0) + 1
-    return acc
-  }, {} as Record<Skill['category'], number>)
+  const pillarCounts = skills.reduce(
+    (acc, skill) => {
+      const category = normalizeSkillCategory(skill.category)
+      acc[category] = (acc[category] ?? 0) + 1
+      return acc
+    },
+    {} as Record<Skill['category'], number>
+  )
   const topPillars = [...SKILL_PILLAR_DETAILS]
     .map((pillar) => ({
       ...pillar,
@@ -93,11 +104,13 @@ export default function SharePage() {
     }))
     .sort((left, right) => right.count - left.count)
   const standoutSkills = [...skills]
-    .sort((left, right) => Number(right.verified) - Number(left.verified) || right.progress - left.progress)
+    .sort(
+      (left, right) =>
+        Number(right.verified) - Number(left.verified) || right.progress - left.progress
+    )
     .slice(0, 5)
   const verifiedCount = skills.filter((skill) => skill.verified).length
-  const verifiedRate =
-    skills.length > 0 ? Math.round((verifiedCount / skills.length) * 100) : 0
+  const verifiedRate = skills.length > 0 ? Math.round((verifiedCount / skills.length) * 100) : 0
   const activePillars = new Set(skills.map((skill) => normalizeSkillCategory(skill.category))).size
 
   const recruiterSummary = [
@@ -106,8 +119,7 @@ export default function SharePage() {
     `${standoutSkills.filter((skill) => skill.verified).length} of ${standoutSkills.length} spotlight skills carry verification`,
   ]
 
-  const profileUrl =
-    printOrigin && shareableId ? `${printOrigin}/share/${shareableId}` : ''
+  const profileUrl = printOrigin && shareableId ? `${printOrigin}/share/${shareableId}` : ''
 
   return (
     <AppPageShell className="min-h-screen bg-black">
@@ -123,12 +135,10 @@ export default function SharePage() {
               <div className="text-xs uppercase tracking-[0.22em] text-white/45 mb-2">
                 Recruiter view
               </div>
-              <h2 className="text-xl font-bold text-white tracking-tight">
-                Scan-first summary
-              </h2>
+              <h2 className="text-xl font-bold text-white tracking-tight">Scan-first summary</h2>
               <p className="mt-2 text-sm text-white/62 max-w-xl leading-relaxed">
-                Five-pillar skill passport · {skills.length} skills · {activePillars} pillars active ·{' '}
-                {verifiedRate}% verified coverage
+                Five-pillar skill passport · {skills.length} skills · {activePillars} pillars active
+                · {verifiedRate}% verified coverage
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 print-hide shrink-0">
@@ -155,7 +165,12 @@ export default function SharePage() {
               { label: 'Skills listed', value: String(skills.length) },
               { label: 'Verified', value: String(verifiedCount) },
               { label: 'Pillars', value: String(activePillars) },
-              { label: 'Avg progress', value: skills.length ? `${Math.round(skills.reduce((a, s) => a + s.progress, 0) / skills.length)}%` : '—' },
+              {
+                label: 'Avg progress',
+                value: skills.length
+                  ? `${Math.round(skills.reduce((a, s) => a + s.progress, 0) / skills.length)}%`
+                  : '—',
+              },
             ].map((cell) => (
               <div
                 key={cell.label}
@@ -203,7 +218,7 @@ export default function SharePage() {
               Public Nexus Profile
             </span>
           </motion.div>
-          
+
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -213,7 +228,7 @@ export default function SharePage() {
           >
             {user.name}
           </motion.h1>
-          
+
           {user.bio && (
             <motion.p
               initial={{ opacity: 0, y: 40 }}
@@ -239,13 +254,17 @@ export default function SharePage() {
                 className="rounded-2xl border border-white/10 bg-[rgba(6,8,14,0.45)] backdrop-blur-sm px-4 py-4 text-left"
                 style={{ boxShadow: `inset 0 0 0 1px ${CATEGORY_COLORS[pillar.category]}20` }}
               >
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  {pillar.shortLabel}
+                </div>
                 <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
-                <div className="mt-3 text-2xl font-semibold text-white">{pillarCounts[pillar.category] ?? 0}</div>
+                <div className="mt-3 text-2xl font-semibold text-white">
+                  {pillarCounts[pillar.category] ?? 0}
+                </div>
               </div>
             ))}
           </motion.div>
-          
+
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -298,14 +317,17 @@ export default function SharePage() {
             {
               icon: CheckCircle2,
               label: 'Verified Skills',
-              value: skills.filter(s => s.verified).length.toString(),
+              value: skills.filter((s) => s.verified).length.toString(),
             },
             {
               icon: TrendingUp,
               label: 'Average Progress',
-              value: skills.length > 0
-                ? Math.round(skills.reduce((sum, s) => sum + s.progress, 0) / skills.length).toString()
-                : '0',
+              value:
+                skills.length > 0
+                  ? Math.round(
+                      skills.reduce((sum, s) => sum + s.progress, 0) / skills.length
+                    ).toString()
+                  : '0',
               suffix: '%',
             },
           ].map((stat, index) => {
@@ -332,7 +354,8 @@ export default function SharePage() {
                   {stat.label}
                 </h3>
                 <p className="text-4xl lg:text-5xl font-bold text-white tracking-tight tabular-nums">
-                  {stat.value}{stat.suffix || ''}
+                  {stat.value}
+                  {stat.suffix || ''}
                 </p>
               </motion.div>
             )
@@ -350,18 +373,23 @@ export default function SharePage() {
             <div className="text-xs uppercase tracking-[0.22em] text-white/45 mb-4">
               Recruiter Snapshot
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Fast scan summary
-            </h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Fast scan summary</h2>
             <div className="space-y-3">
               {recruiterSummary.map((line) => (
-                <div key={line} className="rounded-2xl border border-white/10 bg-[rgba(6,8,14,0.45)] backdrop-blur-sm px-4 py-3 text-sm text-white/72">
+                <div
+                  key={line}
+                  className="rounded-2xl border border-white/10 bg-[rgba(6,8,14,0.45)] backdrop-blur-sm px-4 py-3 text-sm text-white/72"
+                >
                   {line}
                 </div>
               ))}
             </div>
             <div className="mt-6 text-sm text-white/55">
-              Strongest pillars: {topPillars.slice(0, 2).map((pillar) => pillar.shortLabel).join(', ') || 'None yet'}
+              Strongest pillars:{' '}
+              {topPillars
+                .slice(0, 2)
+                .map((pillar) => pillar.shortLabel)
+                .join(', ') || 'None yet'}
             </div>
           </div>
 
@@ -369,23 +397,23 @@ export default function SharePage() {
             <div className="text-xs uppercase tracking-[0.22em] text-white/45 mb-4">
               Standout Skills
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Best proof at a glance
-            </h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Best proof at a glance</h2>
             <div className="space-y-3">
               {standoutSkills.map((skill) => (
-                <div key={skill.id} className="rounded-2xl border border-white/10 bg-[rgba(6,8,14,0.45)] backdrop-blur-sm px-4 py-4">
+                <div
+                  key={skill.id}
+                  className="rounded-2xl border border-white/10 bg-[rgba(6,8,14,0.45)] backdrop-blur-sm px-4 py-4"
+                >
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="font-semibold text-white">{skill.name}</div>
                       <div className="mt-1 text-sm text-white/55">
-                        {getSkillPillarDetail(normalizeSkillCategory(skill.category)).shortLabel} · {LEVEL_LABELS[skill.level]} · {skill.progress}% progress
+                        {getSkillPillarDetail(normalizeSkillCategory(skill.category)).shortLabel} ·{' '}
+                        {LEVEL_LABELS[skill.level]} · {skill.progress}% progress
                       </div>
                     </div>
                     {skill.verified && (
-                      <span className="text-xs font-medium text-emerald-300/95">
-                        Verified
-                      </span>
+                      <span className="text-xs font-medium text-emerald-300/95">Verified</span>
                     )}
                   </div>
                 </div>
@@ -410,7 +438,7 @@ export default function SharePage() {
           >
             Skills Across Five Pillars
           </motion.h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
             {skills.map((skill, index) => (
               <motion.div
@@ -440,13 +468,19 @@ export default function SharePage() {
                         {LEVEL_LABELS[skill.level]}
                       </span>
                       <span className="rounded-full border border-white/10 bg-[rgba(6,8,14,0.45)] px-3 py-1.5 text-xs font-medium text-white/65 backdrop-blur-sm">
-                        {getSkillPillarDetail(normalizeSkillCategory(skill.category)).shortLabel}: {normalizeSkillCategory(skill.category)}
+                        {getSkillPillarDetail(normalizeSkillCategory(skill.category)).shortLabel}:{' '}
+                        {normalizeSkillCategory(skill.category)}
                       </span>
                       {skill.verified && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          transition={{ type: 'spring', stiffness: 500, damping: 30, delay: 0.5 + index * 0.08 }}
+                          transition={{
+                            type: 'spring',
+                            stiffness: 500,
+                            damping: 30,
+                            delay: 0.5 + index * 0.08,
+                          }}
                           className="p-1 rounded-2xl border border-white/10 bg-[rgba(6,8,14,0.45)] backdrop-blur-sm"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 text-white" />
@@ -455,7 +489,7 @@ export default function SharePage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Progress bar - animates forward */}
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
@@ -483,7 +517,7 @@ export default function SharePage() {
                     />
                   </div>
                 </div>
-                
+
                 {skill.description && (
                   <p className="text-sm text-white/62 leading-relaxed line-clamp-2">
                     {skill.description}

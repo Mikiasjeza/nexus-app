@@ -14,15 +14,15 @@ class Logger {
   private formatMessage(entry: LogEntry): string {
     const { level, message, timestamp, data, error } = entry
     let logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`
-    
+
     if (data) {
       logMessage += ` ${JSON.stringify(data)}`
     }
-    
+
     if (error) {
       logMessage += `\nError: ${error.message}\nStack: ${error.stack}`
     }
-    
+
     return logMessage
   }
 

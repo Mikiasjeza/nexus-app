@@ -28,10 +28,7 @@ const ALLOWED_MIMES = [
 ]
 const ALLOWED_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|pdf|txt|md|json|mp4|webm)$/i
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -40,10 +37,7 @@ export async function POST(
 
     const rl = rateLimit(`evidence:${userId}`, { maxRequests: 20, windowMs: 60000 })
     if (!rl.allowed) {
-      return NextResponse.json(
-        { error: 'Too many uploads. Try again later.' },
-        { status: 429 }
-      )
+      return NextResponse.json({ error: 'Too many uploads. Try again later.' }, { status: 429 })
     }
 
     const { id: skillId } = await params
@@ -62,10 +56,7 @@ export async function POST(
     const url = (formData.get('url') as string) || null
 
     if (!file && !url) {
-      return NextResponse.json(
-        { error: 'File or URL required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'File or URL required' }, { status: 400 })
     }
 
     let evidenceData: {
@@ -94,28 +85,19 @@ export async function POST(
         )
       }
       if (!ALLOWED_EXTENSIONS.test(file.name)) {
-        return NextResponse.json(
-          { error: 'Invalid file extension' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Invalid file extension' }, { status: 400 })
       }
 
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
       let uploadResult
       try {
-        uploadResult = await storageService.uploadFile(
-          buffer,
-          file.name,
-          mime,
-          `skills/${skillId}`
-        )
+        uploadResult = await storageService.uploadFile(buffer, file.name, mime, `skills/${skillId}`)
       } catch (storageErr) {
         console.error('Storage upload error:', storageErr)
         return NextResponse.json(
           {
-            error:
-              'File storage not configured. Set AWS credentials or use URL-based evidence.',
+            error: 'File storage not configured. Set AWS credentials or use URL-based evidence.',
           },
           { status: 503 }
         )

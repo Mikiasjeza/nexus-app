@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    if (env.isGuestMode || await hasGuestPreviewSession()) {
+    if (env.isGuestMode || (await hasGuestPreviewSession())) {
       return NextResponse.json(guestInsights)
     }
 
@@ -25,9 +25,8 @@ export async function GET() {
       select: { id: true, name: true, progress: true },
     })
 
-    const insights: SkillInsight[] = skills.slice(0, 5).map(skill => {
-      const trend =
-        skill.progress > 70 ? 'up' : skill.progress < 40 ? 'down' : 'stable'
+    const insights: SkillInsight[] = skills.slice(0, 5).map((skill) => {
+      const trend = skill.progress > 70 ? 'up' : skill.progress < 40 ? 'down' : 'stable'
       const change = Math.floor(Math.random() * 20) - 10
       const recommendation =
         skill.progress < 50
@@ -47,9 +46,6 @@ export async function GET() {
     return NextResponse.json(insights)
   } catch (e) {
     console.error('Insights error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load insights' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load insights' }, { status: 500 })
   }
 }

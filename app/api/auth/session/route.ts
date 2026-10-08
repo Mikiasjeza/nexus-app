@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    if (env.isGuestMode || await hasGuestPreviewSession()) {
+    if (env.isGuestMode || (await hasGuestPreviewSession())) {
       return NextResponse.json({ user: guestUser })
     }
 

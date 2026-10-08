@@ -48,7 +48,8 @@ export default function RegisterPage() {
       })
       router.push('/onboarding')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create account. Please try again.'
+      const message =
+        err instanceof Error ? err.message : 'Failed to create account. Please try again.'
       setError(message)
       addToast({
         type: 'error',
@@ -64,8 +65,12 @@ export default function RegisterPage() {
     <AuthShell maxWidthClass="max-w-md">
       <div className="hero-kicker mb-6">New passport</div>
       <div className="mb-10 text-center">
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">Create account</h1>
-        <p className="text-base metalab-muted">Start with your name, email, and a secure password</p>
+        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+          Create account
+        </h1>
+        <p className="text-base metalab-muted">
+          Start with your name, email, and a secure password
+        </p>
       </div>
 
       {error ? (
@@ -86,7 +91,9 @@ export default function RegisterPage() {
               type="text"
               required
               value={formData.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               className="metalab-input pl-11"
               placeholder="Alex Rivera"
             />
@@ -104,7 +111,9 @@ export default function RegisterPage() {
               type="email"
               required
               value={formData.email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               className="metalab-input pl-11"
               placeholder="you@example.com"
             />
@@ -170,9 +179,14 @@ export default function RegisterPage() {
 
         <p className="text-xs leading-relaxed metalab-muted">
           By creating an account you agree to our{' '}
-          <Link href="/terms" className="metalab-link">Terms of Service</Link> and acknowledge our{' '}
-          <Link href="/privacy" className="metalab-link">Privacy Policy</Link>. We&apos;ll only email you about your
-          account, never marketing.
+          <Link href="/terms" className="metalab-link">
+            Terms of Service
+          </Link>{' '}
+          and acknowledge our{' '}
+          <Link href="/privacy" className="metalab-link">
+            Privacy Policy
+          </Link>
+          . We&apos;ll only email you about your account, never marketing.
         </p>
 
         <Button type="submit" disabled={loading} isLoading={loading} fullWidth size="lg">

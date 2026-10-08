@@ -8,7 +8,11 @@ import Link from 'next/link'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
-import { getSkillPillarDetail, normalizeSkillCategory, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import {
+  getSkillPillarDetail,
+  normalizeSkillCategory,
+  SKILL_PILLAR_DETAILS,
+} from '@/lib/skills-taxonomy'
 import type { SkillCategory } from '@/lib/types'
 import AppPageShell from '@/components/Layout/AppPageShell'
 
@@ -29,11 +33,14 @@ interface PoolDetail {
 function getCandidatePillars(
   skills: Candidate['skills']
 ): Array<{ category: SkillCategory; shortLabel: string; count: number }> {
-  const counts = skills.reduce((acc, skill) => {
-    const category = normalizeSkillCategory(skill.category)
-    acc[category] = (acc[category] ?? 0) + 1
-    return acc
-  }, {} as Record<SkillCategory, number>)
+  const counts = skills.reduce(
+    (acc, skill) => {
+      const category = normalizeSkillCategory(skill.category)
+      acc[category] = (acc[category] ?? 0) + 1
+      return acc
+    },
+    {} as Record<SkillCategory, number>
+  )
 
   return Object.entries(counts)
     .map(([category, count]) => {
@@ -84,20 +91,21 @@ export default function EmployerPoolDetailPage() {
   if (loading || !pool) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-black/40 dark:text-white/40">
-          Loading...
-        </div>
+        <div className="animate-pulse text-black/40 dark:text-white/40">Loading...</div>
       </div>
     )
   }
 
-  const poolPillarCounts = pool.candidates.reduce((acc, candidate) => {
-    candidate.skills.forEach((skill) => {
-      const category = normalizeSkillCategory(skill.category)
-      acc[category] = (acc[category] ?? 0) + 1
-    })
-    return acc
-  }, {} as Record<SkillCategory, number>)
+  const poolPillarCounts = pool.candidates.reduce(
+    (acc, candidate) => {
+      candidate.skills.forEach((skill) => {
+        const category = normalizeSkillCategory(skill.category)
+        acc[category] = (acc[category] ?? 0) + 1
+      })
+      return acc
+    },
+    {} as Record<SkillCategory, number>
+  )
 
   return (
     <AppPageShell className="min-h-screen bg-black py-16">
@@ -111,11 +119,10 @@ export default function EmployerPoolDetailPage() {
         </Link>
 
         <div className="hero-panel p-8 md:p-10 mb-12">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            {pool.name}
-          </h1>
+          <h1 className="text-4xl font-bold text-white mb-2">{pool.name}</h1>
           <p className="text-white/60 mb-8">
-            {pool.candidates.length} candidate{pool.candidates.length !== 1 ? 's' : ''} saved with pillar-aware skill proof.
+            {pool.candidates.length} candidate{pool.candidates.length !== 1 ? 's' : ''} saved with
+            pillar-aware skill proof.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
             {SKILL_PILLAR_DETAILS.map((pillar) => (
@@ -124,9 +131,13 @@ export default function EmployerPoolDetailPage() {
                 className="insight-card p-4"
                 style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
               >
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  {pillar.shortLabel}
+                </div>
                 <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
-                <div className="mt-3 text-2xl font-semibold text-white">{poolPillarCounts[pillar.category] ?? 0}</div>
+                <div className="mt-3 text-2xl font-semibold text-white">
+                  {poolPillarCounts[pillar.category] ?? 0}
+                </div>
               </div>
             ))}
           </div>
@@ -135,9 +146,7 @@ export default function EmployerPoolDetailPage() {
         {pool.candidates.length === 0 ? (
           <div className="gradient-border-card p-12 text-center">
             <User className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <p className="text-white/60 mb-4">
-              No candidates in this pool yet
-            </p>
+            <p className="text-white/60 mb-4">No candidates in this pool yet</p>
             <Link href="/employer/talent">
               <Button>Search Talent</Button>
             </Link>
@@ -165,23 +174,19 @@ export default function EmployerPoolDetailPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">
-                      {c.name}
-                    </h3>
+                    <h3 className="font-semibold text-white">{c.name}</h3>
                     <div className="flex flex-wrap gap-2 mt-2 mb-3">
-                      {getCandidatePillars(c.skills).slice(0, 3).map((pillar) => (
-                        <Badge key={pillar.category} variant="default" size="sm">
-                          {pillar.shortLabel}: {pillar.count}
-                        </Badge>
-                      ))}
+                      {getCandidatePillars(c.skills)
+                        .slice(0, 3)
+                        .map((pillar) => (
+                          <Badge key={pillar.category} variant="default" size="sm">
+                            {pillar.shortLabel}: {pillar.count}
+                          </Badge>
+                        ))}
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {c.skills.slice(0, 5).map((s) => (
-                        <Badge
-                          key={s.name}
-                          variant={s.verified ? 'primary' : 'default'}
-                          size="sm"
-                        >
+                        <Badge key={s.name} variant={s.verified ? 'primary' : 'default'} size="sm">
                           {s.verified && <Shield className="w-3 h-3" />}
                           {s.name}
                         </Badge>
@@ -195,11 +200,7 @@ export default function EmployerPoolDetailPage() {
                       View
                     </Button>
                   </Link>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRemove(c.id)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleRemove(c.id)}>
                     Remove
                   </Button>
                 </div>

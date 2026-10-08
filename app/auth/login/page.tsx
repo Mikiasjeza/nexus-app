@@ -32,7 +32,7 @@ function LoginPageContent() {
   const [loading, setLoading] = useState(false)
   const oauthError = searchParams.get('error')
   const [error, setError] = useState(
-    oauthError ? OAUTH_ERRORS[oauthError] ?? OAUTH_ERRORS.oauth_failed : ''
+    oauthError ? (OAUTH_ERRORS[oauthError] ?? OAUTH_ERRORS.oauth_failed) : ''
   )
   const [showPassword, setShowPassword] = useState(false)
 
@@ -49,7 +49,7 @@ function LoginPageContent() {
         message: 'You have successfully signed in.',
       })
       const next = searchParams.get('next')
-      const target = user.onboardingComplete === false ? '/onboarding' : (next || '/dashboard')
+      const target = user.onboardingComplete === false ? '/onboarding' : next || '/dashboard'
       router.push(target)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Invalid email or password'
@@ -79,7 +79,8 @@ function LoginPageContent() {
       const next = searchParams.get('next')
       router.push(next || '/dashboard')
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Guest preview is unavailable right now'
+      const errorMessage =
+        err instanceof Error ? err.message : 'Guest preview is unavailable right now'
       setError(errorMessage)
       addToast({
         type: 'error',
@@ -95,7 +96,9 @@ function LoginPageContent() {
     <AuthShell>
       <div className="hero-kicker mb-6">Account access</div>
       <div className="mb-10 text-center">
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">Welcome back</h1>
+        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+          Welcome back
+        </h1>
         <p className="text-base metalab-muted">Sign in to continue your passport</p>
         <button
           type="button"
@@ -169,7 +172,10 @@ function LoginPageContent() {
             />
             <span>Remember me</span>
           </label>
-          <Link href="/auth/forgot-password" className="text-sm metalab-muted transition-colors hover:text-white">
+          <Link
+            href="/auth/forgot-password"
+            className="text-sm metalab-muted transition-colors hover:text-white"
+          >
             Forgot password?
           </Link>
         </div>

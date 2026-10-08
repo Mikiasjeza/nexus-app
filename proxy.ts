@@ -10,7 +10,7 @@ import { env } from '@/lib/config/env'
 
 /** Routes that do NOT require authentication */
 const PUBLIC_PATHS = [
-  '/',                    // Landing
+  '/', // Landing
   '/about',
   '/how-it-works',
   '/contact',
@@ -18,21 +18,21 @@ const PUBLIC_PATHS = [
   '/terms',
   '/privacy',
   '/cookies',
-  '/monitoring',          // Sentry tunnel: error reports from logged-out pages too
+  '/monitoring', // Sentry tunnel: error reports from logged-out pages too
   '/auth/login',
   '/auth/register',
   '/auth/forgot-password',
   '/auth/reset-password',
-  '/share/',              // Public shareable profiles
+  '/share/', // Public shareable profiles
   '/api/health',
   '/api/version',
   '/api/contact',
   '/api/guest-mode',
-  '/api/auth/',           // Login, register, etc. handle own auth
-  '/api/stripe/webhook',  // Stripe webhooks (verified by signature)
-  '/api/share/',          // Public share API
-  '/api/jobs',            // Public job listings for marketplace
-  '/api/company/',        // Public company profiles
+  '/api/auth/', // Login, register, etc. handle own auth
+  '/api/stripe/webhook', // Stripe webhooks (verified by signature)
+  '/api/share/', // Public share API
+  '/api/jobs', // Public job listings for marketplace
+  '/api/company/', // Public company profiles
 ]
 
 /** Auth routes - redirect to dashboard if already logged in */
@@ -40,11 +40,11 @@ const AUTH_ROUTES = ['/auth/login', '/auth/register']
 
 function isPublicPath(pathname: string): boolean {
   if (pathname === '/') return true
-  return PUBLIC_PATHS.some(p => p !== '/' && (pathname === p || pathname.startsWith(p)))
+  return PUBLIC_PATHS.some((p) => p !== '/' && (pathname === p || pathname.startsWith(p)))
 }
 
 function isAuthRoute(pathname: string): boolean {
-  return AUTH_ROUTES.some(p => pathname.startsWith(p))
+  return AUTH_ROUTES.some((p) => pathname.startsWith(p))
 }
 
 export function proxy(request: NextRequest) {

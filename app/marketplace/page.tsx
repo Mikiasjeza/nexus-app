@@ -21,7 +21,12 @@ import Badge from '@/components/UI/Badge'
 import { useSkills } from '@/lib/hooks/useSkills'
 import { aiApi, authApi } from '@/lib/api'
 import { easing } from '@/lib/utils/animations'
-import { getSkillPillarDetail, inferSkillCategory, skillsLooselyMatch, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import {
+  getSkillPillarDetail,
+  inferSkillCategory,
+  skillsLooselyMatch,
+  SKILL_PILLAR_DETAILS,
+} from '@/lib/skills-taxonomy'
 import type { AIJobMatchItem } from '@/lib/api/ai'
 import type { SkillCategory, User } from '@/lib/types'
 import { useRouter } from 'next/navigation'
@@ -63,8 +68,13 @@ export default function MarketplacePage() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: 'Ask me which roles fit your strongest pillars, which gaps matter most, or how to position yourself for a better match.',
-      prompts: ['Which pillar is strongest for me?', 'What role should I target next?', 'How can I improve my match score?'],
+      content:
+        'Ask me which roles fit your strongest pillars, which gaps matter most, or how to position yourself for a better match.',
+      prompts: [
+        'Which pillar is strongest for me?',
+        'What role should I target next?',
+        'How can I improve my match score?',
+      ],
     },
   ])
 
@@ -78,7 +88,9 @@ export default function MarketplacePage() {
       try {
         const [currentUser, jobsResponse] = await Promise.all([
           authApi.getCurrentUser(),
-          fetch('/api/jobs', { credentials: 'include' }).then((response) => response.json()).catch(() => ({ jobs: [] })),
+          fetch('/api/jobs', { credentials: 'include' })
+            .then((response) => response.json())
+            .catch(() => ({ jobs: [] })),
         ])
 
         if (!isActive) return
@@ -105,7 +117,8 @@ export default function MarketplacePage() {
     let isActive = true
     setAiLoading(true)
 
-    aiApi.getJobMatches()
+    aiApi
+      .getJobMatches()
       .then((response) => {
         if (!isActive) return
         setAiSummary(response.data.summary)
@@ -144,9 +157,7 @@ export default function MarketplacePage() {
           ? 50
           : Math.round(
               (job.skills.filter((skill) =>
-                userSkills.some((userSkill) =>
-                  skillsLooselyMatch(userSkill, skill)
-                )
+                userSkills.some((userSkill) => skillsLooselyMatch(userSkill, skill))
               ).length /
                 Math.max(job.skills.length, 1)) *
                 100
@@ -164,26 +175,27 @@ export default function MarketplacePage() {
   }, [aiMatchMap, jobs, userSkills])
 
   const userPillarCounts = useMemo(() => {
-    return skills.reduce((acc, skill) => {
-      acc[skill.category] = (acc[skill.category] ?? 0) + 1
-      return acc
-    }, {} as Record<SkillCategory, number>)
+    return skills.reduce(
+      (acc, skill) => {
+        acc[skill.category] = (acc[skill.category] ?? 0) + 1
+        return acc
+      },
+      {} as Record<SkillCategory, number>
+    )
   }, [skills])
 
   const topPillars = useMemo(() => {
-    return SKILL_PILLAR_DETAILS
-      .map((pillar) => ({
-        ...pillar,
-        count: userPillarCounts[pillar.category] ?? 0,
-        color: CATEGORY_COLORS[pillar.category],
-      }))
-      .sort((a, b) => b.count - a.count)
+    return SKILL_PILLAR_DETAILS.map((pillar) => ({
+      ...pillar,
+      count: userPillarCounts[pillar.category] ?? 0,
+      color: CATEGORY_COLORS[pillar.category],
+    })).sort((a, b) => b.count - a.count)
   }, [userPillarCounts])
 
   const getPillarsForSkills = (skillNames: string[]) => {
-    return Array.from(
-      new Set(skillNames.map((skill) => inferSkillCategory(skill)))
-    ).map((category) => getSkillPillarDetail(category))
+    return Array.from(new Set(skillNames.map((skill) => inferSkillCategory(skill)))).map(
+      (category) => getSkillPillarDetail(category)
+    )
   }
 
   const filteredJobs = matchedJobs
@@ -202,7 +214,8 @@ export default function MarketplacePage() {
     })
     .sort((a, b) => b.match - a.match)
 
-  const latestAssistantPrompts = [...chatMessages].reverse().find((message) => message.role === 'assistant')?.prompts || []
+  const latestAssistantPrompts =
+    [...chatMessages].reverse().find((message) => message.role === 'assistant')?.prompts || []
 
   const sendChat = async (message: string) => {
     const trimmedMessage = message.trim()
@@ -269,7 +282,8 @@ export default function MarketplacePage() {
                   Career Marketplace
                 </h1>
                 <p className="text-lg text-white/68 max-w-2xl">
-                  Discover openings matched to your strongest pillars, with AI-ranked fit reasons, gap analysis, and coaching grounded in the same skill system across Nexus.
+                  Discover openings matched to your strongest pillars, with AI-ranked fit reasons,
+                  gap analysis, and coaching grounded in the same skill system across Nexus.
                 </p>
               </div>
               <Badge variant="primary" size="lg">
@@ -279,7 +293,8 @@ export default function MarketplacePage() {
 
             {isGuestPreview && (
               <div className="mb-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
-                You are browsing as a guest. AI recommendations are shown in preview mode. Sign in or create an account to apply or save jobs.
+                You are browsing as a guest. AI recommendations are shown in preview mode. Sign in
+                or create an account to apply or save jobs.
               </div>
             )}
 
@@ -290,7 +305,9 @@ export default function MarketplacePage() {
                 { label: 'Skills detected', value: userSkills.length },
               ].map((item) => (
                 <div key={item.label} className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {item.label}
+                  </div>
                   <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
                 </div>
               ))}
@@ -303,7 +320,9 @@ export default function MarketplacePage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${pillar.color}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {pillar.shortLabel}
+                  </div>
                   <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
                   <div className="mt-3 text-2xl font-semibold text-white">{pillar.count}</div>
                 </div>
@@ -349,7 +368,8 @@ export default function MarketplacePage() {
                 <div className="hero-kicker mb-3">AI Job Matching</div>
                 <h2 className="text-2xl font-bold text-white">Best-fit roles right now</h2>
                 <p className="text-white/60 mt-2">
-                  {aiSummary || 'AI is comparing your strongest pillars and skill proof against active roles to surface the best opportunities.'}
+                  {aiSummary ||
+                    'AI is comparing your strongest pillars and skill proof against active roles to surface the best opportunities.'}
                 </p>
               </div>
               <Button
@@ -361,7 +381,8 @@ export default function MarketplacePage() {
                     return
                   }
                   setAiLoading(true)
-                  aiApi.getJobMatches()
+                  aiApi
+                    .getJobMatches()
                     .then((response) => {
                       setAiSummary(response.data.summary)
                       setAiMatches(response.data.matches)
@@ -384,10 +405,15 @@ export default function MarketplacePage() {
               )}
 
               {aiMatches.slice(0, 3).map((match) => (
-                <div key={match.jobId} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <div
+                  key={match.jobId}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+                >
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
-                      <div className="font-semibold text-white">{match.job?.title || 'Recommended role'}</div>
+                      <div className="font-semibold text-white">
+                        {match.job?.title || 'Recommended role'}
+                      </div>
                       <div className="text-sm text-white/55">{match.job?.company.name}</div>
                     </div>
                     <Badge variant={match.recommended ? 'primary' : 'default'} size="sm">
@@ -411,7 +437,11 @@ export default function MarketplacePage() {
                   </div>
                   {match.gaps.length > 0 && (
                     <div className="text-xs text-white/55">
-                      Gap pillars: {getPillarsForSkills(match.gaps).map((pillar) => pillar.shortLabel).join(', ')}. Missing skills: {match.gaps.join(', ')}
+                      Gap pillars:{' '}
+                      {getPillarsForSkills(match.gaps)
+                        .map((pillar) => pillar.shortLabel)
+                        .join(', ')}
+                      . Missing skills: {match.gaps.join(', ')}
                     </div>
                   )}
                 </div>
@@ -426,7 +456,8 @@ export default function MarketplacePage() {
                 <div className="hero-kicker mb-2">AI Career Coach</div>
                 <h2 className="text-2xl font-bold text-white">Ask what to do next</h2>
                 <p className="text-sm text-white/60 mt-2">
-                  Get advice based on your strongest pillars, missing proof, and the roles you are closest to landing.
+                  Get advice based on your strongest pillars, missing proof, and the roles you are
+                  closest to landing.
                 </p>
               </div>
             </div>
@@ -574,7 +605,11 @@ export default function MarketplacePage() {
                           {job.skills.map((skill) => (
                             <Badge
                               key={skill}
-                              variant={userSkills.some((userSkill) => skillsLooselyMatch(userSkill, skill)) ? 'primary' : 'default'}
+                              variant={
+                                userSkills.some((userSkill) => skillsLooselyMatch(userSkill, skill))
+                                  ? 'primary'
+                                  : 'default'
+                              }
                               size="sm"
                             >
                               {skill}
@@ -607,7 +642,9 @@ export default function MarketplacePage() {
                               return
                             }
 
-                            setChatInput(`How should I position myself for the ${job.title} role at ${job.company.name}?`)
+                            setChatInput(
+                              `How should I position myself for the ${job.title} role at ${job.company.name}?`
+                            )
                           }}
                         >
                           Ask AI About Fit
@@ -643,12 +680,18 @@ export default function MarketplacePage() {
                 <div className="text-white/60">Active Jobs</div>
               </div>
               <div>
-                <div className="text-4xl font-bold text-white mb-2">{aiMatches.filter((match) => match.recommended).length}</div>
+                <div className="text-4xl font-bold text-white mb-2">
+                  {aiMatches.filter((match) => match.recommended).length}
+                </div>
                 <div className="text-white/60">AI Recommendations</div>
               </div>
               <div>
                 <div className="text-4xl font-bold text-white mb-2">
-                  {Math.round(aiMatches.reduce((sum, match) => sum + match.matchScore, 0) / Math.max(aiMatches.length, 1)) || 0}%
+                  {Math.round(
+                    aiMatches.reduce((sum, match) => sum + match.matchScore, 0) /
+                      Math.max(aiMatches.length, 1)
+                  ) || 0}
+                  %
                 </div>
                 <div className="text-white/60">Average AI Fit</div>
               </div>

@@ -61,7 +61,11 @@ function CursorMesh() {
   }, [schedule, flush])
 
   return (
-    <div ref={containerRef} className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+    <div
+      ref={containerRef}
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      aria-hidden
+    >
       <div
         ref={primaryRef}
         className="absolute inset-0 opacity-[0.28] will-change-[background] dark:opacity-[0.42]"

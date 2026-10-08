@@ -51,7 +51,7 @@ const AI_ANALYSIS_LIMITS: Record<string, number> = {
 
 export async function GET(request: NextRequest) {
   try {
-    if (env.isGuestMode || await hasGuestPreviewSession()) {
+    if (env.isGuestMode || (await hasGuestPreviewSession())) {
       return NextResponse.json({ data: [] })
     }
 
@@ -102,10 +102,7 @@ export async function GET(request: NextRequest) {
     console.error('AI analysis history error:', e)
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
-    return NextResponse.json(
-      { error: 'Failed to load AI analyses' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load AI analyses' }, { status: 500 })
   }
 }
 
@@ -121,10 +118,7 @@ export async function POST(request: NextRequest) {
 
     const rl = rateLimit(`ai:${userId}`, { maxRequests: 20, windowMs: 60000 })
     if (!rl.allowed) {
-      return NextResponse.json(
-        { error: 'Too many AI requests. Try again later.' },
-        { status: 429 }
-      )
+      return NextResponse.json({ error: 'Too many AI requests. Try again later.' }, { status: 429 })
     }
 
     const body = await Promise.race([
@@ -140,8 +134,7 @@ export async function POST(request: NextRequest) {
       select: { plan: true, status: true },
     })
     const plan = subscription?.plan || 'free'
-    const isActivePlan =
-      !subscription || ['active', 'trialing'].includes(subscription.status)
+    const isActivePlan = !subscription || ['active', 'trialing'].includes(subscription.status)
     const monthlyLimit = AI_ANALYSIS_LIMITS[plan] ?? AI_ANALYSIS_LIMITS.free
     if (isActivePlan && monthlyLimit >= 0) {
       const monthStart = new Date()
@@ -249,10 +242,7 @@ export async function POST(request: NextRequest) {
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
     if (e instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: e.errors },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid request', details: e.errors }, { status: 400 })
     }
     return NextResponse.json(
       {

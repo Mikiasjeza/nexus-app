@@ -4,14 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import {
-  Building2,
-  Briefcase,
-  MapPin,
-  DollarSign,
-  ExternalLink,
-  Globe,
-} from 'lucide-react'
+import { Building2, Briefcase, MapPin, DollarSign, ExternalLink, Globe } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
 import { easing } from '@/lib/utils/animations'
@@ -47,12 +40,8 @@ export default function CompanyPage() {
   useEffect(() => {
     if (!slug) return
     Promise.all([
-      fetch(`/api/company/${slug}`, { credentials: 'include' }).then((r) =>
-        r.json()
-      ),
-      fetch(`/api/jobs?companySlug=${slug}`, { credentials: 'include' }).then(
-        (r) => r.json()
-      ),
+      fetch(`/api/company/${slug}`, { credentials: 'include' }).then((r) => r.json()),
+      fetch(`/api/jobs?companySlug=${slug}`, { credentials: 'include' }).then((r) => r.json()),
     ])
       .then(([companyData, jobsData]) => {
         if (companyData.company) setCompany(companyData.company)
@@ -65,9 +54,7 @@ export default function CompanyPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-black/40 dark:text-white/40">
-          Loading...
-        </div>
+        <div className="animate-pulse text-black/40 dark:text-white/40">Loading...</div>
       </div>
     )
   }
@@ -77,9 +64,7 @@ export default function CompanyPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Building2 className="w-16 h-16 mx-auto mb-4 text-black/40 dark:text-white/40" />
-          <h2 className="text-xl font-medium text-black dark:text-white mb-2">
-            Company not found
-          </h2>
+          <h2 className="text-xl font-medium text-black dark:text-white mb-2">Company not found</h2>
           <a href="/marketplace" className="text-primary-600 dark:text-primary-400">
             Browse jobs
           </a>
@@ -100,30 +85,26 @@ export default function CompanyPage() {
           <div className="hero-panel p-8 md:p-10">
             <div className="flex items-start gap-6">
               <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
-              {company.logo ? (
-                <Image
-                  src={company.logo}
-                  alt={`${company.name} logo`}
-                  width={80}
-                  height={80}
-                  unoptimized
-                  className="w-20 h-20 rounded-2xl object-cover"
-                />
-              ) : (
-                <Building2 className="w-10 h-10 text-white/40" />
-              )}
+                {company.logo ? (
+                  <Image
+                    src={company.logo}
+                    alt={`${company.name} logo`}
+                    width={80}
+                    height={80}
+                    unoptimized
+                    className="w-20 h-20 rounded-2xl object-cover"
+                  />
+                ) : (
+                  <Building2 className="w-10 h-10 text-white/40" />
+                )}
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">
-                  {company.name}
-                </h1>
+                <h1 className="text-4xl font-bold text-white mb-2">{company.name}</h1>
                 <p className="text-white/60 max-w-2xl mb-4">
                   Explore open roles and the skill pillars this team is hiring for most often.
                 </p>
                 {company.description && (
-                  <p className="text-white/60 max-w-2xl mb-4">
-                    {company.description}
-                  </p>
+                  <p className="text-white/60 max-w-2xl mb-4">{company.description}</p>
                 )}
                 {company.website && (
                   <a
@@ -146,15 +127,11 @@ export default function CompanyPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h2 className="text-2xl font-bold text-white mb-6">
-            Open Roles
-          </h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Open Roles</h2>
           {jobs.length === 0 ? (
             <div className="gradient-border-card p-12 text-center">
               <Briefcase className="w-16 h-16 mx-auto mb-4 text-white/40" />
-              <p className="text-white/60">
-                No open positions at the moment
-              </p>
+              <p className="text-white/60">No open positions at the moment</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -168,9 +145,7 @@ export default function CompanyPage() {
                 >
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-white mb-2">
-                        {job.title}
-                      </h3>
+                      <h3 className="text-xl font-semibold text-white mb-2">{job.title}</h3>
                       <div className="flex flex-wrap gap-4 text-white/60 text-sm mb-3">
                         {job.location && (
                           <span className="flex items-center gap-1">
@@ -189,12 +164,12 @@ export default function CompanyPage() {
                         </Badge>
                       </div>
                       {job.description && (
-                        <p className="text-white/60 text-sm mb-4 line-clamp-2">
-                          {job.description}
-                        </p>
+                        <p className="text-white/60 text-sm mb-4 line-clamp-2">{job.description}</p>
                       )}
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {Array.from(new Set(job.skills.map((skill) => getSkillPillarForName(skill).category))).map((pillar) => (
+                        {Array.from(
+                          new Set(job.skills.map((skill) => getSkillPillarForName(skill).category))
+                        ).map((pillar) => (
                           <Badge key={pillar} variant="default" size="sm">
                             {pillar}
                           </Badge>
@@ -210,10 +185,7 @@ export default function CompanyPage() {
                     </div>
                     <div className="shrink-0">
                       <a href={`/marketplace?job=${job.id}`}>
-                        <Button
-                          variant="primary"
-                          rightIcon={<ExternalLink className="w-4 h-4" />}
-                        >
+                        <Button variant="primary" rightIcon={<ExternalLink className="w-4 h-4" />}>
                           View & Apply
                         </Button>
                       </a>

@@ -26,8 +26,12 @@ export default function GlobalError({
               <AlertCircle className="h-8 w-8 text-red-300" />
             </div>
 
-            <h1 className="mb-2 text-2xl font-semibold tracking-tight text-white">Critical error</h1>
-            <p className="mb-8 text-sm text-white/60">A critical error occurred. Please reload the application.</p>
+            <h1 className="mb-2 text-2xl font-semibold tracking-tight text-white">
+              Critical error
+            </h1>
+            <p className="mb-8 text-sm text-white/60">
+              A critical error occurred. Please reload the application.
+            </p>
 
             <button
               type="button"

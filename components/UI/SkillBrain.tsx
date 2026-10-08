@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 export interface SkillNode {
   id: string
   label: string
-  x: number  // 0–1 normalized within container
-  y: number  // 0–1 normalized
+  x: number // 0–1 normalized within container
+  y: number // 0–1 normalized
   color: string
   score: number
   category: string
@@ -48,14 +48,17 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
     setHoveredId(id)
   }, [])
 
-  const getConnectedIds = useCallback((id: string) => {
-    const ids = new Set<string>()
-    connections.forEach(c => {
-      if (c.from === id) ids.add(c.to)
-      if (c.to === id) ids.add(c.from)
-    })
-    return ids
-  }, [connections])
+  const getConnectedIds = useCallback(
+    (id: string) => {
+      const ids = new Set<string>()
+      connections.forEach((c) => {
+        if (c.from === id) ids.add(c.to)
+        if (c.to === id) ids.add(c.from)
+      })
+      return ids
+    },
+    [connections]
+  )
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -117,8 +120,8 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
 
       // Draw connections
       connections.forEach((conn, ci) => {
-        const from = nodes.find(n => n.id === conn.from)
-        const to = nodes.find(n => n.id === conn.to)
+        const from = nodes.find((n) => n.id === conn.from)
+        const to = nodes.find((n) => n.id === conn.to)
         if (!from || !to) return
 
         const x1 = from.x * W
@@ -126,16 +129,25 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
         const x2 = to.x * W
         const y2 = to.y * H
 
-        const isHighlighted =
-          hoveredIdRef.current === from.id || hoveredIdRef.current === to.id
+        const isHighlighted = hoveredIdRef.current === from.id || hoveredIdRef.current === to.id
 
         const strength = conn.strength ?? 0.5
         const pulse = 0.5 + 0.5 * Math.sin(t * 1.2 + ci * 0.8)
         const alpha = isHighlighted ? 0.55 + 0.25 * pulse : 0.1 + 0.06 * pulse * strength
 
         const grad = ctx.createLinearGradient(x1, y1, x2, y2)
-        grad.addColorStop(0, `${from.color}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`)
-        grad.addColorStop(1, `${to.color}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`)
+        grad.addColorStop(
+          0,
+          `${from.color}${Math.round(alpha * 255)
+            .toString(16)
+            .padStart(2, '0')}`
+        )
+        grad.addColorStop(
+          1,
+          `${to.color}${Math.round(alpha * 255)
+            .toString(16)
+            .padStart(2, '0')}`
+        )
         ctx.strokeStyle = grad
         ctx.lineWidth = isHighlighted ? 1.5 : 0.8
 
@@ -152,12 +164,16 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
 
         ctx.beginPath()
         ctx.arc(px, py, isHighlighted ? 2.5 : 1.5, 0, Math.PI * 2)
-        ctx.fillStyle = from.color + Math.round(pAlpha * 255).toString(16).padStart(2, '0')
+        ctx.fillStyle =
+          from.color +
+          Math.round(pAlpha * 255)
+            .toString(16)
+            .padStart(2, '0')
         ctx.fill()
       })
 
       // Draw node glow halos on canvas (large blurry circles behind DOM nodes)
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         const x = node.x * W
         const y = node.y * H
         const isHovered = hoveredIdRef.current === node.id
@@ -166,7 +182,13 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
         const glowAlpha = isHovered ? 0.22 + 0.12 * pulse : 0.08 + 0.04 * pulse
 
         const glow = ctx.createRadialGradient(x, y, 0, x, y, glowR)
-        glow.addColorStop(0, node.color + Math.round(glowAlpha * 255).toString(16).padStart(2, '0'))
+        glow.addColorStop(
+          0,
+          node.color +
+            Math.round(glowAlpha * 255)
+              .toString(16)
+              .padStart(2, '0')
+        )
         glow.addColorStop(1, node.color + '00')
         ctx.fillStyle = glow
         ctx.beginPath()
@@ -182,22 +204,18 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', resize)
     }
-  // hoveredId intentionally excluded — read via ref to avoid restarting the loop
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // hoveredId intentionally excluded — read via ref to avoid restarting the loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, connections])
 
   const connectedToHovered = hoveredId ? getConnectedIds(hoveredId) : new Set<string>()
 
   return (
     <div ref={containerRef} className={`relative select-none ${className}`}>
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-        aria-hidden
-      />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden />
 
       {/* Interactive node buttons */}
-      {nodes.map(node => {
+      {nodes.map((node) => {
         const isHovered = hoveredId === node.id
         const isConnected = connectedToHovered.has(node.id)
         const isDimmed = hoveredId !== null && !isHovered && !isConnected
@@ -231,7 +249,7 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
               }}
               animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0.8, 0.4] }}
               transition={{
-                duration: 2.5 + (node.x * 1.2),
+                duration: 2.5 + node.x * 1.2,
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
@@ -277,10 +295,22 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
                 </div>
                 <div className="text-white text-[11px] font-medium">{node.label}</div>
                 {/* Corner brackets */}
-                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l" style={{ borderColor: node.color }} />
-                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r" style={{ borderColor: node.color }} />
-                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l" style={{ borderColor: node.color }} />
-                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r" style={{ borderColor: node.color }} />
+                <div
+                  className="absolute top-0 left-0 w-2 h-2 border-t border-l"
+                  style={{ borderColor: node.color }}
+                />
+                <div
+                  className="absolute top-0 right-0 w-2 h-2 border-t border-r"
+                  style={{ borderColor: node.color }}
+                />
+                <div
+                  className="absolute bottom-0 left-0 w-2 h-2 border-b border-l"
+                  style={{ borderColor: node.color }}
+                />
+                <div
+                  className="absolute bottom-0 right-0 w-2 h-2 border-b border-r"
+                  style={{ borderColor: node.color }}
+                />
               </div>
             </div>
           </button>
@@ -303,12 +333,27 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
               style={{ border: `1px solid ${activeNode.color}40` }}
             >
               {/* HUD corners */}
-              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: activeNode.color }} />
-              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2" style={{ borderColor: activeNode.color }} />
-              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2" style={{ borderColor: activeNode.color }} />
-              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: activeNode.color }} />
+              <div
+                className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2"
+                style={{ borderColor: activeNode.color }}
+              />
+              <div
+                className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2"
+                style={{ borderColor: activeNode.color }}
+              />
+              <div
+                className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2"
+                style={{ borderColor: activeNode.color }}
+              />
+              <div
+                className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2"
+                style={{ borderColor: activeNode.color }}
+              />
 
-              <div className="text-[9px] font-mono tracking-[0.2em] uppercase mb-2" style={{ color: activeNode.color }}>
+              <div
+                className="text-[9px] font-mono tracking-[0.2em] uppercase mb-2"
+                style={{ color: activeNode.color }}
+              >
                 SKILL SIGNAL
               </div>
               <div className="text-white font-semibold text-sm mb-3">{activeNode.label}</div>
@@ -358,52 +403,205 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
 
 // Demo data for homepage (no real user skills needed)
 export const DEMO_SKILL_NODES: SkillNode[] = [
-  { id: 'ts',        label: 'TypeScript',      x: 0.50, y: 0.35, color: '#06b6d4', score: 91, category: 'build',   verified: true  },
-  { id: 'react',     label: 'React',           x: 0.60, y: 0.26, color: '#06b6d4', score: 88, category: 'build',   verified: true  },
-  { id: 'node',      label: 'Node.js',         x: 0.67, y: 0.42, color: '#06b6d4', score: 84, category: 'build',   verified: false },
-  { id: 'aws',       label: 'AWS',             x: 0.75, y: 0.31, color: '#06b6d4', score: 76, category: 'build',   verified: false },
-  { id: 'python',    label: 'Python',          x: 0.40, y: 0.25, color: '#06b6d4', score: 79, category: 'build',   verified: true  },
-  { id: 'ml',        label: 'ML / AI',         x: 0.28, y: 0.18, color: '#06b6d4', score: 68, category: 'build',   verified: false },
-  { id: 'sql',       label: 'SQL',             x: 0.36, y: 0.44, color: '#06b6d4', score: 83, category: 'build',   verified: false },
-  { id: 'figma',     label: 'Figma',           x: 0.80, y: 0.52, color: '#7c3aed', score: 88, category: 'create',  verified: true  },
-  { id: 'ux',        label: 'UX Design',       x: 0.87, y: 0.40, color: '#7c3aed', score: 85, category: 'create',  verified: false },
-  { id: 'brand',     label: 'Branding',        x: 0.86, y: 0.62, color: '#7c3aed', score: 72, category: 'create',  verified: false },
-  { id: 'teach',     label: 'Teaching',        x: 0.22, y: 0.36, color: '#10b981', score: 80, category: 'explain', verified: true  },
-  { id: 'docs',      label: 'Tech Writing',    x: 0.14, y: 0.50, color: '#10b981', score: 78, category: 'explain', verified: false },
-  { id: 'lead',      label: 'Leadership',      x: 0.48, y: 0.64, color: '#d97706', score: 86, category: 'lead',    verified: true  },
-  { id: 'agile',     label: 'Agile',           x: 0.61, y: 0.72, color: '#d97706', score: 82, category: 'lead',    verified: false },
-  { id: 'pm',        label: 'Product Mgmt',    x: 0.38, y: 0.74, color: '#d97706', score: 79, category: 'lead',    verified: true  },
-  { id: 'strategy',  label: 'Strategy',        x: 0.22, y: 0.64, color: '#ec4899', score: 77, category: 'grow',    verified: false },
-  { id: 'analytics', label: 'Analytics',       x: 0.32, y: 0.56, color: '#ec4899', score: 81, category: 'grow',    verified: true  },
+  {
+    id: 'ts',
+    label: 'TypeScript',
+    x: 0.5,
+    y: 0.35,
+    color: '#06b6d4',
+    score: 91,
+    category: 'build',
+    verified: true,
+  },
+  {
+    id: 'react',
+    label: 'React',
+    x: 0.6,
+    y: 0.26,
+    color: '#06b6d4',
+    score: 88,
+    category: 'build',
+    verified: true,
+  },
+  {
+    id: 'node',
+    label: 'Node.js',
+    x: 0.67,
+    y: 0.42,
+    color: '#06b6d4',
+    score: 84,
+    category: 'build',
+    verified: false,
+  },
+  {
+    id: 'aws',
+    label: 'AWS',
+    x: 0.75,
+    y: 0.31,
+    color: '#06b6d4',
+    score: 76,
+    category: 'build',
+    verified: false,
+  },
+  {
+    id: 'python',
+    label: 'Python',
+    x: 0.4,
+    y: 0.25,
+    color: '#06b6d4',
+    score: 79,
+    category: 'build',
+    verified: true,
+  },
+  {
+    id: 'ml',
+    label: 'ML / AI',
+    x: 0.28,
+    y: 0.18,
+    color: '#06b6d4',
+    score: 68,
+    category: 'build',
+    verified: false,
+  },
+  {
+    id: 'sql',
+    label: 'SQL',
+    x: 0.36,
+    y: 0.44,
+    color: '#06b6d4',
+    score: 83,
+    category: 'build',
+    verified: false,
+  },
+  {
+    id: 'figma',
+    label: 'Figma',
+    x: 0.8,
+    y: 0.52,
+    color: '#7c3aed',
+    score: 88,
+    category: 'create',
+    verified: true,
+  },
+  {
+    id: 'ux',
+    label: 'UX Design',
+    x: 0.87,
+    y: 0.4,
+    color: '#7c3aed',
+    score: 85,
+    category: 'create',
+    verified: false,
+  },
+  {
+    id: 'brand',
+    label: 'Branding',
+    x: 0.86,
+    y: 0.62,
+    color: '#7c3aed',
+    score: 72,
+    category: 'create',
+    verified: false,
+  },
+  {
+    id: 'teach',
+    label: 'Teaching',
+    x: 0.22,
+    y: 0.36,
+    color: '#10b981',
+    score: 80,
+    category: 'explain',
+    verified: true,
+  },
+  {
+    id: 'docs',
+    label: 'Tech Writing',
+    x: 0.14,
+    y: 0.5,
+    color: '#10b981',
+    score: 78,
+    category: 'explain',
+    verified: false,
+  },
+  {
+    id: 'lead',
+    label: 'Leadership',
+    x: 0.48,
+    y: 0.64,
+    color: '#d97706',
+    score: 86,
+    category: 'lead',
+    verified: true,
+  },
+  {
+    id: 'agile',
+    label: 'Agile',
+    x: 0.61,
+    y: 0.72,
+    color: '#d97706',
+    score: 82,
+    category: 'lead',
+    verified: false,
+  },
+  {
+    id: 'pm',
+    label: 'Product Mgmt',
+    x: 0.38,
+    y: 0.74,
+    color: '#d97706',
+    score: 79,
+    category: 'lead',
+    verified: true,
+  },
+  {
+    id: 'strategy',
+    label: 'Strategy',
+    x: 0.22,
+    y: 0.64,
+    color: '#ec4899',
+    score: 77,
+    category: 'grow',
+    verified: false,
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    x: 0.32,
+    y: 0.56,
+    color: '#ec4899',
+    score: 81,
+    category: 'grow',
+    verified: true,
+  },
 ]
 
 export const DEMO_SKILL_CONNECTIONS: SkillConnection[] = [
-  { from: 'ts',      to: 'react',     strength: 0.9 },
-  { from: 'ts',      to: 'node',      strength: 0.7 },
-  { from: 'react',   to: 'node',      strength: 0.7 },
-  { from: 'react',   to: 'ux',        strength: 0.5 },
-  { from: 'react',   to: 'figma',     strength: 0.4 },
-  { from: 'node',    to: 'aws',       strength: 0.6 },
-  { from: 'node',    to: 'figma',     strength: 0.3 },
-  { from: 'python',  to: 'ts',        strength: 0.5 },
-  { from: 'python',  to: 'ml',        strength: 0.85 },
-  { from: 'python',  to: 'sql',       strength: 0.6 },
-  { from: 'ml',      to: 'teach',     strength: 0.35 },
-  { from: 'sql',     to: 'analytics', strength: 0.8 },
-  { from: 'sql',     to: 'ts',        strength: 0.4 },
-  { from: 'figma',   to: 'ux',        strength: 0.9 },
-  { from: 'figma',   to: 'brand',     strength: 0.7 },
-  { from: 'ux',      to: 'brand',     strength: 0.5 },
-  { from: 'teach',   to: 'docs',      strength: 0.85 },
-  { from: 'teach',   to: 'python',    strength: 0.4 },
-  { from: 'teach',   to: 'lead',      strength: 0.6 },
-  { from: 'docs',    to: 'strategy',  strength: 0.35 },
-  { from: 'lead',    to: 'agile',     strength: 0.8 },
-  { from: 'lead',    to: 'pm',        strength: 0.75 },
-  { from: 'lead',    to: 'strategy',  strength: 0.5 },
-  { from: 'agile',   to: 'pm',        strength: 0.7 },
-  { from: 'pm',      to: 'ux',        strength: 0.5 },
-  { from: 'strategy',to: 'analytics', strength: 0.7 },
-  { from: 'analytics',to:'lead',      strength: 0.4 },
-  { from: 'aws',     to: 'analytics', strength: 0.4 },
+  { from: 'ts', to: 'react', strength: 0.9 },
+  { from: 'ts', to: 'node', strength: 0.7 },
+  { from: 'react', to: 'node', strength: 0.7 },
+  { from: 'react', to: 'ux', strength: 0.5 },
+  { from: 'react', to: 'figma', strength: 0.4 },
+  { from: 'node', to: 'aws', strength: 0.6 },
+  { from: 'node', to: 'figma', strength: 0.3 },
+  { from: 'python', to: 'ts', strength: 0.5 },
+  { from: 'python', to: 'ml', strength: 0.85 },
+  { from: 'python', to: 'sql', strength: 0.6 },
+  { from: 'ml', to: 'teach', strength: 0.35 },
+  { from: 'sql', to: 'analytics', strength: 0.8 },
+  { from: 'sql', to: 'ts', strength: 0.4 },
+  { from: 'figma', to: 'ux', strength: 0.9 },
+  { from: 'figma', to: 'brand', strength: 0.7 },
+  { from: 'ux', to: 'brand', strength: 0.5 },
+  { from: 'teach', to: 'docs', strength: 0.85 },
+  { from: 'teach', to: 'python', strength: 0.4 },
+  { from: 'teach', to: 'lead', strength: 0.6 },
+  { from: 'docs', to: 'strategy', strength: 0.35 },
+  { from: 'lead', to: 'agile', strength: 0.8 },
+  { from: 'lead', to: 'pm', strength: 0.75 },
+  { from: 'lead', to: 'strategy', strength: 0.5 },
+  { from: 'agile', to: 'pm', strength: 0.7 },
+  { from: 'pm', to: 'ux', strength: 0.5 },
+  { from: 'strategy', to: 'analytics', strength: 0.7 },
+  { from: 'analytics', to: 'lead', strength: 0.4 },
+  { from: 'aws', to: 'analytics', strength: 0.4 },
 ]

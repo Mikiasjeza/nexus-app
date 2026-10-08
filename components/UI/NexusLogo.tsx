@@ -9,7 +9,7 @@ import Link from 'next/link'
  * Represents: Skills connecting, AI intelligence, growth, evolution
  * MetaLab-style: Real, interactive, responds to cursor
  */
-export default function NexusLogo({ 
+export default function NexusLogo({
   size = 'default',
   interactive = true,
   className = '',
@@ -19,13 +19,19 @@ export default function NexusLogo({
   className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  
+
   // Motion values for 3D rotation
   const x = useMotionValue(0)
   const y = useMotionValue(0)
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [15, -15]), { stiffness: 300, damping: 30 })
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-15, 15]), { stiffness: 300, damping: 30 })
-  
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [15, -15]), {
+    stiffness: 300,
+    damping: 30,
+  })
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-15, 15]), {
+    stiffness: 300,
+    damping: 30,
+  })
+
   // Scale on hover
   const scale = useSpring(useMotionValue(1), { stiffness: 300, damping: 30 })
 
@@ -34,15 +40,15 @@ export default function NexusLogo({
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!ref.current) return
-      
+
       const rect = ref.current.getBoundingClientRect()
       const centerX = rect.left + rect.width / 2
       const centerY = rect.top + rect.height / 2
-      
+
       // Normalize to -0.5 to 0.5
       const normalizedX = (e.clientX - centerX) / rect.width
       const normalizedY = (e.clientY - centerY) / rect.height
-      
+
       x.set(normalizedX)
       y.set(normalizedY)
     }
@@ -109,7 +115,8 @@ export default function NexusLogo({
         viewBox="0 0 100 100"
         className="w-full h-full"
         style={{
-          filter: 'drop-shadow(0 4px 20px rgba(139, 92, 246, 0.25)) drop-shadow(0 10px 40px rgba(0, 0, 0, 0.15))',
+          filter:
+            'drop-shadow(0 4px 20px rgba(139, 92, 246, 0.25)) drop-shadow(0 10px 40px rgba(0, 0, 0, 0.15))',
         }}
       >
         <defs>
@@ -142,13 +149,13 @@ export default function NexusLogo({
             <stop offset="0%" stopColor="#c4b5fd" />
             <stop offset="100%" stopColor="#818cf8" />
           </radialGradient>
-          
+
           {/* Glow filter */}
           <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
             <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
@@ -188,7 +195,7 @@ export default function NexusLogo({
             fill={`url(#nodeGradient${Math.min(index + 1, 6)})`}
             filter="url(#glow)"
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ 
+            animate={{
               scale: [1, 1.08, 1],
               opacity: [0.82, 1, 0.82],
             }}
@@ -207,26 +214,21 @@ export default function NexusLogo({
           fill="url(#centerGradient)"
           filter="url(#glow)"
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ 
+          animate={{
             scale: [0, 1.2, 1],
             opacity: 1,
           }}
           transition={{
-            scale: { 
+            scale: {
               duration: 0.8,
               ease: [0.22, 1, 0.36, 1],
             },
-            opacity: { 
+            opacity: {
               duration: 0.6,
             },
           }}
         >
-          <animate
-            attributeName="r"
-            values="8;9;8"
-            dur="3s"
-            repeatCount="indefinite"
-          />
+          <animate attributeName="r" values="8;9;8" dur="3s" repeatCount="indefinite" />
         </motion.circle>
 
         {/* Inner core pulse - AI intelligence */}
@@ -269,12 +271,13 @@ export default function NexusLogo({
           />
         ))}
       </svg>
-      
-        {/* Ambient glow - chromatic core */}
+
+      {/* Ambient glow - chromatic core */}
       <motion.div
         className="absolute inset-0 rounded-full blur-2xl opacity-30 dark:opacity-35"
         style={{
-          background: 'radial-gradient(circle, rgba(0, 217, 255, 0.35) 0%, rgba(147, 51, 234, 0.28) 35%, rgba(255, 111, 145, 0.18) 55%, transparent 72%)',
+          background:
+            'radial-gradient(circle, rgba(0, 217, 255, 0.35) 0%, rgba(147, 51, 234, 0.28) 35%, rgba(255, 111, 145, 0.18) 55%, transparent 72%)',
           transform: 'translateZ(-10px)',
         }}
         animate={{

@@ -46,7 +46,9 @@ export default function Page() {
           </svg>
 
           <div className="hero-kicker mx-auto mb-4 inline-flex">Diagnostics</div>
-          <h1 className="mb-3 text-2xl font-semibold tracking-tight text-white md:text-3xl">Sentry example</h1>
+          <h1 className="mb-3 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+            Sentry example
+          </h1>
           <p className="mb-8 text-sm leading-relaxed text-white/58">
             Trigger a sample error and confirm it appears in the Sentry{' '}
             <Link
@@ -84,9 +86,11 @@ export default function Page() {
                   if (!res.ok) {
                     setHasSentError(true)
                   }
-                },
+                }
               )
-              throw new SentryExampleFrontendError('This error is raised on the frontend of the example page.')
+              throw new SentryExampleFrontendError(
+                'This error is raised on the frontend of the example page.'
+              )
             }}
           >
             Throw sample error
@@ -97,8 +101,8 @@ export default function Page() {
           ) : !isConnected ? (
             <div className="metalab-alert-error mt-6 text-left">
               <p>
-                Requests to Sentry may be blocked (for example by an ad blocker), which prevents error capture. Try
-                disabling blockers to finish the test.
+                Requests to Sentry may be blocked (for example by an ad blocker), which prevents
+                error capture. Try disabling blockers to finish the test.
               </p>
             </div>
           ) : (

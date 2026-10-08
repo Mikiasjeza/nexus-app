@@ -18,7 +18,9 @@ function SkillInsights({ insights }: SkillInsightsProps) {
           <div className="p-2 border border-black/10 dark:border-white/10">
             <Lightbulb className="w-5 h-5 text-black dark:text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight">Skill Insights</h2>
+          <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight">
+            Skill Insights
+          </h2>
         </div>
         <p className="text-black/60 dark:text-white/60">No insights available yet</p>
       </AnimatedCard>
@@ -32,17 +34,18 @@ function SkillInsights({ insights }: SkillInsightsProps) {
           <Lightbulb className="w-5 h-5 text-black dark:text-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight">Skill Insights</h2>
-          <p className="text-sm text-black/60 dark:text-white/60 mt-1">AI-powered recommendations</p>
+          <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight">
+            Skill Insights
+          </h2>
+          <p className="text-sm text-black/60 dark:text-white/60 mt-1">
+            AI-powered recommendations
+          </p>
         </div>
       </div>
       <div className="space-y-4">
         {insights.map((insight, index) => {
-          const TrendIcon = insight.trend === 'up' 
-            ? TrendingUp 
-            : insight.trend === 'down' 
-            ? TrendingDown 
-            : Minus
+          const TrendIcon =
+            insight.trend === 'up' ? TrendingUp : insight.trend === 'down' ? TrendingDown : Minus
 
           return (
             <motion.div
@@ -57,12 +60,15 @@ function SkillInsights({ insights }: SkillInsightsProps) {
                 <div className="flex items-center gap-2">
                   <TrendIcon className="w-4 h-4 text-black dark:text-white" />
                   <span className="text-sm font-medium text-black dark:text-white tabular-nums">
-                    {insight.change > 0 ? '+' : ''}{insight.change}%
+                    {insight.change > 0 ? '+' : ''}
+                    {insight.change}%
                   </span>
                 </div>
               </div>
               {insight.recommendation && (
-                <p className="text-sm text-black/60 dark:text-white/60 mt-2 leading-relaxed">{insight.recommendation}</p>
+                <p className="text-sm text-black/60 dark:text-white/60 mt-2 leading-relaxed">
+                  {insight.recommendation}
+                </p>
               )}
             </motion.div>
           )
