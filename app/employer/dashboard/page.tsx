@@ -12,6 +12,9 @@ import {
 import Link from 'next/link'
 import AnimatedCard from '@/components/UI/AnimatedCard'
 import { easing } from '@/lib/utils/animations'
+import { SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import { CATEGORY_COLORS } from '@/lib/utils/constants'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 interface Company {
   id: string
@@ -90,7 +93,7 @@ export default function EmployerDashboardPage() {
   const actions = [
     {
       title: 'Search Talent',
-      description: 'Find candidates by verified skills',
+      description: 'Find candidates by their strongest pillars, verified signals, and proof of execution.',
       icon: Search,
       href: '/employer/talent',
       primary: true,
@@ -112,25 +115,61 @@ export default function EmployerDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black py-16">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+    <AppPageShell className="min-h-screen bg-black py-16">
+      <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: easing.primary }}
           className="mb-12"
         >
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-primary-500/10 dark:bg-primary-500/20 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+          <div className="hero-panel p-8 md:p-10">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <div className="hero-kicker mb-2">Employer Workspace</div>
+                <h1 className="text-4xl font-bold text-white">
+                  {company.name}
+                </h1>
+                <p className="text-white/60">
+                  Hiring dashboard · {company.role}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold text-black dark:text-white">
-                {company.name}
-              </h1>
-              <p className="text-black/60 dark:text-white/60">
-                Employer dashboard · {company.role}
-              </p>
+
+            <div className="grid gap-8 lg:grid-cols-[1.3fr_0.9fr]">
+              <div>
+                <p className="text-lg text-white/68 max-w-3xl">
+                  Source talent through the same five-pillar system used across Nexus so your team can quickly spot what a candidate builds, creates, explains, leads, and improves over time.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-3">
+                {[
+                  { label: 'Open roles', value: company.jobCount },
+                  { label: 'Saved pools', value: company.poolCount },
+                  { label: 'Hiring lens', value: 5 },
+                ].map((item) => (
+                  <div key={item.label} className="insight-card p-4">
+                    <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                    <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 mt-8">
+              {SKILL_PILLAR_DETAILS.map((pillar) => (
+                <div
+                  key={pillar.category}
+                  className="insight-card p-4"
+                  style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
+                >
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                </div>
+              ))}
             </div>
           </div>
         </motion.div>
@@ -147,27 +186,27 @@ export default function EmployerDashboardPage() {
                 <AnimatedCard
                   className={`p-6 h-full flex flex-col ${
                     action.primary
-                      ? 'border-primary-500/30 bg-primary-50/50 dark:bg-primary-900/10'
+                      ? 'border-cyan-300/25 bg-cyan-400/10'
                       : ''
                   }`}
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center">
-                      <action.icon className="w-6 h-6 text-black dark:text-white" />
+                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
+                      <action.icon className="w-6 h-6 text-white" />
                     </div>
                     {action.count !== undefined && (
-                      <span className="text-2xl font-bold text-black dark:text-white">
+                      <span className="text-2xl font-bold text-white">
                         {action.count}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
+                  <h3 className="text-xl font-semibold text-white mb-2">
                     {action.title}
                   </h3>
-                  <p className="text-black/60 dark:text-white/60 mb-4 flex-1">
+                  <p className="text-white/60 mb-4 flex-1">
                     {action.description}
                   </p>
-                  <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-medium">
+                  <div className="flex items-center gap-2 text-cyan-200 font-medium">
                     <span>Open</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
@@ -177,6 +216,6 @@ export default function EmployerDashboardPage() {
           ))}
         </div>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

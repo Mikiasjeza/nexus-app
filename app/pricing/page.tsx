@@ -1,89 +1,50 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Check, Sparkles, Users, Building2, Zap, Shield, Globe, ArrowRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Check, ChevronDown, Sparkles, Users, Building2, Zap, Shield, Lock, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
+import { PLAN_INFO, formatPlanPrice } from '@/lib/plans'
 import { authApi, billingApi } from '@/lib/api'
 import { useToast } from '@/components/UI/ToastProvider'
 import type { User } from '@/lib/types'
+import AppPageShell from '@/components/Layout/AppPageShell'
+import { cn } from '@/lib/utils/cn'
 
+// Prices, features and limits come from lib/plans.ts, the same source Stripe
+// checkout and the AI quota use. Don't hard-code plan details here.
 const plans = [
   {
-    id: 'free',
-    name: 'Starter',
-    price: 'Free',
+    ...PLAN_INFO.free,
+    displayPrice: formatPlanPrice(PLAN_INFO.free.price),
     period: 'forever',
-    description: 'Perfect for individuals exploring skill verification',
     icon: Sparkles,
-    features: [
-      'Up to 10 skills verified',
-      'Basic AI analysis',
-      'Public Nexus profile',
-      'Skill progress tracking',
-      'Analytics dashboard',
-      'Email support',
-    ],
-    cta: 'Get Started Free',
-    popular: false,
   },
   {
-    id: 'professional',
-    name: 'Professional',
-    price: '$29',
-    period: 'per month',
-    description: 'For professionals building their skill portfolio',
+    ...PLAN_INFO.pro,
+    displayPrice: formatPlanPrice(PLAN_INFO.pro.price),
+    period: 'month',
     icon: Zap,
-    features: [
-      'Unlimited skills verified',
-      'Advanced AI analysis',
-      'Priority verification processing',
-      'Detailed skill insights',
-      'Career matching',
-      'Export to PDF/Resume',
-      'Priority email support',
-      'Skill recommendations',
-    ],
-    cta: 'Start Free Trial',
-    popular: true,
-    savings: 'Save 20% annually',
   },
   {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 'Custom',
-    period: 'pricing',
-    description: 'For teams and organizations',
+    ...PLAN_INFO.enterprise,
+    displayPrice: 'Custom',
+    period: '',
     icon: Building2,
-    features: [
-      'Everything in Professional',
-      'Team management dashboard',
-      'Bulk skill verification',
-      'Custom AI models',
-      'API access',
-      'White-label options',
-      'Dedicated account manager',
-      'SLA guarantees',
-      'Advanced analytics',
-      'Custom integrations',
-    ],
-    cta: 'Contact Sales',
-    popular: false,
   },
 ]
 
 const features = [
   {
     icon: Shield,
-    title: 'AI-Powered Verification',
-    description: 'Multimodal AI analyzes video, code, audio, and documents',
+    title: 'Evidence-based verification',
+    description: 'AI reviews the evidence you submit and explains its score.',
   },
   {
-    icon: Globe,
-    title: 'Global Recognition',
-    description: 'Verified skills accepted worldwide by employers',
+    icon: Lock,
+    title: 'Private by default',
+    description: 'Nothing is public, or visible to employers, until you turn it on.',
   },
   {
     icon: Users,
@@ -92,11 +53,37 @@ const features = [
   },
 ]
 
+const faqs = [
+  {
+    q: 'How do I cancel?',
+    a: 'Go to Settings, then Billing, then Manage Billing, and cancel. No call or email needed. You keep paid features until the end of the period you already paid for, and you won’t be charged again.',
+  },
+  {
+    q: 'Is there a free trial?',
+    a: 'Not on paid plans. Instead, the Free plan has no time limit and includes 10 AI verifications every month, so you can try everything before paying.',
+  },
+  {
+    q: 'How does billing work?',
+    a: 'Paid plans are billed monthly by card through Stripe, at the price shown here plus any applicable tax. They renew automatically each month until you cancel. We’ll email you at least 30 days before any price change.',
+  },
+  {
+    q: 'Can I change plans later?',
+    a: 'Yes. Upgrade, downgrade or cancel any time from Settings, then Billing, then Manage Billing.',
+  },
+]
+
 export default function PricingPage() {
   const { addToast } = useToast()
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
   const isSignedIn = !!user && user.id !== 'guest-user'
+
+  const linkButtonClass = (variant: 'primary' | 'outline' = 'primary') =>
+    cn(
+      'button-base min-h-[48px] w-full rounded-lg px-5 text-base',
+      variant === 'primary' ? 'button-primary' : 'button-secondary'
+    )
 
   useEffect(() => {
     authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
@@ -119,7 +106,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="aurora-shell min-h-screen bg-black">
+    <AppPageShell className="min-h-screen bg-black">
       <div className="page-shell">
         {/* Header */}
         <motion.div
@@ -130,12 +117,11 @@ export default function PricingPage() {
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="mb-16"
         >
-          <div className="hero-panel p-8 md:p-10 text-center">
-            <Badge variant="primary" size="lg" className="mb-4">
-              Flexible Pricing
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 md:mb-6 tracking-tight max-w-[12ch] md:max-w-none mx-auto">
-              Choose Your Plan
+          <div className="hero-panel p-8 text-center md:p-10">
+            <div className="hero-kicker mx-auto mb-6 inline-flex">Flexible pricing</div>
+            <h1 className="mx-auto mb-4 max-w-[12ch] text-4xl font-semibold tracking-tight text-white md:mb-6 md:max-w-none md:text-6xl">
+              Choose your{' '}
+              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">plan</span>
             </h1>
             <p className="text-base md:text-lg text-white/68 max-w-[42ch] md:max-w-3xl mx-auto">
               Start with the free plan, prove your capabilities, and upgrade when you are ready for paid verification and billing features.
@@ -177,87 +163,66 @@ export default function PricingPage() {
                 transition={{ duration: 0.5, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="relative"
               >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge variant="primary" size="sm">
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-                <div className={`gradient-border-card p-8 h-full ${plan.popular ? 'ring-1 ring-cyan-300/30' : ''}`}>
+                <div className="gradient-border-card p-8 h-full">
                   <div className="w-16 h-16 border border-white/10 bg-white/5 flex items-center justify-center mb-6">
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                   <div className="mb-4">
-                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    {plan.period !== 'forever' && plan.period !== 'pricing' && (
-                      <span className="text-white/60">/{plan.period}</span>
-                    )}
+                    <span className="text-4xl font-bold text-white">{plan.displayPrice}</span>
+                    {plan.period && <span className="text-white/60"> {plan.period === 'forever' ? 'forever' : `/ ${plan.period}`}</span>}
                   </div>
-                  {plan.savings && (
-                    <Badge variant="default" size="sm" className="mb-4">
-                      {plan.savings}
-                    </Badge>
-                  )}
                   <p className="text-white/60 mb-6">{plan.description}</p>
                   
-                  <ul className="space-y-4 mb-8">
+                  <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                        <span className="text-white">{feature}</span>
+                        <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-white/75">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
                   {plan.id === 'free' ? (
-                    <Link href="/auth/register">
-                      <Button
-                        variant={plan.popular ? 'primary' : 'outline'}
-                        fullWidth
-                        size="lg"
-                        rightIcon={<ArrowRight className="w-5 h-5" />}
-                      >
-                        {plan.cta}
-                      </Button>
+                    <Link href="/auth/register" className={linkButtonClass('outline')}>
+                      Get started free
+                      <ArrowRight className="w-5 h-5" />
                     </Link>
                   ) : plan.id === 'enterprise' ? (
                     <div className="space-y-3">
-                      <Link href="/contact">
-                        <Button variant={plan.popular ? 'primary' : 'outline'} fullWidth size="lg" rightIcon={<ArrowRight className="w-5 h-5" />}>
-                          Contact Sales
-                        </Button>
+                      <Link href="/contact" className={linkButtonClass('outline')}>
+                        Contact Sales
+                        <ArrowRight className="w-5 h-5" />
                       </Link>
                       <p className="text-xs text-white/45 text-center">
                         Enterprise setup is handled with a custom conversation.
                       </p>
                     </div>
                   ) : (
-                    isSignedIn ? (
-                      <Button
-                        variant={plan.popular ? 'primary' : 'outline'}
-                        fullWidth
-                        size="lg"
-                        rightIcon={<ArrowRight className="w-5 h-5" />}
-                        onClick={() => handleCheckout('professional')}
-                        isLoading={loadingPlan === 'professional'}
-                        disabled={loadingPlan !== null}
-                      >
-                        Upgrade to Professional
-                      </Button>
-                    ) : (
-                      <Link href="/auth/register">
+                    <div className="space-y-3">
+                      {isSignedIn ? (
                         <Button
-                          variant={plan.popular ? 'primary' : 'outline'}
+                          variant="outline"
                           fullWidth
                           size="lg"
                           rightIcon={<ArrowRight className="w-5 h-5" />}
+                          onClick={() => handleCheckout('professional')}
+                          isLoading={loadingPlan === 'professional'}
+                          disabled={loadingPlan !== null}
                         >
-                          Create Account First
+                          Subscribe to {plan.name}
                         </Button>
-                      </Link>
-                    )
+                      ) : (
+                        <Link href="/auth/register" className={linkButtonClass('outline')}>
+                          Create Account First
+                          <ArrowRight className="w-5 h-5" />
+                        </Link>
+                      )}
+                      <p className="text-xs leading-relaxed text-white/50">
+                        {plan.displayPrice}/month plus applicable tax, billed when you subscribe and renewing monthly
+                        until you cancel. Cancel any time in Settings.
+                      </p>
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -301,25 +266,35 @@ export default function PricingPage() {
           className="text-center"
         >
           <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="gradient-border-card p-6 text-left">
-              <h3 className="font-medium text-white mb-2">Can I change plans later?</h3>
-              <p className="text-white/60">
-                Yes. You can manage your subscription from the billing section in Settings once billing is enabled on your account.
-              </p>
-            </div>
-            <div className="gradient-border-card p-6 text-left">
-              <h3 className="font-medium text-white mb-2">How is billing handled?</h3>
-              <p className="text-white/60">
-                Paid subscriptions are processed securely through Stripe after you sign in and choose an upgrade.
-              </p>
-            </div>
-            <div className="gradient-border-card p-6 text-left">
-              <h3 className="font-medium text-white mb-2">What is the no-risk way to start?</h3>
-              <p className="text-white/60">
-                Start on the free Starter plan, explore the product, and upgrade only when you are ready for paid verification and billing features.
-              </p>
-            </div>
+          <div className="max-w-3xl mx-auto space-y-2">
+            {faqs.map((item, i) => (
+              <div key={i} className="gradient-border-card overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="flex w-full items-center justify-between p-6 text-left"
+                >
+                  <h3 className="font-medium text-white">{item.q}</h3>
+                  <ChevronDown
+                    className={`w-4 h-4 text-white/40 flex-shrink-0 ml-4 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                <AnimatePresence initial={false}>
+                  {openFaq === i && (
+                    <motion.div
+                      key="content"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                      className="overflow-hidden"
+                    >
+                      <p className="px-6 pb-6 text-white/55 text-sm leading-relaxed">{item.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
           </div>
         </motion.div>
 
@@ -335,7 +310,7 @@ export default function PricingPage() {
           <div className="gradient-border-card p-12">
             <h2 className="text-3xl font-bold text-white mb-4">Ready to get started?</h2>
             <p className="text-white/60 mb-8">
-              Launch with the free plan today and upgrade when you want billing, deeper analytics, and higher-volume verification.
+              Start on the free plan today and upgrade only if you need more AI verifications.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isSignedIn ? (
@@ -349,24 +324,18 @@ export default function PricingPage() {
                   Upgrade to Professional
                 </Button>
               ) : (
-                <Link href="/auth/register">
-                  <Button
-                    size="lg"
-                    rightIcon={<ArrowRight className="w-5 h-5" />}
-                  >
-                    Create Your Account
-                  </Button>
+                <Link href="/auth/register" className="button-base button-primary min-h-[48px] rounded-lg px-5 text-base">
+                  Create Your Account
+                  <ArrowRight className="w-5 h-5" />
                 </Link>
               )}
-              <Link href="/contact">
-                <Button variant="outline" size="lg">
-                  Contact Sales
-                </Button>
+              <Link href="/contact" className="button-base button-secondary min-h-[48px] rounded-lg px-5 text-base">
+                Contact Sales
               </Link>
             </div>
           </div>
         </motion.div>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

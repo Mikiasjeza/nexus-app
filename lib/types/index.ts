@@ -1,15 +1,11 @@
 export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert'
 
 export type SkillCategory = 
-  | 'Technical'
-  | 'Creative'
-  | 'Leadership'
-  | 'Communication'
-  | 'Business'
-  | 'Design'
-  | 'Data'
-  | 'Marketing'
-  | 'Other'
+  | 'Technical Skills'
+  | 'Creative Skills'
+  | 'Communication Skills'
+  | 'Professional Skills'
+  | 'Learning & Growth'
 
 export interface Skill {
   id: string

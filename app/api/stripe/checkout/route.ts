@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { z } from 'zod'
 import { getSessionUserId } from '@/lib/auth/session'
 import { stripeService, SubscriptionPlan } from '@/lib/integrations/stripe'
@@ -38,6 +39,11 @@ export async function POST(request: Request) {
     )
 
     if (!url) {
+      Sentry.logger.error('Stripe checkout session URL missing', {
+        route: 'api/stripe/checkout',
+        gateway: 'stripe',
+        planId,
+      })
       return NextResponse.json(
         { error: 'Unable to create checkout session' },
         { status: 500 }
@@ -46,10 +52,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url })
   } catch (e) {
+    const message = e instanceof Error ? e.message : 'Unknown error'
+    Sentry.logger.error('Stripe checkout failed', {
+      route: 'api/stripe/checkout',
+      gateway: 'stripe',
+      errorMessage: message,
+    })
     return NextResponse.json(
       {
         error: 'Checkout failed',
-        message: e instanceof Error ? e.message : 'Unknown error',
+        message,
       },
       { status: 400 }
     )

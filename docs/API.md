@@ -64,7 +64,7 @@ Get all skills for the authenticated user.
     "id": "1",
     "name": "React Development",
     "level": "advanced",
-    "category": "Technical",
+    "category": "Technical Skills",
     "progress": 85,
     "verified": true,
     "createdAt": "2024-01-01T00:00:00.000Z",
@@ -82,7 +82,7 @@ Create a new skill.
 {
   "name": "TypeScript",
   "level": "intermediate",
-  "category": "Technical",
+  "category": "Technical Skills",
   "progress": 60,
   "description": "TypeScript development skills",
   "tags": ["programming", "typescript"]
@@ -223,7 +223,7 @@ GET /api/skills?page=1&limit=20
 List endpoints support filtering and sorting:
 
 ```
-GET /api/skills?category=Technical&level=advanced&sort=progress&order=desc
+GET /api/skills?category=Technical%20Skills&level=advanced&sort=progress&order=desc
 ```
 
 ## Webhooks

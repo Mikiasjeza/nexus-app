@@ -11,6 +11,9 @@ import { getSessionUserId } from '@/lib/auth/session'
 
 export const dynamic = 'force-dynamic'
 
+/** Same double opt-in the talent search uses (api/employer/talent). */
+const EMPLOYER_VISIBLE = { publicProfile: true, discoverableByEmployers: true } as const
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -39,16 +42,18 @@ export async function GET(
       return NextResponse.json({ error: 'Pool not found' }, { status: 404 })
     }
 
+    // Re-check consent on every read: a candidate who has since hidden their
+    // profile or opted out of employer search must disappear from shortlists.
     const candidates = await prisma.user.findMany({
-      where: { id: { in: pool.candidateIds } },
+      where: { id: { in: pool.candidateIds }, ...EMPLOYER_VISIBLE },
       select: {
         id: true,
         name: true,
         avatar: true,
         shareableId: true,
         skills: {
-          where: { visibility: 'public' },
-          select: { name: true, level: true, verified: true },
+          where: { visibility: 'public', status: 'published' },
+          select: { name: true, level: true, verified: true, category: true },
         },
       },
     })
@@ -56,7 +61,7 @@ export async function GET(
     return NextResponse.json({
       id: pool.id,
       name: pool.name,
-      candidateIds: pool.candidateIds,
+      candidateIds: candidates.map((c) => c.id),
       candidates,
       createdAt: pool.createdAt.toISOString(),
     })
@@ -111,7 +116,15 @@ export async function PATCH(
 
     let candidateIds = [...pool.candidateIds]
     if (parsed.data.addCandidateId && !candidateIds.includes(parsed.data.addCandidateId)) {
-      candidateIds.push(parsed.data.addCandidateId)
+      // Only people who opted in to employer search can be shortlisted.
+      const candidate = await prisma.user.findFirst({
+        where: { id: parsed.data.addCandidateId, ...EMPLOYER_VISIBLE },
+        select: { id: true },
+      })
+      if (!candidate) {
+        return NextResponse.json({ error: 'Candidate not found' }, { status: 404 })
+      }
+      candidateIds.push(candidate.id)
     }
     if (parsed.data.removeCandidateId) {
       candidateIds = candidateIds.filter((id) => id !== parsed.data.removeCandidateId)

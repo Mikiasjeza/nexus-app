@@ -71,11 +71,12 @@ export const authApi = {
   deleteAccount: async (): Promise<void> => {
     await fetchApi<{ ok?: boolean }>('/api/auth/account', {
       method: 'DELETE',
+      body: JSON.stringify({ confirm: 'DELETE' }),
     })
   },
 
   exportData: async (): Promise<Blob> => {
-    const res = await fetch('/api/analytics/export', { credentials: 'include' })
+    const res = await fetch('/api/auth/account/export', { credentials: 'include' })
     if (!res.ok) throw new Error('Export failed')
     return res.blob()
   },

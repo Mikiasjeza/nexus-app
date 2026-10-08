@@ -63,8 +63,9 @@ export const env = {
     enterprisePriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || '',
   },
   ai: {
-    provider: process.env.AI_PROVIDER || 'openai',
-    model: process.env.AI_MODEL || 'gpt-4o-mini',
+    provider: process.env.AI_PROVIDER || 'gemini',
+    model: process.env.AI_MODEL || 'gemini-2.5-flash',
+    geminiKey: process.env.GEMINI_API_KEY || '',
     openAiKey: process.env.OPENAI_API_KEY || '',
     anthropicKey: process.env.ANTHROPIC_API_KEY || '',
   },
@@ -143,6 +144,10 @@ export function assertStripeWebhookEnv(): void {
 }
 
 export function assertAIEnv(): void {
+  if (env.ai.provider === 'gemini') {
+    getRequired('GEMINI_API_KEY')
+    return
+  }
   if (env.ai.provider === 'openai') {
     getRequired('OPENAI_API_KEY')
     return

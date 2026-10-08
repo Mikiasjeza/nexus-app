@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
@@ -58,6 +59,10 @@ export async function POST(request: Request) {
     return NextResponse.json(userToJson(user))
   } catch (e) {
     console.error('Login error:', e)
+    Sentry.logger.error('Login POST failed', {
+      route: 'api/auth/login',
+      errorMessage: e instanceof Error ? e.message : 'unknown',
+    })
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
     return NextResponse.json(

@@ -6,79 +6,25 @@ import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@prisma/client'
 import { assertStripeEnv, assertStripeWebhookEnv, env } from '@/lib/config/env'
+import { PLAN_INFO, type PlanInfo, type SubscriptionPlan } from '@/lib/plans'
 
 export const stripe = new Stripe(env.stripe.secretKey, {
   apiVersion: '2023-10-16',
   typescript: true,
 })
 
-export type SubscriptionPlan = 'free' | 'pro' | 'enterprise'
+export type { SubscriptionPlan }
 
-export interface PlanDetails {
-  id: SubscriptionPlan
-  name: string
+export interface PlanDetails extends PlanInfo {
   priceId: string // Stripe Price ID
-  price: number // Monthly price in cents
-  features: string[]
-  limits: {
-    skills: number
-    aiAnalyses: number
-    evidenceUploads: number
-  }
 }
 
+// Display data (price, features, limits) lives in lib/plans.ts so the pricing
+// page and checkout can never disagree.
 export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
-  free: {
-    id: 'free',
-    name: 'Free',
-    priceId: '', // No Stripe price for free plan
-    price: 0,
-    features: [
-      'Up to 5 skills',
-      'Basic analytics',
-      'Public profile',
-    ],
-    limits: {
-      skills: 5,
-      aiAnalyses: 0, // No AI analysis on free plan
-      evidenceUploads: 10,
-    },
-  },
-  pro: {
-    id: 'pro',
-    name: 'Pro',
-    priceId: process.env.STRIPE_PRO_PRICE_ID || '', // TODO: Set in .env
-    price: 999, // $9.99/month in cents
-    features: [
-      'Unlimited skills',
-      'AI-powered analysis',
-      'Advanced analytics',
-      'Priority support',
-    ],
-    limits: {
-      skills: -1, // Unlimited
-      aiAnalyses: 50, // Per month
-      evidenceUploads: 100,
-    },
-  },
-  enterprise: {
-    id: 'enterprise',
-    name: 'Enterprise',
-    priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || '', // TODO: Set in .env
-    price: 4999, // $49.99/month in cents
-    features: [
-      'Everything in Pro',
-      'Unlimited AI analyses',
-      'Team collaboration',
-      'Custom integrations',
-      'Dedicated support',
-    ],
-    limits: {
-      skills: -1,
-      aiAnalyses: -1, // Unlimited
-      evidenceUploads: -1,
-    },
-  },
+  free: { ...PLAN_INFO.free, priceId: '' },
+  pro: { ...PLAN_INFO.pro, priceId: process.env.STRIPE_PRO_PRICE_ID || '' },
+  enterprise: { ...PLAN_INFO.enterprise, priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || '' },
 }
 
 class StripeService {

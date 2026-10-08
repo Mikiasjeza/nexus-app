@@ -2,13 +2,13 @@
 
 import React, { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
-import { easing } from '@/lib/utils/animations'
 import { fetchApi } from '@/lib/api/fetcher'
+import AuthShell from '@/components/Layout/AuthShell'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 function ResetPasswordPageContent() {
   const router = useRouter()
@@ -27,7 +27,7 @@ function ResetPasswordPageContent() {
     if (!token) {
       addToast({
         type: 'error',
-        title: 'Invalid Link',
+        title: 'Invalid link',
         message: 'This reset link is invalid or has expired.',
       })
       router.push('/auth/forgot-password')
@@ -40,7 +40,7 @@ function ResetPasswordPageContent() {
     if (formData.password !== formData.confirmPassword) {
       addToast({
         type: 'error',
-        title: 'Passwords Don&apos;t Match',
+        title: 'Passwords do not match',
         message: 'Please make sure both passwords match.',
       })
       return
@@ -49,7 +49,7 @@ function ResetPasswordPageContent() {
     if (formData.password.length < 8) {
       addToast({
         type: 'error',
-        title: 'Password Too Short',
+        title: 'Password too short',
         message: 'Password must be at least 8 characters.',
       })
       return
@@ -67,7 +67,7 @@ function ResetPasswordPageContent() {
       })
       addToast({
         type: 'success',
-        title: 'Password Reset',
+        title: 'Password reset',
         message: 'Your password has been reset successfully.',
       })
       router.push('/auth/login')
@@ -86,109 +86,98 @@ function ResetPasswordPageContent() {
     return null
   }
 
+  const backLink = (
+    <Link href="/auth/login" className="inline-flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white">
+      <ArrowLeft className="h-4 w-4" />
+      Back to login
+    </Link>
+  )
+
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-        >
-          <Link
-            href="/auth/login"
-            className="inline-flex items-center gap-2 text-sm text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white mb-8 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to login
-          </Link>
+    <AuthShell beforeCard={backLink}>
+      <div className="hero-kicker mb-6">New credentials</div>
+      <h1 className="mb-3 text-3xl font-semibold tracking-tight text-white">Choose a password</h1>
+      <p className="mb-8 text-sm leading-relaxed metalab-muted">Use at least 8 characters you haven&apos;t used elsewhere.</p>
 
-          <div className="border border-black/10 dark:border-white/10 p-8 lg:p-12">
-            <h1 className="text-3xl lg:text-4xl font-bold text-black dark:text-white mb-4 tracking-tight">
-              Reset Password
-            </h1>
-            <p className="text-black/60 dark:text-white/60 mb-8 leading-relaxed">
-              Enter your new password below.
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
-                  New Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    required
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full pl-12 pr-12 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40" />
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirmPassword"
-                    required
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="w-full pl-12 pr-12 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                isLoading={loading}
-                fullWidth
-              >
-                Reset Password
-              </Button>
-            </form>
-
-            <div className="mt-8 pt-8 border-t border-black/10 dark:border-white/10 text-center">
-              <p className="text-sm text-black/60 dark:text-white/60">
-                Remember your password?{' '}
-                <Link href="/auth/login" className="text-black dark:text-white hover:opacity-80 transition-opacity font-medium">
-                  Sign in
-                </Link>
-              </p>
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="reset-password" className="metalab-label">
+            New password
+          </label>
+          <div className="relative">
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="reset-password"
+              required
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="metalab-input pl-11 pr-12"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45 transition-colors hover:text-white"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
-        </motion.div>
+        </div>
+
+        <div>
+          <label htmlFor="reset-confirm" className="metalab-label">
+            Confirm password
+          </label>
+          <div className="relative">
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              id="reset-confirm"
+              required
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              className="metalab-input pl-11 pr-12"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45 transition-colors hover:text-white"
+              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+            >
+              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        <Button type="submit" isLoading={loading} fullWidth>
+          Update password
+        </Button>
+      </form>
+
+      <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+        <p className="text-sm metalab-muted">
+          Remember your password?{' '}
+          <Link href="/auth/login" className="metalab-link">
+            Sign in
+          </Link>
+        </p>
       </div>
-    </div>
+    </AuthShell>
   )
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white dark:bg-black" />}>
+    <Suspense
+      fallback={
+        <AppPageShell className="flex min-h-screen items-center justify-center" orbs={false}>
+          <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" aria-hidden />
+        </AppPageShell>
+      }
+    >
       <ResetPasswordPageContent />
     </Suspense>
   )

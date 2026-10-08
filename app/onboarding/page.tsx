@@ -13,13 +13,19 @@ import {
   User,
   Briefcase,
   GraduationCap,
-  TrendingUp
+  TrendingUp,
+  Code,
+  Palette,
+  MessageSquare
 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import AnimatedCard from '@/components/UI/AnimatedCard'
 import { useToast } from '@/components/UI/ToastProvider'
 import Confetti from '@/components/UI/Confetti'
 import { easing } from '@/lib/utils/animations'
+import { normalizeSkillName, SKILL_PILLAR_DETAILS, SKILL_SUGGESTION_GROUPS } from '@/lib/skills-taxonomy'
+import AppPageShell from '@/components/Layout/AppPageShell'
+import type { SkillCategory } from '@/lib/types'
 
 const steps = [
   {
@@ -79,33 +85,34 @@ const goals = [
   },
 ]
 
-const initialSkills = [
-  {
-    label: 'Engineering',
-    skills: ['JavaScript', 'TypeScript', 'React', 'Next.js', 'Node.js', 'Python', 'Java', 'SQL'],
-  },
-  {
-    label: 'Data & AI',
-    skills: ['Data Analysis', 'Machine Learning', 'Prompt Engineering', 'Power BI', 'Tableau', 'Excel'],
-  },
-  {
-    label: 'Design & Product',
-    skills: ['UI Design', 'UX Research', 'Figma', 'Product Strategy', 'Wireframing', 'Accessibility'],
-  },
-  {
-    label: 'Business & Growth',
-    skills: ['Project Management', 'Marketing', 'Sales', 'Operations', 'Customer Success', 'Analytics'],
-  },
-  {
-    label: 'Leadership',
-    skills: ['Leadership', 'Communication', 'Problem Solving', 'Coaching', 'Public Speaking', 'Negotiation'],
-  },
-]
-
 const MAX_ONBOARDING_SKILLS = 15
 
-function normalizeSkillName(skill: string) {
-  return skill.trim().replace(/\s+/g, ' ')
+const pillarVisuals: Record<SkillCategory, { icon: React.ReactNode; cardClass: string; chipClass: string }> = {
+  'Technical Skills': {
+    icon: <Code className="w-5 h-5" />,
+    cardClass: 'border-cyan-400/20 bg-cyan-500/8',
+    chipClass: 'bg-cyan-400/12 text-cyan-100 hover:bg-cyan-400/18',
+  },
+  'Creative Skills': {
+    icon: <Palette className="w-5 h-5" />,
+    cardClass: 'border-fuchsia-400/20 bg-fuchsia-500/8',
+    chipClass: 'bg-fuchsia-400/12 text-fuchsia-100 hover:bg-fuchsia-400/18',
+  },
+  'Communication Skills': {
+    icon: <MessageSquare className="w-5 h-5" />,
+    cardClass: 'border-emerald-400/20 bg-emerald-500/8',
+    chipClass: 'bg-emerald-400/12 text-emerald-100 hover:bg-emerald-400/18',
+  },
+  'Professional Skills': {
+    icon: <Briefcase className="w-5 h-5" />,
+    cardClass: 'border-indigo-400/20 bg-indigo-500/8',
+    chipClass: 'bg-indigo-400/12 text-indigo-100 hover:bg-indigo-400/18',
+  },
+  'Learning & Growth': {
+    icon: <TrendingUp className="w-5 h-5" />,
+    cardClass: 'border-amber-400/20 bg-amber-500/8',
+    chipClass: 'bg-amber-400/12 text-amber-100 hover:bg-amber-400/18',
+  },
 }
 
 export default function OnboardingPage() {
@@ -240,14 +247,13 @@ export default function OnboardingPage() {
     }
   }
 
-  const canProceed = () => {
-    if (currentStep === 2) return selectedGoals.length > 0
-    if (currentStep === 3) return selectedSkills.length > 0
-    return true
-  }
+  // Goals and skills are optional: never block someone from reaching the app.
+  const isSkippableEmptyStep =
+    (currentStep === 2 && selectedGoals.length === 0) ||
+    (currentStep === 3 && selectedSkills.length === 0)
 
   return (
-    <div className="aurora-shell min-h-screen bg-black flex items-center justify-center p-4">
+    <AppPageShell className="flex min-h-screen items-center justify-center bg-black p-4">
       <Confetti trigger={showConfetti} />
       
       <div className="w-full max-w-4xl">
@@ -307,22 +313,29 @@ export default function OnboardingPage() {
                 </div>
                 <h2 className="text-3xl font-bold text-white mb-4">Welcome to Nexus</h2>
                 <p className="text-white/60 mb-8 max-w-2xl mx-auto">
-                  We&apos;ll help you create a verified skill profile in just a few steps. 
-                  This takes about 2 minutes.
+                  Build your profile around five skill pillars so Nexus can understand what you build, create, explain, lead, and improve over time.
                 </p>
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
                   <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">AI-Verified</p>
+                    <p className="text-sm font-medium text-white">Pillar-based verification</p>
                   </div>
                   <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Global Recognition</p>
+                    <p className="text-sm font-medium text-white">Proof that feels credible</p>
                   </div>
                   <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Career Matching</p>
+                    <p className="text-sm font-medium text-white">Better matches and guidance</p>
                   </div>
+                </div>
+                <div className="grid gap-3 md:grid-cols-5">
+                  {SKILL_PILLAR_DETAILS.map((pillar) => (
+                    <div key={pillar.category} className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-4 text-left">
+                      <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                      <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}
@@ -342,7 +355,7 @@ export default function OnboardingPage() {
                   </div>
                   <h2 className="text-3xl font-bold text-white mb-2">What are your goals?</h2>
                   <p className="text-white/60">
-                    Select all that apply (you can change this later)
+                    Optional. Select any that apply, or skip.
                   </p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -384,7 +397,7 @@ export default function OnboardingPage() {
                   </div>
                   <h2 className="text-3xl font-bold text-white mb-2">Add Your Skills</h2>
                   <p className="text-white/60">
-                    Choose from the list below or add your own custom skills
+                    Choose from the five pillars below or add your own custom skills.
                   </p>
                 </div>
                 <div className="max-w-3xl mx-auto">
@@ -437,11 +450,40 @@ export default function OnboardingPage() {
                     </div>
                   )}
 
+                  <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                    {SKILL_PILLAR_DETAILS.map((pillar) => {
+                      const visual = pillarVisuals[pillar.category]
+                      return (
+                        <div
+                          key={pillar.category}
+                          className={`rounded-2xl border px-4 py-4 ${visual.cardClass}`}
+                        >
+                          <div className="mb-3 inline-flex rounded-xl border border-white/10 bg-black/20 p-2 text-white">
+                            {visual.icon}
+                          </div>
+                          <div className="text-sm font-semibold text-white">{pillar.category}</div>
+                          <p className="mt-2 text-sm text-white/65">{pillar.summary}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+
                   <div className="space-y-5">
-                    {initialSkills.map((group) => (
-                      <div key={group.label}>
-                        <div className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-white/45">
-                          {group.label}
+                    {SKILL_SUGGESTION_GROUPS.map((group) => (
+                      <div key={group.id} className={`rounded-3xl border p-5 ${pillarVisuals[group.label as SkillCategory].cardClass}`}>
+                        <div className="mb-2 flex items-center gap-3 text-white">
+                          <div className="rounded-xl border border-white/10 bg-black/20 p-2">
+                            {pillarVisuals[group.label as SkillCategory].icon}
+                          </div>
+                          <div className="text-sm font-medium uppercase tracking-[0.2em] text-white/60">
+                            {group.label}
+                          </div>
+                        </div>
+                        <p className="mb-4 max-w-2xl text-sm text-white/65">
+                          {group.description}
+                        </p>
+                        <div className="mb-3 text-xs font-medium uppercase tracking-[0.24em] text-white/40">
+                          Suggested skills
                         </div>
                         <div className="flex flex-wrap gap-3">
                           {group.skills.map((skill) => {
@@ -459,7 +501,7 @@ export default function OnboardingPage() {
                                 className={`px-4 py-2 rounded-full font-medium transition-all ${
                                   isSelected
                                     ? 'bg-white text-black'
-                                    : 'bg-white/5 text-white/75 hover:bg-white/10'
+                                    : pillarVisuals[group.label as SkillCategory].chipClass
                                 }`}
                               >
                                 {skill}
@@ -497,8 +539,7 @@ export default function OnboardingPage() {
                 </motion.div>
                 <h2 className="text-3xl font-bold text-white mb-4">You&apos;re All Set</h2>
                 <p className="text-white/60 mb-8 max-w-2xl mx-auto">
-                  Your Nexus profile is ready. Start adding more skills, get verified, 
-                  and discover career opportunities matched to your profile.
+                  Your Nexus profile is ready. Start building proof across the five pillars, verify your strongest skills, and unlock better career guidance.
                 </p>
                 {completionError && (
                   <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
@@ -512,7 +553,9 @@ export default function OnboardingPage() {
                   </AnimatedCard>
                   <AnimatedCard className="p-4">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium">{selectedSkills.length} Skills Added</p>
+                    <p className="text-sm font-medium">
+                      {selectedSkills.length} {selectedSkills.length === 1 ? 'skill' : 'skills'} to add
+                    </p>
                   </AnimatedCard>
                   <AnimatedCard className="p-4">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
@@ -540,13 +583,13 @@ export default function OnboardingPage() {
               rightIcon={currentStep === steps.length ? undefined : <ArrowRight className="w-5 h-5" />}
               onClick={handleNext}
               isLoading={isCompleting}
-              disabled={!canProceed() || isCompleting}
+              disabled={isCompleting}
             >
-              {currentStep === steps.length ? 'Get Started' : 'Next'}
+              {currentStep === steps.length ? 'Get Started' : isSkippableEmptyStep ? 'Skip for now' : 'Next'}
             </Button>
           </div>
         </AnimatedCard>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

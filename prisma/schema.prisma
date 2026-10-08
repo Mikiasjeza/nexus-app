@@ -126,7 +126,6 @@ model AIAnalysis {
   explanation     String   // Why this score
   suggestedLevel  String?  // AI-suggested skill level
   improvements    String[] @default([]) // Suggested improvements
-  rawResponse     Json?    // Full AI response for debugging
   tokensUsed      Int?
   cost            Float?   // Cost in USD
   createdAt       DateTime @default(now())
@@ -261,8 +260,7 @@ model OAuthConnection {
   userId       String
   provider     String   // 'github' | 'google' | 'linkedin'
   providerId   String   // External provider's user ID
-  accessToken  String?  // Encrypted
-  refreshToken String?  // Encrypted
+  // No provider tokens are stored: they're used once at sign-in and discarded.
   expiresAt    DateTime?
   metadata     Json?    // Provider-specific data (e.g., GitHub username, repos)
   createdAt    DateTime @default(now())

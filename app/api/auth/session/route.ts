@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { prisma } from '@/lib/db'
 import { getSessionUserId, hasGuestPreviewSession } from '@/lib/auth/session'
 import { dbErrorResponse } from '@/lib/db-error'
@@ -57,6 +58,10 @@ export async function GET() {
     })
   } catch (e) {
     console.error('Session error:', e)
+    Sentry.logger.error('Session GET failed', {
+      route: 'api/auth/session',
+      errorMessage: e instanceof Error ? e.message : 'unknown',
+    })
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
     return NextResponse.json({ user: null })

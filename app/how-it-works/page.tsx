@@ -4,161 +4,152 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, Upload, Brain, Shield, Share2, CheckCircle2, Sparkles } from 'lucide-react'
 import { easing } from '@/lib/utils/animations'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      {/* Hero */}
-      <section className="relative pt-24 md:pt-32 pb-16 md:pb-20 border-b border-black/10 dark:border-white/10">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12">
+    <AppPageShell>
+      <div className="page-shell">
+        <section className="relative mb-16 md:mb-20">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.8, ease: easing.primary }}
+            className="hero-panel p-8 md:p-10"
           >
-            <span className="inline-flex items-center gap-2 border border-violet-500/25 bg-violet-500/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-violet-700 dark:text-violet-200 mb-6">
-              <Sparkles className="w-3.5 h-3.5" />
-              Four simple steps
+            <span className="hero-kicker mb-6 inline-flex items-center gap-2">
+              <Sparkles className="h-3.5 w-3.5" />
+              Four workflow steps
             </span>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-black dark:text-white mb-6 md:mb-8 leading-[1.1] tracking-tight max-w-[13ch] md:max-w-none">
-              How It Works
+            <h1 className="mb-6 max-w-[13ch] text-4xl font-bold leading-[1.1] tracking-tight text-white md:mb-8 md:max-w-none md:text-6xl lg:text-7xl">
+              How it{' '}
+              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">
+                works
+              </span>
             </h1>
-            <p className="text-base md:text-2xl text-black/60 dark:text-white/60 leading-relaxed max-w-[38ch]">
-              A simple, powerful process for verifying and sharing your skills.
+            <p className="max-w-[38ch] text-base leading-relaxed text-white/65 md:text-2xl md:max-w-2xl">
+              A simple process for turning skills across five pillars into proof you can verify and share.
             </p>
           </motion.div>
-        </div>
-      </section>
+        </section>
 
-      {/* Process Steps */}
-      <section className="py-20 md:py-32">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12">
-          <div className="mb-14 border border-black/10 dark:border-white/10 p-5 bg-white/70 dark:bg-black/45">
-            <div className="h-1.5 bg-black/10 dark:bg-white/10 overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-cyan-500 via-violet-500 to-rose-500"
-                initial={{ width: '0%' }}
-                whileInView={{ width: '100%' }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, ease: easing.primary }}
-              />
-            </div>
-            <p className="mt-3 text-sm text-black/60 dark:text-white/60">From first skill to shared passport in under 10 minutes.</p>
-          </div>
-          <div className="space-y-16 md:space-y-32">
-            {[
-              {
-                icon: Upload,
-                title: 'Add Your Skills',
-                description: 'Start by adding skills to your passport. Define your proficiency level, add descriptions, and attach evidence of your capabilities.',
-                features: [
-                  'Multiple skill categories',
-                  'Progress tracking',
-                  'Evidence attachments',
-                  'Notes and descriptions',
-                ],
-              },
-              {
-                icon: Brain,
-                title: 'AI Verification',
-                description: 'Our multimodal AI analyzes your evidence—code repositories, video demonstrations, portfolio pieces, and project outputs—to verify your skills objectively.',
-                features: [
-                  'Multimodal analysis',
-                  'Evidence-based verification',
-                  'Objective assessment',
-                  'Transparent results',
-                ],
-              },
-              {
-                icon: Shield,
-                title: 'Secure & Trusted',
-                description: 'Your skills are verified and stored securely. Privacy controls let you choose what to share publicly and what to keep private.',
-                features: [
-                  'Secure storage',
-                  'Privacy controls',
-                  'Verified credentials',
-                  'Trust indicators',
-                ],
-              },
-              {
-                icon: Share2,
-                title: 'Share Your Passport',
-                description: 'Generate a shareable link to your public skill passport. Share with employers, collaborators, or clients to showcase your verified capabilities.',
-                features: [
-                  'Public profile URL',
-                  'Custom branding',
-                  'Export capabilities',
-                  'Open Graph previews',
-                ],
-              },
-            ].map((step, index) => {
-              const Icon = step.icon
-              return (
+        <section className="border-t border-white/[0.06] py-16 md:py-24">
+          <div className="mx-auto max-w-5xl">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1, ease: easing.primary }}
+              className="insight-card mb-14 p-5 md:p-6"
+            >
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                 <motion.div
-                  key={step.title}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-100px' }}
-                  transition={{ duration: 0.8, delay: index * 0.15, ease: easing.primary }}
-                  className="flex flex-col md:flex-row gap-12 items-start border border-black/10 dark:border-white/10 bg-gradient-to-br from-white/85 to-black/[0.02] dark:from-white/[0.04] dark:to-white/[0.01] p-8"
-                >
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 flex items-center justify-center border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
-                      <Icon className="w-8 h-8 text-black dark:text-white" />
-                    </div>
-                    <div className="text-6xl font-bold text-black/10 dark:text-white/10 mt-4">
-                      {String(index + 1).padStart(2, '0')}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-6 tracking-tight">
-                      {step.title}
-                    </h2>
-                    <p className="text-lg text-black/60 dark:text-white/60 mb-8 leading-relaxed">
-                      {step.description}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {step.features.map((feature) => (
-                        <div key={feature} className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-black dark:text-white mt-0.5 flex-shrink-0" />
-                          <span className="text-black/70 dark:text-white/70">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
+                  className="h-full bg-gradient-to-r from-cyan-500 via-violet-500 to-rose-500"
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: '100%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, ease: easing.primary }}
+                />
+              </div>
+              <p className="mt-4 text-sm text-white/65">
+                From first skill to shared passport in under 10 minutes.
+              </p>
+              <p className="mt-2 text-sm text-white/45">
+                The four steps below are the workflow. Your skills still roll up into five pillars: build, create, explain, lead, and grow.
+              </p>
+            </motion.div>
 
-      {/* CTA */}
-      <section className="py-20 md:py-32 border-t border-black/10 dark:border-white/10">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
+            <div className="space-y-10 md:space-y-16">
+              {[
+                {
+                  icon: Upload,
+                  title: 'Add Your Skills',
+                  description:
+                    'Start by adding skills to your passport. Define your proficiency level, add descriptions, and attach evidence of your capabilities.',
+                  features: ['Five skill pillars', 'Progress tracking', 'Evidence attachments', 'Notes and descriptions'],
+                },
+                {
+                  icon: Brain,
+                  title: 'AI Verification',
+                  description:
+                    'Our multimodal AI analyzes your evidence—code repositories, video demonstrations, portfolio pieces, and project outputs—to verify your skills objectively.',
+                  features: ['Multimodal analysis', 'Evidence-based verification', 'Objective assessment', 'Transparent results'],
+                },
+                {
+                  icon: Shield,
+                  title: 'Secure & Trusted',
+                  description:
+                    'Your skills are verified and stored securely. Privacy controls let you choose what to share publicly and what to keep private.',
+                  features: ['Secure storage', 'Privacy controls', 'Verified credentials', 'Trust indicators'],
+                },
+                {
+                  icon: Share2,
+                  title: 'Share Your Passport',
+                  description:
+                    'Generate a shareable link to your public skill passport. Share with employers, collaborators, or clients to showcase your verified capabilities.',
+                  features: ['Public profile URL', 'Custom branding', 'Export capabilities', 'Open Graph previews'],
+                },
+              ].map((step, index) => {
+                const Icon = step.icon
+                return (
+                  <motion.div
+                    key={step.title}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-100px' }}
+                    transition={{ duration: 0.8, delay: index * 0.12, ease: easing.primary }}
+                    className="gradient-border-card flex flex-col gap-10 p-8 md:flex-row md:items-start md:gap-12 md:p-10"
+                  >
+                    <div className="shrink-0">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                        <Icon className="h-8 w-8 text-white" />
+                      </div>
+                      <div className="mt-4 font-mono text-5xl font-bold text-white/15 md:text-6xl">
+                        {String(index + 1).padStart(2, '0')}
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="mb-4 text-3xl font-bold tracking-tight text-white md:mb-6 md:text-4xl">{step.title}</h2>
+                      <p className="mb-8 text-lg leading-relaxed text-white/65">{step.description}</p>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {step.features.map((feature) => (
+                          <div key={feature} className="flex items-start gap-3">
+                            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300/90" />
+                            <span className="text-white/70">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-white/[0.06] py-16 md:py-28">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.8, ease: easing.primary }}
+            className="gradient-border-card mx-auto max-w-3xl p-10 text-center md:p-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-6 tracking-tight">
-              Ready to Get Started?
-            </h2>
-            <p className="text-lg text-black/60 dark:text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-4xl">Ready to get started?</h2>
+            <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-white/60">
               Create your Nexus profile in minutes and start verifying your capabilities.
             </p>
             <Link
               href="/auth/register"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:opacity-80 transition-opacity"
+              className="button-base button-primary inline-flex min-h-[48px] rounded-xl px-8 py-3 text-sm font-medium"
             >
-              Create Your Passport
-              <ArrowRight className="w-4 h-4" />
+              Create your passport
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </motion.div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </AppPageShell>
   )
 }

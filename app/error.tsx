@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { AlertCircle, RefreshCw, Home } from 'lucide-react'
 import Link from 'next/link'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 export default function Error({
   error,
@@ -16,40 +17,35 @@ export default function Error({
   }, [error])
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-md w-full glass-card rounded-3xl p-8 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-6">
-          <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+    <AppPageShell className="flex min-h-screen items-center justify-center p-4" orbs={false}>
+      <div className="gradient-border-card w-full max-w-md p-8 text-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-red-400/25 bg-red-500/10">
+          <AlertCircle className="h-8 w-8 text-red-300" />
         </div>
-        
-        <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-2">
-          {error.message || 'An unexpected error occurred'}
-        </p>
-        {error.digest && (
-          <p className="text-sm text-gray-500 mb-6">
-            Error ID: {error.digest}
-          </p>
-        )}
-        
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-white">Something went wrong</h1>
+        <p className="mb-2 text-sm text-white/60">{error.message || 'An unexpected error occurred'}</p>
+        {error.digest ? <p className="mb-8 font-mono text-xs text-white/40">ID · {error.digest}</p> : <div className="mb-8" />}
+
+        <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <button
+            type="button"
             onClick={reset}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary-600 to-purple-600 text-white font-medium hover:opacity-90 transition-opacity"
+            className="button-base button-primary inline-flex flex-1 justify-center rounded-xl"
           >
-            <RefreshCw className="w-5 h-5" />
-            Try Again
+            <RefreshCw className="h-5 w-5" />
+            Try again
           </button>
-          
+
           <Link
             href="/dashboard"
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-300 dark:border-gray-700 hover:border-primary-500 transition-colors"
+            className="button-base button-secondary inline-flex flex-1 justify-center rounded-xl border-white/12 bg-white/[0.04] text-white hover:bg-white/[0.07]"
           >
-            <Home className="w-5 h-5" />
-            Go Home
+            <Home className="h-5 w-5" />
+            Dashboard
           </Link>
         </div>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

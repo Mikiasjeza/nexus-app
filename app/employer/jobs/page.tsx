@@ -13,6 +13,9 @@ import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
 import { useToast } from '@/components/UI/ToastProvider'
 import { easing } from '@/lib/utils/animations'
+import { inferSkillCategory, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import { CATEGORY_COLORS } from '@/lib/utils/constants'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 interface Job {
   id: string
@@ -52,6 +55,15 @@ export default function EmployerJobsPage() {
     salary: '',
   })
   const [submitting, setSubmitting] = useState(false)
+
+  const skillPreview = formData.skills
+    .split(',')
+    .map((skill) => skill.trim())
+    .filter(Boolean)
+    .slice(0, 8)
+  const pillarPreview = Array.from(
+    new Set(skillPreview.map((skill) => inferSkillCategory(skill)))
+  )
 
   const loadJobs = async () => {
     try {
@@ -138,39 +150,54 @@ export default function EmployerJobsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black py-16">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+    <AppPageShell className="min-h-screen bg-black py-16">
+      <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: easing.primary }}
           className="mb-12"
         >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-4xl font-bold text-black dark:text-white mb-2">
-                Job Listings
-              </h1>
-              <p className="text-lg text-black/60 dark:text-white/60">
-                Post roles and reach verified talent
-              </p>
+          <div className="hero-panel p-8 md:p-10">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-4xl font-bold text-white mb-2">
+                  Job Listings
+                </h1>
+                <p className="text-lg text-white/60 max-w-3xl">
+                  Post roles with clear skill expectations so Nexus can connect them to candidates across build, create, explain, lead, and grow.
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowForm(!showForm)}
+                leftIcon={<Plus className="w-4 h-4" />}
+              >
+                {showForm ? 'Cancel' : 'Post Job'}
+              </Button>
             </div>
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              leftIcon={<Plus className="w-4 h-4" />}
-            >
-              {showForm ? 'Cancel' : 'Post Job'}
-            </Button>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+              {SKILL_PILLAR_DETAILS.map((pillar) => (
+                <div
+                  key={pillar.category}
+                  className="insight-card p-4"
+                  style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
+                >
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {showForm && (
             <motion.form
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="border border-black/10 dark:border-white/10 p-6 mb-8"
+              className="gradient-border-card p-6 mb-8 mt-8"
               onSubmit={handleSubmit}
             >
-              <h3 className="text-xl font-semibold mb-4">New Job</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white">New Job</h3>
               <div className="space-y-4">
                 <input
                   type="text"
@@ -180,7 +207,7 @@ export default function EmployerJobsPage() {
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, title: e.target.value }))
                   }
-                  className="w-full px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white"
+                  className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
                 />
                 <textarea
                   placeholder="Description"
@@ -188,18 +215,30 @@ export default function EmployerJobsPage() {
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, description: e.target.value }))
                   }
-                  className="w-full px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white"
+                  className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
                   rows={3}
                 />
                 <input
                   type="text"
-                  placeholder="Skills (comma-separated: React, TypeScript)"
+                  placeholder="Skills (comma-separated: React, TypeScript, Storytelling, Leadership)"
                   value={formData.skills}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, skills: e.target.value }))
                   }
-                  className="w-full px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white"
+                  className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
                 />
+                <p className="text-sm text-white/55">
+                  Add role skills naturally. Nexus will infer which pillars the role emphasizes.
+                </p>
+                {pillarPreview.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {pillarPreview.map((pillar) => (
+                      <Badge key={pillar} variant="default" size="sm">
+                        {pillar}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
                 <div className="grid md:grid-cols-3 gap-4">
                   <input
                     type="text"
@@ -208,7 +247,7 @@ export default function EmployerJobsPage() {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, location: e.target.value }))
                     }
-                    className="px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white"
+                    className="px-4 py-3 border border-white/10 bg-black/40 text-white"
                   />
                   <select
                     value={formData.type}
@@ -218,7 +257,7 @@ export default function EmployerJobsPage() {
                         type: e.target.value as JobType,
                       }))
                     }
-                    className="px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white"
+                    className="px-4 py-3 border border-white/10 bg-black/40 text-white"
                   >
                     <option value="full-time">Full-time</option>
                     <option value="part-time">Part-time</option>
@@ -232,7 +271,7 @@ export default function EmployerJobsPage() {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, salary: e.target.value }))
                     }
-                    className="px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white"
+                    className="px-4 py-3 border border-white/10 bg-black/40 text-white"
                   />
                 </div>
                 <Button type="submit" disabled={submitting}>
@@ -244,14 +283,14 @@ export default function EmployerJobsPage() {
         </motion.div>
 
         {loading ? (
-          <div className="text-black/40 dark:text-white/40">Loading...</div>
+          <div className="text-white/40">Loading...</div>
         ) : jobs.length === 0 ? (
-          <div className="border border-black/10 dark:border-white/10 p-12 text-center">
-            <Briefcase className="w-16 h-16 mx-auto mb-4 text-black/40 dark:text-white/40" />
-            <h3 className="text-xl font-medium text-black dark:text-white mb-2">
+          <div className="gradient-border-card p-12 text-center">
+            <Briefcase className="w-16 h-16 mx-auto mb-4 text-white/40" />
+            <h3 className="text-xl font-medium text-white mb-2">
               No jobs posted yet
             </h3>
-            <p className="text-black/60 dark:text-white/60 mb-4">
+            <p className="text-white/60 mb-4">
               Post your first job to reach candidates on the marketplace
             </p>
             <Button onClick={() => setShowForm(true)}>Post Job</Button>
@@ -264,16 +303,16 @@ export default function EmployerJobsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`border border-black/10 dark:border-white/10 p-6 ${
+                className={`gradient-border-card p-6 ${
                   job.status === 'closed' ? 'opacity-60' : ''
                 }`}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-xl font-semibold text-black dark:text-white">
+                    <h3 className="text-xl font-semibold text-white">
                       {job.title}
                     </h3>
-                    <div className="flex items-center gap-4 mt-2 text-black/60 dark:text-white/60 text-sm">
+                    <div className="flex items-center gap-4 mt-2 text-white/60 text-sm">
                       <span className="flex items-center gap-1">
                         <Building2 className="w-4 h-4" />
                         {job.company.name}
@@ -295,6 +334,11 @@ export default function EmployerJobsPage() {
                       <Badge variant="default" size="sm">
                         {job.type}
                       </Badge>
+                      {Array.from(new Set(job.skills.map((skill) => inferSkillCategory(skill)))).map((pillar) => (
+                        <Badge key={pillar} variant="default" size="sm">
+                          {pillar}
+                        </Badge>
+                      ))}
                       {job.skills.slice(0, 4).map((s) => (
                         <Badge key={s} variant="default" size="sm">
                           {s}
@@ -319,6 +363,6 @@ export default function EmployerJobsPage() {
           </div>
         )}
       </div>
-    </div>
+    </AppPageShell>
   )
 }

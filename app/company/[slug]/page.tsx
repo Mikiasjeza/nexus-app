@@ -15,6 +15,8 @@ import {
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
 import { easing } from '@/lib/utils/animations'
+import { getSkillPillarForName } from '@/lib/skills-taxonomy'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 interface Job {
   id: string
@@ -87,16 +89,17 @@ export default function CompanyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black py-16">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+    <AppPageShell className="min-h-screen bg-black py-16">
+      <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: easing.primary }}
           className="mb-12"
         >
-          <div className="flex items-start gap-6">
-            <div className="w-20 h-20 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center shrink-0">
+          <div className="hero-panel p-8 md:p-10">
+            <div className="flex items-start gap-6">
+              <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
               {company.logo ? (
                 <Image
                   src={company.logo}
@@ -107,29 +110,33 @@ export default function CompanyPage() {
                   className="w-20 h-20 rounded-2xl object-cover"
                 />
               ) : (
-                <Building2 className="w-10 h-10 text-black/40 dark:text-white/40" />
+                <Building2 className="w-10 h-10 text-white/40" />
               )}
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-black dark:text-white mb-2">
-                {company.name}
-              </h1>
-              {company.description && (
-                <p className="text-black/60 dark:text-white/60 max-w-2xl mb-4">
-                  {company.description}
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-white mb-2">
+                  {company.name}
+                </h1>
+                <p className="text-white/60 max-w-2xl mb-4">
+                  Explore open roles and the skill pillars this team is hiring for most often.
                 </p>
-              )}
-              {company.website && (
-                <a
-                  href={company.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline"
-                >
-                  <Globe className="w-4 h-4" />
-                  {company.website}
-                </a>
-              )}
+                {company.description && (
+                  <p className="text-white/60 max-w-2xl mb-4">
+                    {company.description}
+                  </p>
+                )}
+                {company.website && (
+                  <a
+                    href={company.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-cyan-200 hover:underline"
+                  >
+                    <Globe className="w-4 h-4" />
+                    {company.website}
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -139,13 +146,13 @@ export default function CompanyPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h2 className="text-2xl font-bold text-black dark:text-white mb-6">
+          <h2 className="text-2xl font-bold text-white mb-6">
             Open Roles
           </h2>
           {jobs.length === 0 ? (
-            <div className="border border-black/10 dark:border-white/10 p-12 text-center">
-              <Briefcase className="w-16 h-16 mx-auto mb-4 text-black/40 dark:text-white/40" />
-              <p className="text-black/60 dark:text-white/60">
+            <div className="gradient-border-card p-12 text-center">
+              <Briefcase className="w-16 h-16 mx-auto mb-4 text-white/40" />
+              <p className="text-white/60">
                 No open positions at the moment
               </p>
             </div>
@@ -157,14 +164,14 @@ export default function CompanyPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="border border-black/10 dark:border-white/10 p-6"
+                  className="gradient-border-card p-6"
                 >
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
+                      <h3 className="text-xl font-semibold text-white mb-2">
                         {job.title}
                       </h3>
-                      <div className="flex flex-wrap gap-4 text-black/60 dark:text-white/60 text-sm mb-3">
+                      <div className="flex flex-wrap gap-4 text-white/60 text-sm mb-3">
                         {job.location && (
                           <span className="flex items-center gap-1">
                             <MapPin className="w-4 h-4" />
@@ -182,10 +189,17 @@ export default function CompanyPage() {
                         </Badge>
                       </div>
                       {job.description && (
-                        <p className="text-black/60 dark:text-white/60 text-sm mb-4 line-clamp-2">
+                        <p className="text-white/60 text-sm mb-4 line-clamp-2">
                           {job.description}
                         </p>
                       )}
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {Array.from(new Set(job.skills.map((skill) => getSkillPillarForName(skill).category))).map((pillar) => (
+                          <Badge key={pillar} variant="default" size="sm">
+                            {pillar}
+                          </Badge>
+                        ))}
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {job.skills.slice(0, 6).map((s) => (
                           <Badge key={s} variant="default" size="sm">
@@ -211,6 +225,6 @@ export default function CompanyPage() {
           )}
         </motion.div>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

@@ -43,7 +43,6 @@ export async function GET(
 
     return NextResponse.json({
       user: {
-        id: user.id,
         name: user.name,
         bio: user.bio ?? undefined,
         publicProfile: user.publicProfile,

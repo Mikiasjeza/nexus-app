@@ -1,97 +1,160 @@
-'use client'
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import LegalPage, { List, Mail, Section } from '@/components/Legal/LegalPage'
+import { LEGAL } from '@/lib/legal'
 
-import React from 'react'
-import { motion } from 'framer-motion'
-import { FileText } from 'lucide-react'
-import AnimatedCard from '@/components/UI/AnimatedCard'
-import { easing } from '@/lib/utils/animations'
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description: 'The rules for using Nexus, including subscriptions, cancellation and AI verification.',
+}
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-              <FileText className="w-6 h-6 text-primary-600" />
-            </div>
-            <h1 className="text-4xl font-bold">Terms of Service</h1>
-          </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
-        </motion.div>
+    <LegalPage
+      title="Terms of Service"
+      current="/terms"
+      summary={
+        <>
+          <p className="mb-2 font-medium text-white">The short version</p>
+          <List>
+            <li>You own your content. You give us permission to use it only to run Nexus for you.</li>
+            <li>AI verification is an informed opinion, not a certification, and it can be wrong.</li>
+            <li>Paid plans renew monthly until you cancel. You can cancel yourself in Settings, no call or email needed, and you keep access until the end of the period you paid for.</li>
+            <li>You can delete your account at any time.</li>
+          </List>
+        </>
+      }
+    >
+      <Section title="1. Agreement">
+        <p>
+          These terms are an agreement between you and {LEGAL.LEGAL_ENTITY} (&quot;Nexus&quot;). By creating an account
+          or using the service you agree to them and to our{' '}
+          <Link href="/privacy" className="underline decoration-white/20 underline-offset-2 hover:text-white">Privacy Policy</Link>.
+          If you don&apos;t agree, please don&apos;t use Nexus.
+        </p>
+      </Section>
 
-        <AnimatedCard className="p-8 md:p-12 prose prose-gray dark:prose-invert max-w-none">
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">1. Acceptance of Terms</h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              By accessing and using Nexus, you accept and agree to be bound by the terms and provision of this agreement.
-            </p>
-          </section>
+      <Section title="2. Eligibility and accounts">
+        <List>
+          <li>You must be at least 16 years old.</li>
+          <li>Give accurate account information and keep your password secure. You&apos;re responsible for activity under your account.</li>
+          <li>Tell us promptly at <Mail to={LEGAL.contact.support} /> if you suspect unauthorized access.</li>
+        </List>
+      </Section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">2. Use License</h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Permission is granted to temporarily use Nexus for personal, non-commercial transitory viewing only.
-            </p>
-            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-              <li>You must not use the service for any unlawful purpose</li>
-              <li>You must not attempt to gain unauthorized access to any part of the service</li>
-              <li>You must not interfere with or disrupt the service</li>
-            </ul>
-          </section>
+      <Section title="3. Your content">
+        <p>
+          You keep all rights to the skills, evidence, files and other content you submit (&quot;Your Content&quot;). You
+          grant Nexus a limited, non-exclusive, worldwide, royalty-free licence to host, process, display and transmit Your
+          Content only as needed to provide the service to you, including sending evidence to our AI provider when you
+          request verification and showing content you mark public on your shareable profile.
+        </p>
+        <p>
+          This licence ends when you delete the content or your account, except for copies that others already viewed
+          through a public link you shared and backups that are overwritten on a short rolling schedule.
+        </p>
+        <p>
+          You confirm that you have the right to submit Your Content and that it doesn&apos;t misrepresent your own work.
+          Submitting someone else&apos;s work as your evidence is not allowed.
+        </p>
+      </Section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">3. AI Verification</h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Our AI verification system uses advanced machine learning to analyze and verify skills. By submitting evidence, you:
-            </p>
-            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-              <li>Grant us permission to analyze your submissions</li>
-              <li>Understand that verification results are generated by AI and may not be 100% accurate</li>
-              <li>Agree that verification decisions are final and binding</li>
-            </ul>
-          </section>
+      <Section title="4. AI verification">
+        <List>
+          <li>Verification scores and explanations are generated automatically by AI models from the evidence you provide. They are opinions, not guarantees or professional certifications.</li>
+          <li>Results may be incomplete or inaccurate. You can improve your evidence and re-run verification, or request a human review at <Mail to={LEGAL.contact.support} />.</li>
+          <li>Anyone viewing your passport should treat results as one input, not as the sole basis for decisions about you.</li>
+        </List>
+      </Section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">4. User Accounts</h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.
-            </p>
-          </section>
+      <Section title="5. Acceptable use">
+        <p>Don&apos;t:</p>
+        <List>
+          <li>break the law, or infringe anyone&apos;s rights, including by uploading content you don&apos;t have rights to;</li>
+          <li>upload malware, or attempt to access accounts or systems you&apos;re not authorized to access;</li>
+          <li>scrape, overload or interfere with the service, or bypass usage limits;</li>
+          <li>attempt to manipulate AI verification, for example with prompt injection or fabricated evidence;</li>
+          <li>use Nexus to harass, discriminate against, or deceive others.</li>
+        </List>
+      </Section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">5. Intellectual Property</h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              The service and its original content, features, and functionality are owned by Nexus and are protected by international copyright, trademark, and other intellectual property laws.
-            </p>
-          </section>
+      <Section title="5a. Employer accounts">
+        <p>If you use Nexus to find candidates, you also agree to:</p>
+        <List>
+          <li>use candidate profiles only to recruit for real roles at your company;</li>
+          <li>not copy, export, sell or combine candidate data with other sources to build profiles;</li>
+          <li>comply with applicable employment, anti-discrimination and data-protection laws, including acting as an independent controller for any candidate data you take outside Nexus;</li>
+          <li>not treat AI verification results as the sole basis for a hiring decision;</li>
+          <li>post only genuine job listings, with accurate details.</li>
+        </List>
+        <p>Candidates can withdraw from employer search at any time, which removes them from your search results and shortlists.</p>
+      </Section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">6. Limitation of Liability</h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              In no event shall Nexus be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the service.
-            </p>
-          </section>
+      <Section title="6. Plans, billing and cancellation">
+        <List>
+          <li><strong className="text-white/85">Free plan:</strong> available at no cost with the limits shown on the <Link href="/pricing" className="underline decoration-white/20 underline-offset-2 hover:text-white">pricing page</Link>.</li>
+          <li><strong className="text-white/85">Paid plans</strong> are billed monthly in advance through Stripe at the price shown before you confirm checkout, plus any applicable taxes. <strong className="text-white/85">They renew automatically each month until you cancel.</strong></li>
+          <li><strong className="text-white/85">Cancel any time</strong> in Settings → Billing → Manage billing. Cancellation stops future renewals; you keep paid features until the end of the current billing period. We don&apos;t ask you to call or email to cancel.</li>
+          <li><strong className="text-white/85">Refunds:</strong> payments are non-refundable except where required by law or if we fail to provide the service. If you&apos;re in a jurisdiction with a statutory withdrawal right, it applies.</li>
+          <li><strong className="text-white/85">Price changes:</strong> we&apos;ll email you at least 30 days before a price change affects your subscription, and you can cancel before it takes effect.</li>
+        </List>
+      </Section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">7. Contact Information</h2>
-            <p className="text-gray-700 dark:text-gray-300">
-              If you have any questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:legal@nexus.ai" className="text-primary-600 hover:underline">
-                legal@nexus.ai
-              </a>
-            </p>
-          </section>
-        </AnimatedCard>
-      </div>
-    </div>
+      <Section title="7. Ending your use">
+        <p>
+          You can delete your account at any time from Settings. We may suspend or close an account that seriously or
+          repeatedly breaks these terms. Except where we must act immediately to prevent harm or comply with law, we&apos;ll
+          tell you why and give you a chance to respond and to export your data first. If we close a paid account without
+          cause, we&apos;ll refund the unused portion of your subscription.
+        </p>
+      </Section>
+
+      <Section title="8. Our intellectual property">
+        <p>
+          The Nexus software, design and brand belong to us and our licensors. These terms don&apos;t give you rights to
+          them other than to use the service as intended.
+        </p>
+      </Section>
+
+      <Section title="9. Changes to the service and these terms">
+        <p>
+          We may update Nexus over time. If we change these terms in a way that materially affects you, we&apos;ll email you
+          at least 14 days before the change takes effect. If you don&apos;t agree, you can cancel and delete your account
+          before then.
+        </p>
+      </Section>
+
+      <Section title="10. Disclaimers">
+        <p>
+          Nexus is provided &quot;as is&quot; and &quot;as available&quot;. To the extent permitted by law, we disclaim
+          implied warranties of merchantability, fitness for a particular purpose and non-infringement. We don&apos;t
+          guarantee that the service will be uninterrupted or error-free, or that any employer will accept a verification.
+        </p>
+      </Section>
+
+      <Section title="11. Limitation of liability">
+        <p>
+          To the extent permitted by law, Nexus is not liable for indirect, incidental, special or consequential damages,
+          or lost profits, and our total liability for any claim is limited to the greater of the amount you paid us in the
+          12 months before the claim or US$100. Nothing in these terms limits liability that cannot be limited by law,
+          including for fraud, gross negligence, or death or personal injury caused by negligence, and nothing affects your
+          statutory consumer rights.
+        </p>
+      </Section>
+
+      <Section title="12. Governing law and disputes">
+        <p>
+          These terms are governed by the laws of {LEGAL.GOVERNING_LAW}, without regard to conflict-of-law rules. If you
+          are a consumer, you also keep the protection of the mandatory laws of the country where you live and may bring
+          claims in your local courts. Before filing a claim, please contact us so we can try to resolve it informally.
+        </p>
+      </Section>
+
+      <Section title="13. Contact">
+        <p>
+          Questions about these terms: <Mail to={LEGAL.contact.legal} />.
+        </p>
+      </Section>
+    </LegalPage>
   )
 }

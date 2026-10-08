@@ -198,6 +198,20 @@ class GitHubService {
   }
 
   /**
+   * The user's primary email, but only if GitHub has verified it. The profile's
+   * `email` field is user-editable and unverified, so it must never be used to
+   * match or create accounts. Requires the `user:email` scope.
+   */
+  async getVerifiedPrimaryEmail(): Promise<string | null> {
+    if (!this.octokit) {
+      throw new Error('GitHub client not initialized')
+    }
+    const { data } = await this.octokit.rest.users.listEmailsForAuthenticatedUser({ per_page: 100 })
+    const primary = data.find(e => e.primary && e.verified)
+    return primary ? primary.email.toLowerCase().trim() : null
+  }
+
+  /**
    * Get OAuth authorization URL
    */
   getAuthUrl(state: string): string {
@@ -207,9 +221,11 @@ class GitHubService {
     }
 
     const redirectUri = process.env.GITHUB_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/github/callback`
-    const scope = 'read:user,repo'
+    // Least privilege: profile + email only. Public repos are readable without
+    // extra scopes; never request `repo` (full read/write to private code).
+    const scope = 'read:user user:email'
 
-    return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`
+    return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${state}`
   }
 
   /**
@@ -253,4 +269,15 @@ class GitHubService {
   }
 }
 
+/**
+ * Shared instance for token-less helpers (getAuthUrl, exchangeCodeForToken).
+ * Never call initialize() on it in request handlers: it would swap the client
+ * under concurrent requests. Use githubClientFor(token) instead.
+ */
 export const githubService = new GitHubService()
+
+export function githubClientFor(accessToken: string): GitHubService {
+  const client = new GitHubService()
+  client.initialize(accessToken)
+  return client
+}

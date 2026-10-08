@@ -9,52 +9,11 @@ import { prisma } from '@/lib/db'
 import { getSessionUserId } from '@/lib/auth/session'
 import { dbErrorResponse } from '@/lib/db-error'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { inferSkillCategory, normalizeSkillName } from '@/lib/skills-taxonomy'
 
 export const dynamic = 'force-dynamic'
 
 const MAX_ONBOARDING_SKILLS = 15
-
-function normalizeSkillName(skill: string) {
-  return skill.trim().replace(/\s+/g, ' ')
-}
-
-function inferSkillCategory(skill: string) {
-  const normalized = skill.toLowerCase()
-
-  if (/(react|next|node|javascript|typescript|python|java|sql|aws|cloud|devops|api|frontend|backend|full stack|c\+\+|c#)/.test(normalized)) {
-    return 'Technical'
-  }
-
-  if (/(figma|ux|ui|design|prototype|wireframe|brand)/.test(normalized)) {
-    return 'Design'
-  }
-
-  if (/(data|analytics|bi|tableau|power bi|machine learning|ai|prompt)/.test(normalized)) {
-    return 'Data'
-  }
-
-  if (/(marketing|seo|content|social media|growth|email)/.test(normalized)) {
-    return 'Marketing'
-  }
-
-  if (/(sales|finance|strategy|operations|customer success|product|project)/.test(normalized)) {
-    return 'Business'
-  }
-
-  if (/(leadership|management|coaching|mentoring)/.test(normalized)) {
-    return 'Leadership'
-  }
-
-  if (/(communication|public speaking|writing|negotiation|presentation)/.test(normalized)) {
-    return 'Communication'
-  }
-
-  if (/(creative|copywriting|video|illustration|photography)/.test(normalized)) {
-    return 'Creative'
-  }
-
-  return 'Other'
-}
 
 const bodySchema = z.object({
   goals: z.array(z.string()).optional(),

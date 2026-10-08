@@ -14,6 +14,8 @@ import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
 import { z } from 'zod'
 import { env } from '@/lib/config/env'
+import { PLAN_INFO } from '@/lib/plans'
+import { normalizeSkillCategory } from '@/lib/skills-taxonomy'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,14 +39,14 @@ const analyzeSchema = z.object({
       })
     )
     .min(1),
-  provider: z.enum(['openai', 'anthropic']).optional(),
+  provider: z.enum(['gemini', 'openai', 'anthropic']).optional(),
   evidenceId: z.string().optional(),
 })
 
 const AI_ANALYSIS_LIMITS: Record<string, number> = {
-  free: 10,
-  pro: 50,
-  enterprise: -1,
+  free: PLAN_INFO.free.limits.aiAnalyses,
+  pro: PLAN_INFO.pro.limits.aiAnalyses,
+  enterprise: PLAN_INFO.enterprise.limits.aiAnalyses,
 }
 
 export async function GET(request: NextRequest) {
@@ -174,6 +176,7 @@ export async function POST(request: NextRequest) {
     const result = (await Promise.race([
       aiClient.analyzeEvidence(
         skill.name,
+        normalizeSkillCategory(skill.category),
         skill.level,
         validated.evidence as EvidenceInput[],
         validated.provider
@@ -194,7 +197,7 @@ export async function POST(request: NextRequest) {
           explanation: result.explanation,
           suggestedLevel: result.suggestedLevel ?? null,
           improvements: result.improvements,
-          rawResponse: result.rawResponse ? JSON.parse(JSON.stringify(result.rawResponse)) : null,
+          // Data minimisation: the provider's raw payload is not needed after parsing.
           tokensUsed: result.tokensUsed,
           cost: result.cost,
         },

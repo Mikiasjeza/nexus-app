@@ -19,10 +19,11 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 GUEST_MODE="false"
 
 # AI Providers (at least one required)
+GEMINI_API_KEY="AIza..."
 OPENAI_API_KEY="sk-..."
 ANTHROPIC_API_KEY="sk-ant-..."
-AI_PROVIDER="openai"
-AI_MODEL="gpt-4-turbo-preview"
+AI_PROVIDER="gemini"
+AI_MODEL="gemini-2.5-flash"
 
 # Authentication
 NEXTAUTH_SECRET="your-secret-key-here"
@@ -85,6 +86,7 @@ Stripe webhook endpoint additionally requires:
 
 AI analysis requires:
 
+- `AI_PROVIDER=gemini` with `GEMINI_API_KEY`, or
 - `AI_PROVIDER=openai` with `OPENAI_API_KEY`, or
 - `AI_PROVIDER=anthropic` with `ANTHROPIC_API_KEY`
 

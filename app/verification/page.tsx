@@ -23,6 +23,9 @@ import { aiApi, authApi, skillsApi } from '@/lib/api'
 import type { AnalysisHistoryItem, EvidenceInput } from '@/lib/api/ai'
 import type { Skill, User } from '@/lib/types'
 import { useRouter } from 'next/navigation'
+import { CATEGORY_COLORS } from '@/lib/utils/constants'
+import { getSkillPillarDetail, getSkillPillarForName, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 type EvidenceTypeId = 'code' | 'video' | 'document' | 'audio' | 'project'
 
@@ -42,7 +45,7 @@ const evidenceTypes: Array<{
     id: 'code',
     name: 'Code Proof',
     icon: Code,
-    description: 'Paste a code sample, repository context, or implementation notes for OpenAI to assess.',
+    description: 'Paste a code sample, repository context, or implementation notes for AI to assess.',
     requirements: ['Include real code', 'Add context on what you built', 'Mention your specific contribution'],
     examples: ['API endpoint', 'Component implementation', 'Automation script', 'Data pipeline'],
     primaryLabel: 'Code sample',
@@ -103,7 +106,7 @@ const evidenceTypes: Array<{
 const verificationSteps = [
   { step: 1, title: 'Choose Skill', description: 'Pick the capability you want to prove', icon: Sparkles },
   { step: 2, title: 'Add Evidence', description: 'Paste code, notes, links, or project context', icon: FileText },
-  { step: 3, title: 'OpenAI Review', description: 'Run an objective skill analysis on your proof', icon: Brain },
+  { step: 3, title: 'AI Review', description: 'Run an objective skill analysis on your proof', icon: Brain },
   { step: 4, title: 'Save Result', description: 'Store the analysis and upgrade profile trust', icon: Shield },
 ]
 
@@ -119,7 +122,7 @@ const guestSampleAnalyses: AnalysisHistoryItem[] = [
     improvements: ['Add stronger testing proof', 'Include performance profiling notes'],
     tokensUsed: 1180,
     cost: 0.01,
-    model: 'gpt-4o-mini',
+    model: 'gemini-2.5-flash',
     verified: true,
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
   },
@@ -134,7 +137,7 @@ const guestSampleAnalyses: AnalysisHistoryItem[] = [
     improvements: ['Add audience outcomes', 'Include a second example in a different setting'],
     tokensUsed: 940,
     cost: 0.01,
-    model: 'gpt-4o-mini',
+    model: 'gemini-2.5-flash',
     verified: true,
     createdAt: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
   },
@@ -176,6 +179,7 @@ export default function VerificationPage() {
   const selectedEvidenceType = evidenceTypes.find((type) => type.id === selectedType) ?? evidenceTypes[0]
   const selectedSkill = skills.find((skill) => skill.id === selectedSkillId) ?? null
   const displayedAnalyses = isGuestPreview ? guestSampleAnalyses : recentAnalyses
+  const selectedPillar = selectedSkill ? getSkillPillarDetail(selectedSkill.category) : null
 
   useEffect(() => {
     let isActive = true
@@ -243,7 +247,7 @@ export default function VerificationPage() {
     addToast({
       type: 'info',
       title: 'Sign in required',
-      message: 'Create an account or sign in to run OpenAI verification.',
+      message: 'Create an account or sign in to run AI verification.',
     })
     router.push('/auth/login?next=/verification')
   }
@@ -315,7 +319,7 @@ export default function VerificationPage() {
       addToast({
         type: 'error',
         title: 'Choose a skill',
-        message: 'Select one of your skills before running OpenAI analysis.',
+        message: 'Select one of your skills before running AI analysis.',
       })
       return
     }
@@ -328,7 +332,7 @@ export default function VerificationPage() {
       addToast({
         type: 'error',
         title: 'Add more code',
-        message: 'Paste a real code sample so OpenAI has enough proof to assess.',
+        message: 'Paste a real code sample so AI has enough proof to assess.',
       })
       return
     }
@@ -378,7 +382,6 @@ export default function VerificationPage() {
         skillName: selectedSkill.name,
         skillLevel: selectedSkill.level,
         evidence,
-        provider: 'openai',
       })
 
       const savedAnalysis: AnalysisHistoryItem = {
@@ -417,7 +420,7 @@ export default function VerificationPage() {
         title: response.data.verified ? 'Skill verified' : 'Analysis complete',
         message: response.data.verified
           ? `${selectedSkill.name} now has a verified signal on your profile.`
-          : 'OpenAI finished scoring your evidence and saved the result.',
+          : 'AI finished scoring your evidence and saved the result.',
       })
 
       resetEvidenceInputs()
@@ -436,7 +439,7 @@ export default function VerificationPage() {
   }
 
   return (
-    <div className="aurora-shell min-h-screen bg-black">
+    <AppPageShell className="min-h-screen bg-black">
       <Confetti trigger={showConfetti} />
 
       <div className="page-shell">
@@ -452,12 +455,12 @@ export default function VerificationPage() {
                 <Brain className="w-8 h-8 text-white" />
               </div>
               <div>
-                <div className="hero-kicker mb-4">OpenAI Trust Engine</div>
+                <div className="hero-kicker mb-4">AI Trust Engine</div>
                 <h1 className="text-4xl md:text-6xl font-bold text-white mb-2 tracking-tight leading-[1.1]">
                   AI Verification
                 </h1>
                 <p className="text-base md:text-lg text-white/68 max-w-2xl">
-                  Turn real work into proof. Choose a skill, paste evidence, and get a saved OpenAI analysis with confidence, feedback, and verification signals.
+                  Turn real work into proof. Nexus reviews each skill through one of five pillars so the evidence for code, creative work, communication, leadership, or growth gets scored in the right context.
                 </p>
               </div>
             </div>
@@ -468,14 +471,26 @@ export default function VerificationPage() {
                 </div>
               ))}
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 mt-6">
+              {SKILL_PILLAR_DETAILS.map((pillar) => (
+                <div
+                  key={pillar.category}
+                  className="insight-card px-4 py-4"
+                  style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
+                >
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{pillar.shortLabel}</div>
+                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                </div>
+              ))}
+            </div>
             {isGuestPreview && (
               <div className="mt-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
-                Guest preview is enabled. You can explore the interface, but running OpenAI verification requires a signed-in account.
+                Guest preview is enabled. You can explore the interface, but running AI verification requires a signed-in account.
               </div>
             )}
             {!user && !isLoadingData && (
               <div className="mt-6 border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-                Sign in to load your skills and run real OpenAI analyses. Guests can still preview the workflow and sample results.
+                Sign in to load your skills and run real AI analyses. Guests can still preview the workflow and sample results.
               </div>
             )}
           </div>
@@ -539,12 +554,31 @@ export default function VerificationPage() {
               <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">{selectedEvidenceType.name}</h2>
-                  <p className="text-white/60">{selectedEvidenceType.helperText}</p>
+                  <p className="text-white/60">
+                    {selectedPillar
+                      ? `${selectedEvidenceType.helperText} The AI will apply the ${selectedPillar.category.toLowerCase()} lens to this review.`
+                      : selectedEvidenceType.helperText}
+                  </p>
                 </div>
                 <Badge variant="info" size="sm">
-                  OpenAI
+                  Gemini
                 </Badge>
               </div>
+
+              {selectedPillar && (
+                <div
+                  className="mb-6 rounded-2xl border p-4"
+                  style={{
+                    borderColor: `${CATEGORY_COLORS[selectedPillar.category]}45`,
+                    backgroundColor: `${CATEGORY_COLORS[selectedPillar.category]}12`,
+                  }}
+                >
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{selectedPillar.shortLabel}</div>
+                  <div className="mt-2 text-lg font-semibold text-white">{selectedPillar.category}</div>
+                  <p className="mt-2 text-sm text-white/72">{selectedPillar.summary}</p>
+                  <p className="mt-3 text-sm text-white/58">{selectedPillar.proofFocus}</p>
+                </div>
+              )}
 
               <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                 <h4 className="font-medium text-white mb-3">What strong evidence looks like</h4>
@@ -656,7 +690,7 @@ export default function VerificationPage() {
                   leftIcon={<Brain className="w-5 h-5" />}
                   disabled={isLoadingData}
                 >
-                  {isSubmitting ? 'Analyzing with OpenAI...' : 'Run OpenAI Analysis'}
+                  {isSubmitting ? 'Analyzing with AI...' : 'Run AI Analysis'}
                 </Button>
                 <Button
                   variant="outline"
@@ -689,7 +723,7 @@ export default function VerificationPage() {
                       <div className="hero-kicker mb-3">Latest result</div>
                       <h2 className="text-2xl font-bold text-white">{analysisResult.skillName}</h2>
                       <p className="text-white/60 mt-2">
-                        OpenAI analyzed your evidence and saved the result to your profile history.
+                        AI analyzed your evidence and saved the result to your profile history.
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -793,7 +827,7 @@ export default function VerificationPage() {
               <div className="space-y-4">
                 {displayedAnalyses.length === 0 && (
                   <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/60">
-                    No saved analyses yet. Run your first OpenAI verification to start building trust signals.
+                    No saved analyses yet. Run your first AI verification to start building trust signals.
                   </div>
                 )}
 
@@ -802,6 +836,9 @@ export default function VerificationPage() {
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
                         <div className="font-medium text-white">{analysis.skillName}</div>
+                        <div className="text-xs uppercase tracking-[0.18em] text-white/45 mt-1">
+                          {getSkillPillarForName(analysis.skillName).category}
+                        </div>
                         <div className="text-xs text-white/50">{formatRelativeTime(analysis.createdAt)}</div>
                       </div>
                       <Badge variant={analysis.verified ? 'success' : 'info'} size="sm">
@@ -847,6 +884,6 @@ export default function VerificationPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

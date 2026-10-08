@@ -54,7 +54,7 @@ function StatsCards({ stats }: StatsCardsProps) {
             }}
             whileHover={{ y: -4, scale: 1.01, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } }}
           >
-            <div className={`relative p-6 overflow-hidden border bg-gradient-to-br ${item.accent}`}>
+            <div className={`insight-card relative p-6 bg-gradient-to-br ${item.accent}`}>
               <motion.div
                 className="absolute -inset-[1px] pointer-events-none"
                 style={{
@@ -65,11 +65,11 @@ function StatsCards({ stats }: StatsCardsProps) {
               />
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-xs uppercase tracking-wider text-black/60 dark:text-white/60 font-medium mb-3">{item.label}</p>
-                  <p className="text-4xl font-bold text-black dark:text-white tracking-tight">{item.value}</p>
+                  <p className="text-xs uppercase tracking-[0.18em] text-white/50 font-medium mb-3">{item.label}</p>
+                  <p className="text-4xl font-bold text-white tracking-tight tabular-nums">{item.value}</p>
                 </div>
-                <div className="p-3 border border-black/10 dark:border-white/10">
-                  <Icon className="w-5 h-5 text-black dark:text-white" />
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
               </div>
             </div>

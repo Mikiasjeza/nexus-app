@@ -83,4 +83,8 @@ declare module 'lucide-react' {
   export const List: LucideIcon;
   export const GripVertical: LucideIcon;
   export const Cookie: LucideIcon;
+  export const BadgeCheck: LucideIcon;
+  export const Network: LucideIcon;
+  export const ChevronRight: LucideIcon;
+  export const LogOut: LucideIcon;
 }

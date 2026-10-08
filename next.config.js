@@ -85,7 +85,7 @@ const nextConfig = {
           },
           {
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin'
           },
           {
             key: 'Permissions-Policy',
@@ -101,7 +101,13 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https: wss:",
+              // Browser code only talks to our own origin (Sentry goes through the
+              // /monitoring tunnel). This blocks third-party beacons/trackers.
+              process.env.NODE_ENV === 'production'
+                ? "connect-src 'self'"
+                : "connect-src 'self' ws: wss:",
+              // Sentry Replay compresses in a blob: worker (only with consent).
+              "worker-src 'self' blob:",
               "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self'",

@@ -7,7 +7,7 @@ Revolutionary AI-powered platform for universal skill verification and talent in
 ### Core Product Functionality
 - ✅ Create, edit, delete skills
 - ✅ Skill level system (beginner → expert)
-- ✅ Skill categories/tags
+- ✅ Five skill pillars and tags
 - ✅ Notes/descriptions per skill
 - ✅ Skill progress visualization
 - ✅ Skill history tracking

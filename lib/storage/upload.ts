@@ -13,7 +13,7 @@
  * TODO: Implement file size limits
  */
 
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 export type StorageProvider = 's3' | 'cloudinary'
@@ -101,9 +101,7 @@ class StorageService {
         Key: key,
         Body: file,
         ContentType: mimeType,
-        // TODO: Add ACL and encryption settings
-        // ACL: 'private',
-        // ServerSideEncryption: 'AES256',
+        ServerSideEncryption: 'AES256',
       })
 
       await this.s3Client.send(command)
@@ -181,9 +179,32 @@ class StorageService {
    * Delete file from storage
    */
   async deleteFile(key: string): Promise<void> {
-    void key
-    // TODO: Implement file deletion
-    throw new Error('File deletion not yet implemented')
+    if (this.provider !== 's3' || !this.s3Client) {
+      throw new Error('File deletion only supported for S3')
+    }
+
+    const bucket = process.env.AWS_S3_BUCKET
+    if (!bucket) {
+      throw new Error('AWS_S3_BUCKET not configured')
+    }
+
+    await this.s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+  }
+
+  /**
+   * Recover the object key from a URL produced by uploadToS3. Returns null for
+   * URLs that don't point at our bucket (e.g. external evidence links).
+   */
+  keyFromUrl(url: string): string | null {
+    const bucket = process.env.AWS_S3_BUCKET
+    if (!bucket) return null
+    try {
+      const parsed = new URL(url)
+      if (!parsed.hostname.startsWith(`${bucket}.s3.`)) return null
+      return decodeURIComponent(parsed.pathname.replace(/^\//, '')) || null
+    } catch {
+      return null
+    }
   }
 }
 

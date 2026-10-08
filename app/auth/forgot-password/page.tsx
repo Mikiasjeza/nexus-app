@@ -1,13 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
 import { Mail, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
-import { easing } from '@/lib/utils/animations'
 import { fetchApi } from '@/lib/api/fetcher'
+import AuthShell from '@/components/Layout/AuthShell'
 
 export default function ForgotPasswordPage() {
   const { addToast } = useToast()
@@ -27,7 +26,7 @@ export default function ForgotPasswordPage() {
       setSent(true)
       addToast({
         type: 'success',
-        title: 'Reset Link Sent',
+        title: 'Reset link sent',
         message: 'Check your email for password reset instructions.',
       })
     } catch {
@@ -41,93 +40,77 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  const backLink = (
+    <Link
+      href="/auth/login"
+      className="inline-flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Back to login
+    </Link>
+  )
+
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-        >
-          <Link
-            href="/auth/login"
-            className="inline-flex items-center gap-2 text-sm text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white mb-8 transition-colors"
+    <AuthShell beforeCard={backLink}>
+      <div className="hero-kicker mb-6">Recovery</div>
+      <h1 className="mb-3 text-3xl font-semibold tracking-tight text-white">Reset password</h1>
+      <p className="mb-8 text-sm leading-relaxed metalab-muted">
+        Enter your email and we&apos;ll send a secure link to choose a new password.
+      </p>
+
+      {sent ? (
+        <div className="py-4 text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
+            <Mail className="h-8 w-8 text-cyan-200/90" />
+          </div>
+          <h2 className="mb-2 text-lg font-semibold text-white">Check your email</h2>
+          <p className="mb-8 text-sm metalab-muted">
+            We sent a reset link to <span className="text-white/85">{email}</span>
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSent(false)
+              setEmail('')
+            }}
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to login
-          </Link>
-
-          <div className="border border-black/10 dark:border-white/10 p-8 lg:p-12">
-            <h1 className="text-3xl lg:text-4xl font-bold text-black dark:text-white mb-4 tracking-tight">
-              Reset Password
-            </h1>
-            <p className="text-black/60 dark:text-white/60 mb-8 leading-relaxed">
-              Enter your email address and we&apos;ll send you a link to reset your password.
-            </p>
-
-            {sent ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
-                  <Mail className="w-8 h-8 text-black dark:text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-black dark:text-white mb-3">
-                  Check Your Email
-                </h2>
-                <p className="text-black/60 dark:text-white/60 mb-8 leading-relaxed">
-                  We&apos;ve sent a password reset link to <strong>{email}</strong>
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSent(false)
-                    setEmail('')
-                  }}
-                >
-                  Send Another
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40" />
-                    <input
-                      type="email"
-                      id="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-12 pr-5 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
-                      placeholder="you@example.com"
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  isLoading={loading}
-                  fullWidth
-                >
-                  Send Reset Link
-                </Button>
-              </form>
-            )}
-
-            <div className="mt-8 pt-8 border-t border-black/10 dark:border-white/10 text-center">
-              <p className="text-sm text-black/60 dark:text-white/60">
-                Remember your password?{' '}
-                <Link href="/auth/login" className="text-black dark:text-white hover:opacity-80 transition-opacity font-medium">
-                  Sign in
-                </Link>
-              </p>
+            Send another
+          </Button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="forgot-email" className="metalab-label">
+              Email
+            </label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+              <input
+                type="email"
+                id="forgot-email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="metalab-input pl-11"
+                placeholder="you@example.com"
+              />
             </div>
           </div>
-        </motion.div>
+
+          <Button type="submit" isLoading={loading} fullWidth>
+            Send reset link
+          </Button>
+        </form>
+      )}
+
+      <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+        <p className="text-sm metalab-muted">
+          Remember your password?{' '}
+          <Link href="/auth/login" className="metalab-link">
+            Sign in
+          </Link>
+        </p>
       </div>
-    </div>
+    </AuthShell>
   )
 }

@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { Building2 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
-import { easing } from '@/lib/utils/animations'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import AuthShell from '@/components/Layout/AuthShell'
 
 export default function EmployerSignupPage() {
   const router = useRouter()
@@ -45,7 +45,7 @@ export default function EmployerSignupPage() {
       setError(err instanceof Error ? err.message : 'Failed to register')
       addToast({
         type: 'error',
-        title: 'Registration Failed',
+        title: 'Registration failed',
         message: err instanceof Error ? err.message : 'Please try again.',
       })
     } finally {
@@ -54,78 +54,68 @@ export default function EmployerSignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: easing.primary }}
-        className="w-full max-w-md"
-      >
-        <div className="border border-black/10 dark:border-white/10 p-8 lg:p-12">
-          <div className="text-center mb-10">
-            <div className="w-16 h-16 rounded-2xl bg-primary-500/10 dark:bg-primary-500/20 flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-primary-600 dark:text-primary-400" />
-            </div>
-            <h1 className="text-4xl font-bold text-black dark:text-white mb-3 tracking-tight">
-              Register as Employer
-            </h1>
-            <p className="text-lg text-black/60 dark:text-white/60">
-              Create your company profile to search for verified talent
-            </p>
-          </div>
+    <AuthShell>
+      <div className="hero-kicker mb-6">Employer workspace</div>
+      <div className="mb-10 text-center">
+        <motion.div
+          initial={{ scale: 0.96, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35 }}
+          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/15 to-cyan-500/10"
+        >
+          <Building2 className="h-8 w-8 text-cyan-200/90" />
+        </motion.div>
+        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">Register as employer</h1>
+        <p className="text-sm leading-relaxed metalab-muted md:text-base">
+          Create a company profile to search talent by verified proof and Nexus skill pillars.
+        </p>
+      </div>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20"
-            >
-              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-            </motion.div>
-          )}
+      {error ? (
+        <div className="metalab-alert-error">
+          <p>{error}</p>
+        </div>
+      ) : null}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
-                Company Name
-              </label>
-              <div className="relative">
-                <Building2 className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40" />
-                <input
-                  type="text"
-                  required
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  className="w-full pl-12 pr-5 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
-                  placeholder="Acme Inc."
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              isLoading={loading}
-              fullWidth
-              size="lg"
-            >
-              Create Employer Account
-            </Button>
-          </form>
-
-          <div className="mt-8 text-center pt-6 border-t border-black/10 dark:border-white/10">
-            <p className="text-sm text-black/60 dark:text-white/60">
-              Looking for a job?{' '}
-              <Link
-                href="/marketplace"
-                className="text-black dark:text-white font-medium hover:opacity-80"
-              >
-                Browse jobs
-              </Link>
-            </p>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="metalab-label" htmlFor="employer-company">
+            Company name
+          </label>
+          <div className="relative">
+            <Building2 className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <input
+              id="employer-company"
+              type="text"
+              required
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="metalab-input pl-11"
+              placeholder="Acme Inc."
+            />
           </div>
         </div>
-      </motion.div>
-    </div>
+
+        <p className="text-xs leading-relaxed metalab-muted">
+          By creating an employer account you agree to our{' '}
+          <Link href="/terms" className="metalab-link">Terms of Service</Link>, including the employer rules on using
+          candidate data, and acknowledge our{' '}
+          <Link href="/privacy" className="metalab-link">Privacy Policy</Link>.
+        </p>
+
+        <Button type="submit" disabled={loading} isLoading={loading} fullWidth size="lg">
+          Create employer account
+        </Button>
+      </form>
+
+      <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+        <p className="text-sm metalab-muted">
+          Looking for a role?{' '}
+          <Link href="/marketplace" className="metalab-link">
+            Browse marketplace
+          </Link>
+        </p>
+      </div>
+    </AuthShell>
   )
 }

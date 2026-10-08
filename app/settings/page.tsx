@@ -5,11 +5,14 @@ import { User } from '@/lib/types'
 import { authApi, billingApi } from '@/lib/api'
 import ToggleSwitch from '@/components/UI/ToggleSwitch'
 import { motion } from 'framer-motion'
-import { Save, User as UserIcon, Mail, Globe, Lock } from 'lucide-react'
+import { Save, User as UserIcon, Mail, Globe, Lock, Shield, Download } from 'lucide-react'
+import Link from 'next/link'
+import CookiePreferencesButton from '@/components/UI/CookiePreferencesButton'
 import Loader from '@/components/UI/Loader'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import { easing } from '@/lib/utils/animations'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 export default function SettingsPage() {
   const { addToast } = useToast()
@@ -17,6 +20,10 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [billingLoading, setBillingLoading] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+  const [deleting, setDeleting] = useState(false)
   const [subscription, setSubscription] = useState<{
     plan: 'free' | 'pro' | 'enterprise'
     status: 'active' | 'trialing' | 'past_due' | 'canceled'
@@ -57,6 +64,21 @@ export default function SettingsPage() {
     loadUser()
   }, [])
 
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get('github')
+    if (!result) return
+    if (result === 'connected') {
+      addToast({ type: 'success', title: 'GitHub connected', message: 'You can now sign in with GitHub.' })
+    } else if (result === 'already_linked') {
+      addToast({
+        type: 'error',
+        title: 'GitHub not connected',
+        message: 'That GitHub account is already linked to a different Nexus account.',
+      })
+    }
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [addToast])
+
   const handleSave = async () => {
     if (!user) return
     if (isGuestPreview) {
@@ -85,6 +107,48 @@ export default function SettingsPage() {
       })
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const blob = await authApi.exportData()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `nexus-data-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      addToast({
+        type: 'error',
+        title: 'Export failed',
+        message: error instanceof Error ? error.message : 'Please try again.',
+      })
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE') return
+    setDeleting(true)
+    try {
+      await authApi.deleteAccount()
+      addToast({
+        type: 'success',
+        title: 'Account deleted',
+        message: 'Your account and data have been permanently deleted.',
+      })
+      window.location.assign('/')
+    } catch (error) {
+      addToast({
+        type: 'error',
+        title: 'Deletion failed',
+        message: error instanceof Error ? error.message : 'Please try again.',
+      })
+      setDeleting(false)
     }
   }
 
@@ -129,8 +193,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="aurora-shell min-h-screen bg-black">
-      <div className="max-w-4xl mx-auto px-6 lg:px-12 py-16">
+    <AppPageShell className="min-h-screen bg-black">
+      <div className="mx-auto max-w-4xl px-6 py-16 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -140,7 +204,7 @@ export default function SettingsPage() {
         >
           <div className="hero-panel p-8 md:p-10">
             <div className="hero-kicker mb-5">Identity Controls</div>
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight leading-[1.1]">
+            <h1 className="mb-4 text-4xl font-semibold leading-[1.08] tracking-tight text-white md:text-5xl lg:text-6xl">
               Settings
             </h1>
             <p className="text-lg text-white/68 max-w-2xl">
@@ -163,52 +227,55 @@ export default function SettingsPage() {
             transition={{ duration: 0.8, delay: 0.1, ease: easing.primary }}
           >
             <div className="gradient-border-card p-8">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-2 border border-white/10 bg-white/5">
-                  <UserIcon className="w-5 h-5 text-white" />
+              <div className="mb-8 flex items-center gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
+                  <UserIcon className="h-5 w-5 text-cyan-200/90" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white tracking-tight">Profile Information</h2>
-                  <p className="text-sm text-white/60 mt-1">Update your personal details</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-white">Profile</h2>
+                  <p className="mt-1 text-sm text-white/55">Name, email, and bio</p>
                 </div>
               </div>
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
+                  <label className="metalab-label" htmlFor="settings-name">
                     Name
                   </label>
                   <input
+                    id="settings-name"
                     type="text"
                     value={formData.name}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-5 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                    className="metalab-input"
                     placeholder="Your full name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
+                  <label className="metalab-label" htmlFor="settings-email">
                     Email
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40" />
+                    <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/38" />
                     <input
+                      id="settings-email"
                       type="email"
                       value={formData.email}
                       disabled
-                      className="w-full pl-12 pr-5 py-3 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 cursor-not-allowed"
+                      className="metalab-input cursor-not-allowed pl-11 opacity-70"
                     />
                   </div>
-                  <p className="text-xs text-black/60 dark:text-white/60 mt-2">Email cannot be changed</p>
+                  <p className="mt-2 text-xs text-white/45">Email cannot be changed</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
+                  <label className="metalab-label" htmlFor="settings-bio">
                     Bio
                   </label>
                   <textarea
+                    id="settings-bio"
                     value={formData.bio}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, bio: e.target.value })}
                     rows={4}
-                    className="w-full px-5 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:border-black dark:focus:border-white transition-colors resize-none"
+                    className="metalab-input resize-none"
                     placeholder="Tell us about yourself..."
                   />
                 </div>
@@ -223,21 +290,21 @@ export default function SettingsPage() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.8, delay: 0.2, ease: easing.primary }}
           >
-            <div className="border border-black/10 dark:border-white/10 p-8">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-2 border border-black/10 dark:border-white/10">
-                  <Globe className="w-5 h-5 text-black dark:text-white" />
+            <div className="gradient-border-card p-8">
+              <div className="mb-8 flex items-center gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
+                  <Globe className="h-5 w-5 text-cyan-200/90" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight">Privacy Settings</h2>
-                  <p className="text-sm text-black/60 dark:text-white/60 mt-1">Control your profile visibility</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-white">Privacy</h2>
+                  <p className="mt-1 text-sm text-white/55">Control how you appear to others</p>
                 </div>
               </div>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between p-5 border border-black/10 dark:border-white/10">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-black dark:text-white mb-2">Public Profile</h3>
-                    <p className="text-sm text-black/60 dark:text-white/60 leading-relaxed">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.08] bg-black/25 p-5">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="mb-1 font-medium text-white">Public profile</h3>
+                    <p className="text-sm leading-relaxed text-white/55">
                       Allow others to view your Nexus profile via shareable link
                     </p>
                   </div>
@@ -248,13 +315,13 @@ export default function SettingsPage() {
                     }}
                   />
                 </div>
-                <div className="flex items-center justify-between p-5 border border-black/10 dark:border-white/10">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-black dark:text-white mb-2">
-                      Discoverable by Employers
-                    </h3>
-                    <p className="text-sm text-black/60 dark:text-white/60 leading-relaxed">
-                      Allow employers to find you when searching for talent by skills
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.08] bg-black/25 p-5">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="mb-1 font-medium text-white">Discoverable by employers</h3>
+                    <p className="text-sm leading-relaxed text-white/55">
+                      Let employer search include your profile when skills match. Requires Public Profile. Employers
+                      see your name, bio, avatar and public skills, never your email. Turning this off removes you
+                      from their results and shortlists.
                     </p>
                   </div>
                   <ToggleSwitch
@@ -269,15 +336,15 @@ export default function SettingsPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     transition={{ duration: 0.3 }}
-                    className="p-5 border border-black/10 dark:border-white/10"
+                    className="rounded-xl border border-white/[0.08] bg-black/25 p-5"
                   >
-                    <p className="text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">Your Shareable Link</p>
-                    <div className="flex items-center gap-3">
+                    <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Shareable link</p>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <input
                         type="text"
                         value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${user.shareableId}`}
                         readOnly
-                        className="flex-1 px-4 py-2.5 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white text-sm font-mono"
+                        className="metalab-input flex-1 font-mono text-xs"
                       />
                       <Button
                         size="sm"
@@ -307,35 +374,133 @@ export default function SettingsPage() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.8, delay: 0.3, ease: easing.primary }}
           >
-            <div className="border border-black/10 dark:border-white/10 p-8">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-2 border border-black/10 dark:border-white/10">
-                  <Lock className="w-5 h-5 text-black dark:text-white" />
+            <div className="gradient-border-card p-8">
+              <div className="mb-8 flex items-center gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
+                  <Lock className="h-5 w-5 text-violet-200/90" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight">Security</h2>
-                  <p className="text-sm text-black/60 dark:text-white/60 mt-1">Manage account security</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-white">Security</h2>
+                  <p className="mt-1 text-sm text-white/55">Credentials and account actions</p>
                 </div>
               </div>
               <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  fullWidth
-                  leftIcon={<Lock className="w-4 h-4" />}
-                  disabled={isGuestPreview}
-                >
-                  Change Password
-                </Button>
-                <Button
-                  variant="danger"
-                  fullWidth
-                  disabled={isGuestPreview}
-                >
-                  Delete Account
-                </Button>
+                <Link href="/auth/forgot-password" className={isGuestPreview ? 'pointer-events-none block' : 'block'}>
+                  <Button
+                    variant="outline"
+                    fullWidth
+                    leftIcon={<Lock className="w-4 h-4" />}
+                    disabled={isGuestPreview}
+                  >
+                    Change Password
+                  </Button>
+                </Link>
+                {/* Full navigation (not <Link>): the OAuth flow leaves the app. */}
+                <a href="/api/auth/github/authorize" className={isGuestPreview ? 'pointer-events-none block' : 'block'}>
+                  <Button variant="outline" fullWidth disabled={isGuestPreview}>
+                    Connect GitHub
+                  </Button>
+                </a>
+                <p className="text-xs text-white/45">
+                  Lets you sign in with GitHub. We only read your public profile and verified email.
+                </p>
               </div>
             </div>
           </motion.div>
+
+          {/* Privacy & data */}
+          <div id="privacy" className="gradient-border-card scroll-mt-24 p-8">
+            <div className="mb-8 flex items-center gap-3">
+              <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
+                <Shield className="h-5 w-5 text-cyan-200/90" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold tracking-tight text-white">Privacy &amp; data</h2>
+                <p className="mt-1 text-sm text-white/55">
+                  Your data, your call. See our{' '}
+                  <Link href="/privacy" className="underline decoration-white/20 underline-offset-2 hover:text-white">
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-black/25 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="mb-1 font-medium text-white">Download my data</h3>
+                  <p className="text-sm text-white/55">
+                    A JSON copy of your account, skills, evidence, AI results, activity and company memberships.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  leftIcon={<Download className="w-4 h-4" />}
+                  onClick={handleExport}
+                  isLoading={exporting}
+                  disabled={exporting || isGuestPreview}
+                >
+                  Download
+                </Button>
+              </div>
+              <div className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-black/25 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="mb-1 font-medium text-white">Cookie settings</h3>
+                  <p className="text-sm text-white/55">Essential cookies only, unless you turn on diagnostics.</p>
+                </div>
+                <CookiePreferencesButton className="rounded-lg border border-white/15 px-4 py-2 text-sm text-white transition-colors hover:bg-white/5">
+                  Manage cookies
+                </CookiePreferencesButton>
+              </div>
+              <div className="rounded-xl border border-red-500/30 bg-black/25 p-5">
+                <h3 className="mb-1 font-medium text-white">Delete account</h3>
+                <p className="mb-4 text-sm text-white/55">
+                  Permanently deletes your account, skills, evidence files and history, removes you from employer
+                  shortlists, and cancels any active subscription. Companies where you are the only member are deleted
+                  too. This can&apos;t be undone, so consider downloading your data first.
+                </p>
+                {deleteOpen ? (
+                  <div className="space-y-3">
+                    <label htmlFor="delete-confirm" className="block text-sm text-white">
+                      Type <span className="font-mono font-semibold">DELETE</span> to confirm
+                    </label>
+                    <input
+                      id="delete-confirm"
+                      type="text"
+                      autoComplete="off"
+                      value={deleteConfirm}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeleteConfirm(e.target.value)}
+                      className="metalab-input"
+                    />
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        variant="danger"
+                        onClick={handleDeleteAccount}
+                        isLoading={deleting}
+                        disabled={deleteConfirm !== 'DELETE' || deleting}
+                      >
+                        Permanently delete
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setDeleteOpen(false)
+                          setDeleteConfirm('')
+                        }}
+                        disabled={deleting}
+                      >
+                        Keep my account
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button variant="danger" onClick={() => setDeleteOpen(true)} disabled={isGuestPreview}>
+                    Delete account
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Billing */}
           <motion.div
@@ -344,18 +509,22 @@ export default function SettingsPage() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.8, delay: 0.35, ease: easing.primary }}
           >
-            <div className="border border-black/10 dark:border-white/10 p-8">
-              <div className="flex items-center justify-between gap-4">
+            <div className="gradient-border-card p-8">
+              <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
                 <div>
-                  <h2 className="text-2xl font-bold text-black dark:text-white tracking-tight">Billing</h2>
-                  <p className="text-sm text-black/60 dark:text-white/60 mt-1">
-                    Plan: {subscription?.plan ?? 'free'} · Status: {subscription?.status ?? 'active'}
+                  <h2 className="text-xl font-semibold tracking-tight text-white">Billing</h2>
+                  <p className="mt-1 text-sm text-white/55">
+                    Plan · {subscription?.plan ?? 'free'} · {subscription?.status ?? 'active'}
                   </p>
                   {subscription?.currentPeriodEnd && (
-                    <p className="text-xs text-black/60 dark:text-white/60 mt-2">
-                      Current period ends: {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                    <p className="mt-2 text-xs text-white/45">
+                      {subscription.cancelAtPeriodEnd ? 'Access ends' : 'Renews'}{' '}
+                      {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                     </p>
                   )}
+                  <p className="mt-2 text-xs text-white/45">
+                    Change plan, update payment details or cancel any time under Manage Billing.
+                  </p>
                 </div>
                 <Button
                   variant="outline"
@@ -388,6 +557,6 @@ export default function SettingsPage() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

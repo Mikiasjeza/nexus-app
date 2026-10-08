@@ -67,10 +67,11 @@ In the Vercel project setup, expand **Environment Variables** and add:
 
 | Variable | Value |
 |----------|-------|
+| `GEMINI_API_KEY` | `AIza...` |
 | `OPENAI_API_KEY` | `sk-...` |
 | `ANTHROPIC_API_KEY` | `sk-ant-...` |
-| `AI_PROVIDER` | `openai` or `anthropic` |
-| `AI_MODEL` | `gpt-4-turbo-preview` |
+| `AI_PROVIDER` | `gemini`, `openai`, or `anthropic` |
+| `AI_MODEL` | `gemini-2.5-flash` |
 
 ### Auth & OAuth
 

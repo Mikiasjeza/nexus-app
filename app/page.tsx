@@ -1,562 +1,705 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { ArrowRight, Brain, Shield, BarChart3, Users, CheckCircle2, Play, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  Brain,
+  Shield,
+  BarChart3,
+  Users,
+  CheckCircle2,
+  Zap,
+  Network,
+  Lock,
+  ChevronRight,
+} from 'lucide-react'
 import { easing } from '@/lib/utils/animations'
-import NexusLogo from '@/components/UI/NexusLogo'
-import { useRef, useState } from 'react'
+import { useUser } from '@/lib/hooks/useUser'
+import { DEMO_SKILL_NODES, DEMO_SKILL_CONNECTIONS, type SkillNode } from '@/components/UI/SkillBrain'
+import { useState, useCallback, useRef, type MouseEvent, type ReactNode, type CSSProperties } from 'react'
 
-// Lazy load heavy hero components for faster initial load
-const CursorMesh = dynamic(() => import('@/components/UI/CursorMesh'), {
-  ssr: false,
-})
-const AISignal = dynamic(() => import('@/components/UI/AISignal'), {
-  ssr: false,
-})
-export default function HomePage() {
-  const heroRef = useRef<HTMLElement | null>(null)
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start'],
-  })
+const SkillBrain = dynamic(
+  () => import('@/components/UI/SkillBrain').then(m => ({ default: m.SkillBrain })),
+  { ssr: false, loading: () => <div className="w-full h-full" /> }
+)
 
-  // Parallax and scroll-linked motion
-  const yForeground = useTransform(scrollYProgress, [0, 1], [0, -50])
-  const yBackground = useTransform(scrollYProgress, [0, 1], [0, -24])
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [1, 1, 0])
-  const scaleHeadline = useTransform(scrollYProgress, [0, 0.6], [1, 0.97])
-  const yNexus = useTransform(scrollYProgress, [0, 1], [0, -70])
-  const rotateNexus = useTransform(scrollYProgress, [0, 1], [0, -4])
-  const [isMarqueePaused, setIsMarqueePaused] = useState(false)
-  const testimonials = [
-    'Built for real proof: live passports, verification, and shareable credibility.',
-    'Guests can explore the platform before creating an account.',
-    'Upgrade only when you need billing-backed premium verification features.',
-    'Analytics, skills, and marketplace stay connected in one flow.',
-    'Stripe, health checks, and deploy tooling are wired for production.',
-  ]
+const CATEGORY_COLORS: Record<string, string> = {
+  build: '#22d3ee',
+  create: '#a78bfa',
+  explain: '#34d399',
+  lead: '#fbbf24',
+  grow: '#f472b6',
+}
+
+const TICKER = [
+  'AI Skill Validation',
+  'Neural Passport',
+  'Evidence-Backed',
+  'Career-Ready',
+  'Tamper-Proof',
+  'Live Graph',
+  'Multimodal AI',
+  'Verified Credentials',
+]
+
+function TiltCard({
+  children,
+  className,
+  strength = 8,
+  style,
+}: {
+  children: ReactNode
+  className?: string
+  strength?: number
+  style?: CSSProperties
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent<HTMLDivElement>) => {
+      const el = ref.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const x = (e.clientX - r.left) / r.width - 0.5
+      const y = (e.clientY - r.top) / r.height - 0.5
+      el.style.transform = `perspective(1000px) rotateX(${-y * strength}deg) rotateY(${x * strength}deg)`
+      el.style.transition = 'transform 0.08s linear'
+    },
+    [strength]
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.transition = 'transform 0.6s cubic-bezier(0.16,1,0.3,1)'
+    el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)'
+  }, [])
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      {/* Hero Section - Color pool, parallax, Nexus as focal point */}
-      <section
-        ref={heroRef}
-        className="relative min-h-screen flex items-center justify-center pt-14 md:pt-20 overflow-hidden"
-      >
-        {/* Living color field - bioluminescent and non-generic */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          aria-hidden
-        >
-          <div 
-            className="absolute inset-0 opacity-[0.6] dark:opacity-100"
-            style={{
-              background: 'radial-gradient(ellipse 100% 80% at 30% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%)',
-            }}
+    <div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={className}
+      style={{ willChange: 'transform', ...style }}
+    >
+      {children}
+    </div>
+  )
+}
+
+const FEATURES = [
+  {
+    icon: Brain,
+    title: 'AI skill validation',
+    desc: 'Evidence analyzed for depth, consistency, and real-world confidence across code, video, and project outputs.',
+    color: '#22d3ee',
+    accent: 'rgba(34,211,238,0.08)',
+    border: 'rgba(34,211,238,0.15)',
+  },
+  {
+    icon: Lock,
+    title: 'Tamper-resistant records',
+    desc: 'Passport history with traceable updates, evidence links, and AI confidence scores.',
+    color: '#a78bfa',
+    accent: 'rgba(167,139,250,0.08)',
+    border: 'rgba(167,139,250,0.15)',
+  },
+  {
+    icon: BarChart3,
+    title: 'Progress over time',
+    desc: 'Growth trends by pillar, level, and verification signal quality. Gap analysis included.',
+    color: '#34d399',
+    accent: 'rgba(52,211,153,0.08)',
+    border: 'rgba(52,211,153,0.15)',
+  },
+  {
+    icon: Network,
+    title: 'Neural skill graph',
+    desc: 'Skills connect and reinforce each other. Your graph evolves as you prove new capabilities.',
+    color: '#fbbf24',
+    accent: 'rgba(251,191,36,0.08)',
+    border: 'rgba(251,191,36,0.15)',
+  },
+  {
+    icon: Shield,
+    title: 'Verifiable credentials',
+    desc: 'Employers validate in seconds. No more guessing — proof is baked in.',
+    color: '#f472b6',
+    accent: 'rgba(244,114,182,0.08)',
+    border: 'rgba(244,114,182,0.15)',
+  },
+]
+
+export default function HomePage() {
+  const { user } = useUser()
+  const [activeSkill, setActiveSkill] = useState<SkillNode | null>(null)
+
+  const ctaHref = user ? '/dashboard' : '/auth/register'
+
+  const handleSkillClick = useCallback((skill: SkillNode) => {
+    setActiveSkill(prev => (prev?.id === skill.id ? null : skill))
+  }, [])
+
+  return (
+    <div className="min-h-screen" style={{ background: '#09090b' }}>
+
+      {/* ── HERO ─────────────────────────────────────────────── */}
+      <section className="relative flex min-h-screen items-center overflow-hidden pt-16">
+
+        {/* Conic gradient mesh */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[900px] w-[900px] rounded-full opacity-[0.07] blur-[160px]"
+            style={{ background: 'conic-gradient(from 200deg at 50% 50%, #22d3ee, #a78bfa, #f472b6, #22d3ee)' }}
           />
-          <div 
-            className="absolute inset-0 opacity-[0.5] dark:opacity-100"
-            style={{
-              background: 'radial-gradient(ellipse 80% 60% at 70% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%)',
-            }}
-          />
-          <div 
-            className="absolute inset-0 dark:opacity-100 opacity-0"
-            style={{
-              background: 'radial-gradient(ellipse 120% 100% at 50% 30%, rgba(99, 102, 241, 0.15) 0%, rgba(30, 27, 75, 0.3) 40%, transparent 70%)',
-            }}
-          />
-          <motion.div
-            className="absolute -top-24 -left-16 w-[42rem] h-[42rem] rounded-full opacity-30 dark:opacity-40 blur-3xl"
-            style={{
-              background: 'radial-gradient(circle, rgba(0, 217, 255, 0.22) 0%, rgba(93, 63, 211, 0.08) 50%, transparent 75%)',
-            }}
-            animate={{
-              x: [0, 36, -18, 0],
-              y: [0, 20, -12, 0],
-              scale: [1, 1.08, 0.96, 1],
-            }}
-            transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute -bottom-24 -right-12 w-[36rem] h-[36rem] rounded-full opacity-20 dark:opacity-35 blur-3xl"
-            style={{
-              background: 'radial-gradient(circle, rgba(255, 111, 145, 0.2) 0%, rgba(255, 196, 107, 0.1) 45%, transparent 75%)',
-            }}
-            animate={{
-              x: [0, -24, 14, 0],
-              y: [0, -18, 10, 0],
-              scale: [1, 0.94, 1.06, 1],
-            }}
-            transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-          />
+          <div className="absolute -top-40 -left-20 h-[500px] w-[500px] rounded-full opacity-[0.04] blur-[100px]"
+            style={{ background: 'radial-gradient(circle, #22d3ee, transparent 70%)' }} />
         </div>
-        {/* Interactive Layer - Cursor-reactive background */}
-        <CursorMesh />
 
-        {/* AI Signal Layer - Ambient intelligence indicators */}
-        <AISignal className="absolute inset-0" />
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-12">
+          <div className="grid min-h-[calc(100vh-4rem)] grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.15fr]">
 
-        {/* Background grid - subtle, moves with scroll */}
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          style={{ y: yBackground as any }}
-        >
-          <div className="w-full max-w-4xl mx-auto px-6 opacity-[0.06] dark:opacity-[0.08]">
-            {/* Abstract grid representing skill system - optimized for performance */}
-            <div className="grid grid-cols-8 gap-4">
-              {Array.from({ length: 24 }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="aspect-square border border-black dark:border-white rounded-sm will-change-transform"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{
-                    duration: 0.4,
-                    delay: Math.min(i * 0.03, 0.6), // Cap max delay for faster initial render
-                    ease: easing.primary,
+            {/* Left */}
+            <div className="flex flex-col justify-center py-16 lg:py-0">
+
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: easing.primary }}
+                className="mb-8 inline-flex items-center gap-2 self-start rounded-full border border-white/[0.1] bg-white/[0.04] px-4 py-1.5"
+              >
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="text-[11px] font-medium tracking-[0.18em] uppercase text-white/50">
+                  Skill verification · Live
+                </span>
+              </motion.div>
+
+              <motion.h1
+                className="mb-6 font-black leading-[0.96] tracking-[-0.04em] text-white"
+                style={{ fontSize: 'clamp(3.5rem, 9vw, 7rem)' }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.08, ease: easing.primary }}
+              >
+                Your skills.
+                <br />
+                <span
+                  className="bg-clip-text text-transparent"
+                  style={{ backgroundImage: 'linear-gradient(135deg, #22d3ee 0%, #a78bfa 50%, #f472b6 100%)' }}
+                >
+                  Verified.
+                </span>
+              </motion.h1>
+
+              <motion.p
+                className="mb-10 max-w-md text-lg leading-relaxed text-white/45"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.25, ease: easing.primary }}
+              >
+                An AI-powered neural passport — not what you claim, but what you can prove.
+              </motion.p>
+
+              <motion.div
+                className="flex flex-wrap items-center gap-4"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4, ease: easing.primary }}
+              >
+                <Link
+                  href={ctaHref}
+                  className="group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.03]"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(34,211,238,0.9), rgba(139,92,246,0.9))',
+                    boxShadow: '0 0 32px rgba(34,211,238,0.18)',
                   }}
-                />
-              ))}
-            </div>
-          </div>
-        </motion.div>
+                >
+                  Build your passport
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
 
-        {/* Narrative Layer - One core promise, one focal point */}
-        <motion.div
-          className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full"
-          style={{ y: yForeground as any, opacity: opacity as any, scale: scaleHeadline as any }}
-        >
-          <div className="max-w-6xl grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
-            <div>
+                <Link
+                  href="/how-it-works"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] px-7 py-3.5 text-sm font-medium text-white/55 transition-all duration-200 hover:border-white/[0.2] hover:text-white/90"
+                >
+                  How it works
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </motion.div>
+
+              {/* Stats divide pattern */}
+              <motion.div
+                className="mt-14 grid grid-cols-3 divide-x divide-white/[0.07] border-t border-white/[0.07] pt-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.6, ease: easing.primary }}
+              >
+                {[
+                  { value: '17', label: 'Skills mapped' },
+                  { value: '28', label: 'Connections' },
+                  { value: '5', label: 'Skill pillars' },
+                ].map(stat => (
+                  <div key={stat.label} className="pl-6 first:pl-0">
+                    <div className="text-3xl font-black tracking-tight text-white">{stat.value}</div>
+                    <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Right — 3D SkillBrain */}
             <motion.div
-              className="flex flex-col items-center md:items-start"
+              className="relative"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, ease: easing.primary }}
+              transition={{ duration: 1, delay: 0.15, ease: easing.primary }}
             >
-              <div className="mb-10 md:mb-14 flex flex-col items-center md:items-start">
+              <div style={{ perspective: '1400px', width: '100%' }}>
                 <motion.div
-                  className="mb-8"
-                  style={{ y: yNexus as any, rotate: rotateNexus as any }}
-                  animate={{ y: [0, -3, 0, 2, 0], rotate: [0, 0.6, -0.5, 0] }}
-                  transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+                  className="relative w-full overflow-hidden rounded-3xl border border-white/[0.07] bg-white/[0.02]"
+                  initial={{ rotateX: 6, rotateY: -8 }}
+                  whileHover={{ rotateX: 0, rotateY: 0 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    boxShadow: '0 50px 150px rgba(0,0,0,0.7)',
+                    height: '560px',
+                  }}
                 >
-                  <NexusLogo size="large" interactive={true} />
+                  <div className="absolute inset-0">
+                    <SkillBrain
+                      nodes={DEMO_SKILL_NODES}
+                      connections={DEMO_SKILL_CONNECTIONS}
+                      onNodeClick={handleSkillClick}
+                      className="h-full w-full"
+                    />
+                  </div>
+
+                  {activeSkill && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute bottom-4 left-4 right-4"
+                    >
+                      <div className="rounded-xl border border-white/[0.1] bg-[rgba(9,9,11,0.88)] px-4 py-2.5 backdrop-blur-md">
+                        <p className="text-[12px] font-medium text-white/75">{activeSkill.label}</p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {!activeSkill && (
+                    <div className="absolute bottom-4 right-4">
+                      <span className="text-[10px] tracking-[0.18em] uppercase text-white/20">Hover to explore</span>
+                    </div>
+                  )}
                 </motion.div>
-                <motion.h1
-                  className="text-4xl md:text-6xl lg:text-7xl font-bold text-black dark:text-white leading-[1.08] tracking-tight max-w-[13ch] md:max-w-none"
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2, ease: easing.primary }}
-                >
-                  What you can do,
-                  <br />
-                  <span className="bg-gradient-to-r from-cyan-500 via-violet-500 to-rose-500 dark:from-cyan-300 dark:via-violet-300 dark:to-rose-300 bg-clip-text text-transparent">verified.</span>
-                </motion.h1>
+              </div>
+
+              {/* Pillar legend */}
+              <div className="mt-4 flex flex-wrap gap-4 px-1">
+                {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
+                  <div key={cat} className="flex items-center gap-1.5">
+                    <div className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-white/30">{cat}</span>
+                  </div>
+                ))}
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
 
-            {/* Single product statement - no secondary explanations */}
-            <motion.p
-              className="text-base md:text-xl text-black/60 dark:text-white/60 leading-relaxed max-w-[36ch] md:max-w-xl mb-10 md:mb-16"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.35, ease: easing.primary }}
+      {/* ── MARQUEE TICKER ───────────────────────────────────── */}
+      <div
+        className="overflow-hidden select-none"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 0' }}
+      >
+        <div className="marquee-track flex items-center gap-0">
+          {[...TICKER, ...TICKER].map((item, i) => (
+            <span key={i} className="flex items-center shrink-0">
+              <span className="px-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+                {item}
+              </span>
+              <span className="text-white/10 shrink-0">·</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── FEATURES BENTO ───────────────────────────────────── */}
+      <section className="relative py-28 md:py-36" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="mx-auto max-w-6xl px-6 lg:px-12">
+
+          <motion.div
+            className="mb-16"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: easing.primary }}
+          >
+            <div className="mb-4 flex items-center gap-4">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">01</span>
+              <div className="h-px w-10 bg-white/[0.08]" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">Capabilities</span>
+            </div>
+            <h2
+              className="font-black tracking-[-0.03em] text-white"
+              style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
             >
-              A living record of what you can actually do — not what you claim.
-            </motion.p>
+              Built for serious
+              <br />
+              career growth
+            </h2>
+          </motion.div>
 
-            {/* Mobile mini demo card */}
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ gridAutoRows: '280px' }}>
+
+            {/* Large card */}
+            {(() => {
+              const HeroIcon = FEATURES[0].icon
+              return (
             <motion.div
-              className="lg:hidden mb-10"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.42, ease: easing.primary }}
+              className="md:col-span-2 md:row-span-2"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, ease: easing.primary }}
             >
-              <div className="relative border border-black/10 dark:border-white/15 bg-white/55 dark:bg-black/55 backdrop-blur-sm p-5 shadow-lg shadow-violet-500/10">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-semibold text-black dark:text-white">Skill Signal Preview</p>
-                  <Play className="w-4 h-4 text-violet-600 dark:text-violet-300" />
+              <TiltCard
+                strength={4}
+                className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 flex flex-col justify-between overflow-hidden relative"
+              >
+                {/* Ambient color blob */}
+                <div
+                  className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-[0.12] blur-[80px]"
+                  style={{ background: FEATURES[0].color }}
+                />
+
+                <div>
+                  <div
+                    className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl"
+                    style={{ background: FEATURES[0].accent, border: `1px solid ${FEATURES[0].border}` }}
+                  >
+                    <HeroIcon className="h-6 w-6" style={{ color: FEATURES[0].color }} />
+                  </div>
+                  <h3 className="mb-3 text-2xl font-bold text-white">{FEATURES[0].title}</h3>
+                  <p className="max-w-sm text-base leading-relaxed text-white/45">{FEATURES[0].desc}</p>
                 </div>
+
+                {/* Mini progress bar */}
                 <div className="space-y-3">
                   {[
-                    { skill: 'TypeScript', score: 91, color: 'from-cyan-500 to-blue-500' },
-                    { skill: 'React', score: 86, color: 'from-violet-500 to-fuchsia-500' },
-                  ].map((item) => (
-                    <div key={item.skill} className="border border-black/10 dark:border-white/10 p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-black/75 dark:text-white/75">{item.skill}</p>
-                        <p className="text-xs font-semibold text-black dark:text-white">{item.score}%</p>
+                    { label: 'Code analysis', pct: 94 },
+                    { label: 'Video evidence', pct: 88 },
+                    { label: 'Project output', pct: 91 },
+                  ].map(bar => (
+                    <div key={bar.label}>
+                      <div className="mb-1 flex justify-between">
+                        <span className="text-[11px] text-white/35">{bar.label}</span>
+                        <span className="text-[11px] text-white/35">{bar.pct}%</span>
                       </div>
-                      <div className="h-1.5 bg-black/10 dark:bg-white/10 overflow-hidden">
-                        <motion.div
-                          className={`h-full bg-gradient-to-r ${item.color}`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${item.score}%` }}
-                          transition={{ duration: 0.7, ease: easing.primary }}
+                      <div className="h-px w-full bg-white/[0.06]">
+                        <div
+                          className="h-px rounded-full"
+                          style={{ width: `${bar.pct}%`, background: FEATURES[0].color }}
                         />
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </TiltCard>
             </motion.div>
+              )
+            })()}
 
-            {/* One primary action - gradient CTA with micro-interaction */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5, ease: easing.primary }}
-            >
+            {/* Small cards */}
+            {FEATURES.slice(1).map((f, i) => (
               <motion.div
-                whileHover={{ y: -3, scale: 1.02 }}
-                whileTap={{ y: 0, scale: 0.98 }}
-                transition={{ duration: 0.2, ease: easing.primary }}
+                key={f.title}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: (i + 1) * 0.07, ease: easing.primary }}
               >
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 via-violet-500 to-rose-500 dark:from-cyan-400 dark:via-violet-400 dark:to-rose-400 text-white text-sm font-medium shadow-lg shadow-violet-500/25 dark:shadow-violet-500/15 hover:shadow-xl hover:shadow-cyan-500/25 transition-shadow duration-300"
+                <TiltCard
+                  strength={10}
+                  className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 flex flex-col justify-between overflow-hidden relative"
                 >
-                  Create your passport
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </motion.div>
-            </motion.div>
-            </div>
-
-            {/* Interactive mini demo card */}
-            <motion.div
-              className="hidden lg:block"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.35, ease: easing.primary }}
-            >
-              <motion.div
-                className="relative border border-black/10 dark:border-white/15 bg-white/55 dark:bg-black/55 backdrop-blur-sm p-7 shadow-2xl shadow-violet-500/10"
-                whileHover={{ y: -6, rotateX: 1.2, rotateY: -1.2 }}
-                transition={{ duration: 0.3, ease: easing.primary }}
-              >
-                <div className="flex items-center justify-between mb-6">
+                  <div
+                    className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-[0.12] blur-[60px]"
+                    style={{ background: f.color }}
+                  />
+                  <div
+                    className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl"
+                    style={{ background: f.accent, border: `1px solid ${f.border}` }}
+                  >
+                    <f.icon className="h-5 w-5" style={{ color: f.color }} />
+                  </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-black/45 dark:text-white/45">Live demo</p>
-                    <h3 className="text-xl font-semibold text-black dark:text-white mt-1">Skill Signal Preview</h3>
+                    <h3 className="mb-2 text-base font-semibold text-white">{f.title}</h3>
+                    <p className="text-sm leading-relaxed text-white/40">{f.desc}</p>
                   </div>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-r from-cyan-500 via-violet-500 to-rose-500 flex items-center justify-center text-white">
-                    <Play className="w-4 h-4 ml-[1px]" />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {[
-                    { skill: 'TypeScript Architecture', score: 91, color: 'from-cyan-500 to-blue-500' },
-                    { skill: 'React System Design', score: 86, color: 'from-violet-500 to-fuchsia-500' },
-                    { skill: 'API Reliability', score: 88, color: 'from-rose-500 to-orange-400' },
-                  ].map((item, i) => (
-                    <motion.div
-                      key={item.skill}
-                      className="border border-black/10 dark:border-white/10 p-4"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35, delay: 0.45 + i * 0.08, ease: easing.primary }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-black/75 dark:text-white/75">{item.skill}</p>
-                        <p className="text-sm font-semibold text-black dark:text-white">{item.score}%</p>
-                      </div>
-                      <div className="h-1.5 bg-black/10 dark:bg-white/10 overflow-hidden">
-                        <motion.div
-                          className={`h-full bg-gradient-to-r ${item.color}`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${item.score}%` }}
-                          transition={{ duration: 0.8, delay: 0.55 + i * 0.1, ease: easing.primary }}
-                        />
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <motion.div
-                  className="mt-5 inline-flex items-center gap-2 text-xs text-violet-700 dark:text-violet-300"
-                  animate={{ opacity: [0.75, 1, 0.75] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  AI confidence updates with each new evidence item
-                </motion.div>
+                </TiltCard>
               </motion.div>
-            </motion.div>
+            ))}
           </div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* How It Works - three accent cards */}
-      <motion.section 
-        className="relative py-24 md:py-56 border-t border-black/10 dark:border-white/10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.5, ease: easing.primary }}
-      >
-        <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <motion.h2
-            className="text-2xl md:text-3xl font-bold text-black dark:text-white mb-12 tracking-tight"
-            initial={{ opacity: 0, y: 20 }}
+      {/* ── HOW IT WORKS ─────────────────────────────────────── */}
+      <section className="relative py-28 md:py-36" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="mx-auto max-w-5xl px-6 lg:px-12">
+
+          <motion.div
+            className="mb-16"
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, ease: easing.primary }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: easing.primary }}
           >
-            How it works
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="mb-4 flex items-center gap-4">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">02</span>
+              <div className="h-px w-10 bg-white/[0.08]" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">Process</span>
+            </div>
+            <h2
+              className="font-black tracking-[-0.03em] text-white"
+              style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
+            >
+              Three steps
+              <br />
+              to verified
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {[
-              { step: 1, title: 'Add skills', desc: 'Build your profile with what you know.', accent: 'from-blue-500/20 to-indigo-500/20 dark:from-blue-500/30 dark:to-indigo-500/30', border: 'border-l-4 border-l-blue-500' },
-              { step: 2, title: 'Attach evidence', desc: 'Links, code, projects. AI analyzes.', accent: 'from-emerald-500/20 to-cyan-500/20 dark:from-emerald-500/30 dark:to-cyan-500/30', border: 'border-l-4 border-l-emerald-500' },
-              { step: 3, title: 'Passport grows', desc: 'Verified, portable, always current.', accent: 'from-violet-500/20 to-fuchsia-500/20 dark:from-violet-500/30 dark:to-fuchsia-500/30', border: 'border-l-4 border-l-violet-500' },
+              {
+                step: '01',
+                title: 'Map your skills',
+                desc: 'Add skills across the five pillars: build, create, explain, lead, grow.',
+                color: '#22d3ee',
+                icon: Network,
+                accent: 'rgba(34,211,238,0.08)',
+                border: 'rgba(34,211,238,0.15)',
+              },
+              {
+                step: '02',
+                title: 'Attach evidence',
+                desc: 'Code repos, videos, certificates, projects. AI analyzes and scores each one.',
+                color: '#a78bfa',
+                icon: Zap,
+                accent: 'rgba(167,139,250,0.08)',
+                border: 'rgba(167,139,250,0.15)',
+              },
+              {
+                step: '03',
+                title: 'Passport grows',
+                desc: 'Your neural graph updates. Share a verified, live profile with anyone.',
+                color: '#f472b6',
+                icon: Shield,
+                accent: 'rgba(244,114,182,0.08)',
+                border: 'rgba(244,114,182,0.15)',
+              },
             ].map((item, i) => (
               <motion.div
                 key={item.step}
-                className={`relative p-6 rounded-xl border border-black/10 dark:border-white/10 bg-gradient-to-br ${item.accent} ${item.border}`}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: easing.primary }}
-                whileHover={{ y: -4, transition: { duration: 0.3, ease: easing.primary } }}
+                transition={{ duration: 0.5, delay: i * 0.1, ease: easing.primary }}
               >
-                <span className="text-2xl font-bold text-black/20 dark:text-white/20 mb-4 block">{item.step}</span>
-                <h3 className="text-lg font-semibold text-black dark:text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-black/60 dark:text-white/60">{item.desc}</p>
+                <TiltCard
+                  strength={8}
+                  className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-7 h-full"
+                >
+                  <div
+                    className="pointer-events-none absolute -top-12 -right-12 h-48 w-48 rounded-full opacity-[0.1] blur-[70px]"
+                    style={{ background: item.color }}
+                  />
+                  <div
+                    className="mb-6 text-[56px] font-black leading-none tracking-[-0.04em]"
+                    style={{ color: `${item.color}0a`, WebkitTextStroke: `1px ${item.color}20` }}
+                  >
+                    {item.step}
+                  </div>
+                  <div
+                    className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl"
+                    style={{ background: item.accent, border: `1px solid ${item.border}` }}
+                  >
+                    <item.icon className="h-5 w-5" style={{ color: item.color }} />
+                  </div>
+                  <h3 className="mb-2 text-lg font-bold text-white">{item.title}</h3>
+                  <p className="text-sm leading-relaxed text-white/45">{item.desc}</p>
+                </TiltCard>
               </motion.div>
             ))}
           </div>
-        </div>
-      </motion.section>
-
-      {/* Proof + momentum section */}
-      <motion.section
-        className="relative py-20 md:py-28 border-t border-black/10 dark:border-white/10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.5, ease: easing.primary }}
-      >
-        <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { value: '2.1k+', label: 'Skills tracked' },
-              { value: '94%', label: 'Evidence accepted' },
-              { value: '4.9/5', label: 'User satisfaction' },
-              { value: '24/7', label: 'Passport access' },
-            ].map((item, i) => (
-              <motion.div
-                key={item.label}
-                className="border border-black/10 dark:border-white/10 p-6 bg-white/40 dark:bg-black/40 backdrop-blur-[2px]"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: i * 0.06, ease: easing.primary }}
-              >
-                <div className="text-2xl md:text-3xl font-bold text-black dark:text-white tracking-tight">{item.value}</div>
-                <div className="text-sm mt-2 text-black/60 dark:text-white/60">{item.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Moving testimonial band */}
-      <section className="relative py-8 border-t border-black/10 dark:border-white/10 overflow-hidden">
-        <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-white dark:from-black to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-white dark:from-black to-transparent pointer-events-none z-10" />
-        <div
-          className="marquee-track flex gap-4 whitespace-nowrap"
-          style={{ animationPlayState: isMarqueePaused ? 'paused' : 'running' }}
-          onMouseEnter={() => setIsMarqueePaused(true)}
-          onMouseLeave={() => setIsMarqueePaused(false)}
-          onTouchStart={() => setIsMarqueePaused(true)}
-          onTouchEnd={() => setIsMarqueePaused(false)}
-          onTouchCancel={() => setIsMarqueePaused(false)}
-        >
-          {[...testimonials, ...testimonials].map((line, i) => (
-            <div
-              key={`${line}-${i}`}
-              className="inline-flex items-center px-4 py-2 border border-black/10 dark:border-white/10 text-sm text-black/65 dark:text-white/70 bg-white/60 dark:bg-black/50"
-            >
-              {line}
-            </div>
-          ))}
         </div>
       </section>
 
-      {/* Product depth section */}
-      <motion.section
-        className="relative py-20 md:py-28 border-t border-black/10 dark:border-white/10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.5, ease: easing.primary }}
-      >
-        <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <motion.h2
-            className="text-2xl md:text-3xl font-bold text-black dark:text-white mb-12 tracking-tight"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.45, ease: easing.primary }}
-          >
-            Built for serious career growth
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* ── STATS ────────────────────────────────────────────── */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="mx-auto max-w-5xl">
+          <div className="grid grid-cols-2 divide-x divide-y md:grid-cols-4 md:divide-y-0 divide-white/[0.06]">
             {[
-              {
-                icon: Brain,
-                title: 'AI skill validation',
-                desc: 'Evidence gets analyzed for depth, consistency, and real-world confidence.',
-              },
-              {
-                icon: Shield,
-                title: 'Tamper-resistant records',
-                desc: 'Your passport history stays reliable with traceable updates and evidence links.',
-              },
-              {
-                icon: BarChart3,
-                title: 'Progress over time',
-                desc: 'See growth trends by category, level, and verification signal quality.',
-              },
-              {
-                icon: Users,
-                title: 'Shareable with teams',
-                desc: 'Use one profile across recruiters, collaborators, and hiring workflows.',
-              },
-            ].map((item, i) => (
+              // Product facts only; never show usage numbers or ratings we can't back up.
+              { value: '0', label: 'Ad trackers' },
+              { value: 'Private', label: 'Until you share' },
+              { value: '1-click', label: 'Data export' },
+              { value: '24/7',  label: 'Passport access' },
+            ].map((stat, i) => (
               <motion.div
-                key={item.title}
-                className="p-7 border border-black/10 dark:border-white/10 bg-gradient-to-br from-white to-black/[0.02] dark:from-white/[0.04] dark:to-white/[0.01]"
-                initial={{ opacity: 0, y: 24 }}
+                key={stat.label}
+                className="px-8 py-12"
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: i * 0.06, ease: easing.primary }}
-                whileHover={{ y: -4, transition: { duration: 0.25, ease: easing.primary } }}
+                transition={{ duration: 0.4, delay: i * 0.07 }}
               >
-                <item.icon className="w-5 h-5 text-violet-600 dark:text-violet-300 mb-4" />
-                <h3 className="text-lg font-semibold text-black dark:text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-black/60 dark:text-white/60 leading-relaxed">{item.desc}</p>
+                <p className="text-5xl font-black tracking-tight text-white">{stat.value}</p>
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">{stat.label}</p>
               </motion.div>
             ))}
           </div>
         </div>
-      </motion.section>
+      </div>
 
-      {/* Value comparison section */}
-      <motion.section
-        className="relative py-20 md:py-28 border-t border-black/10 dark:border-white/10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.5, ease: easing.primary }}
-      >
-        <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <motion.h2
-            className="text-2xl md:text-3xl font-bold text-black dark:text-white mb-10 tracking-tight"
-            initial={{ opacity: 0, y: 20 }}
+      {/* ── COMPARISON ───────────────────────────────────────── */}
+      <section className="py-28 md:py-36" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="mx-auto max-w-4xl px-6 lg:px-12">
+
+          <motion.div
+            className="mb-16"
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.45, ease: easing.primary }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6 }}
           >
-            Why it feels different
-          </motion.h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="mb-4 flex items-center gap-4">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">03</span>
+              <div className="h-px w-10 bg-white/[0.08]" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">Signal comparison</span>
+            </div>
+            <h2
+              className="font-black tracking-[-0.03em] text-white"
+              style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
+            >
+              Why it feels
+              <br />
+              different
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <motion.div
-              className="p-8 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.03]"
-              initial={{ opacity: 0, x: -18 }}
+              className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8"
+              initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.45, ease: easing.primary }}
+              transition={{ duration: 0.5 }}
             >
-              <h3 className="text-lg font-semibold text-black dark:text-white mb-5">Traditional profile</h3>
-              <ul className="space-y-3 text-sm text-black/60 dark:text-white/60">
+              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/25">
+                Traditional profile
+              </p>
+              <ul className="space-y-4">
                 {[
                   'Static bullet points with no confidence signal',
-                  'Hard to verify recent progress',
+                  'Self-reported skills with zero verification',
                   'One-size-fits-all presentation',
-                ].map((line) => (
-                  <li key={line} className="flex items-start gap-2">
-                    <span className="mt-[3px] w-1.5 h-1.5 rounded-full bg-black/40 dark:bg-white/40" />
-                    <span>{line}</span>
+                ].map(line => (
+                  <li key={line} className="flex items-start gap-3 text-sm text-white/35">
+                    <span className="mt-2.5 h-px w-3 flex-shrink-0 bg-white/20" />
+                    {line}
                   </li>
                 ))}
               </ul>
             </motion.div>
+
             <motion.div
-              className="p-8 border border-violet-500/30 dark:border-violet-300/35 bg-gradient-to-br from-violet-500/[0.08] to-cyan-500/[0.08]"
-              initial={{ opacity: 0, x: 18 }}
+              className="rounded-2xl border border-white/[0.12] bg-white/[0.04] p-8"
+              initial={{ opacity: 0, x: 16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.45, delay: 0.08, ease: easing.primary }}
+              transition={{ duration: 0.5, delay: 0.08 }}
             >
-              <h3 className="text-lg font-semibold text-black dark:text-white mb-5">Nexus passport</h3>
-              <ul className="space-y-3 text-sm text-black/70 dark:text-white/75">
+              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/45">
+                Nexus passport
+              </p>
+              <ul className="space-y-4">
                 {[
-                  'Evidence-backed skills with confidence scores',
+                  'Evidence-backed skills with AI confidence scores',
                   'Continuous updates from real project proof',
-                  'Portable, shareable profile for opportunities',
-                ].map((line) => (
-                  <li key={line} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 mt-[1px] text-violet-700 dark:text-violet-200" />
-                    <span>{line}</span>
+                  'Portable, shareable neural graph for any context',
+                ].map(line => (
+                  <li key={line} className="flex items-start gap-3 text-sm text-white/75">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" />
+                    {line}
                   </li>
                 ))}
               </ul>
             </motion.div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* CTA - gradient accent behind */}
-      <motion.section 
-        className="relative py-40 md:py-48 border-t border-black/10 dark:border-white/10 overflow-hidden"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.5, ease: easing.primary }}
+      {/* ── FINAL CTA ────────────────────────────────────────── */}
+      <section
+        className="relative overflow-hidden py-44 md:py-56"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
       >
-        <div className="absolute inset-0 pointer-events-none opacity-50">
-          <div 
-            className="absolute inset-0"
-            style={{
-              background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%)',
-            }}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden>
+          <div
+            className="h-[600px] w-[600px] rounded-full opacity-[0.07] blur-[120px]"
+            style={{ background: 'conic-gradient(from 0deg at 50% 50%, #22d3ee, #a78bfa, #f472b6, #22d3ee)' }}
           />
         </div>
-        <div className="relative max-w-2xl mx-auto px-6 lg:px-12 text-center">
+
+        <div className="relative mx-auto max-w-2xl px-6 text-center">
           <motion.div
-            whileHover={{ y: -3, scale: 1.02 }}
-            whileTap={{ y: 0, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: easing.primary }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6, ease: easing.primary }}
           >
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 via-violet-500 to-rose-500 dark:from-cyan-400 dark:via-violet-400 dark:to-rose-400 text-white text-sm font-medium shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-cyan-500/30 transition-shadow duration-300"
+            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">Get started</p>
+            <h2
+              className="mb-6 font-black tracking-[-0.04em] text-white"
+              style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}
             >
-              Create your passport
-              <ArrowRight className="w-4 h-4" />
+              Start mapping your{' '}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: 'linear-gradient(135deg, #22d3ee, #a78bfa)' }}
+              >
+                neural graph
+              </span>
+            </h2>
+            <p className="mb-10 text-lg text-white/40">
+              Every skill node you add becomes part of a living, verifiable record that employers can trust.
+            </p>
+
+            <Link
+              href={ctaHref}
+              className="group inline-flex items-center gap-3 rounded-full px-9 py-4 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.04]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(34,211,238,0.85), rgba(139,92,246,0.85))',
+                boxShadow: '0 0 48px rgba(34,211,238,0.14)',
+              }}
+            >
+              Initialize your passport
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>
-          {process.env.NODE_ENV === 'development' && (
-            <button
-              type="button"
-              onClick={() => {
-                throw new Error('Sentry test error from landing page')
-              }}
-              className="mt-6 text-xs text-black/50 dark:text-white/50 hover:text-black/70 dark:hover:text-white/70 underline"
-            >
-              Test Sentry (dev only)
-            </button>
-          )}
         </div>
-      </motion.section>
+      </section>
     </div>
   )
 }

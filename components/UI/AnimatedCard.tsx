@@ -21,14 +21,17 @@ export default function AnimatedCard({
   return (
     <motion.div
       initial={false}
-      whileHover={hover ? { 
-        y: -4, 
-        transition: { duration: 0.3, ease: easing.primary } 
-      } : undefined}
+      whileHover={
+        hover
+          ? {
+              y: -3,
+              transition: { duration: 0.25, ease: easing.primary },
+            }
+          : undefined
+      }
       className={cn(
-        'premium-card',
-        'transition-premium',
-        hover && 'hover:shadow-premium-lg hover:border-neutral-700/50',
+        'gradient-border-card transition-micro',
+        hover && 'hover:shadow-[0_28px_80px_rgba(0,0,0,0.42)]',
         onClick && 'cursor-pointer',
         className
       )}

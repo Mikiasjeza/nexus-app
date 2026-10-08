@@ -6,6 +6,7 @@ import { Mail, MessageSquare, Send, CheckCircle2, Clock } from 'lucide-react'
 import { easing } from '@/lib/utils/animations'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
+import AppPageShell from '@/components/Layout/AppPageShell'
 
 export default function ContactPage() {
   const { addToast } = useToast()
@@ -60,67 +61,58 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="aurora-shell min-h-screen bg-black">
-      {/* Hero */}
-      <section className="relative pt-24 md:pt-32 pb-16 md:pb-20 border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12">
+    <AppPageShell className="min-h-screen bg-black">
+      <div className="page-shell pb-24 pt-8 md:pt-12">
+        <section className="relative mb-16 md:mb-20">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.primary }}
+            transition={{ duration: 0.5, ease: easing.primary }}
+            className="hero-panel p-8 md:p-10"
           >
-            <div className="hero-panel p-8 md:p-10">
-              <div className="hero-kicker mb-5">
-                <Clock className="w-3.5 h-3.5" />
-                Response in 24h
-              </div>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 md:mb-8 leading-[1.1] tracking-tight max-w-[12ch] md:max-w-none">
-                Get In Touch
-              </h1>
-              <p className="text-base md:text-2xl text-white/68 leading-relaxed max-w-[36ch]">
-                Ask product questions, talk partnerships, or get help from a real Nexus inbox.
-              </p>
+            <div className="hero-kicker mb-6">
+              <Clock className="h-3.5 w-3.5" />
+              We reply by email
             </div>
+            <h1 className="mb-4 max-w-[14ch] text-4xl font-semibold leading-[1.08] tracking-tight text-white md:mb-6 md:max-w-none md:text-6xl lg:text-7xl">
+              Get in{' '}
+              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">touch</span>
+            </h1>
+            <p className="max-w-xl text-base leading-relaxed text-white/65 md:text-xl">
+              Product questions, partnerships, or support — we read every message.
+            </p>
           </motion.div>
-        </div>
-      </section>
+        </section>
 
-      {/* Contact Form */}
-      <section className="py-20 md:py-32">
-        <div className="max-w-3xl mx-auto px-6 lg:px-12">
+      <section>
+        <div className="mx-auto max-w-5xl">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
             {/* Contact Info */}
             <div className="lg:col-span-1">
               <motion.div
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-                className="space-y-8"
+                transition={{ duration: 0.5, ease: easing.primary }}
+                className="insight-card space-y-6 p-6"
               >
                 <div>
-                  <div className="w-12 h-12 mb-4 flex items-center justify-center border border-white/10 bg-white/5">
-                    <Mail className="w-6 h-6 text-white" />
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
+                    <Mail className="h-5 w-5 text-cyan-200/90" />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2">Email</h3>
-                  <a
-                    href="mailto:hello@nexus.ai"
-                    className="text-white/60 hover:text-white transition-colors"
-                  >
+                  <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">Email</h3>
+                  <a href="mailto:hello@nexus.ai" className="text-sm text-white/72 transition-colors hover:text-white">
                     hello@nexus.ai
                   </a>
                 </div>
 
-                <div>
-                  <div className="w-12 h-12 mb-4 flex items-center justify-center border border-white/10 bg-white/5">
-                    <MessageSquare className="w-6 h-6 text-white" />
+                <div className="border-t border-white/[0.06] pt-6">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
+                    <MessageSquare className="h-5 w-5 text-violet-200/90" />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2">Support</h3>
-                  <a
-                    href="mailto:support@nexus.ai"
-                    className="text-white/60 hover:text-white transition-colors"
-                  >
+                  <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">Support</h3>
+                  <a href="mailto:support@nexus.ai" className="text-sm text-white/72 transition-colors hover:text-white">
                     support@nexus.ai
                   </a>
                 </div>
@@ -152,9 +144,9 @@ export default function ContactPage() {
                     </Button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6 gradient-border-card p-6 md:p-8">
+                  <form onSubmit={handleSubmit} className="gradient-border-card space-y-5 p-6 md:p-8">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-white mb-2 uppercase tracking-wider">
+                      <label htmlFor="name" className="metalab-label">
                         Name
                       </label>
                       <input
@@ -163,13 +155,13 @@ export default function ContactPage() {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-3 border border-white/10 bg-black/55 text-white focus:outline-none focus:border-cyan-300/60 transition-colors"
+                        className="metalab-input"
                         placeholder="Your name"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-white mb-2 uppercase tracking-wider">
+                      <label htmlFor="email" className="metalab-label">
                         Email
                       </label>
                       <input
@@ -178,13 +170,13 @@ export default function ContactPage() {
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-3 border border-white/10 bg-black/55 text-white focus:outline-none focus:border-cyan-300/60 transition-colors"
+                        className="metalab-input"
                         placeholder="you@example.com"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-white mb-2 uppercase tracking-wider">
+                      <label htmlFor="subject" className="metalab-label">
                         Subject
                       </label>
                       <input
@@ -193,13 +185,13 @@ export default function ContactPage() {
                         required
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                        className="w-full px-4 py-3 border border-white/10 bg-black/55 text-white focus:outline-none focus:border-cyan-300/60 transition-colors"
-                        placeholder="What&apos;s this about?"
+                        className="metalab-input"
+                        placeholder="What is this about?"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-white mb-2 uppercase tracking-wider">
+                      <label htmlFor="message" className="metalab-label">
                         Message
                       </label>
                       <textarea
@@ -208,7 +200,7 @@ export default function ContactPage() {
                         rows={8}
                         value={formData.message}
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        className="w-full px-4 py-3 border border-white/10 bg-black/55 text-white focus:outline-none focus:border-cyan-300/60 transition-colors resize-none"
+                        className="metalab-input resize-none"
                         placeholder="Tell us more..."
                       />
                     </div>
@@ -227,6 +219,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </AppPageShell>
   )
 }

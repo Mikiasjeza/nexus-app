@@ -44,6 +44,7 @@
   ],
   "exclude": [
     "node_modules",
+    "nexus-app",
     "My Music",
     "My Pictures",
     "My Videos"

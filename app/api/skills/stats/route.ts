@@ -4,6 +4,7 @@ import { getSessionUserId, hasGuestPreviewSession } from '@/lib/auth/session'
 import type { SkillCategory, SkillLevel } from '@/lib/types'
 import { env } from '@/lib/config/env'
 import { guestStats } from '@/lib/mock/guest'
+import { normalizeSkillCategory } from '@/lib/skills-taxonomy'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +34,8 @@ export async function GET() {
     const skillsByLevel: Record<string, number> = {}
     let totalProgress = 0
     for (const s of skills) {
-      skillsByCategory[s.category] = (skillsByCategory[s.category] ?? 0) + 1
+      const normalizedCategory = normalizeSkillCategory(s.category)
+      skillsByCategory[normalizedCategory] = (skillsByCategory[normalizedCategory] ?? 0) + 1
       skillsByLevel[s.level] = (skillsByLevel[s.level] ?? 0) + 1
       totalProgress += s.progress
     }
