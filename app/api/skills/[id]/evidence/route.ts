@@ -12,21 +12,10 @@ import { getSessionUserId } from '@/lib/auth/session'
 import { storageService } from '@/lib/storage/upload'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
+import { MAX_UPLOAD_BYTES, validateUpload } from '@/lib/storage/validate-upload'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-const ALLOWED_MIMES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'application/pdf',
-  'text/plain',
-  'text/markdown',
-  'application/json',
-  'video/mp4',
-  'video/webm',
-]
-const ALLOWED_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|pdf|txt|md|json|mp4|webm)$/i
+// Room for the multipart envelope and the other form fields around the file.
+const MAX_REQUEST_BYTES = MAX_UPLOAD_BYTES + 64 * 1024
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -47,6 +36,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     })
     if (!skill) {
       return NextResponse.json({ error: 'Skill not found' }, { status: 404 })
+    }
+
+    // Reject oversized bodies before buffering them.
+    const contentLength = Number(request.headers.get('content-length') ?? 0)
+    if (contentLength > MAX_REQUEST_BYTES) {
+      return NextResponse.json(
+        { error: `File too large. Max size: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB` },
+        { status: 413 }
+      )
     }
 
     const formData = await request.formData()
@@ -71,25 +69,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     if (file && file.size > 0) {
-      if (file.size > MAX_FILE_SIZE) {
+      if (file.size > MAX_UPLOAD_BYTES) {
         return NextResponse.json(
-          { error: `File too large. Max size: ${MAX_FILE_SIZE / 1024 / 1024}MB` },
-          { status: 400 }
+          { error: `File too large. Max size: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB` },
+          { status: 413 }
         )
-      }
-      const mime = file.type || 'application/octet-stream'
-      if (!ALLOWED_MIMES.includes(mime) && !mime.startsWith('text/')) {
-        return NextResponse.json(
-          { error: 'Invalid file type. Allowed: images, PDF, text, video' },
-          { status: 400 }
-        )
-      }
-      if (!ALLOWED_EXTENSIONS.test(file.name)) {
-        return NextResponse.json({ error: 'Invalid file extension' }, { status: 400 })
       }
 
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
+      const buffer = Buffer.from(await file.arrayBuffer())
+      // The browser's declared type is ignored: the stored type comes from
+      // the extension, and only once the file's bytes match it.
+      const check = validateUpload(file.name, buffer)
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 400 })
+      }
+      const mime = check.mimeType
+
       let uploadResult
       try {
         uploadResult = await storageService.uploadFile(buffer, file.name, mime, `skills/${skillId}`)

@@ -8,9 +8,8 @@
  * - AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET (for S3)
  * - CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET (for Cloudinary)
  *
- * TODO: Implement file validation
+ * File type and size checks live in ./validate-upload.ts.
  * TODO: Implement virus scanning
- * TODO: Implement file size limits
  */
 
 import {
