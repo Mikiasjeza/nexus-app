@@ -11,6 +11,7 @@
 import { prisma } from '@/lib/db'
 import { checkAiAnalysisQuota } from '@/lib/plan-usage'
 import { normalizeSkillCategory } from '@/lib/skills-taxonomy'
+import { describeGitHubRepository } from '@/lib/integrations/github-evidence'
 import { aiClient } from './client'
 import { decideVerification, type EvidenceInput } from './verification'
 
@@ -38,6 +39,40 @@ export function storedEvidenceToInput(item: StoredEvidence): EvidenceInput {
     }
   }
   return { type: 'text', content: description }
+}
+
+const MAX_GITHUB_LOOKUPS = 3
+
+/** Replace GitHub repository links with what the repository actually contains. */
+async function enrichGitHubLinks(
+  evidence: EvidenceInput[],
+  userId: string
+): Promise<EvidenceInput[]> {
+  const isGitHub = (item: EvidenceInput) =>
+    item.type === 'link' && /^https?:\/\/(www\.)?github\.com\//i.test(item.metadata?.url ?? '')
+  if (!evidence.some(isGitHub)) return evidence
+
+  const connection = await prisma.oAuthConnection.findUnique({
+    where: { userId_provider: { userId, provider: 'github' } },
+    select: { providerId: true },
+  })
+  const submitterGithubId = connection?.providerId ?? null
+
+  let lookups = 0
+  return Promise.all(
+    evidence.map(async (item) => {
+      if (!isGitHub(item) || lookups >= MAX_GITHUB_LOOKUPS) return item
+      lookups += 1
+      const repository = await describeGitHubRepository(item.metadata!.url!, submitterGithubId)
+      if (!repository) return item
+      const note = item.content.trim() ? `Submitter's note: ${item.content.trim()}\n\n` : ''
+      return {
+        ...item,
+        content: `${note}${repository.details}`,
+        platformCheck: repository.authorship,
+      }
+    })
+  )
 }
 
 export type VerifySkillOutcome =
@@ -91,7 +126,7 @@ export async function verifySkill(options: {
     skill.name,
     normalizeSkillCategory(skill.category),
     skill.level,
-    evidence
+    await enrichGitHubLinks(evidence, userId)
   )
   const decision = decideVerification(result, skill.level, evidence)
   const explanation = [result.explanation, ...decision.reasons].join(' ')
