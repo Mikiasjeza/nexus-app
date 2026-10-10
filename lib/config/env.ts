@@ -66,7 +66,13 @@ export const env = {
   },
   ai: {
     provider: process.env.AI_PROVIDER || 'gemini',
-    model: process.env.AI_MODEL || 'gemini-2.5-flash',
+    // Per-provider default; OpenAI has none, so AI_MODEL must be set for it.
+    model:
+      process.env.AI_MODEL ||
+      ({ gemini: 'gemini-2.5-flash', anthropic: 'claude-opus-5-5' } as Record<string, string>)[
+        process.env.AI_PROVIDER || 'gemini'
+      ] ||
+      '',
     geminiKey: process.env.GEMINI_API_KEY || '',
     openAiKey: process.env.OPENAI_API_KEY || '',
     anthropicKey: process.env.ANTHROPIC_API_KEY || '',
@@ -148,6 +154,7 @@ export function assertAIEnv(): void {
   }
   if (env.ai.provider === 'openai') {
     getRequired('OPENAI_API_KEY')
+    getRequired('AI_MODEL')
     return
   }
   if (env.ai.provider === 'anthropic') {

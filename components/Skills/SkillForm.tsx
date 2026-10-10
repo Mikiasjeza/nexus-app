@@ -5,6 +5,7 @@ import { Skill, SkillLevel, SkillCategory } from '@/lib/types'
 import { SKILL_LEVELS, SKILL_CATEGORIES } from '@/lib/utils/constants'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
+import Link from 'next/link'
 
 interface SkillFormProps {
   skill?: Skill | null
@@ -267,18 +268,26 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
               )}
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="verified"
-                checked={formData.verified}
-                onChange={(e) => setFormData({ ...formData, verified: e.target.checked })}
-                className="h-4 w-4 rounded border-white/20 bg-black/40 text-cyan-300 focus:ring-cyan-300"
-              />
-              <label htmlFor="verified" className="ml-2 text-sm text-white/70">
-                Verified (with evidence)
-              </label>
-            </div>
+            {/* Verification is set only by the AI check on submitted evidence. */}
+            <p className="text-sm text-white/60">
+              {formData.verified ? (
+                <>
+                  <span className="text-cyan-200">Verified.</span> Changing the name, level or
+                  category removes the badge until the new claim is checked.
+                </>
+              ) : (
+                <>
+                  Not verified yet.{' '}
+                  <Link
+                    href="/verification"
+                    className="text-cyan-200 underline decoration-white/20 underline-offset-2 hover:text-cyan-100"
+                  >
+                    Add evidence
+                  </Link>{' '}
+                  to have it checked.
+                </>
+              )}
+            </p>
 
             <div className="flex gap-3 pt-4 border-t border-white/[0.08]">
               <button

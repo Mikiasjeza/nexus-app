@@ -13,9 +13,50 @@ import { storageService } from '@/lib/storage/upload'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
 import { MAX_UPLOAD_BYTES, validateUpload } from '@/lib/storage/validate-upload'
+import { verifySkill, type VerifySkillOutcome } from '@/lib/ai/verify-skill'
+import type { EvidenceInput } from '@/lib/ai/verification'
 
 // Room for the multipart envelope and the other form fields around the file.
 const MAX_REQUEST_BYTES = MAX_UPLOAD_BYTES + 64 * 1024
+
+// Upload plus AI assessment can exceed the platform default.
+export const maxDuration = 60
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value)
+    return protocol === 'http:' || protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/** Verification result as returned to the uploader. Upload succeeds either way. */
+function describeVerification(outcome: VerifySkillOutcome | { status: 'failed' }) {
+  switch (outcome.status) {
+    case 'assessed':
+      return {
+        status: 'assessed',
+        verified: outcome.verified,
+        confidenceScore: outcome.confidenceScore,
+        explanation: outcome.explanation,
+        suggestedLevel: outcome.suggestedLevel,
+        improvements: outcome.improvements,
+      }
+    case 'quota_exceeded':
+      return {
+        status: 'skipped',
+        message: `Evidence saved. Your ${outcome.plan} plan's ${outcome.limit} AI checks this month are used up, so it wasn't checked yet.`,
+      }
+    case 'failed':
+      return {
+        status: 'skipped',
+        message: 'Evidence saved, but the AI check failed. Try again from the verification page.',
+      }
+    default:
+      return { status: 'skipped', message: 'Evidence saved.' }
+  }
+}
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -57,6 +98,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'File or URL required' }, { status: 400 })
     }
 
+    const submittedEvidence: EvidenceInput[] = []
     let evidenceData: {
       skillId: string
       type: string
@@ -84,6 +126,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         return NextResponse.json({ error: check.error }, { status: 400 })
       }
       const mime = check.mimeType
+      // Text files are read by the AI directly; binaries are described by name and type.
+      if (mime.startsWith('text/') || mime === 'application/json') {
+        submittedEvidence.push({
+          type: 'code',
+          content: buffer.toString('utf8'),
+          metadata: { fileName: file.name, mimeType: mime },
+        })
+      }
 
       let uploadResult
       try {
@@ -108,9 +158,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         description: description || undefined,
       }
     } else {
-      if (!url || !url.startsWith('http')) {
+      if (!url || !isHttpUrl(url.trim())) {
         return NextResponse.json(
-          { error: 'Valid URL required (must start with http)' },
+          { error: 'Valid URL required (must start with http:// or https://)' },
           { status: 400 }
         )
       }
@@ -150,6 +200,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
     })
 
+    // Every submission is checked by the AI. A failed check never loses the upload.
+    let outcome: VerifySkillOutcome | { status: 'failed' }
+    try {
+      outcome = await verifySkill({
+        userId,
+        skillId,
+        submittedEvidence,
+        evidenceId: evidence.id,
+      })
+    } catch (verifyErr) {
+      console.error('Evidence verification error:', verifyErr)
+      outcome = { status: 'failed' }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -158,6 +222,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         url: evidence.url ?? evidence.fileUrl,
         description: evidence.description,
       },
+      verification: describeVerification(outcome),
     })
   } catch (e) {
     console.error('Evidence upload error:', e)

@@ -5,6 +5,7 @@ import { mapSkill } from '@/lib/skills-mapper'
 import { dbErrorResponse } from '@/lib/db-error'
 import { env } from '@/lib/config/env'
 import { guestSkills } from '@/lib/mock/guest'
+import { checkSkillQuota } from '@/lib/plan-usage'
 
 export async function GET() {
   try {
@@ -45,13 +46,24 @@ export async function POST(request: Request) {
       notes,
       description,
       tags = [],
-      verified = false,
       visibility = 'public',
       status = 'published',
     } = body
 
     if (!name || !level || !category) {
       return NextResponse.json({ error: 'Name, level, and category are required' }, { status: 400 })
+    }
+
+    const quota = await checkSkillQuota(userId)
+    if (!quota.allowed) {
+      return NextResponse.json(
+        {
+          error: `Your ${quota.plan} plan allows ${quota.limit} skills. Upgrade to add more.`,
+          plan: quota.plan,
+          limit: quota.limit,
+        },
+        { status: 403 }
+      )
     }
 
     const count = await prisma.skill.count({ where: { userId } })
@@ -75,7 +87,8 @@ export async function POST(request: Request) {
         notes: notes != null ? String(notes) : null,
         description: description != null ? String(description) : null,
         tags: Array.isArray(tags) ? tags : [],
-        verified: Boolean(verified),
+        // Only AI verification (lib/ai/verify-skill.ts) may set this.
+        verified: false,
         order: count,
         visibility: visibility === 'private' ? 'private' : 'public',
         status: status === 'draft' ? 'draft' : 'published',

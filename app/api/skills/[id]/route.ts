@@ -50,7 +50,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       'notes',
       'description',
       'tags',
-      'verified',
       'order',
       'visibility',
       'status',
@@ -58,6 +57,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const updates: Record<string, unknown> = {}
     for (const key of allowed) {
       if (body[key] !== undefined) updates[key] = body[key]
+    }
+    // `verified` is never client-settable. Changing what was verified (the
+    // skill itself or the claimed level) withdraws the badge until the AI
+    // re-checks the new claim.
+    const claimChanged = (['name', 'level', 'category'] as const).some(
+      (key) => updates[key] !== undefined && updates[key] !== existing[key]
+    )
+    if (claimChanged && existing.verified) {
+      updates.verified = false
     }
     if (Object.keys(updates).length === 0) {
       const withRelations = await prisma.skill.findUnique({

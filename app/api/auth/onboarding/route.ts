@@ -10,6 +10,8 @@ import { getSessionUserId } from '@/lib/auth/session'
 import { dbErrorResponse } from '@/lib/db-error'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { inferSkillCategory, normalizeSkillName } from '@/lib/skills-taxonomy'
+import { getEffectivePlan } from '@/lib/plan-usage'
+import { PLAN_INFO } from '@/lib/plans'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,6 +49,8 @@ export async function POST(request: Request) {
       new Set(skills.map(normalizeSkillName).filter(Boolean).slice(0, MAX_ONBOARDING_SKILLS))
     )
 
+    const skillLimit = PLAN_INFO[await getEffectivePlan(userId)].limits.skills
+
     const result = await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
@@ -67,6 +71,9 @@ export async function POST(request: Request) {
       for (const skillName of sanitizedSkills) {
         if (existingSkillNames.has(skillName.toLowerCase())) {
           continue
+        }
+        if (skillLimit >= 0 && nextOrder >= skillLimit) {
+          break
         }
 
         const skill = await tx.skill.create({
