@@ -95,7 +95,6 @@ In the Vercel project setup, expand **Environment Variables** and add:
 
 | Variable                | Value            |
 | ----------------------- | ---------------- |
-| `STORAGE_PROVIDER`      | `s3`             |
 | `AWS_ACCESS_KEY_ID`     | Your AWS key     |
 | `AWS_SECRET_ACCESS_KEY` | Your AWS secret  |
 | `AWS_REGION`            | `us-east-1`      |
@@ -105,7 +104,6 @@ In the Vercel project setup, expand **Environment Variables** and add:
 
 | Variable         | Value                    |
 | ---------------- | ------------------------ |
-| `EMAIL_PROVIDER` | `resend`                 |
 | `RESEND_API_KEY` | `re_...`                 |
 | `EMAIL_FROM`     | `noreply@yourdomain.com` |
 

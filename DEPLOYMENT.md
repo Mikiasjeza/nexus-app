@@ -95,7 +95,6 @@ Set these in Vercel Production environment:
 - `STRIPE_PRO_PRICE_ID` (live)
 - `STRIPE_ENTERPRISE_PRICE_ID` (live)
 - `STRIPE_WEBHOOK_SECRET` (live)
-- `EMAIL_PROVIDER=resend`
 - `RESEND_API_KEY`
 - `EMAIL_FROM`
 - `SENTRY_DSN` (recommended)

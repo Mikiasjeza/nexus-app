@@ -103,18 +103,11 @@ export function getLaunchReadinessIssues(): string[] {
     }
   }
 
-  const provider = (process.env.EMAIL_PROVIDER || 'resend').trim()
   if (!process.env.EMAIL_FROM) {
     issues.push('EMAIL_FROM is missing')
   }
-  if (provider === 'resend' && !process.env.RESEND_API_KEY) {
+  if (!process.env.RESEND_API_KEY) {
     issues.push('RESEND_API_KEY is missing')
-  }
-  if (provider === 'sendgrid' && !process.env.SENDGRID_API_KEY) {
-    issues.push('SENDGRID_API_KEY is missing')
-  }
-  if (provider !== 'resend' && provider !== 'sendgrid') {
-    issues.push(`EMAIL_PROVIDER "${provider}" is not supported`)
   }
 
   if (!process.env.STRIPE_SECRET_KEY) {

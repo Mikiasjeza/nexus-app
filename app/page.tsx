@@ -8,7 +8,6 @@ import {
   Brain,
   Shield,
   BarChart3,
-  Users,
   CheckCircle2,
   Zap,
   Network,

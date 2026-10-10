@@ -78,23 +78,14 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Contact form error:', error)
 
+    const notConfigured = error instanceof Error && error.message.startsWith('Email not configured')
     return NextResponse.json(
       {
-        error:
-          error instanceof Error &&
-          (error.message.includes('not initialized') ||
-            error.message.includes('not yet implemented'))
-            ? 'Contact inbox is not configured yet. Please use the direct support email for now.'
-            : 'Unable to send your message right now. Please try again later.',
+        error: notConfigured
+          ? 'Contact inbox is not configured yet. Please use the direct support email for now.'
+          : 'Unable to send your message right now. Please try again later.',
       },
-      {
-        status:
-          error instanceof Error &&
-          (error.message.includes('not initialized') ||
-            error.message.includes('not yet implemented'))
-            ? 503
-            : 500,
-      }
+      { status: notConfigured ? 503 : 500 }
     )
   }
 }

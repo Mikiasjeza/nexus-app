@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Skill, SkillCategory, User } from '@/lib/types'
 import { useSkills } from '@/lib/hooks/useSkills'
 import SkillGrid from '@/components/Skills/SkillGrid'

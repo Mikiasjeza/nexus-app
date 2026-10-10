@@ -1,20 +1,9 @@
 /**
- * Email Service
- *
- * Handles transactional emails (verification, password reset, etc.)
- *
- * TODO: Choose email provider (Resend or SendGrid)
- * TODO: Add API keys to .env:
- * - RESEND_API_KEY (for Resend)
- * - SENDGRID_API_KEY (for SendGrid)
- *
- * TODO: Create email templates
- * TODO: Add email queue for high volume
+ * Transactional email (verification, password reset, contact) via Resend.
+ * Needs RESEND_API_KEY and EMAIL_FROM.
  */
 
 import { Resend } from 'resend'
-
-export type EmailProvider = 'resend' | 'sendgrid'
 
 export interface EmailOptions {
   to: string
@@ -25,44 +14,20 @@ export interface EmailOptions {
 }
 
 class EmailService {
-  private provider: EmailProvider
   private resend: Resend | null = null
 
   constructor() {
-    // TODO: Make configurable via env var
-    this.provider = (process.env.EMAIL_PROVIDER as EmailProvider) || 'resend'
-
-    if (this.provider === 'resend') {
-      this.initializeResend()
-    }
-  }
-
-  private initializeResend() {
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) {
       console.warn('⚠️  RESEND_API_KEY not configured. Emails will not be sent.')
       return
     }
-
     this.resend = new Resend(apiKey)
   }
 
-  /**
-   * Send email
-   */
   async sendEmail(options: EmailOptions): Promise<void> {
-    if (this.provider === 'resend') {
-      await this.sendWithResend(options)
-    } else if (this.provider === 'sendgrid') {
-      await this.sendWithSendGrid(options)
-    } else {
-      throw new Error(`Email provider ${this.provider} not implemented`)
-    }
-  }
-
-  private async sendWithResend(options: EmailOptions): Promise<void> {
     if (!this.resend) {
-      throw new Error('Resend client not initialized')
+      throw new Error('Email not configured: set RESEND_API_KEY')
     }
 
     try {
@@ -79,23 +44,6 @@ class EmailService {
         `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`
       )
     }
-  }
-
-  private async sendWithSendGrid(options: EmailOptions): Promise<void> {
-    void options
-    // TODO: Implement SendGrid
-    // const sgMail = require('@sendgrid/mail')
-    // sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-    //
-    // await sgMail.send({
-    //   to: options.to,
-    //   from: options.from || process.env.EMAIL_FROM,
-    //   subject: options.subject,
-    //   html: options.html,
-    //   text: options.text,
-    // })
-
-    throw new Error('SendGrid not yet implemented')
   }
 
   /**

@@ -237,8 +237,13 @@ class StripeService {
           userId,
           planId: plan.id,
         },
-        // TODO: Add tax calculation
-        // automatic_tax: { enabled: true },
+        // Stripe Tax must be set up in the Stripe dashboard first (origin
+        // address, tax registrations), or checkout fails; hence the switch.
+        ...(process.env.STRIPE_AUTOMATIC_TAX === 'true' && {
+          automatic_tax: { enabled: true },
+          // Tax depends on the customer's address, so collect and save it.
+          customer_update: { address: 'auto' as const, name: 'auto' as const },
+        }),
       })
 
       return session.url || ''

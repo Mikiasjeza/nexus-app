@@ -98,7 +98,8 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
             const angle = (Math.PI / 3) * i - Math.PI / 6
             const px = cx + size * Math.cos(angle)
             const py = cy + size * Math.sin(angle)
-            i === 0 ? ctx!.moveTo(px, py) : ctx!.lineTo(px, py)
+            if (i === 0) ctx!.moveTo(px, py)
+            else ctx!.lineTo(px, py)
           }
           ctx!.closePath()
           ctx!.stroke()
@@ -205,7 +206,6 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
       window.removeEventListener('resize', resize)
     }
     // hoveredId intentionally excluded — read via ref to avoid restarting the loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, connections])
 
   const connectedToHovered = hoveredId ? getConnectedIds(hoveredId) : new Set<string>()
