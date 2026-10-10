@@ -93,6 +93,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const type = (formData.get('type') as string) || 'file'
     const description = (formData.get('description') as string) || null
     const url = (formData.get('url') as string) || null
+    // The verification page uploads first and then runs one AI check covering
+    // the file and the typed evidence, so it asks this route not to check too.
+    const deferVerification = formData.get('verify') === 'false'
 
     if (!file && !url) {
       return NextResponse.json({ error: 'File or URL required' }, { status: 400 })
@@ -200,6 +203,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
     })
 
+    const data = {
+      id: evidence.id,
+      type: evidence.type,
+      url: evidence.url ?? evidence.fileUrl,
+      description: evidence.description,
+    }
+    if (deferVerification) {
+      return NextResponse.json({ success: true, data, verification: null })
+    }
+
     // Every submission is checked by the AI. A failed check never loses the upload.
     let outcome: VerifySkillOutcome | { status: 'failed' }
     try {
@@ -216,12 +229,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({
       success: true,
-      data: {
-        id: evidence.id,
-        type: evidence.type,
-        url: evidence.url ?? evidence.fileUrl,
-        description: evidence.description,
-      },
+      data,
       verification: describeVerification(outcome),
     })
   } catch (e) {

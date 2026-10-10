@@ -19,7 +19,6 @@ export interface AnalyzeRequest {
   skillName: string
   skillLevel: SkillLevel
   evidence: EvidenceInput[]
-  provider?: AIProvider
   evidenceId?: string
 }
 

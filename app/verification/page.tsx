@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Video,
@@ -14,6 +14,8 @@ import {
   File,
   Sparkles,
   RefreshCw,
+  Upload,
+  X,
 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
@@ -30,6 +32,16 @@ import {
   SKILL_PILLAR_DETAILS,
 } from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import {
+  MAX_UPLOAD_BYTES,
+  TEXT_UPLOAD_EXTENSIONS,
+  UPLOAD_EXTENSIONS,
+  fileExtension,
+} from '@/lib/storage/upload-limits'
+
+const UPLOAD_ACCEPT = UPLOAD_EXTENSIONS.map((ext) => `.${ext}`).join(',')
+const isTextUpload = (file: File) =>
+  (TEXT_UPLOAD_EXTENSIONS as readonly string[]).includes(fileExtension(file.name))
 
 type EvidenceTypeId = 'code' | 'video' | 'document' | 'audio' | 'project'
 
@@ -211,6 +223,8 @@ export default function VerificationPage() {
   const [evidenceUrl, setEvidenceUrl] = useState('')
   const [codeSnippet, setCodeSnippet] = useState('')
   const [codeLanguage, setCodeLanguage] = useState('typescript')
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [analysisResult, setAnalysisResult] = useState<AnalysisHistoryItem | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
@@ -294,26 +308,68 @@ export default function VerificationPage() {
     router.push('/auth/login?next=/verification')
   }
 
+  const clearEvidenceFile = () => {
+    setEvidenceFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   const resetEvidenceInputs = () => {
     setEvidenceText('')
     setEvidenceUrl('')
     setCodeSnippet('')
+    clearEvidenceFile()
   }
 
-  const buildEvidencePayload = (): EvidenceInput[] => {
+  // Quick checks for instant feedback; the server re-checks the file's contents.
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    if (!file) return
+    if (!(UPLOAD_EXTENSIONS as readonly string[]).includes(fileExtension(file.name))) {
+      addToast({
+        type: 'error',
+        title: 'File type not allowed',
+        message: 'Use an image, PDF, MP4/WebM video, or a .txt, .md or .json file.',
+      })
+      clearEvidenceFile()
+      return
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      addToast({
+        type: 'error',
+        title: 'File too large',
+        message: `Files can be up to ${MAX_UPLOAD_BYTES / 1024 / 1024}MB.`,
+      })
+      clearEvidenceFile()
+      return
+    }
+    setEvidenceFile(file)
+  }
+
+  const buildEvidencePayload = async (): Promise<EvidenceInput[]> => {
     const trimmedText = evidenceText.trim()
     const trimmedUrl = evidenceUrl.trim()
     const trimmedCode = codeSnippet.trim()
     const payload: EvidenceInput[] = []
 
-    if (selectedType === 'code') {
+    // Text files are read in full; other files are stored and described.
+    if (evidenceFile && isTextUpload(evidenceFile)) {
       payload.push({
         type: 'code',
-        content: trimmedCode,
-        metadata: {
-          language: codeLanguage.trim() || undefined,
-        },
+        content: await evidenceFile.text(),
+        metadata: { fileName: evidenceFile.name },
       })
+    }
+
+    if (selectedType === 'code') {
+      if (trimmedCode) {
+        payload.push({
+          type: 'code',
+          content: trimmedCode,
+          metadata: {
+            language: codeLanguage.trim() || undefined,
+          },
+        })
+      }
 
       if (trimmedText) {
         payload.push({
@@ -373,16 +429,27 @@ export default function VerificationPage() {
     const trimmedUrl = evidenceUrl.trim()
     const trimmedCode = codeSnippet.trim()
 
-    if (selectedType === 'code' && trimmedCode.length < 20) {
+    // A text file is evidence on its own; any other file needs a short
+    // description, since the AI judges it by its name and what you say it shows.
+    if (evidenceFile && !isTextUpload(evidenceFile) && trimmedText.length < 15) {
       addToast({
         type: 'error',
-        title: 'Add more code',
-        message: 'Paste a real code sample so AI has enough proof to assess.',
+        title: 'Describe your file',
+        message: 'Say what the file shows and what your part in it was.',
       })
       return
     }
 
-    if (selectedType !== 'code' && trimmedText.length < 30) {
+    if (!evidenceFile && selectedType === 'code' && trimmedCode.length < 20) {
+      addToast({
+        type: 'error',
+        title: 'Add more code',
+        message: 'Paste a real code sample or attach a file so AI has enough proof to assess.',
+      })
+      return
+    }
+
+    if (!evidenceFile && selectedType !== 'code' && trimmedText.length < 30) {
       addToast({
         type: 'error',
         title: 'Add more detail',
@@ -409,24 +476,53 @@ export default function VerificationPage() {
       return
     }
 
-    const evidence = buildEvidencePayload()
-    if (evidence.length === 0) {
-      addToast({
-        type: 'error',
-        title: 'Evidence missing',
-        message: 'Add enough detail for the analysis to run.',
-      })
-      return
-    }
-
     try {
       setIsSubmitting(true)
+
+      const evidence = await buildEvidencePayload()
+      if (evidence.length === 0 && !evidenceFile) {
+        addToast({
+          type: 'error',
+          title: 'Evidence missing',
+          message: 'Add enough detail for the analysis to run.',
+        })
+        return
+      }
+
+      // Store the file first. The analysis below then covers it together with
+      // everything typed here, as one AI check.
+      let evidenceId: string | undefined
+      if (evidenceFile) {
+        try {
+          const upload = await skillsApi.uploadEvidence(selectedSkill.id, evidenceFile, {
+            description: trimmedText || undefined,
+            verify: false,
+          })
+          evidenceId = upload.data.id
+        } catch (uploadError) {
+          addToast({
+            type: 'error',
+            title: 'File upload failed',
+            message:
+              uploadError instanceof Error ? uploadError.message : 'The file could not be saved.',
+          })
+          return
+        }
+        if (evidence.length === 0) {
+          evidence.push({
+            type: 'file',
+            content: trimmedText,
+            metadata: { fileName: evidenceFile.name },
+          })
+        }
+      }
 
       const response = await aiApi.analyzeEvidence({
         skillId: selectedSkill.id,
         skillName: selectedSkill.name,
         skillLevel: selectedSkill.level,
         evidence,
+        evidenceId,
       })
 
       const savedAnalysis: AnalysisHistoryItem = {
@@ -451,9 +547,8 @@ export default function VerificationPage() {
       )
       setSkills((prev) =>
         prev.map((skill) =>
-          skill.id === selectedSkill.id
-            ? { ...skill, verified: response.data.verified || skill.verified }
-            : skill
+          // The latest analysis decides, so a badge can also be withdrawn.
+          skill.id === selectedSkill.id ? { ...skill, verified: response.data.verified } : skill
         )
       )
 
@@ -748,6 +843,56 @@ export default function VerificationPage() {
                     />
                   </div>
                 )}
+
+                <div>
+                  <span className="mb-2 block text-sm font-medium text-white">
+                    Attach a file (optional)
+                  </span>
+                  <input
+                    ref={fileInputRef}
+                    id="evidence-file"
+                    type="file"
+                    accept={UPLOAD_ACCEPT}
+                    onChange={handleFileChange}
+                    disabled={isSubmitting}
+                    className="peer sr-only"
+                  />
+                  {evidenceFile ? (
+                    <div className="flex min-h-[48px] items-center justify-between gap-3 rounded-xl border border-cyan-300/30 bg-cyan-300/[0.06] px-4">
+                      <span className="flex min-w-0 items-center gap-2 text-sm text-white">
+                        <File className="h-4 w-4 shrink-0 text-cyan-200" aria-hidden />
+                        <span className="truncate">{evidenceFile.name}</span>
+                        <span className="shrink-0 text-white/45">
+                          {evidenceFile.size < 1024 * 1024
+                            ? `${Math.max(1, Math.round(evidenceFile.size / 1024))}KB`
+                            : `${(evidenceFile.size / 1024 / 1024).toFixed(1)}MB`}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearEvidenceFile}
+                        disabled={isSubmitting}
+                        aria-label={`Remove ${evidenceFile.name}`}
+                        className="rounded-lg p-1 text-white/60 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="evidence-file"
+                      className="flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/40 px-4 text-sm text-white/70 transition hover:border-cyan-300/50 hover:text-white peer-focus-visible:border-cyan-300 peer-focus-visible:text-white"
+                    >
+                      <Upload className="h-4 w-4" aria-hidden />
+                      Choose a file
+                    </label>
+                  )}
+                  <p className="mt-2 text-xs text-white/45">
+                    Images, PDF, MP4/WebM video, or .txt, .md and .json, up to{' '}
+                    {MAX_UPLOAD_BYTES / 1024 / 1024}MB. The AI reads text files in full; for other
+                    files it relies on the file name and your description above.
+                  </p>
+                </div>
               </div>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">

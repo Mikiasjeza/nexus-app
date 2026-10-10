@@ -23,11 +23,13 @@ function redirectToLoginIfNeeded() {
 }
 
 export async function fetchApi<T>(path: string, options: RequestInit = {}): Promise<T> {
+  // Multipart bodies need the browser to set Content-Type (with its boundary).
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     credentials: 'include',
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,
     },
   })

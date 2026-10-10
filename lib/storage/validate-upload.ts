@@ -8,8 +8,9 @@
  */
 
 import { TextDecoder } from 'util'
+import { MAX_UPLOAD_BYTES } from './upload-limits'
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 // 10MB
+export { MAX_UPLOAD_BYTES }
 const MAX_FILE_NAME_LENGTH = 255
 
 type Format = {
