@@ -14,14 +14,14 @@ reviews:
     drafts: false
     base_branches: ["main"]
   path_instructions:
-    - path: "{app,nexus-app/app}/**/*.{ts,tsx}"
+    - path: "app/**/*.{ts,tsx}"
       instructions: |
         Review Next.js App Router code. Ensure:
         - Server vs client components are used correctly ("use client" only where needed)
         - No secrets or API keys exposed to the client
         - API routes validate input and handle errors
         - Proper loading and error states
-    - path: "{prisma,nexus-app/prisma}/**/*"
+    - path: "prisma/**/*"
       instructions: |
         Review Prisma schema and migrations for data integrity, indexes, and safe migrations.
 chat:
