@@ -28,7 +28,7 @@ export function useSkills() {
     try {
       setError(null)
       const newSkill = await skillsApi.create(skill)
-      setSkills(prev => [...prev, newSkill])
+      setSkills((prev) => [...prev, newSkill])
       return newSkill
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add skill')
@@ -40,7 +40,7 @@ export function useSkills() {
     try {
       setError(null)
       const updated = await skillsApi.update(id, updates)
-      setSkills(prev => prev.map(s => s.id === id ? updated : s))
+      setSkills((prev) => prev.map((s) => (s.id === id ? updated : s)))
       return updated
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update skill')
@@ -52,7 +52,7 @@ export function useSkills() {
     try {
       setError(null)
       await skillsApi.delete(id)
-      setSkills(prev => prev.filter(s => s.id !== id))
+      setSkills((prev) => prev.filter((s) => s.id !== id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete skill')
       throw err

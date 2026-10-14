@@ -1,18 +1,40 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Skill, User } from '@/lib/types'
+import { Skill, SkillCategory, User } from '@/lib/types'
 import { useSkills } from '@/lib/hooks/useSkills'
 import SkillGrid from '@/components/Skills/SkillGrid'
 import SkillForm from '@/components/Skills/SkillForm'
-import { Plus, Filter, Search, Grid, List } from 'lucide-react'
+import Modal from '@/components/UI/Modal'
+import {
+  Plus,
+  Filter,
+  Search,
+  Grid,
+  List,
+  Code,
+  Palette,
+  MessageSquare,
+  Briefcase,
+  TrendingUp,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SKILL_CATEGORIES, SKILL_LEVELS } from '@/lib/utils/constants'
+import { CATEGORY_COLORS, SKILL_CATEGORIES, SKILL_LEVELS } from '@/lib/utils/constants'
 import Loader from '@/components/UI/Loader'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import { easing } from '@/lib/utils/animations'
 import { authApi } from '@/lib/api'
+import { SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import AppPageShell from '@/components/Layout/AppPageShell'
+
+const pillarIcons: Record<SkillCategory, React.ReactNode> = {
+  'Technical Skills': <Code className="w-5 h-5" />,
+  'Creative Skills': <Palette className="w-5 h-5" />,
+  'Communication Skills': <MessageSquare className="w-5 h-5" />,
+  'Professional Skills': <Briefcase className="w-5 h-5" />,
+  'Learning & Growth': <TrendingUp className="w-5 h-5" />,
+}
 
 export default function SkillsPage() {
   const { skills, loading, addSkill, updateSkill, deleteSkill } = useSkills()
@@ -25,10 +47,14 @@ export default function SkillsPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const isGuestPreview = user?.id === 'guest-user'
 
   useEffect(() => {
-    authApi.getCurrentUser().then(setUser).catch(() => setUser(null))
+    authApi
+      .getCurrentUser()
+      .then(setUser)
+      .catch(() => setUser(null))
   }, [])
 
   const showGuestPreviewMessage = () => {
@@ -86,23 +112,27 @@ export default function SkillsPage() {
       showGuestPreviewMessage()
       return
     }
-    const skill = skills.find(s => s.id === id)
-    if (window.confirm(`Are you sure you want to delete "${skill?.name || 'this skill'}"?`)) {
-      try {
-        await deleteSkill(id)
-        addToast({
-          type: 'success',
-          title: 'Skill Deleted',
-          message: 'The skill has been removed from your passport.',
-        })
-      } catch (error) {
-        console.error('Failed to delete skill:', error)
-        addToast({
-          type: 'error',
-          title: 'Error',
-          message: 'Failed to delete skill. Please try again.',
-        })
-      }
+    setDeleteConfirmId(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return
+    const id = deleteConfirmId
+    setDeleteConfirmId(null)
+    try {
+      await deleteSkill(id)
+      addToast({
+        type: 'success',
+        title: 'Skill Deleted',
+        message: 'The skill has been removed from your passport.',
+      })
+    } catch (error) {
+      console.error('Failed to delete skill:', error)
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to delete skill. Please try again.',
+      })
     }
   }
 
@@ -119,15 +149,24 @@ export default function SkillsPage() {
     )
   }
 
-  const filteredSkills = skills.filter(skill => {
-    const matchesSearch = searchQuery === '' || skill.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSkills = skills.filter((skill) => {
+    const matchesSearch =
+      searchQuery === '' || skill.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = filterCategory === '' || skill.category === filterCategory
     const matchesLevel = filterLevel === '' || skill.level === filterLevel
     return matchesSearch && matchesCategory && matchesLevel
   })
 
+  const pillarCounts = skills.reduce(
+    (acc, skill) => {
+      acc[skill.category] = (acc[skill.category] ?? 0) + 1
+      return acc
+    },
+    {} as Record<SkillCategory, number>
+  )
+
   return (
-    <div className="aurora-shell min-h-screen bg-black">
+    <AppPageShell className="min-h-screen bg-black">
       <div className="page-shell">
         {/* Header */}
         <motion.div
@@ -145,7 +184,8 @@ export default function SkillsPage() {
                   Skills
                 </h1>
                 <p className="text-base md:text-lg text-white/68 max-w-[36ch] md:max-w-2xl">
-                  Turn scattered experience into a vivid, verified portfolio that shows momentum, depth, and proof.
+                  Turn scattered experience into a vivid skill passport organized around what you
+                  build, create, explain, lead, and improve over time.
                 </p>
               </div>
 
@@ -179,11 +219,19 @@ export default function SkillsPage() {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mt-6">
               {[
                 { label: 'Skills tracked', value: skills.length },
-                { label: 'Verified signals', value: skills.filter((skill) => skill.verified).length },
-                { label: 'Categories', value: new Set(skills.map((skill) => skill.category)).size },
+                {
+                  label: 'Verified signals',
+                  value: skills.filter((skill) => skill.verified).length,
+                },
+                {
+                  label: 'Pillars represented',
+                  value: new Set(skills.map((skill) => skill.category)).size,
+                },
               ].map((item) => (
                 <div key={item.label} className="insight-card px-4 py-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">{item.label}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {item.label}
+                  </div>
                   <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
                 </div>
               ))}
@@ -195,18 +243,38 @@ export default function SkillsPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.18, ease: easing.primary }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 md:mb-8"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5 mb-6 md:mb-8"
         >
-          {['Track', 'Verify', 'Share'].map((item) => (
-            <div key={item} className="insight-card px-4 py-3 text-sm text-white/72 text-center">
-              {item}
-            </div>
-          ))}
+          {SKILL_PILLAR_DETAILS.map((pillar) => {
+            const color = CATEGORY_COLORS[pillar.category]
+            return (
+              <div
+                key={pillar.category}
+                className="insight-card px-4 py-4"
+                style={{ borderColor: `${color}30`, boxShadow: `inset 0 0 0 1px ${color}15` }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    {pillar.shortLabel}
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-2 text-white">
+                    {pillarIcons[pillar.category]}
+                  </div>
+                </div>
+                <div className="mt-3 text-base font-semibold text-white">{pillar.category}</div>
+                <p className="mt-2 text-sm text-white/62">{pillar.summary}</p>
+                <div className="mt-4 text-2xl font-semibold text-white">
+                  {pillarCounts[pillar.category] ?? 0}
+                </div>
+              </div>
+            )
+          })}
         </motion.div>
 
         {isGuestPreview && (
           <div className="mb-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
-            You are browsing a guest preview. Sign in or create an account to add, edit, and delete skills.
+            You are browsing a guest preview. Sign in or create an account to add, edit, and delete
+            skills.
           </div>
         )}
 
@@ -259,7 +327,8 @@ export default function SkillsPage() {
             </button>
           </div>
           <div className="text-sm text-white/60">
-            <span className="font-medium text-white">{skills.length}</span> {skills.length === 1 ? 'skill' : 'skills'}
+            <span className="font-medium text-white">{skills.length}</span>{' '}
+            {skills.length === 1 ? 'skill' : 'skills'}
           </div>
         </motion.div>
 
@@ -271,26 +340,26 @@ export default function SkillsPage() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="mb-8 p-6 border border-black/10 dark:border-white/10 bg-white/75 dark:bg-black/50"
+              className="mb-8 insight-card p-6"
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-black dark:text-white">Filters</h3>
+                <h3 className="text-lg font-bold text-white">Filters</h3>
                 <button
                   onClick={clearFilters}
-                  className="min-h-[44px] px-2 text-sm text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors"
+                  className="min-h-[44px] px-2 text-sm text-white/55 hover:text-white transition-colors"
                 >
                   Clear all
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
+                  <label className="mb-3 block text-sm font-medium uppercase tracking-wider text-white">
                     Category
                   </label>
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
-                    className="w-full px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                    className="w-full border border-white/10 bg-black/40 px-4 py-3 text-white focus:border-cyan-300/60 focus:outline-none transition-colors"
                   >
                     <option value="">All Categories</option>
                     {SKILL_CATEGORIES.map((cat) => (
@@ -301,13 +370,13 @@ export default function SkillsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-black dark:text-white mb-3 uppercase tracking-wider">
+                  <label className="mb-3 block text-sm font-medium uppercase tracking-wider text-white">
                     Level
                   </label>
                   <select
                     value={filterLevel}
                     onChange={(e) => setFilterLevel(e.target.value)}
-                    className="w-full px-4 py-3 border border-black/10 dark:border-white/10 bg-white dark:bg-black text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                    className="w-full border border-white/10 bg-black/40 px-4 py-3 text-white focus:border-cyan-300/60 focus:outline-none transition-colors"
                   >
                     <option value="">All Levels</option>
                     {SKILL_LEVELS.map((level) => (
@@ -339,7 +408,40 @@ export default function SkillsPage() {
             }}
           />
         )}
+
+        <Modal
+          isOpen={!!deleteConfirmId}
+          onClose={() => setDeleteConfirmId(null)}
+          title="Delete skill"
+          size="sm"
+        >
+          <div className="space-y-5">
+            <p className="text-sm text-white/60 leading-relaxed">
+              Are you sure you want to delete{' '}
+              <span className="font-semibold text-white">
+                {skills.find((s) => s.id === deleteConfirmId)?.name ?? 'this skill'}
+              </span>
+              ? This cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="rounded-lg border border-white/10 px-4 py-2 text-sm text-white/65 transition-colors hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

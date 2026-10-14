@@ -51,7 +51,9 @@ export function getMetadataBase(): URL {
 
 export const env = {
   mode,
-  isGuestMode: process.env.GUEST_MODE === 'true' || (mode !== 'production' && process.env.GUEST_MODE !== 'false'),
+  isGuestMode:
+    process.env.GUEST_MODE === 'true' ||
+    (mode !== 'production' && process.env.GUEST_MODE !== 'false'),
   isProd: mode === 'production',
   get appUrl() {
     return getAppUrl()
@@ -63,19 +65,22 @@ export const env = {
     enterprisePriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || '',
   },
   ai: {
-    provider: process.env.AI_PROVIDER || 'openai',
-    model: process.env.AI_MODEL || 'gpt-4-turbo-preview',
+    provider: process.env.AI_PROVIDER || 'gemini',
+    // Per-provider default; OpenAI has none, so AI_MODEL must be set for it.
+    model:
+      process.env.AI_MODEL ||
+      ({ gemini: 'gemini-2.5-flash', anthropic: 'claude-opus-5-5' } as Record<string, string>)[
+        process.env.AI_PROVIDER || 'gemini'
+      ] ||
+      '',
+    geminiKey: process.env.GEMINI_API_KEY || '',
     openAiKey: process.env.OPENAI_API_KEY || '',
     anthropicKey: process.env.ANTHROPIC_API_KEY || '',
   },
 }
 
 export function getSupportInbox(): string {
-  return (
-    process.env.CONTACT_EMAIL ||
-    process.env.EMAIL_FROM ||
-    'support@nexus.ai'
-  ).trim()
+  return (process.env.CONTACT_EMAIL || process.env.EMAIL_FROM || 'support@nexus.ai').trim()
 }
 
 export function getLaunchReadinessIssues(): string[] {
@@ -98,18 +103,11 @@ export function getLaunchReadinessIssues(): string[] {
     }
   }
 
-  const provider = (process.env.EMAIL_PROVIDER || 'resend').trim()
   if (!process.env.EMAIL_FROM) {
     issues.push('EMAIL_FROM is missing')
   }
-  if (provider === 'resend' && !process.env.RESEND_API_KEY) {
+  if (!process.env.RESEND_API_KEY) {
     issues.push('RESEND_API_KEY is missing')
-  }
-  if (provider === 'sendgrid' && !process.env.SENDGRID_API_KEY) {
-    issues.push('SENDGRID_API_KEY is missing')
-  }
-  if (provider !== 'resend' && provider !== 'sendgrid') {
-    issues.push(`EMAIL_PROVIDER "${provider}" is not supported`)
   }
 
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -143,8 +141,13 @@ export function assertStripeWebhookEnv(): void {
 }
 
 export function assertAIEnv(): void {
+  if (env.ai.provider === 'gemini') {
+    getRequired('GEMINI_API_KEY')
+    return
+  }
   if (env.ai.provider === 'openai') {
     getRequired('OPENAI_API_KEY')
+    getRequired('AI_MODEL')
     return
   }
   if (env.ai.provider === 'anthropic') {

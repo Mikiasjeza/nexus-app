@@ -16,7 +16,10 @@ export class AppError extends Error {
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string, public field?: string) {
+  constructor(
+    message: string,
+    public field?: string
+  ) {
     super(message, 400, 'VALIDATION_ERROR')
   }
 }
@@ -39,7 +42,11 @@ export class ForbiddenError extends AppError {
   }
 }
 
-export function handleError(error: unknown): { message: string; statusCode: number; code?: string } {
+export function handleError(error: unknown): {
+  message: string
+  statusCode: number
+  code?: string
+} {
   if (error instanceof AppError) {
     logger.error(error.message, error)
     return {
@@ -52,9 +59,8 @@ export function handleError(error: unknown): { message: string; statusCode: numb
   if (error instanceof Error) {
     logger.error('Unexpected error', error)
     return {
-      message: process.env.NODE_ENV === 'production' 
-        ? 'An unexpected error occurred' 
-        : error.message,
+      message:
+        process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : error.message,
       statusCode: 500,
       code: 'INTERNAL_ERROR',
     }

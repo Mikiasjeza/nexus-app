@@ -24,12 +24,14 @@ Your job is to make things feel **inevitable, calm, and intelligent**.
 ## Product Identity Rules (Non-Negotiable)
 
 ### This product should feel:
+
 - Quietly confident
 - Intelligent but not loud
 - Minimal but not empty
 - Alive but never busy
 
 ### Avoid:
+
 - Flashy animations
 - Obvious "AI gimmicks"
 - Overuse of gradients
@@ -37,6 +39,7 @@ Your job is to make things feel **inevitable, calm, and intelligent**.
 - Hard edges or abrupt transitions
 
 ### Default to:
+
 - Subtle motion
 - Soft easing
 - Negative space
@@ -49,6 +52,7 @@ Your job is to make things feel **inevitable, calm, and intelligent**.
 **Motion must have meaning.**
 
 ### Allowed reasons for motion:
+
 - Progress
 - Focus
 - Hierarchy
@@ -56,12 +60,14 @@ Your job is to make things feel **inevitable, calm, and intelligent**.
 - Growth
 
 ### Forbidden reasons for motion:
+
 - Decoration
 - "Looks cool"
 - Filler
 - Trend-chasing
 
 ### Motion rules:
+
 - No animation under 200ms unless micro-interaction
 - No animation over 700ms
 - Use easing: `cubic-bezier(0.22, 1, 0.36, 1)`
@@ -75,16 +81,19 @@ Your job is to make things feel **inevitable, calm, and intelligent**.
 ## AI Integration Rules
 
 ### AI must be:
+
 - Useful before impressive
 - Observable without explanation
 - Calm, not chatty
 
 ### Do NOT:
+
 - Add a chatbot unless explicitly requested
 - Fake intelligence with hardcoded responses
 - Pretend something is AI if it isn't
 
 ### DO:
+
 - Surface AI via:
   - Predictions
   - Scoring
@@ -93,6 +102,7 @@ Your job is to make things feel **inevitable, calm, and intelligent**.
   - Subtle state changes
 
 ### AI should feel like:
+
 > "A silent analyst working in the background."
 
 ---
@@ -125,15 +135,18 @@ Your job is to make things feel **inevitable, calm, and intelligent**.
 ## Development Behavior
 
 ### Before implementing anything:
+
 - Briefly explain why it should exist
 - Explain what would happen if it didn't exist
 - State how it reinforces the product's core idea
 
 ### When uncertain:
+
 - Ask one clarifying question max
 - Otherwise make a strong, defensible decision
 
 ### If a request conflicts with taste:
+
 Push back respectfully and propose a better alternative.
 
 **You are allowed to say: "I would not build this yet."**
@@ -145,6 +158,7 @@ Push back respectfully and propose a better alternative.
 Success is not feature count.
 
 Success is:
+
 - Immediate comprehension
 - Emotional confidence
 - Desire to explore

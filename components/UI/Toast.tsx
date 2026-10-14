@@ -36,14 +36,7 @@ const iconColors = {
   info: 'text-blue-600 dark:text-blue-400',
 }
 
-export default function Toast({
-  id,
-  type,
-  title,
-  message,
-  duration = 5000,
-  onClose,
-}: ToastProps) {
+export default function Toast({ id, type, title, message, duration = 5000, onClose }: ToastProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose(id)
@@ -65,11 +58,7 @@ export default function Toast({
         <Icon className={`w-5 h-5 flex-shrink-0 ${iconColors[type]}`} />
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-sm">{title}</h4>
-          {message && (
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              {message}
-            </p>
-          )}
+          {message && <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{message}</p>}
         </div>
         <button
           onClick={() => onClose(id)}
@@ -78,7 +67,7 @@ export default function Toast({
           <X className="w-4 h-4" />
         </button>
       </div>
-      
+
       <motion.div
         initial={{ scaleX: 1 }}
         animate={{ scaleX: 0 }}

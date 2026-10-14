@@ -15,11 +15,11 @@ interface FadeInOnScrollProps extends Omit<MotionProps, 'children'> {
  * Uses scroll-scrubbed motion where possible
  * Respects prefers-reduced-motion
  */
-export default function FadeInOnScroll({ 
-  children, 
-  className = '', 
+export default function FadeInOnScroll({
+  children,
+  className = '',
   delay = 0,
-  ...props 
+  ...props
 }: FadeInOnScrollProps) {
   return (
     <motion.div

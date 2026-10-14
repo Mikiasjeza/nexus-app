@@ -5,11 +5,7 @@ import { motion } from 'framer-motion'
 export default function Loader() {
   return (
     <div className="flex items-center justify-center p-8">
-      <motion.div
-        className="flex space-x-2"
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div className="flex space-x-2" initial="hidden" animate="visible">
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}

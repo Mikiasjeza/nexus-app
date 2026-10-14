@@ -31,7 +31,7 @@ export default function SkillGrid({
       const query = searchQuery.toLowerCase()
       const matchesName = skill.name.toLowerCase().includes(query)
       const matchesCategory = skill.category.toLowerCase().includes(query)
-      const matchesTags = skill.tags?.some(tag => tag.toLowerCase().includes(query))
+      const matchesTags = skill.tags?.some((tag) => tag.toLowerCase().includes(query))
       const matchesDescription = skill.description?.toLowerCase().includes(query)
       if (!matchesName && !matchesCategory && !matchesTags && !matchesDescription) return false
     }
@@ -49,7 +49,9 @@ export default function SkillGrid({
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-neutral-900/50 border border-neutral-800/50 mb-6">
           <Circle className="w-10 h-10 text-neutral-600" />
         </div>
-        <p className="text-xl font-semibold text-neutral-200 mb-2 tracking-tight">No skills found</p>
+        <p className="text-xl font-semibold text-neutral-200 mb-2 tracking-tight">
+          No skills found
+        </p>
         <p className="text-neutral-400 font-light max-w-md mx-auto">
           {filterCategory || filterLevel
             ? 'Try adjusting your filters to see more results'

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { getSessionUserId } from '@/lib/auth/session'
 import { stripeService } from '@/lib/integrations/stripe'
 
@@ -16,10 +17,16 @@ export async function POST(request: Request) {
     const url = await stripeService.createBillingPortalSession(userId, returnUrl)
     return NextResponse.json({ url })
   } catch (e) {
+    const message = e instanceof Error ? e.message : 'Unknown error'
+    Sentry.logger.error('Stripe billing portal failed', {
+      route: 'api/stripe/portal',
+      gateway: 'stripe',
+      errorMessage: message,
+    })
     return NextResponse.json(
       {
         error: 'Billing portal failed',
-        message: e instanceof Error ? e.message : 'Unknown error',
+        message,
       },
       { status: 400 }
     )

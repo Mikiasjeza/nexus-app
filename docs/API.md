@@ -26,6 +26,7 @@ Authorization: Bearer <token>
 Check application health status.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -43,6 +44,7 @@ Check application health status.
 Get application version information.
 
 **Response:**
+
 ```json
 {
   "version": "1.0.0",
@@ -58,13 +60,14 @@ Get application version information.
 Get all skills for the authenticated user.
 
 **Response:**
+
 ```json
 [
   {
     "id": "1",
     "name": "React Development",
     "level": "advanced",
-    "category": "Technical",
+    "category": "Technical Skills",
     "progress": 85,
     "verified": true,
     "createdAt": "2024-01-01T00:00:00.000Z",
@@ -78,11 +81,12 @@ Get all skills for the authenticated user.
 Create a new skill.
 
 **Request Body:**
+
 ```json
 {
   "name": "TypeScript",
   "level": "intermediate",
-  "category": "Technical",
+  "category": "Technical Skills",
   "progress": 60,
   "description": "TypeScript development skills",
   "tags": ["programming", "typescript"]
@@ -94,6 +98,7 @@ Create a new skill.
 Update a skill.
 
 **Request Body:**
+
 ```json
 {
   "progress": 70,
@@ -112,6 +117,7 @@ Delete a skill.
 Login with email and password.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -124,6 +130,7 @@ Login with email and password.
 Register a new user.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -141,6 +148,7 @@ Logout current session.
 Request password reset.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com"
@@ -152,6 +160,7 @@ Request password reset.
 Reset password with token.
 
 **Request Body:**
+
 ```json
 {
   "token": "reset-token",
@@ -191,6 +200,7 @@ API endpoints are rate limited to prevent abuse:
 - Other endpoints: 100 requests per minute
 
 Rate limit headers:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -206,6 +216,7 @@ GET /api/skills?page=1&limit=20
 ```
 
 **Response:**
+
 ```json
 {
   "data": [...],
@@ -223,7 +234,7 @@ GET /api/skills?page=1&limit=20
 List endpoints support filtering and sorting:
 
 ```
-GET /api/skills?category=Technical&level=advanced&sort=progress&order=desc
+GET /api/skills?category=Technical%20Skills&level=advanced&sort=progress&order=desc
 ```
 
 ## Webhooks
@@ -238,4 +249,4 @@ Webhooks can be configured to receive events:
 
 ---
 
-*Note: This is a mock API structure. When the backend is implemented, these endpoints will be available.*
+_Note: This is a mock API structure. When the backend is implemented, these endpoints will be available._

@@ -12,6 +12,7 @@ import { getSessionUserId } from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { mapSkill } from '@/lib/skills-mapper'
 import { dbErrorResponse } from '@/lib/db-error'
+import { SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,33 +26,56 @@ function escapeCsv(val: unknown): string {
 }
 
 function generateCSV(
-  skills: { name: string; level: string; category: string; progress: number; createdAt: Date; updatedAt: Date }[],
-  activities: { type: string; skillName: string | null; message: string; timestamp: Date }[]
+  skills: {
+    name: string
+    level: string
+    category: string
+    progress: number
+    createdAt: string
+    updatedAt: string
+  }[],
+  activities: { type: string; skillName: string | null; message: string; timestamp: Date }[],
+  summary: {
+    totalSkills: number
+    verifiedSkills: number
+    averageProgress: number
+    pillarCounts: Record<string, number>
+  }
 ): string {
-  const skillHeaders = ['Skill Name', 'Level', 'Category', 'Progress', 'Created At', 'Updated At']
-  const skillRows = skills.map(s => [
+  const skillHeaders = ['Skill Name', 'Level', 'Pillar', 'Progress', 'Created At', 'Updated At']
+  const skillRows = skills.map((s) => [
     escapeCsv(s.name),
     escapeCsv(s.level),
     escapeCsv(s.category),
     escapeCsv(s.progress),
-    escapeCsv(s.createdAt.toISOString()),
-    escapeCsv(s.updatedAt.toISOString()),
+    escapeCsv(s.createdAt),
+    escapeCsv(s.updatedAt),
   ])
   const activityHeaders = ['Type', 'Skill', 'Message', 'Timestamp']
-  const activityRows = activities.map(a => [
+  const activityRows = activities.map((a) => [
     escapeCsv(a.type),
     escapeCsv(a.skillName),
     escapeCsv(a.message),
     escapeCsv(a.timestamp.toISOString()),
   ])
   return [
+    'Summary',
+    'Total Skills,Verified Skills,Average Progress',
+    `${summary.totalSkills},${summary.verifiedSkills},${summary.averageProgress}`,
+    '',
+    'Pillars',
+    'Pillar,Count',
+    ...Object.entries(summary.pillarCounts).map(
+      ([pillar, count]) => `${escapeCsv(pillar)},${escapeCsv(count)}`
+    ),
+    '',
     'Skills',
     skillHeaders.join(','),
-    ...skillRows.map(r => r.join(',')),
+    ...skillRows.map((r) => r.join(',')),
     '',
     'Activities',
     activityHeaders.join(','),
-    ...activityRows.map(r => r.join(',')),
+    ...activityRows.map((r) => r.join(',')),
   ].join('\n')
 }
 
@@ -86,9 +110,25 @@ export async function GET(request: NextRequest) {
     ])
 
     const mappedSkills = skills.map(mapSkill)
+    const summary = {
+      totalSkills: mappedSkills.length,
+      verifiedSkills: mappedSkills.filter((skill) => skill.verified).length,
+      averageProgress:
+        mappedSkills.length > 0
+          ? Math.round(
+              mappedSkills.reduce((sum, skill) => sum + skill.progress, 0) / mappedSkills.length
+            )
+          : 0,
+      pillarCounts: Object.fromEntries(
+        SKILL_PILLAR_DETAILS.map((pillar) => [
+          pillar.category,
+          mappedSkills.filter((skill) => skill.category === pillar.category).length,
+        ])
+      ),
+    }
 
     if (format === 'csv') {
-      const csv = generateCSV(skills, activities)
+      const csv = generateCSV(mappedSkills, activities, summary)
       return new NextResponse(csv, {
         headers: {
           'Content-Type': 'text/csv',
@@ -100,8 +140,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         exportedAt: new Date().toISOString(),
+        summary,
         skills: mappedSkills,
-        activities: activities.map(a => ({
+        activities: activities.map((a) => ({
           id: a.id,
           type: a.type,
           skillId: a.skillId,

@@ -5,10 +5,11 @@ import { mapSkill } from '@/lib/skills-mapper'
 import { dbErrorResponse } from '@/lib/db-error'
 import { env } from '@/lib/config/env'
 import { guestSkills } from '@/lib/mock/guest'
+import { checkSkillQuota } from '@/lib/plan-usage'
 
 export async function GET() {
   try {
-    if (env.isGuestMode || await hasGuestPreviewSession()) {
+    if (env.isGuestMode || (await hasGuestPreviewSession())) {
       return NextResponse.json(guestSkills)
     }
 
@@ -25,10 +26,7 @@ export async function GET() {
     return NextResponse.json(skills.map(mapSkill))
   } catch (e) {
     console.error('Skills list error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load skills' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load skills' }, { status: 500 })
   }
 }
 
@@ -48,16 +46,23 @@ export async function POST(request: Request) {
       notes,
       description,
       tags = [],
-      verified = false,
       visibility = 'public',
       status = 'published',
-      evidence = [],
     } = body
 
     if (!name || !level || !category) {
+      return NextResponse.json({ error: 'Name, level, and category are required' }, { status: 400 })
+    }
+
+    const quota = await checkSkillQuota(userId)
+    if (!quota.allowed) {
       return NextResponse.json(
-        { error: 'Name, level, and category are required' },
-        { status: 400 }
+        {
+          error: `Your ${quota.plan} plan allows ${quota.limit} skills. Upgrade to add more.`,
+          plan: quota.plan,
+          limit: quota.limit,
+        },
+        { status: 403 }
       )
     }
 
@@ -69,10 +74,7 @@ export async function POST(request: Request) {
       },
     })
     if (duplicate) {
-      return NextResponse.json(
-        { error: 'A skill with this name already exists' },
-        { status: 409 }
-      )
+      return NextResponse.json({ error: 'A skill with this name already exists' }, { status: 409 })
     }
 
     const skill = await prisma.skill.create({
@@ -85,7 +87,8 @@ export async function POST(request: Request) {
         notes: notes != null ? String(notes) : null,
         description: description != null ? String(description) : null,
         tags: Array.isArray(tags) ? tags : [],
-        verified: Boolean(verified),
+        // Only AI verification (lib/ai/verify-skill.ts) may set this.
+        verified: false,
         order: count,
         visibility: visibility === 'private' ? 'private' : 'public',
         status: status === 'draft' ? 'draft' : 'published',
@@ -120,9 +123,6 @@ export async function POST(request: Request) {
     console.error('Skill create error:', e)
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
-    return NextResponse.json(
-      { error: 'Failed to create skill' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create skill' }, { status: 500 })
   }
 }

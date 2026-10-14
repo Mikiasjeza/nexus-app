@@ -8,10 +8,7 @@ import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params
     if (!slug) {
@@ -46,9 +43,6 @@ export async function GET(
     })
   } catch (e) {
     console.error('Company get error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load company' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load company' }, { status: 500 })
   }
 }

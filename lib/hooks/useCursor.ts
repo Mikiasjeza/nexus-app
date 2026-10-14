@@ -30,8 +30,10 @@ export function useCursor() {
 
     const handleMouseEnter = (e: MouseEvent) => {
       const target = e.target as Element
-      const isInteractive = target.matches('button, a, input, textarea, select, [role="button"], [data-interactive]')
-      
+      const isInteractive = target.matches(
+        'button, a, input, textarea, select, [role="button"], [data-interactive]'
+      )
+
       setCursorState((prev) => ({
         ...prev,
         isHovering: isInteractive,
@@ -69,7 +71,7 @@ export function useMagneticEffect(strength: number = 0.3) {
       const rect = e.currentTarget.getBoundingClientRect()
       const centerX = rect.left + rect.width / 2
       const centerY = rect.top + rect.height / 2
-      
+
       const distanceX = (e.clientX - centerX) * strength
       const distanceY = (e.clientY - centerY) * strength
 

@@ -8,31 +8,26 @@ interface PageTransitionProps {
   children: ReactNode
 }
 
+/** Avoid `filter: blur()` here — it forces expensive repaints on every navigation. */
 const pageVariants = {
   initial: {
-    opacity: 0.72,
-    y: 16,
-    scale: 0.992,
-    filter: 'blur(4px)',
+    opacity: 0.85,
+    y: 10,
   },
   animate: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    filter: 'blur(0px)',
   },
   exit: {
-    opacity: 0.82,
-    y: -10,
-    scale: 0.995,
-    filter: 'blur(3px)',
+    opacity: 0.92,
+    y: -6,
   },
 }
 
 const pageTransition = {
   type: 'tween' as const,
   ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
-  duration: 0.45,
+  duration: 0.28,
 }
 
 export default function PageTransition({ children }: PageTransitionProps) {
@@ -43,7 +38,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
     setIsMounting(false)
   }, [])
 
-  // Don't animate on initial mount
   if (isMounting) {
     return <>{children}</>
   }

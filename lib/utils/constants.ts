@@ -3,15 +3,11 @@ import { SkillLevel, SkillCategory } from '../types'
 export const SKILL_LEVELS: SkillLevel[] = ['beginner', 'intermediate', 'advanced', 'expert']
 
 export const SKILL_CATEGORIES: SkillCategory[] = [
-  'Technical',
-  'Creative',
-  'Leadership',
-  'Communication',
-  'Business',
-  'Design',
-  'Data',
-  'Marketing',
-  'Other',
+  'Technical Skills',
+  'Creative Skills',
+  'Communication Skills',
+  'Professional Skills',
+  'Learning & Growth',
 ]
 
 export const LEVEL_COLORS: Record<SkillLevel, string> = {
@@ -29,15 +25,11 @@ export const LEVEL_LABELS: Record<SkillLevel, string> = {
 }
 
 export const CATEGORY_COLORS: Record<SkillCategory, string> = {
-  Technical: '#0ea5e9',
-  Creative: '#ec4899',
-  Leadership: '#f59e0b',
-  Communication: '#10b981',
-  Business: '#6366f1',
-  Design: '#8b5cf6',
-  Data: '#06b6d4',
-  Marketing: '#ef4444',
-  Other: '#64748b',
+  'Technical Skills': '#0ea5e9',
+  'Creative Skills': '#ec4899',
+  'Communication Skills': '#10b981',
+  'Professional Skills': '#6366f1',
+  'Learning & Growth': '#f59e0b',
 }
 
 export const ANIMATION_DURATION = {

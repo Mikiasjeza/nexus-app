@@ -5,11 +5,13 @@
 ## Quick Start
 
 1. **Install Dependencies**
+
    ```bash
    npm install
    ```
 
 2. **Run Development Server**
+
    ```bash
    npm run dev
    ```
@@ -22,11 +24,13 @@
 If you see TypeScript errors about missing modules (`react`, `lucide-react`, `next/link`), it means dependencies haven't been installed yet.
 
 **Solution:**
+
 ```bash
 npm install
 ```
 
 This will install all required dependencies including:
+
 - React and React DOM
 - Next.js
 - TypeScript types
@@ -51,6 +55,7 @@ All dependencies are listed in `package.json`. Key packages include:
 ## After Installation
 
 Once dependencies are installed, TypeScript errors should resolve automatically. The IDE should recognize:
+
 - React types
 - Next.js types
 - All imported modules

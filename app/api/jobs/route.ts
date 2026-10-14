@@ -55,10 +55,7 @@ export async function GET(request: Request) {
     })
   } catch (e) {
     console.error('Jobs list error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load jobs' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load jobs' }, { status: 500 })
   }
 }
 
@@ -122,9 +119,6 @@ export async function POST(request: Request) {
     })
   } catch (e) {
     console.error('Job create error:', e)
-    return NextResponse.json(
-      { error: 'Failed to create job' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create job' }, { status: 500 })
   }
 }

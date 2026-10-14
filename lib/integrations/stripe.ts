@@ -6,79 +6,25 @@ import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@prisma/client'
 import { assertStripeEnv, assertStripeWebhookEnv, env } from '@/lib/config/env'
+import { PLAN_INFO, type PlanInfo, type SubscriptionPlan } from '@/lib/plans'
 
 export const stripe = new Stripe(env.stripe.secretKey, {
   apiVersion: '2023-10-16',
   typescript: true,
 })
 
-export type SubscriptionPlan = 'free' | 'pro' | 'enterprise'
+export type { SubscriptionPlan }
 
-export interface PlanDetails {
-  id: SubscriptionPlan
-  name: string
+export interface PlanDetails extends PlanInfo {
   priceId: string // Stripe Price ID
-  price: number // Monthly price in cents
-  features: string[]
-  limits: {
-    skills: number
-    aiAnalyses: number
-    evidenceUploads: number
-  }
 }
 
+// Display data (price, features, limits) lives in lib/plans.ts so the pricing
+// page and checkout can never disagree.
 export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
-  free: {
-    id: 'free',
-    name: 'Free',
-    priceId: '', // No Stripe price for free plan
-    price: 0,
-    features: [
-      'Up to 5 skills',
-      'Basic analytics',
-      'Public profile',
-    ],
-    limits: {
-      skills: 5,
-      aiAnalyses: 0, // No AI analysis on free plan
-      evidenceUploads: 10,
-    },
-  },
-  pro: {
-    id: 'pro',
-    name: 'Pro',
-    priceId: process.env.STRIPE_PRO_PRICE_ID || '', // TODO: Set in .env
-    price: 999, // $9.99/month in cents
-    features: [
-      'Unlimited skills',
-      'AI-powered analysis',
-      'Advanced analytics',
-      'Priority support',
-    ],
-    limits: {
-      skills: -1, // Unlimited
-      aiAnalyses: 50, // Per month
-      evidenceUploads: 100,
-    },
-  },
-  enterprise: {
-    id: 'enterprise',
-    name: 'Enterprise',
-    priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || '', // TODO: Set in .env
-    price: 4999, // $49.99/month in cents
-    features: [
-      'Everything in Pro',
-      'Unlimited AI analyses',
-      'Team collaboration',
-      'Custom integrations',
-      'Dedicated support',
-    ],
-    limits: {
-      skills: -1,
-      aiAnalyses: -1, // Unlimited
-      evidenceUploads: -1,
-    },
-  },
+  free: { ...PLAN_INFO.free, priceId: '' },
+  pro: { ...PLAN_INFO.pro, priceId: process.env.STRIPE_PRO_PRICE_ID || '' },
+  enterprise: { ...PLAN_INFO.enterprise, priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || '' },
 }
 
 class StripeService {
@@ -172,10 +118,7 @@ class StripeService {
           })
           return false
         } catch (error) {
-          if (
-            error instanceof Prisma.PrismaClientKnownRequestError &&
-            error.code === 'P2002'
-          ) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             return true
           }
           throw error
@@ -294,24 +237,28 @@ class StripeService {
           userId,
           planId: plan.id,
         },
-        // TODO: Add tax calculation
-        // automatic_tax: { enabled: true },
+        // Stripe Tax must be set up in the Stripe dashboard first (origin
+        // address, tax registrations), or checkout fails; hence the switch.
+        ...(process.env.STRIPE_AUTOMATIC_TAX === 'true' && {
+          automatic_tax: { enabled: true },
+          // Tax depends on the customer's address, so collect and save it.
+          customer_update: { address: 'auto' as const, name: 'auto' as const },
+        }),
       })
 
       return session.url || ''
     } catch (error) {
       console.error('Stripe checkout error:', error)
-      throw new Error(`Failed to create checkout session: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to create checkout session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Create billing portal session
    */
-  async createBillingPortalSession(
-    userId: string,
-    returnUrl: string
-  ): Promise<string> {
+  async createBillingPortalSession(userId: string, returnUrl: string): Promise<string> {
     this.assertConfigured()
     const customerId = await this.getOrCreateCustomer(userId)
     const safeReturnUrl = this.ensureValidAppUrl(returnUrl)
@@ -325,17 +272,16 @@ class StripeService {
       return session.url
     } catch (error) {
       console.error('Stripe portal error:', error)
-      throw new Error(`Failed to create portal session: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to create portal session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Handle webhook events
    */
-  async handleWebhook(
-    payload: string | Buffer,
-    signature: string
-  ): Promise<Stripe.Event> {
+  async handleWebhook(payload: string | Buffer, signature: string): Promise<Stripe.Event> {
     this.assertConfigured()
     assertStripeWebhookEnv()
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string
@@ -343,11 +289,7 @@ class StripeService {
     let event: Stripe.Event | null = null
 
     try {
-      event = stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        webhookSecret
-      )
+      event = stripe.webhooks.constructEvent(payload, signature, webhookSecret)
       const shouldSkip = await this.beginWebhookProcessing(event)
       if (shouldSkip) {
         return event
@@ -394,21 +336,28 @@ class StripeService {
         }
       }
       console.error('Stripe webhook error:', error)
-      throw new Error(`Webhook processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Webhook processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Cancel subscription
    */
-  async cancelSubscription(subscriptionId: string, cancelAtPeriodEnd: boolean = true): Promise<void> {
+  async cancelSubscription(
+    subscriptionId: string,
+    cancelAtPeriodEnd: boolean = true
+  ): Promise<void> {
     try {
       await stripe.subscriptions.update(subscriptionId, {
         cancel_at_period_end: cancelAtPeriodEnd,
       })
     } catch (error) {
       console.error('Stripe cancel error:', error)
-      throw new Error(`Failed to cancel subscription: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to cancel subscription: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 }

@@ -4,15 +4,10 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Loader from '@/components/UI/Loader'
 
-export default function EmployerLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function EmployerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [checking, setChecking] = useState(true)
-  const [hasCompany, setHasCompany] = useState(false)
 
   useEffect(() => {
     if (pathname?.startsWith('/employer/signup')) {
@@ -24,7 +19,7 @@ export default function EmployerLayout({
       .then((r) => r.json())
       .then((data) => {
         if (data.company) {
-          setHasCompany(true)
+          return
         } else {
           router.replace('/employer/signup')
         }

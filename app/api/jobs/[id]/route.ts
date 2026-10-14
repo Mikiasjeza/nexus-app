@@ -20,10 +20,7 @@ const patchSchema = z.object({
   status: z.enum(['active', 'closed']).optional(),
 })
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -74,17 +71,11 @@ export async function PATCH(
     })
   } catch (e) {
     console.error('Job update error:', e)
-    return NextResponse.json(
-      { error: 'Failed to update job' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to update job' }, { status: 500 })
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -110,9 +101,6 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch (e) {
     console.error('Job delete error:', e)
-    return NextResponse.json(
-      { error: 'Failed to delete job' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to delete job' }, { status: 500 })
   }
 }

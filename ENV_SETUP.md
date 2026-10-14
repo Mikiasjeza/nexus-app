@@ -19,10 +19,11 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 GUEST_MODE="false"
 
 # AI Providers (at least one required)
+GEMINI_API_KEY="AIza..."
 OPENAI_API_KEY="sk-..."
 ANTHROPIC_API_KEY="sk-ant-..."
-AI_PROVIDER="openai"
-AI_MODEL="gpt-4-turbo-preview"
+AI_PROVIDER="gemini"
+AI_MODEL="gemini-2.5-flash"
 
 # Authentication
 NEXTAUTH_SECRET="your-secret-key-here"
@@ -41,7 +42,6 @@ STRIPE_PRO_PRICE_ID="price_..."
 STRIPE_ENTERPRISE_PRICE_ID="price_..."
 
 # File Storage
-STORAGE_PROVIDER="s3"
 
 # AWS S3
 AWS_ACCESS_KEY_ID=""
@@ -49,16 +49,10 @@ AWS_SECRET_ACCESS_KEY=""
 AWS_REGION="us-east-1"
 AWS_S3_BUCKET="nexus-uploads"
 
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=""
-CLOUDINARY_API_KEY=""
-CLOUDINARY_API_SECRET=""
 
 # Email Service
-EMAIL_PROVIDER="resend"
 EMAIL_FROM="noreply@nexus.ai"
 RESEND_API_KEY="re_..."
-SENDGRID_API_KEY="SG..."
 
 # Monitoring (optional but recommended)
 SENTRY_DSN=""
@@ -85,12 +79,12 @@ Stripe webhook endpoint additionally requires:
 
 AI analysis requires:
 
+- `AI_PROVIDER=gemini` with `GEMINI_API_KEY`, or
 - `AI_PROVIDER=openai` with `OPENAI_API_KEY`, or
 - `AI_PROVIDER=anthropic` with `ANTHROPIC_API_KEY`
 
 Email delivery (password reset) requires:
 
-- `EMAIL_PROVIDER=resend`
 - `RESEND_API_KEY`
 - `EMAIL_FROM`
 

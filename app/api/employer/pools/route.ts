@@ -30,20 +30,29 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     })
 
+    // Count only candidates who are still opted in to employer search, so the
+    // count matches what the pool page shows (see pools/[id]/route.ts).
+    const visible = await prisma.user.findMany({
+      where: {
+        id: { in: Array.from(new Set(pools.flatMap((p) => p.candidateIds))) },
+        publicProfile: true,
+        discoverableByEmployers: true,
+      },
+      select: { id: true },
+    })
+    const visibleIds = new Set(visible.map((u) => u.id))
+
     return NextResponse.json({
       pools: pools.map((p) => ({
         id: p.id,
         name: p.name,
-        candidateCount: p.candidateIds.length,
+        candidateCount: p.candidateIds.filter((id) => visibleIds.has(id)).length,
         createdAt: p.createdAt.toISOString(),
       })),
     })
   } catch (e) {
     console.error('Pools list error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load pools' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load pools' }, { status: 500 })
   }
 }
 
@@ -87,9 +96,6 @@ export async function POST(request: Request) {
     })
   } catch (e) {
     console.error('Pool create error:', e)
-    return NextResponse.json(
-      { error: 'Failed to create pool' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create pool' }, { status: 500 })
   }
 }

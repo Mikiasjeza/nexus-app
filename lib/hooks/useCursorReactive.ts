@@ -22,10 +22,7 @@ export function useCursorReactive() {
   return cursor
 }
 
-export function useCursorProximity(
-  ref: React.RefObject<HTMLElement>,
-  threshold: number = 200
-) {
+export function useCursorProximity(ref: React.RefObject<HTMLElement>, threshold: number = 200) {
   const cursor = useCursorReactive()
   const [isNear, setIsNear] = useState(false)
 
@@ -36,9 +33,7 @@ export function useCursorProximity(
     const centerX = rect.left + rect.width / 2
     const centerY = rect.top + rect.height / 2
 
-    const distance = Math.sqrt(
-      Math.pow(cursor.x - centerX, 2) + Math.pow(cursor.y - centerY, 2)
-    )
+    const distance = Math.sqrt(Math.pow(cursor.x - centerX, 2) + Math.pow(cursor.y - centerY, 2))
 
     setIsNear(distance < threshold)
   }, [cursor, ref, threshold])

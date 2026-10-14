@@ -3,7 +3,13 @@
  */
 
 import type { Skill, Activity } from './types'
-import type { Skill as PrismaSkill, Evidence, SkillHistory, Activity as PrismaActivity } from '@prisma/client'
+import type {
+  Skill as PrismaSkill,
+  Evidence,
+  SkillHistory,
+  Activity as PrismaActivity,
+} from '@prisma/client'
+import { normalizeSkillCategory } from './skills-taxonomy'
 
 type PrismaSkillWithRelations = PrismaSkill & {
   evidence: Evidence[]
@@ -15,7 +21,7 @@ export function mapSkill(s: PrismaSkillWithRelations): Skill {
     id: s.id,
     name: s.name,
     level: s.level as Skill['level'],
-    category: s.category as Skill['category'],
+    category: normalizeSkillCategory(s.category),
     progress: s.progress,
     notes: s.notes ?? undefined,
     description: s.description ?? undefined,
@@ -26,12 +32,12 @@ export function mapSkill(s: PrismaSkillWithRelations): Skill {
     order: s.order,
     visibility: (s.visibility as 'public' | 'private') || 'public',
     status: (s.status as 'draft' | 'published') || 'published',
-    evidence: s.evidence.map(e => ({
+    evidence: s.evidence.map((e) => ({
       type: e.type as 'video' | 'code' | 'portfolio' | 'certificate' | 'project',
-      url: (e.url ?? e.fileUrl) ?? undefined,
+      url: e.url ?? e.fileUrl ?? undefined,
       description: e.description ?? undefined,
     })),
-    history: s.history.map(h => ({
+    history: s.history.map((h) => ({
       id: h.id,
       skillId: h.skillId,
       timestamp: h.timestamp.toISOString(),

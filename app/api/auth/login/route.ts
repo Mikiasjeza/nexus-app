@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
-import {
-  createSession,
-  setSessionCookie,
-  clearGuestPreviewCookie,
-} from '@/lib/auth/session'
+import { createSession, setSessionCookie, clearGuestPreviewCookie } from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
 import { env } from '@/lib/config/env'
@@ -15,7 +12,10 @@ import { guestUser } from '@/lib/mock/guest'
 export const dynamic = 'force-dynamic'
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email format').transform((v) => v.toLowerCase().trim()),
+  email: z
+    .string()
+    .email('Invalid email format')
+    .transform((v) => v.toLowerCase().trim()),
   password: z.string().min(1, 'Password is required'),
 })
 
@@ -25,7 +25,8 @@ export async function POST(request: Request) {
       return NextResponse.json(guestUser)
     }
 
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const ip =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const rl = rateLimit(`auth:login:${ip}`, { maxRequests: 10, windowMs: 60000 })
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
@@ -58,12 +59,13 @@ export async function POST(request: Request) {
     return NextResponse.json(userToJson(user))
   } catch (e) {
     console.error('Login error:', e)
+    Sentry.logger.error('Login POST failed', {
+      route: 'api/auth/login',
+      errorMessage: e instanceof Error ? e.message : 'unknown',
+    })
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
-    return NextResponse.json(
-      { error: 'Something went wrong' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }
 

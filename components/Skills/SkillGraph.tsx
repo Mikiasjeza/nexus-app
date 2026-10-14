@@ -35,7 +35,7 @@ export default function SkillGraph({ skills, type = 'category' }: SkillGraphProp
     }
   }, [skills, type])
 
-  const maxValue = Math.max(...data.map(d => d.value), 1)
+  const maxValue = Math.max(...data.map((d) => d.value), 1)
 
   return (
     <div className="space-y-4">

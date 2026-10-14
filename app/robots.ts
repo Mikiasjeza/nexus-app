@@ -3,7 +3,7 @@ import { getAppUrl } from '@/lib/config/env'
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = getAppUrl()
-  
+
   return {
     rules: [
       {

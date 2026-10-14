@@ -43,7 +43,6 @@ export async function GET(
 
     return NextResponse.json({
       user: {
-        id: user.id,
         name: user.name,
         bio: user.bio ?? undefined,
         publicProfile: user.publicProfile,
@@ -54,9 +53,6 @@ export async function GET(
     })
   } catch (e) {
     console.error('Share profile error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load profile' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load profile' }, { status: 500 })
   }
 }

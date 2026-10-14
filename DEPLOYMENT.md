@@ -22,11 +22,13 @@ Vercel will automatically detect Next.js and configure build settings.
 ### Docker
 
 1. Build the image:
+
 ```bash
 docker build -t ai-skill-passport .
 ```
 
 2. Run the container:
+
 ```bash
 docker run -p 3000:3000 \
   -e NODE_ENV=production \
@@ -45,7 +47,7 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_APP_URL=https://your-domain.com
@@ -53,6 +55,7 @@ services:
 ```
 
 Run with:
+
 ```bash
 docker-compose up -d
 ```
@@ -92,7 +95,6 @@ Set these in Vercel Production environment:
 - `STRIPE_PRO_PRICE_ID` (live)
 - `STRIPE_ENTERPRISE_PRICE_ID` (live)
 - `STRIPE_WEBHOOK_SECRET` (live)
-- `EMAIL_PROVIDER=resend`
 - `RESEND_API_KEY`
 - `EMAIL_FROM`
 - `SENTRY_DSN` (recommended)

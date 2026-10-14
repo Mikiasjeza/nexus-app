@@ -17,7 +17,7 @@ for (const dir of dirs) {
       fs.rmSync(fullPath, { recursive: true, force: true })
       console.log(`Removed: ${dir}`)
     }
-  } catch (e) {
+  } catch {
     // Ignore - folder may not exist or be inaccessible
   }
 }

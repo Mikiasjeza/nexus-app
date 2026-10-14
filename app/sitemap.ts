@@ -3,7 +3,7 @@ import { getAppUrl } from '@/lib/config/env'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = getAppUrl()
-  
+
   return [
     {
       url: baseUrl,
@@ -55,6 +55,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/cookies`,
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.3,

@@ -34,10 +34,9 @@ export async function GET() {
       },
     }
 
-    return NextResponse.json(
-      health,
-      { status: db === 'up' && readinessIssues.length === 0 ? 200 : 503 }
-    )
+    return NextResponse.json(health, {
+      status: db === 'up' && readinessIssues.length === 0 ? 200 : 503,
+    })
   } catch {
     return NextResponse.json(
       {

@@ -15,11 +15,7 @@ interface MotionSectionProps extends Omit<MotionProps, 'children'> {
  */
 export default function MotionSection({ children, className = '', ...props }: MotionSectionProps) {
   return (
-    <motion.section
-      {...sectionReveal}
-      className={className}
-      {...props}
-    >
+    <motion.section {...sectionReveal} className={className} {...props}>
       {children}
     </motion.section>
   )

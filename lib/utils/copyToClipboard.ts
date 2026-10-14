@@ -13,12 +13,12 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       document.body.appendChild(textArea)
       textArea.focus()
       textArea.select()
-      
+
       try {
         document.execCommand('copy')
         textArea.remove()
         return true
-      } catch (err) {
+      } catch {
         textArea.remove()
         return false
       }

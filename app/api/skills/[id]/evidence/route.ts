@@ -12,26 +12,53 @@ import { getSessionUserId } from '@/lib/auth/session'
 import { storageService } from '@/lib/storage/upload'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
+import { MAX_UPLOAD_BYTES, validateUpload } from '@/lib/storage/validate-upload'
+import { verifySkill, type VerifySkillOutcome } from '@/lib/ai/verify-skill'
+import type { EvidenceInput } from '@/lib/ai/verification'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-const ALLOWED_MIMES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'application/pdf',
-  'text/plain',
-  'text/markdown',
-  'application/json',
-  'video/mp4',
-  'video/webm',
-]
-const ALLOWED_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|pdf|txt|md|json|mp4|webm)$/i
+// Room for the multipart envelope and the other form fields around the file.
+const MAX_REQUEST_BYTES = MAX_UPLOAD_BYTES + 64 * 1024
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+// Upload plus AI assessment can exceed the platform default.
+export const maxDuration = 60
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value)
+    return protocol === 'http:' || protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/** Verification result as returned to the uploader. Upload succeeds either way. */
+function describeVerification(outcome: VerifySkillOutcome | { status: 'failed' }) {
+  switch (outcome.status) {
+    case 'assessed':
+      return {
+        status: 'assessed',
+        verified: outcome.verified,
+        confidenceScore: outcome.confidenceScore,
+        explanation: outcome.explanation,
+        suggestedLevel: outcome.suggestedLevel,
+        improvements: outcome.improvements,
+      }
+    case 'quota_exceeded':
+      return {
+        status: 'skipped',
+        message: `Evidence saved. Your ${outcome.plan} plan's ${outcome.limit} AI checks this month are used up, so it wasn't checked yet.`,
+      }
+    case 'failed':
+      return {
+        status: 'skipped',
+        message: 'Evidence saved, but the AI check failed. Try again from the verification page.',
+      }
+    default:
+      return { status: 'skipped', message: 'Evidence saved.' }
+  }
+}
+
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -40,10 +67,7 @@ export async function POST(
 
     const rl = rateLimit(`evidence:${userId}`, { maxRequests: 20, windowMs: 60000 })
     if (!rl.allowed) {
-      return NextResponse.json(
-        { error: 'Too many uploads. Try again later.' },
-        { status: 429 }
-      )
+      return NextResponse.json({ error: 'Too many uploads. Try again later.' }, { status: 429 })
     }
 
     const { id: skillId } = await params
@@ -55,19 +79,29 @@ export async function POST(
       return NextResponse.json({ error: 'Skill not found' }, { status: 404 })
     }
 
+    // Reject oversized bodies before buffering them.
+    const contentLength = Number(request.headers.get('content-length') ?? 0)
+    if (contentLength > MAX_REQUEST_BYTES) {
+      return NextResponse.json(
+        { error: `File too large. Max size: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB` },
+        { status: 413 }
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const type = (formData.get('type') as string) || 'file'
     const description = (formData.get('description') as string) || null
     const url = (formData.get('url') as string) || null
+    // The verification page uploads first and then runs one AI check covering
+    // the file and the typed evidence, so it asks this route not to check too.
+    const deferVerification = formData.get('verify') === 'false'
 
     if (!file && !url) {
-      return NextResponse.json(
-        { error: 'File or URL required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'File or URL required' }, { status: 400 })
     }
 
+    const submittedEvidence: EvidenceInput[] = []
     let evidenceData: {
       skillId: string
       type: string
@@ -80,42 +114,38 @@ export async function POST(
     }
 
     if (file && file.size > 0) {
-      if (file.size > MAX_FILE_SIZE) {
+      if (file.size > MAX_UPLOAD_BYTES) {
         return NextResponse.json(
-          { error: `File too large. Max size: ${MAX_FILE_SIZE / 1024 / 1024}MB` },
-          { status: 400 }
-        )
-      }
-      const mime = file.type || 'application/octet-stream'
-      if (!ALLOWED_MIMES.includes(mime) && !mime.startsWith('text/')) {
-        return NextResponse.json(
-          { error: 'Invalid file type. Allowed: images, PDF, text, video' },
-          { status: 400 }
-        )
-      }
-      if (!ALLOWED_EXTENSIONS.test(file.name)) {
-        return NextResponse.json(
-          { error: 'Invalid file extension' },
-          { status: 400 }
+          { error: `File too large. Max size: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB` },
+          { status: 413 }
         )
       }
 
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
+      const buffer = Buffer.from(await file.arrayBuffer())
+      // The browser's declared type is ignored: the stored type comes from
+      // the extension, and only once the file's bytes match it.
+      const check = validateUpload(file.name, buffer)
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 400 })
+      }
+      const mime = check.mimeType
+      // Text files are read by the AI directly; binaries are described by name and type.
+      if (mime.startsWith('text/') || mime === 'application/json') {
+        submittedEvidence.push({
+          type: 'code',
+          content: buffer.toString('utf8'),
+          metadata: { fileName: file.name, mimeType: mime },
+        })
+      }
+
       let uploadResult
       try {
-        uploadResult = await storageService.uploadFile(
-          buffer,
-          file.name,
-          mime,
-          `skills/${skillId}`
-        )
+        uploadResult = await storageService.uploadFile(buffer, file.name, mime, `skills/${skillId}`)
       } catch (storageErr) {
         console.error('Storage upload error:', storageErr)
         return NextResponse.json(
           {
-            error:
-              'File storage not configured. Set AWS credentials or use URL-based evidence.',
+            error: 'File storage not configured. Set AWS credentials or use URL-based evidence.',
           },
           { status: 503 }
         )
@@ -131,9 +161,9 @@ export async function POST(
         description: description || undefined,
       }
     } else {
-      if (!url || !url.startsWith('http')) {
+      if (!url || !isHttpUrl(url.trim())) {
         return NextResponse.json(
-          { error: 'Valid URL required (must start with http)' },
+          { error: 'Valid URL required (must start with http:// or https://)' },
           { status: 400 }
         )
       }
@@ -173,14 +203,34 @@ export async function POST(
       },
     })
 
+    const data = {
+      id: evidence.id,
+      type: evidence.type,
+      url: evidence.url ?? evidence.fileUrl,
+      description: evidence.description,
+    }
+    if (deferVerification) {
+      return NextResponse.json({ success: true, data, verification: null })
+    }
+
+    // Every submission is checked by the AI. A failed check never loses the upload.
+    let outcome: VerifySkillOutcome | { status: 'failed' }
+    try {
+      outcome = await verifySkill({
+        userId,
+        skillId,
+        submittedEvidence,
+        evidenceId: evidence.id,
+      })
+    } catch (verifyErr) {
+      console.error('Evidence verification error:', verifyErr)
+      outcome = { status: 'failed' }
+    }
+
     return NextResponse.json({
       success: true,
-      data: {
-        id: evidence.id,
-        type: evidence.type,
-        url: evidence.url ?? evidence.fileUrl,
-        description: evidence.description,
-      },
+      data,
+      verification: describeVerification(outcome),
     })
   } catch (e) {
     console.error('Evidence upload error:', e)

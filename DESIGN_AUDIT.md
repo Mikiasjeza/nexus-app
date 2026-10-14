@@ -8,13 +8,13 @@ Reference: `PRODUCT_IDENTITY.md`
 
 ## Aligned ✓
 
-| Area | Status | Notes |
-|------|--------|-------|
-| Easing | ✓ | Primary easing `cubic-bezier(0.22, 1, 0.36, 1)` used consistently |
-| Motion purpose | ✓ | Most animations serve reveal, hierarchy, feedback |
-| Typography | ✓ | Clear hierarchy, type doing heavy lifting |
-| Negative space | ✓ | Generous spacing in большинстве layouts |
-| AI presentation | ✓ | Confidence scores, subtle recommendations—no chatbot |
+| Area            | Status | Notes                                                             |
+| --------------- | ------ | ----------------------------------------------------------------- |
+| Easing          | ✓      | Primary easing `cubic-bezier(0.22, 1, 0.36, 1)` used consistently |
+| Motion purpose  | ✓      | Most animations serve reveal, hierarchy, feedback                 |
+| Typography      | ✓      | Clear hierarchy, type doing heavy lifting                         |
+| Negative space  | ✓      | Generous spacing in большинстве layouts                           |
+| AI presentation | ✓      | Confidence scores, subtle recommendations—no chatbot              |
 
 ---
 
@@ -25,8 +25,9 @@ Reference: `PRODUCT_IDENTITY.md`
 **Rule:** "No animation over 700ms"
 
 **Current:**
+
 - `progressPulse`: 2s, infinite repeat
-- `skillBreathe`: 3s, infinite repeat  
+- `skillBreathe`: 3s, infinite repeat
 - Share page progress bars: 1.5s
 - Various section reveals: 0.8s–1.2s
 
@@ -49,6 +50,7 @@ Reference: `PRODUCT_IDENTITY.md`
 **Rule:** "Avoid overuse of gradients"
 
 **Current:**
+
 - Onboarding: `from-primary-500 to-purple-500`, `from-green-500 to-emerald-500` on circles
 - Error pages: `from-primary-600 to-purple-600` on buttons
 - Global error: Gradient on CTA
@@ -91,14 +93,14 @@ Reference: `PRODUCT_IDENTITY.md`
 
 **Rule:** "Every screen must have one primary action, one focal point, one clear narrative"
 
-| Screen | Primary Action | Focal Point | Assessment |
-|--------|----------------|-------------|------------|
-| Home | Explore / CTA | Hero + Nexus logo | ✓ Clear |
-| Login | Sign in | Form | ✓ Clear |
-| Dashboard | View skills | Stats + overview | ⚠ Multiple competing (stats, chart, activity) |
-| Skills | Add/edit skills | Skill grid | ✓ Clear |
-| Analytics | Export / Insights | Charts | ⚠ Multiple competing (stats, charts, gap, timeline) |
-| Share | View passport | Profile + skills | ✓ Clear |
+| Screen    | Primary Action    | Focal Point       | Assessment                                          |
+| --------- | ----------------- | ----------------- | --------------------------------------------------- |
+| Home      | Explore / CTA     | Hero + Nexus logo | ✓ Clear                                             |
+| Login     | Sign in           | Form              | ✓ Clear                                             |
+| Dashboard | View skills       | Stats + overview  | ⚠ Multiple competing (stats, chart, activity)       |
+| Skills    | Add/edit skills   | Skill grid        | ✓ Clear                                             |
+| Analytics | Export / Insights | Charts            | ⚠ Multiple competing (stats, charts, gap, timeline) |
+| Share     | View passport     | Profile + skills  | ✓ Clear                                             |
 
 **Recommendation:** On Dashboard and Analytics, establish a clear hierarchy—one primary focal point, secondary content visually subordinate.
 
@@ -107,6 +109,7 @@ Reference: `PRODUCT_IDENTITY.md`
 ## Summary
 
 ### Applied (2025-01-31)
+
 - ✅ Homepage hero: one core promise, single CTA
 - ✅ Animations capped at 700ms (progressPulse, skillBreathe)
 - ✅ Removed hoverGlow purple glow
@@ -118,9 +121,10 @@ Reference: `PRODUCT_IDENTITY.md`
 - ✅ Solid background (no gradient) on homepage
 
 ### Remaining
+
 - Consider scroll-scrubbed motion for hero
 - Replace gradients on onboarding/error pages
 
 ---
 
-*Last updated: 2025-01-31*
+_Last updated: 2025-01-31_

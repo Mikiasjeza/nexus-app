@@ -11,10 +11,7 @@ async function getSkillForUser(skillId: string, userId: string) {
   })
 }
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -28,17 +25,11 @@ export async function GET(
     return NextResponse.json(mapSkill(skill))
   } catch (e) {
     console.error('Skill get error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load skill' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load skill' }, { status: 500 })
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -59,7 +50,6 @@ export async function PATCH(
       'notes',
       'description',
       'tags',
-      'verified',
       'order',
       'visibility',
       'status',
@@ -67,6 +57,15 @@ export async function PATCH(
     const updates: Record<string, unknown> = {}
     for (const key of allowed) {
       if (body[key] !== undefined) updates[key] = body[key]
+    }
+    // `verified` is never client-settable. Changing what was verified (the
+    // skill itself or the claimed level) withdraws the badge until the AI
+    // re-checks the new claim.
+    const claimChanged = (['name', 'level', 'category'] as const).some(
+      (key) => updates[key] !== undefined && updates[key] !== existing[key]
+    )
+    if (claimChanged && existing.verified) {
+      updates.verified = false
     }
     if (Object.keys(updates).length === 0) {
       const withRelations = await prisma.skill.findUnique({
@@ -84,10 +83,7 @@ export async function PATCH(
         newValue: updates.level,
       })
     }
-    if (
-      updates.progress !== undefined &&
-      Number(updates.progress) !== existing.progress
-    ) {
+    if (updates.progress !== undefined && Number(updates.progress) !== existing.progress) {
       changes.push({
         field: 'progress',
         oldValue: existing.progress,
@@ -119,9 +115,7 @@ export async function PATCH(
     }
 
     const activityType =
-      updates.level !== undefined && updates.level !== existing.level
-        ? 'level_up'
-        : 'skill_updated'
+      updates.level !== undefined && updates.level !== existing.level ? 'level_up' : 'skill_updated'
     const message =
       activityType === 'level_up'
         ? `Leveled up ${skill.name} to ${skill.level}`
@@ -139,17 +133,11 @@ export async function PATCH(
     return NextResponse.json(mapSkill(skill))
   } catch (e) {
     console.error('Skill update error:', e)
-    return NextResponse.json(
-      { error: 'Failed to update skill' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to update skill' }, { status: 500 })
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await getSessionUserId()
     if (!userId) {
@@ -173,9 +161,6 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 })
   } catch (e) {
     console.error('Skill delete error:', e)
-    return NextResponse.json(
-      { error: 'Failed to delete skill' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to delete skill' }, { status: 500 })
   }
 }

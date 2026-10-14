@@ -17,7 +17,7 @@ export function validatePassword(password: string): {
   errors: string[]
 } {
   const errors: string[] = []
-  
+
   if (password.length < 8) {
     errors.push('Password must be at least 8 characters')
   }
@@ -30,7 +30,7 @@ export function validatePassword(password: string): {
   if (!/[0-9]/.test(password)) {
     errors.push('Password must contain at least one number')
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,

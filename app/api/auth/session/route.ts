@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { prisma } from '@/lib/db'
 import { getSessionUserId, hasGuestPreviewSession } from '@/lib/auth/session'
 import { dbErrorResponse } from '@/lib/db-error'
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    if (env.isGuestMode || await hasGuestPreviewSession()) {
+    if (env.isGuestMode || (await hasGuestPreviewSession())) {
       return NextResponse.json({ user: guestUser })
     }
 
@@ -57,6 +58,10 @@ export async function GET() {
     })
   } catch (e) {
     console.error('Session error:', e)
+    Sentry.logger.error('Session GET failed', {
+      route: 'api/auth/session',
+      errorMessage: e instanceof Error ? e.message : 'unknown',
+    })
     const dbErr = dbErrorResponse(e)
     if (dbErr) return dbErr
     return NextResponse.json({ user: null })

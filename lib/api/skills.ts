@@ -14,9 +14,7 @@ export const skillsApi = {
     }
   },
 
-  create: async (
-    skill: Omit<Skill, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<Skill> => {
+  create: async (skill: Omit<Skill, 'id' | 'createdAt' | 'updatedAt'>): Promise<Skill> => {
     return fetchApi<Skill>('/api/skills', {
       method: 'POST',
       body: JSON.stringify(skill),
@@ -32,6 +30,23 @@ export const skillsApi = {
 
   delete: async (id: string): Promise<void> => {
     await fetchApi<undefined>(`/api/skills/${id}`, { method: 'DELETE' })
+  },
+
+  /**
+   * Store an evidence file on a skill. With `verify: false` the server skips
+   * its own AI check because the caller will run one that includes this file.
+   */
+  uploadEvidence: async (
+    skillId: string,
+    file: File,
+    options: { description?: string; type?: string; verify?: boolean } = {}
+  ): Promise<{ data: { id: string; url: string | null } }> => {
+    const form = new FormData()
+    form.append('file', file)
+    form.append('type', options.type ?? 'file')
+    if (options.description) form.append('description', options.description)
+    if (options.verify === false) form.append('verify', 'false')
+    return fetchApi(`/api/skills/${skillId}/evidence`, { method: 'POST', body: form })
   },
 
   getActivities: async (limit?: number): Promise<Activity[]> => {

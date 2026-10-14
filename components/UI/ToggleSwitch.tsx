@@ -40,9 +40,7 @@ export default function ToggleSwitch({
         </div>
       </div>
       {label && (
-        <span className={`text-sm font-medium ${disabled ? 'opacity-50' : ''}`}>
-          {label}
-        </span>
+        <span className={`text-sm font-medium ${disabled ? 'opacity-50' : ''}`}>{label}</span>
       )}
     </label>
   )

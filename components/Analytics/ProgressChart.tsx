@@ -1,7 +1,16 @@
 'use client'
 
 import { Skill } from '@/lib/types'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts'
 import { useMemo, useRef } from 'react'
 import { format, subDays } from 'date-fns'
 import { motion } from 'framer-motion'
@@ -19,7 +28,7 @@ export default function ProgressChart({ skills, days = 30 }: ProgressChartProps)
   const data = useMemo(() => {
     // Generate mock historical data for the last N days
     const dates = Array.from({ length: days }, (_, i) => subDays(new Date(), days - i - 1))
-    
+
     return dates.map((date) => {
       const totalProgress = skills.reduce((sum, skill) => {
         // Simulate progress over time (in real app, this would come from historical data)
@@ -30,7 +39,7 @@ export default function ProgressChart({ skills, days = 30 }: ProgressChartProps)
         const progress = Math.min(100, (daysSinceCreation / 30) * skill.progress)
         return sum + progress
       }, 0)
-      
+
       return {
         date: format(date, 'MMM d'),
         average: Math.round(totalProgress / Math.max(1, skills.length)),
@@ -56,21 +65,22 @@ export default function ProgressChart({ skills, days = 30 }: ProgressChartProps)
       animate={{
         scale: isCursorNear ? 1.01 : 1,
       }}
-      transition={{ 
+      transition={{
         opacity: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
         y: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
-        scale: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+        scale: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
       }}
     >
       <div className="relative overflow-hidden border border-black/10 dark:border-white/10 p-6">
         {/* Gradient accent spine */}
-        <div 
+        <div
           className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-500 via-indigo-500 to-cyan-500 dark:from-violet-400 dark:via-indigo-400 dark:to-cyan-400 opacity-80"
           aria-hidden
         />
         <h2 className="text-xl font-bold text-black dark:text-white mb-6">Progress Over Time</h2>
         <p className="text-sm text-black/60 dark:text-white/60 mb-6">
-          Illustrative trend based on your current skills. Historical tracking becomes exact once long-term progress snapshots are stored.
+          Illustrative trend based on your current skills. Historical tracking becomes exact once
+          long-term progress snapshots are stored.
         </p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
@@ -82,16 +92,8 @@ export default function ProgressChart({ skills, days = 30 }: ProgressChartProps)
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis 
-              dataKey="date" 
-              stroke="#64748b"
-              style={{ fontSize: '12px' }}
-            />
-            <YAxis 
-              stroke="#64748b"
-              style={{ fontSize: '12px' }}
-              domain={[0, 100]}
-            />
+            <XAxis dataKey="date" stroke="#64748b" style={{ fontSize: '12px' }} />
+            <YAxis stroke="#64748b" style={{ fontSize: '12px' }} domain={[0, 100]} />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'white',

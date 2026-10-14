@@ -25,16 +25,20 @@ export default function ProgressBar({
     <div className={`w-full ${className}`}>
       {showLabel && (
         <div className="flex justify-between items-center mb-3">
-          <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Progress</span>
-          <span className="text-sm font-bold text-neutral-200 tabular-nums">{clampedProgress}%</span>
+          <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+            Progress
+          </span>
+          <span className="text-sm font-bold text-neutral-200 tabular-nums">
+            {clampedProgress}%
+          </span>
         </div>
       )}
       <div className="relative w-full h-2.5 bg-neutral-900/50 rounded-full overflow-hidden border border-neutral-800/50 backdrop-blur-sm">
         <motion.div
           className="h-full rounded-full relative overflow-hidden"
-          style={{ 
+          style={{
             background: `linear-gradient(90deg, ${color}, ${color}dd)`,
-            boxShadow: `0 0 10px ${color}40`
+            boxShadow: `0 0 10px ${color}40`,
           }}
           initial={animated ? { width: 0 } : { width: `${clampedProgress}%` }}
           animate={{ width: `${clampedProgress}%` }}

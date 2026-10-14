@@ -49,9 +49,6 @@ export async function GET() {
     })
   } catch (e) {
     console.error('Employer company error:', e)
-    return NextResponse.json(
-      { error: 'Failed to load company' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to load company' }, { status: 500 })
   }
 }

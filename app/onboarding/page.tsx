@@ -3,29 +3,39 @@
 import React, { useState, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Target, 
-  Plus, 
-  Sparkles, 
-  CheckCircle, 
-  ArrowRight, 
+import {
+  Target,
+  Plus,
+  Sparkles,
+  CheckCircle,
+  ArrowRight,
   ArrowLeft,
   User,
   Briefcase,
   GraduationCap,
-  TrendingUp
+  TrendingUp,
+  Code,
+  Palette,
+  MessageSquare,
 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import AnimatedCard from '@/components/UI/AnimatedCard'
 import { useToast } from '@/components/UI/ToastProvider'
 import Confetti from '@/components/UI/Confetti'
 import { easing } from '@/lib/utils/animations'
+import {
+  normalizeSkillName,
+  SKILL_PILLAR_DETAILS,
+  SKILL_SUGGESTION_GROUPS,
+} from '@/lib/skills-taxonomy'
+import AppPageShell from '@/components/Layout/AppPageShell'
+import type { SkillCategory } from '@/lib/types'
 
 const steps = [
   {
     id: 1,
     title: 'Welcome',
-    description: 'Let\'s set up your Nexus profile',
+    description: "Let's set up your Nexus profile",
     icon: <Sparkles className="w-8 h-8" />,
   },
   {
@@ -43,7 +53,7 @@ const steps = [
   {
     id: 4,
     title: 'Complete',
-    description: 'You\'re all set!',
+    description: "You're all set!",
     icon: <CheckCircle className="w-8 h-8" />,
   },
 ]
@@ -79,10 +89,38 @@ const goals = [
   },
 ]
 
-const initialSkills = [
-  'JavaScript', 'Python', 'React', 'TypeScript', 'Node.js',
-  'Design', 'Leadership', 'Communication', 'Problem Solving',
-]
+const MAX_ONBOARDING_SKILLS = 15
+
+const pillarVisuals: Record<
+  SkillCategory,
+  { icon: React.ReactNode; cardClass: string; chipClass: string }
+> = {
+  'Technical Skills': {
+    icon: <Code className="w-5 h-5" />,
+    cardClass: 'border-cyan-400/20 bg-cyan-500/8',
+    chipClass: 'bg-cyan-400/12 text-cyan-100 hover:bg-cyan-400/18',
+  },
+  'Creative Skills': {
+    icon: <Palette className="w-5 h-5" />,
+    cardClass: 'border-fuchsia-400/20 bg-fuchsia-500/8',
+    chipClass: 'bg-fuchsia-400/12 text-fuchsia-100 hover:bg-fuchsia-400/18',
+  },
+  'Communication Skills': {
+    icon: <MessageSquare className="w-5 h-5" />,
+    cardClass: 'border-emerald-400/20 bg-emerald-500/8',
+    chipClass: 'bg-emerald-400/12 text-emerald-100 hover:bg-emerald-400/18',
+  },
+  'Professional Skills': {
+    icon: <Briefcase className="w-5 h-5" />,
+    cardClass: 'border-indigo-400/20 bg-indigo-500/8',
+    chipClass: 'bg-indigo-400/12 text-indigo-100 hover:bg-indigo-400/18',
+  },
+  'Learning & Growth': {
+    icon: <TrendingUp className="w-5 h-5" />,
+    cardClass: 'border-amber-400/20 bg-amber-500/8',
+    chipClass: 'bg-amber-400/12 text-amber-100 hover:bg-amber-400/18',
+  },
+}
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -90,29 +128,72 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedGoals, setSelectedGoals] = useState<string[]>([])
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
+  const [customSkill, setCustomSkill] = useState('')
+  const [customSkillError, setCustomSkillError] = useState<string | null>(null)
+  const [completionError, setCompletionError] = useState<string | null>(null)
+  const [isCompleting, setIsCompleting] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
 
   const handleGoalToggle = (goalId: string) => {
-    setSelectedGoals(prev => 
-      prev.includes(goalId) 
-        ? prev.filter(id => id !== goalId)
-        : [...prev, goalId]
+    setSelectedGoals((prev) =>
+      prev.includes(goalId) ? prev.filter((id) => id !== goalId) : [...prev, goalId]
     )
   }
 
   const handleSkillToggle = (skill: string) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) 
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
-    )
+    const normalizedSkill = normalizeSkillName(skill)
+    setCustomSkillError(null)
+    setSelectedSkills((prev) => {
+      const hasSkill = prev.some(
+        (existing) => existing.toLowerCase() === normalizedSkill.toLowerCase()
+      )
+
+      if (hasSkill) {
+        return prev.filter((existing) => existing.toLowerCase() !== normalizedSkill.toLowerCase())
+      }
+
+      if (prev.length >= MAX_ONBOARDING_SKILLS) {
+        setCustomSkillError(`Choose up to ${MAX_ONBOARDING_SKILLS} skills for now.`)
+        return prev
+      }
+
+      return [...prev, normalizedSkill]
+    })
   }
 
-  const handleNext = () => {
+  const handleCustomSkillAdd = () => {
+    const normalizedSkill = normalizeSkillName(customSkill)
+
+    if (!normalizedSkill) {
+      setCustomSkillError('Type a skill name first.')
+      return
+    }
+
+    if (normalizedSkill.length < 2) {
+      setCustomSkillError('Skill names should be at least 2 characters.')
+      return
+    }
+
+    if (selectedSkills.some((skill) => skill.toLowerCase() === normalizedSkill.toLowerCase())) {
+      setCustomSkillError('That skill is already selected.')
+      return
+    }
+
+    if (selectedSkills.length >= MAX_ONBOARDING_SKILLS) {
+      setCustomSkillError(`Choose up to ${MAX_ONBOARDING_SKILLS} skills for now.`)
+      return
+    }
+
+    setSelectedSkills((prev) => [...prev, normalizedSkill])
+    setCustomSkill('')
+    setCustomSkillError(null)
+  }
+
+  const handleNext = async () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1)
     } else {
-      handleComplete()
+      await handleComplete()
     }
   }
 
@@ -123,37 +204,63 @@ export default function OnboardingPage() {
   }
 
   const handleComplete = async () => {
-    setShowConfetti(true)
-    addToast({
-      type: 'success',
-      title: 'Welcome to Nexus!',
-      message: 'Your account is set up. Start adding skills to get verified.',
-    })
     try {
-      await fetch('/api/auth/onboarding', {
+      setIsCompleting(true)
+      setCompletionError(null)
+
+      const response = await fetch('/api/auth/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ goals: selectedGoals, skills: selectedSkills }),
       })
-    } catch {
-      // Non-blocking: user can still proceed
+
+      if (response.status === 401) {
+        router.replace('/auth/login?next=/onboarding')
+        return
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(
+          typeof data?.error === 'string'
+            ? data.error
+            : 'We could not finish onboarding. Please try again.'
+        )
+      }
+
+      setShowConfetti(true)
+      addToast({
+        type: 'success',
+        title: 'Welcome to Nexus!',
+        message: 'Your profile is ready. Opening your dashboard now.',
+      })
+
+      await new Promise((resolve) => window.setTimeout(resolve, 1200))
+      router.replace('/dashboard')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'We could not finish onboarding. Please try again.'
+      setCompletionError(message)
+      addToast({
+        type: 'error',
+        title: 'Onboarding could not finish',
+        message,
+      })
+    } finally {
+      setIsCompleting(false)
     }
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 2000)
   }
 
-  const canProceed = () => {
-    if (currentStep === 2) return selectedGoals.length > 0
-    if (currentStep === 3) return selectedSkills.length > 0
-    return true
-  }
+  // Goals and skills are optional: never block someone from reaching the app.
+  const isSkippableEmptyStep =
+    (currentStep === 2 && selectedGoals.length === 0) ||
+    (currentStep === 3 && selectedSkills.length === 0)
 
   return (
-    <div className="aurora-shell min-h-screen bg-black flex items-center justify-center p-4">
+    <AppPageShell className="flex min-h-screen items-center justify-center bg-black p-4">
       <Confetti trigger={showConfetti} />
-      
+
       <div className="w-full max-w-4xl">
         {/* Progress Steps */}
         <div className="mb-8">
@@ -166,27 +273,25 @@ export default function OnboardingPage() {
                     animate={{ scale: 1 }}
                     transition={{ delay: index * 0.1 }}
                     className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors ${
-                      currentStep >= step.id
-                        ? 'bg-white text-black'
-                        : 'bg-white/10 text-white/45'
+                      currentStep >= step.id ? 'bg-white text-black' : 'bg-white/10 text-white/45'
                     }`}
                   >
-                    {currentStep > step.id ? (
-                      <CheckCircle className="w-6 h-6" />
-                    ) : (
-                      step.icon
-                    )}
+                    {currentStep > step.id ? <CheckCircle className="w-6 h-6" /> : step.icon}
                   </motion.div>
-                  <span className={`text-xs font-medium ${
-                    currentStep >= step.id ? 'text-cyan-200' : 'text-white/45'
-                  }`}>
+                  <span
+                    className={`text-xs font-medium ${
+                      currentStep >= step.id ? 'text-cyan-200' : 'text-white/45'
+                    }`}
+                  >
                     {step.title}
                   </span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`flex-1 h-0.5 mx-2 ${
-                    currentStep > step.id ? 'bg-cyan-300/80' : 'bg-white/10'
-                  }`} />
+                  <div
+                    className={`flex-1 h-0.5 mx-2 ${
+                      currentStep > step.id ? 'bg-cyan-300/80' : 'bg-white/10'
+                    }`}
+                  />
                 )}
               </Fragment>
             ))}
@@ -211,22 +316,35 @@ export default function OnboardingPage() {
                 </div>
                 <h2 className="text-3xl font-bold text-white mb-4">Welcome to Nexus</h2>
                 <p className="text-white/60 mb-8 max-w-2xl mx-auto">
-                  We&apos;ll help you create a verified skill profile in just a few steps. 
-                  This takes about 2 minutes.
+                  Build your profile around five skill pillars so Nexus can understand what you
+                  build, create, explain, lead, and improve over time.
                 </p>
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
                   <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">AI-Verified</p>
+                    <p className="text-sm font-medium text-white">Pillar-based verification</p>
                   </div>
                   <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Global Recognition</p>
+                    <p className="text-sm font-medium text-white">Proof that feels credible</p>
                   </div>
                   <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Career Matching</p>
+                    <p className="text-sm font-medium text-white">Better matches and guidance</p>
                   </div>
+                </div>
+                <div className="grid gap-3 md:grid-cols-5">
+                  {SKILL_PILLAR_DETAILS.map((pillar) => (
+                    <div
+                      key={pillar.category}
+                      className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-4 text-left"
+                    >
+                      <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                        {pillar.shortLabel}
+                      </div>
+                      <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}
@@ -245,9 +363,7 @@ export default function OnboardingPage() {
                     <Target className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-3xl font-bold text-white mb-2">What are your goals?</h2>
-                  <p className="text-white/60">
-                    Select all that apply (you can change this later)
-                  </p>
+                  <p className="text-white/60">Optional. Select any that apply, or skip.</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   {goals.map((goal) => (
@@ -262,7 +378,9 @@ export default function OnboardingPage() {
                           : 'border-white/10 hover:border-cyan-300/40'
                       }`}
                     >
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${goal.color} flex items-center justify-center text-white mb-4`}>
+                      <div
+                        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${goal.color} flex items-center justify-center text-white mb-4`}
+                      >
                         {goal.icon}
                       </div>
                       <h3 className="font-semibold text-white mb-1">{goal.title}</h3>
@@ -288,28 +406,125 @@ export default function OnboardingPage() {
                   </div>
                   <h2 className="text-3xl font-bold text-white mb-2">Add Your Skills</h2>
                   <p className="text-white/60">
-                    Select your skills (you can add more later)
+                    Choose from the five pillars below or add your own custom skills.
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-3 justify-center">
-                  {initialSkills.map((skill) => (
-                    <motion.button
-                      key={skill}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleSkillToggle(skill)}
-                      className={`px-4 py-2 rounded-full font-medium transition-all ${
-                        selectedSkills.includes(skill)
-                          ? 'bg-white text-black'
-                          : 'bg-white/5 text-white/75 hover:bg-white/10'
-                      }`}
-                    >
-                      {skill}
-                    </motion.button>
-                  ))}
+                <div className="max-w-3xl mx-auto">
+                  <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="flex flex-col gap-3 md:flex-row">
+                      <input
+                        type="text"
+                        value={customSkill}
+                        onChange={(event) => {
+                          setCustomSkill(event.target.value)
+                          if (customSkillError) {
+                            setCustomSkillError(null)
+                          }
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            event.preventDefault()
+                            handleCustomSkillAdd()
+                          }
+                        }}
+                        className="min-h-[48px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none transition focus:border-cyan-300/60"
+                        placeholder="Add your own skill, like Salesforce, C++, or Recruiting"
+                      />
+                      <Button type="button" onClick={handleCustomSkillAdd}>
+                        Add Skill
+                      </Button>
+                    </div>
+                    {customSkillError && (
+                      <p className="mt-3 text-sm text-rose-300">{customSkillError}</p>
+                    )}
+                  </div>
+
+                  {selectedSkills.length > 0 && (
+                    <div className="mb-6">
+                      <div className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-white/45">
+                        Selected skills
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        {selectedSkills.map((skill) => (
+                          <button
+                            key={skill}
+                            type="button"
+                            onClick={() => handleSkillToggle(skill)}
+                            className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-white transition hover:border-cyan-200 hover:bg-cyan-300/15"
+                          >
+                            {skill} x
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                    {SKILL_PILLAR_DETAILS.map((pillar) => {
+                      const visual = pillarVisuals[pillar.category]
+                      return (
+                        <div
+                          key={pillar.category}
+                          className={`rounded-2xl border px-4 py-4 ${visual.cardClass}`}
+                        >
+                          <div className="mb-3 inline-flex rounded-xl border border-white/10 bg-black/20 p-2 text-white">
+                            {visual.icon}
+                          </div>
+                          <div className="text-sm font-semibold text-white">{pillar.category}</div>
+                          <p className="mt-2 text-sm text-white/65">{pillar.summary}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <div className="space-y-5">
+                    {SKILL_SUGGESTION_GROUPS.map((group) => (
+                      <div
+                        key={group.id}
+                        className={`rounded-3xl border p-5 ${pillarVisuals[group.label as SkillCategory].cardClass}`}
+                      >
+                        <div className="mb-2 flex items-center gap-3 text-white">
+                          <div className="rounded-xl border border-white/10 bg-black/20 p-2">
+                            {pillarVisuals[group.label as SkillCategory].icon}
+                          </div>
+                          <div className="text-sm font-medium uppercase tracking-[0.2em] text-white/60">
+                            {group.label}
+                          </div>
+                        </div>
+                        <p className="mb-4 max-w-2xl text-sm text-white/65">{group.description}</p>
+                        <div className="mb-3 text-xs font-medium uppercase tracking-[0.24em] text-white/40">
+                          Suggested skills
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          {group.skills.map((skill) => {
+                            const isSelected = selectedSkills.some(
+                              (selectedSkill) => selectedSkill.toLowerCase() === skill.toLowerCase()
+                            )
+
+                            return (
+                              <motion.button
+                                key={skill}
+                                type="button"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleSkillToggle(skill)}
+                                className={`px-4 py-2 rounded-full font-medium transition-all ${
+                                  isSelected
+                                    ? 'bg-white text-black'
+                                    : pillarVisuals[group.label as SkillCategory].chipClass
+                                }`}
+                              >
+                                {skill}
+                              </motion.button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <p className="text-center text-sm text-white/45 mt-6">
-                  Selected: {selectedSkills.length} skills
+                  Selected: {selectedSkills.length} of {MAX_ONBOARDING_SKILLS} skills
                 </p>
               </motion.div>
             )}
@@ -334,9 +549,14 @@ export default function OnboardingPage() {
                 </motion.div>
                 <h2 className="text-3xl font-bold text-white mb-4">You&apos;re All Set</h2>
                 <p className="text-white/60 mb-8 max-w-2xl mx-auto">
-                  Your Nexus profile is ready. Start adding more skills, get verified, 
-                  and discover career opportunities matched to your profile.
+                  Your Nexus profile is ready. Start building proof across the five pillars, verify
+                  your strongest skills, and unlock better career guidance.
                 </p>
+                {completionError && (
+                  <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                    {completionError}
+                  </div>
+                )}
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
                   <AnimatedCard className="p-4">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
@@ -344,7 +564,10 @@ export default function OnboardingPage() {
                   </AnimatedCard>
                   <AnimatedCard className="p-4">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium">{selectedSkills.length} Skills Added</p>
+                    <p className="text-sm font-medium">
+                      {selectedSkills.length} {selectedSkills.length === 1 ? 'skill' : 'skills'} to
+                      add
+                    </p>
                   </AnimatedCard>
                   <AnimatedCard className="p-4">
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
@@ -361,7 +584,7 @@ export default function OnboardingPage() {
               variant="outline"
               leftIcon={<ArrowLeft className="w-5 h-5" />}
               onClick={handleBack}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isCompleting}
             >
               Back
             </Button>
@@ -369,15 +592,22 @@ export default function OnboardingPage() {
               Step {currentStep} of {steps.length}
             </div>
             <Button
-              rightIcon={currentStep === steps.length ? undefined : <ArrowRight className="w-5 h-5" />}
+              rightIcon={
+                currentStep === steps.length ? undefined : <ArrowRight className="w-5 h-5" />
+              }
               onClick={handleNext}
-              disabled={!canProceed()}
+              isLoading={isCompleting}
+              disabled={isCompleting}
             >
-              {currentStep === steps.length ? 'Get Started' : 'Next'}
+              {currentStep === steps.length
+                ? 'Get Started'
+                : isSkippableEmptyStep
+                  ? 'Skip for now'
+                  : 'Next'}
             </Button>
           </div>
         </AnimatedCard>
       </div>
-    </div>
+    </AppPageShell>
   )
 }

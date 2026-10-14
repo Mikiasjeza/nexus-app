@@ -1,132 +1,292 @@
 /**
- * AI Client - Real AI Integration
- * Supports OpenAI and Anthropic APIs
- * 
- * TODO: Add API keys to environment variables:
- * - OPENAI_API_KEY
- * - ANTHROPIC_API_KEY
- * 
- * TODO: Decide on default model (gpt-4, claude-3-opus, etc.)
- * TODO: Implement cost tracking and limits
- * TODO: Add rate limiting
+ * AI client: Gemini, OpenAI or Anthropic, chosen by AI_PROVIDER / AI_MODEL
+ * (see lib/config/env.ts). Skill verification prompts, parsing and the
+ * verified/not-verified policy live in ./verification.ts; costs in ./pricing.ts.
  */
 
+import { GoogleGenAI } from '@google/genai'
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { assertAIEnv, env } from '@/lib/config/env'
+import { getSkillVerificationLens } from '@/lib/skills-taxonomy'
+import type { SkillCategory } from '@/lib/types'
+import { estimateCostUsd } from './pricing'
+import {
+  VERIFICATION_SYSTEM_PROMPT,
+  buildVerificationPrompt,
+  parseVerificationResult,
+  verificationJsonSchema,
+  type EvidenceInput,
+  type VerificationResult,
+} from './verification'
 
-// TODO: Choose default provider (openai or anthropic)
-const DEFAULT_PROVIDER = env.ai.provider
+export type { EvidenceInput } from './verification'
 
-// TODO: Choose default model based on provider
+type Provider = 'gemini' | 'openai' | 'anthropic'
+
+const DEFAULT_PROVIDER = env.ai.provider as Provider
 const DEFAULT_MODEL = env.ai.model
 
-export interface EvidenceInput {
-  type: 'text' | 'code' | 'link' | 'file'
-  content: string
-  metadata?: {
-    url?: string
-    language?: string
-    fileName?: string
-    mimeType?: string
-  }
-}
-
-export interface AIAnalysisResult {
-  confidenceScore: number // 0-1
-  explanation: string
-  suggestedLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  improvements: string[]
+export interface AIAnalysisResult extends VerificationResult {
   tokensUsed: number
   cost: number
   model: string
+}
+
+export interface JobMatchInput {
+  id: string
+  title: string
+  description?: string
+  skills: string[]
+  location?: string
+  type: string
+  companyName: string
+}
+
+export interface SkillMatchInput {
+  name: string
+  level: string
+  verified?: boolean
+}
+
+export interface AIJobMatch {
+  jobId: string
+  matchScore: number
+  reason: string
+  matchingSkills: string[]
+  gaps: string[]
+  recommended: boolean
+}
+
+export interface AIJobMatchResult {
+  summary: string
+  matches: AIJobMatch[]
+  model: string
+  tokensUsed: number
+  cost: number
   rawResponse?: any
 }
 
+export interface AICareerChatResult {
+  reply: string
+  suggestedPrompts: string[]
+  model: string
+  tokensUsed: number
+  cost: number
+  rawResponse?: any
+}
+
+type RawReply = { text: string; inputTokens: number; outputTokens: number; model: string }
+
 class AIClient {
+  private gemini: GoogleGenAI | null = null
   private openai: OpenAI | null = null
   private anthropic: Anthropic | null = null
 
   constructor() {
-    // Initialize OpenAI if API key is provided
+    if (env.ai.geminiKey) {
+      this.gemini = new GoogleGenAI({
+        apiKey: env.ai.geminiKey,
+      })
+    }
+
     if (env.ai.openAiKey) {
       this.openai = new OpenAI({
         apiKey: env.ai.openAiKey,
       })
     }
 
-    // Initialize Anthropic if API key is provided
     if (env.ai.anthropicKey) {
       this.anthropic = new Anthropic({
         apiKey: env.ai.anthropicKey,
       })
     }
 
-    if (!this.openai && !this.anthropic) {
+    if (!this.gemini && !this.openai && !this.anthropic) {
       console.warn('⚠️  No AI API keys configured. AI features will not work.')
-      console.warn('   Set OPENAI_API_KEY or ANTHROPIC_API_KEY in .env')
+      console.warn('   Set GEMINI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY in .env')
     }
   }
 
   /**
-   * Analyze evidence for a skill
-   * Returns confidence score, explanation, and suggestions
+   * Assess evidence for a skill claim with the configured provider.
+   * Throws if the provider fails or its reply doesn't match the schema;
+   * callers must treat that as "not verified".
    */
   async analyzeEvidence(
     skillName: string,
-    skillLevel: string,
-    evidence: EvidenceInput[],
-    provider: 'openai' | 'anthropic' = DEFAULT_PROVIDER as any
-  ): Promise<AIAnalysisResult> {
-    assertAIEnv()
-    if (provider === 'openai' && this.openai) {
-      return this.analyzeWithOpenAI(skillName, skillLevel, evidence)
-    } else if (provider === 'anthropic' && this.anthropic) {
-      return this.analyzeWithAnthropic(skillName, skillLevel, evidence)
-    }
-
-    throw new Error(`AI provider ${provider} not configured or unavailable`)
-  }
-
-  private async analyzeWithOpenAI(
-    skillName: string,
+    skillCategory: SkillCategory,
     skillLevel: string,
     evidence: EvidenceInput[]
   ): Promise<AIAnalysisResult> {
+    assertAIEnv()
+    const prompt = buildVerificationPrompt(
+      skillName,
+      skillCategory,
+      skillLevel,
+      evidence,
+      getSkillVerificationLens(skillCategory)
+    )
+
+    let reply: RawReply
+    try {
+      reply = await this.verifyWith(DEFAULT_PROVIDER, prompt)
+    } catch (error) {
+      console.error(`${DEFAULT_PROVIDER} analysis error:`, error)
+      throw new Error(
+        `AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+
+    return {
+      ...parseVerificationResult(reply.text),
+      tokensUsed: reply.inputTokens + reply.outputTokens,
+      cost: estimateCostUsd(reply.model, reply.inputTokens, reply.outputTokens),
+      model: reply.model,
+    }
+  }
+
+  private verifyWith(provider: Provider, prompt: string): Promise<RawReply> {
+    if (provider === 'gemini' && this.gemini) return this.verifyWithGemini(prompt)
+    if (provider === 'openai' && this.openai) return this.verifyWithOpenAI(prompt)
+    if (provider === 'anthropic' && this.anthropic) return this.verifyWithAnthropic(prompt)
+    throw new Error(`AI provider ${provider} not configured or unavailable`)
+  }
+
+  private async verifyWithGemini(prompt: string): Promise<RawReply> {
+    const response = await this.gemini!.models.generateContent({
+      model: DEFAULT_MODEL,
+      contents: prompt,
+      config: {
+        systemInstruction: VERIFICATION_SYSTEM_PROMPT,
+        responseMimeType: 'application/json',
+        temperature: 0.2,
+        maxOutputTokens: 2000,
+      },
+    })
+    if (!response.text) throw new Error('No response from Gemini')
+    return {
+      text: response.text,
+      inputTokens: response.usageMetadata?.promptTokenCount ?? 0,
+      outputTokens: response.usageMetadata?.candidatesTokenCount ?? 0,
+      model: DEFAULT_MODEL,
+    }
+  }
+
+  private async verifyWithOpenAI(prompt: string): Promise<RawReply> {
+    const response = await this.openai!.chat.completions.create({
+      model: DEFAULT_MODEL,
+      messages: [
+        { role: 'system', content: VERIFICATION_SYSTEM_PROMPT },
+        { role: 'user', content: prompt },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.2,
+      max_tokens: 2000,
+    })
+    const text = response.choices[0]?.message?.content
+    if (!text) throw new Error('No response from OpenAI')
+    return {
+      text,
+      inputTokens: response.usage?.prompt_tokens ?? 0,
+      outputTokens: response.usage?.completion_tokens ?? 0,
+      model: DEFAULT_MODEL,
+    }
+  }
+
+  private async verifyWithAnthropic(prompt: string): Promise<RawReply> {
+    // `fallbacks: 'default'` re-runs a declined request on a fallback model
+    // inside the same call. The installed SDK predates the parameter, hence
+    // the cast; the API accepts it with the beta header below.
+    const params = {
+      model: DEFAULT_MODEL,
+      max_tokens: 16000,
+      system: VERIFICATION_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: prompt }],
+      output_config: {
+        effort: 'medium',
+        format: { type: 'json_schema', schema: verificationJsonSchema },
+      },
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+    } as unknown as Anthropic.Beta.Messages.MessageCreateParamsNonStreaming
+
+    const response = await this.anthropic!.beta.messages.create(params)
+    if (response.stop_reason === 'refusal') {
+      throw new Error('The AI declined to assess this evidence')
+    }
+    if (response.stop_reason === 'max_tokens') {
+      throw new Error('The AI reply was cut off')
+    }
+    const text = response.content
+      .filter((block) => block.type === 'text')
+      .map((block) => (block as { text: string }).text)
+      .join('')
+    if (!text) throw new Error('No response from Anthropic')
+    return {
+      text,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+      model: response.model,
+    }
+  }
+
+  async matchJobsForUser(
+    skills: SkillMatchInput[],
+    jobs: JobMatchInput[]
+  ): Promise<AIJobMatchResult> {
+    assertAIEnv()
+    if (DEFAULT_PROVIDER === 'gemini' && this.gemini) {
+      return this.matchJobsWithGemini(skills, jobs)
+    }
     if (!this.openai) throw new Error('OpenAI client not initialized')
 
-    // Build evidence context
-    const evidenceText = evidence.map(e => {
-      if (e.type === 'code') {
-        return `Code (${e.metadata?.language || 'unknown'}):\n${e.content}`
-      } else if (e.type === 'link') {
-        return `Link: ${e.metadata?.url}\nDescription: ${e.content}`
-      } else {
-        return e.content
-      }
-    }).join('\n\n---\n\n')
+    const compactSkills = skills.slice(0, 12).map((skill) => ({
+      name: skill.name,
+      level: skill.level,
+      verified: Boolean(skill.verified),
+    }))
 
-    const prompt = `You are an expert skill assessor. Analyze the following evidence for a skill claim.
+    const compactJobs = jobs.slice(0, 8).map((job) => ({
+      id: job.id,
+      title: job.title,
+      companyName: job.companyName,
+      type: job.type,
+      location: job.location,
+      skills: job.skills,
+      description: job.description?.slice(0, 500) || '',
+    }))
 
-Skill: ${skillName}
-Claimed Level: ${skillLevel}
+    const prompt = `You are an expert AI recruiter for Nexus.
 
-Evidence:
-${evidenceText}
+User skills:
+${JSON.stringify(compactSkills, null, 2)}
 
-Provide:
-1. A confidence score (0-1) for this skill claim based on the evidence
-2. A clear explanation of why you assigned this score
-3. A suggested skill level (beginner, intermediate, advanced, expert) if different from claimed
-4. 2-3 specific, actionable improvements to strengthen this skill claim
+Jobs to evaluate:
+${JSON.stringify(compactJobs, null, 2)}
 
-Respond in JSON format:
+Evaluate which jobs best match the user's skills. Focus on actual alignment, not keyword stuffing.
+
+Respond in JSON with this shape:
 {
-  "confidenceScore": 0.0-1.0,
-  "explanation": "detailed explanation",
-  "suggestedLevel": "beginner|intermediate|advanced|expert" (optional),
-  "improvements": ["improvement 1", "improvement 2", "improvement 3"]
-}`
+  "summary": "1-2 sentence overview of the strongest opportunities",
+  "matches": [
+    {
+      "jobId": "job id",
+      "matchScore": 0-100,
+      "reason": "short explanation tailored to the candidate",
+      "matchingSkills": ["skill 1", "skill 2"],
+      "gaps": ["gap 1", "gap 2"],
+      "recommended": true
+    }
+  ]
+}
+
+Rules:
+- Return at most 5 matches.
+- Only use the provided job ids.
+- Keep reasons concise and specific.
+- Set recommended to true for especially strong matches.`
 
     try {
       const response = await this.openai.chat.completions.create({
@@ -134,7 +294,8 @@ Respond in JSON format:
         messages: [
           {
             role: 'system',
-            content: 'You are an expert skill assessor. Analyze evidence objectively and provide constructive feedback.',
+            content:
+              'You are a thoughtful recruiter who matches people to jobs based on evidence-backed skills.',
           },
           {
             role: 'user',
@@ -142,8 +303,247 @@ Respond in JSON format:
           },
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.3, // Lower temperature for more consistent analysis
-        max_tokens: 1000,
+        temperature: 0.4,
+        max_tokens: 1200,
+      })
+
+      const content = response.choices[0]?.message?.content
+      if (!content) throw new Error('No response from OpenAI')
+
+      const parsed = JSON.parse(content)
+      const knownJobIds = new Set(compactJobs.map((job) => job.id))
+      const matches = Array.isArray(parsed.matches)
+        ? parsed.matches
+            .filter((item: { jobId?: string }) => item?.jobId && knownJobIds.has(item.jobId))
+            .map(
+              (item: {
+                jobId: string
+                matchScore?: number
+                reason?: string
+                matchingSkills?: string[]
+                gaps?: string[]
+                recommended?: boolean
+              }) => ({
+                jobId: item.jobId,
+                matchScore: Math.max(0, Math.min(100, Math.round(item.matchScore ?? 0))),
+                reason: item.reason || 'This role lines up with your current strengths.',
+                matchingSkills: Array.isArray(item.matchingSkills)
+                  ? item.matchingSkills.slice(0, 4)
+                  : [],
+                gaps: Array.isArray(item.gaps) ? item.gaps.slice(0, 3) : [],
+                recommended: Boolean(item.recommended),
+              })
+            )
+            .sort((a: AIJobMatch, b: AIJobMatch) => b.matchScore - a.matchScore)
+        : []
+
+      const tokensUsed = response.usage?.total_tokens || 0
+      const cost = estimateCostUsd(
+        DEFAULT_MODEL,
+        response.usage?.prompt_tokens ?? 0,
+        response.usage?.completion_tokens ?? 0
+      )
+
+      return {
+        summary:
+          typeof parsed.summary === 'string' && parsed.summary.trim()
+            ? parsed.summary.trim()
+            : 'These opportunities are the strongest fit based on your current skill profile.',
+        matches,
+        model: DEFAULT_MODEL,
+        tokensUsed,
+        cost,
+        rawResponse: response,
+      }
+    } catch (error) {
+      console.error('OpenAI job matching error:', error)
+      throw new Error(
+        `AI job matching failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+  }
+
+  private async matchJobsWithGemini(
+    skills: SkillMatchInput[],
+    jobs: JobMatchInput[]
+  ): Promise<AIJobMatchResult> {
+    if (!this.gemini) throw new Error('Gemini client not initialized')
+
+    const compactSkills = skills.slice(0, 12).map((skill) => ({
+      name: skill.name,
+      level: skill.level,
+      verified: Boolean(skill.verified),
+    }))
+
+    const compactJobs = jobs.slice(0, 8).map((job) => ({
+      id: job.id,
+      title: job.title,
+      companyName: job.companyName,
+      type: job.type,
+      location: job.location,
+      skills: job.skills,
+      description: job.description?.slice(0, 500) || '',
+    }))
+
+    const prompt = `You are an expert AI recruiter for Nexus.
+
+User skills:
+${JSON.stringify(compactSkills, null, 2)}
+
+Jobs to evaluate:
+${JSON.stringify(compactJobs, null, 2)}
+
+Evaluate which jobs best match the user's skills. Focus on actual alignment, not keyword stuffing.
+
+Respond in strict JSON with this shape:
+{
+  "summary": "1-2 sentence overview of the strongest opportunities",
+  "matches": [
+    {
+      "jobId": "job id",
+      "matchScore": 0-100,
+      "reason": "short explanation tailored to the candidate",
+      "matchingSkills": ["skill 1", "skill 2"],
+      "gaps": ["gap 1", "gap 2"],
+      "recommended": true
+    }
+  ]
+}
+
+Rules:
+- Return at most 5 matches.
+- Only use the provided job ids.
+- Keep reasons concise and specific.
+- Set recommended to true for especially strong matches.`
+
+    try {
+      const response = await this.gemini.models.generateContent({
+        model: DEFAULT_MODEL,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.4,
+          maxOutputTokens: 1200,
+        },
+      })
+
+      const content = response.text
+      if (!content) throw new Error('No response from Gemini')
+
+      const parsed = JSON.parse(content)
+      const knownJobIds = new Set(compactJobs.map((job) => job.id))
+      const matches = Array.isArray(parsed.matches)
+        ? parsed.matches
+            .filter((item: { jobId?: string }) => item?.jobId && knownJobIds.has(item.jobId))
+            .map(
+              (item: {
+                jobId: string
+                matchScore?: number
+                reason?: string
+                matchingSkills?: string[]
+                gaps?: string[]
+                recommended?: boolean
+              }) => ({
+                jobId: item.jobId,
+                matchScore: Math.max(0, Math.min(100, Math.round(item.matchScore ?? 0))),
+                reason: item.reason || 'This role lines up with your current strengths.',
+                matchingSkills: Array.isArray(item.matchingSkills)
+                  ? item.matchingSkills.slice(0, 4)
+                  : [],
+                gaps: Array.isArray(item.gaps) ? item.gaps.slice(0, 3) : [],
+                recommended: Boolean(item.recommended),
+              })
+            )
+            .sort((a: AIJobMatch, b: AIJobMatch) => b.matchScore - a.matchScore)
+        : []
+
+      return {
+        summary:
+          typeof parsed.summary === 'string' && parsed.summary.trim()
+            ? parsed.summary.trim()
+            : 'These opportunities are the strongest fit based on your current skill profile.',
+        matches,
+        model: DEFAULT_MODEL,
+        tokensUsed: 0,
+        cost: 0,
+        rawResponse: response,
+      }
+    } catch (error) {
+      console.error('Gemini job matching error:', error)
+      throw new Error(
+        `AI job matching failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+  }
+
+  async chatCareerCoach(
+    message: string,
+    skills: SkillMatchInput[],
+    jobs: JobMatchInput[] = []
+  ): Promise<AICareerChatResult> {
+    assertAIEnv()
+    if (DEFAULT_PROVIDER === 'gemini' && this.gemini) {
+      return this.chatCareerCoachWithGemini(message, skills, jobs)
+    }
+    if (!this.openai) throw new Error('OpenAI client not initialized')
+
+    const prompt = `You are the Nexus AI career coach.
+
+User skills:
+${JSON.stringify(
+  skills.slice(0, 12).map((skill) => ({
+    name: skill.name,
+    level: skill.level,
+    verified: Boolean(skill.verified),
+  })),
+  null,
+  2
+)}
+
+Relevant jobs:
+${JSON.stringify(
+  jobs.slice(0, 5).map((job) => ({
+    title: job.title,
+    companyName: job.companyName,
+    type: job.type,
+    skills: job.skills,
+  })),
+  null,
+  2
+)}
+
+User message:
+${message}
+
+Respond in JSON:
+{
+  "reply": "helpful coaching response in under 140 words",
+  "suggestedPrompts": ["follow up 1", "follow up 2", "follow up 3"]
+}
+
+Rules:
+- Be specific, practical, and encouraging.
+- Reference the user's skills or nearby jobs when useful.
+- Give direct next steps.
+- Suggested prompts should be short and clickable.`
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: DEFAULT_MODEL,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a concise AI career coach helping users turn their skills into better job outcomes.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.6,
+        max_tokens: 700,
       })
 
       const content = response.choices[0]?.message?.content
@@ -151,126 +551,115 @@ Respond in JSON format:
 
       const parsed = JSON.parse(content)
       const tokensUsed = response.usage?.total_tokens || 0
-      
-      // TODO: Calculate actual cost based on model pricing
-      // This is approximate for gpt-4-turbo-preview
-      const cost = (tokensUsed / 1000) * 0.01 // Rough estimate
+      const cost = estimateCostUsd(
+        DEFAULT_MODEL,
+        response.usage?.prompt_tokens ?? 0,
+        response.usage?.completion_tokens ?? 0
+      )
 
       return {
-        confidenceScore: Math.max(0, Math.min(1, parsed.confidenceScore || 0.5)),
-        explanation: parsed.explanation || 'Analysis completed',
-        suggestedLevel: parsed.suggestedLevel,
-        improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
+        reply:
+          typeof parsed.reply === 'string' && parsed.reply.trim()
+            ? parsed.reply.trim()
+            : 'Focus on presenting your strongest verified skills and the proof behind them.',
+        suggestedPrompts: Array.isArray(parsed.suggestedPrompts)
+          ? parsed.suggestedPrompts
+              .filter((item: unknown): item is string => typeof item === 'string')
+              .slice(0, 3)
+          : [],
+        model: DEFAULT_MODEL,
         tokensUsed,
         cost,
-        model: DEFAULT_MODEL,
         rawResponse: response,
       }
     } catch (error) {
-      console.error('OpenAI analysis error:', error)
-      throw new Error(`AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('OpenAI career chat error:', error)
+      throw new Error(`AI chat failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
-  private async analyzeWithAnthropic(
-    skillName: string,
-    skillLevel: string,
-    evidence: EvidenceInput[]
-  ): Promise<AIAnalysisResult> {
-    if (!this.anthropic) throw new Error('Anthropic client not initialized')
+  private async chatCareerCoachWithGemini(
+    message: string,
+    skills: SkillMatchInput[],
+    jobs: JobMatchInput[] = []
+  ): Promise<AICareerChatResult> {
+    if (!this.gemini) throw new Error('Gemini client not initialized')
 
-    // Build evidence context
-    const evidenceText = evidence.map(e => {
-      if (e.type === 'code') {
-        return `Code (${e.metadata?.language || 'unknown'}):\n${e.content}`
-      } else if (e.type === 'link') {
-        return `Link: ${e.metadata?.url}\nDescription: ${e.content}`
-      } else {
-        return e.content
-      }
-    }).join('\n\n---\n\n')
+    const prompt = `You are the Nexus AI career coach.
 
-    const prompt = `You are an expert skill assessor. Analyze the following evidence for a skill claim.
+User skills:
+${JSON.stringify(
+  skills.slice(0, 12).map((skill) => ({
+    name: skill.name,
+    level: skill.level,
+    verified: Boolean(skill.verified),
+  })),
+  null,
+  2
+)}
 
-Skill: ${skillName}
-Claimed Level: ${skillLevel}
+Relevant jobs:
+${JSON.stringify(
+  jobs.slice(0, 5).map((job) => ({
+    title: job.title,
+    companyName: job.companyName,
+    type: job.type,
+    skills: job.skills,
+  })),
+  null,
+  2
+)}
 
-Evidence:
-${evidenceText}
+User message:
+${message}
 
-Provide:
-1. A confidence score (0-1) for this skill claim based on the evidence
-2. A clear explanation of why you assigned this score
-3. A suggested skill level (beginner, intermediate, advanced, expert) if different from claimed
-4. 2-3 specific, actionable improvements to strengthen this skill claim
-
-Respond in JSON format:
+Respond in strict JSON:
 {
-  "confidenceScore": 0.0-1.0,
-  "explanation": "detailed explanation",
-  "suggestedLevel": "beginner|intermediate|advanced|expert" (optional),
-  "improvements": ["improvement 1", "improvement 2", "improvement 3"]
-}`
+  "reply": "helpful coaching response in under 140 words",
+  "suggestedPrompts": ["follow up 1", "follow up 2", "follow up 3"]
+}
+
+Rules:
+- Be specific, practical, and encouraging.
+- Reference the user's skills or nearby jobs when useful.
+- Give direct next steps.
+- Suggested prompts should be short and clickable.`
 
     try {
-      const response = await (this.anthropic as any).messages.create({
-        model: 'claude-3-opus-20240229', // TODO: Make configurable
-        max_tokens: 1000,
-        temperature: 0.3,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
+      const response = await this.gemini.models.generateContent({
+        model: DEFAULT_MODEL,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.6,
+          maxOutputTokens: 700,
+        },
       })
 
-      const content = response.content[0]
-      if (content.type !== 'text') throw new Error('Unexpected response type from Anthropic')
+      const content = response.text
+      if (!content) throw new Error('No response from Gemini')
 
-      const parsed = JSON.parse(content.text)
-      const tokensUsed = response.usage.input_tokens + response.usage.output_tokens
-      
-      // TODO: Calculate actual cost based on model pricing
-      // This is approximate for claude-3-opus
-      const cost = (tokensUsed / 1000) * 0.015 // Rough estimate
+      const parsed = JSON.parse(content)
 
       return {
-        confidenceScore: Math.max(0, Math.min(1, parsed.confidenceScore || 0.5)),
-        explanation: parsed.explanation || 'Analysis completed',
-        suggestedLevel: parsed.suggestedLevel,
-        improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
-        tokensUsed,
-        cost,
-        model: 'claude-3-opus-20240229',
+        reply:
+          typeof parsed.reply === 'string' && parsed.reply.trim()
+            ? parsed.reply.trim()
+            : 'Focus on presenting your strongest verified skills and the proof behind them.',
+        suggestedPrompts: Array.isArray(parsed.suggestedPrompts)
+          ? parsed.suggestedPrompts
+              .filter((item: unknown): item is string => typeof item === 'string')
+              .slice(0, 3)
+          : [],
+        model: DEFAULT_MODEL,
+        tokensUsed: 0,
+        cost: 0,
         rawResponse: response,
       }
     } catch (error) {
-      console.error('Anthropic analysis error:', error)
-      throw new Error(`AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Gemini career chat error:', error)
+      throw new Error(`AI chat failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
-
-  /**
-   * Batch analyze multiple evidence items (cost optimization)
-   */
-  async batchAnalyze(
-    analyses: Array<{ skillName: string; skillLevel: string; evidence: EvidenceInput[] }>,
-    provider: 'openai' | 'anthropic' = DEFAULT_PROVIDER as any
-  ): Promise<AIAnalysisResult[]> {
-    // TODO: Implement batching logic to reduce API calls
-    // For now, process sequentially
-    const results: AIAnalysisResult[] = []
-    for (const analysis of analyses) {
-      const result = await this.analyzeEvidence(
-        analysis.skillName,
-        analysis.skillLevel,
-        analysis.evidence,
-        provider
-      )
-      results.push(result)
-    }
-    return results
   }
 }
 

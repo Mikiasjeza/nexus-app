@@ -3,6 +3,7 @@
 ## ✅ Your Project is Already Saved!
 
 Your project is currently saved at:
+
 ```
 C:\Users\mikia\Documents
 ```
@@ -12,16 +13,19 @@ All your files (code, components, pages, configs) are already on your computer.
 ## 📍 How to Access Your Project
 
 ### Method 1: Through File Explorer
+
 1. Open **File Explorer** (Windows key + E)
 2. Navigate to: `C:\Users\mikia\Documents`
 3. You'll see all your project files there!
 
 ### Method 2: Through Cursor/VS Code
+
 1. Open Cursor/VS Code
 2. Click **File > Open Folder**
 3. Select: `C:\Users\mikia\Documents`
 
 ### Method 3: Create a Desktop Shortcut
+
 1. Right-click on `C:\Users\mikia\Documents`
 2. Select **Send to > Desktop (create shortcut)**
 3. Double-click the shortcut to access your project anytime!
@@ -29,6 +33,7 @@ All your files (code, components, pages, configs) are already on your computer.
 ## 💾 Backup Options
 
 ### Option 1: Manual Copy (Simplest)
+
 1. Go to `C:\Users\mikia\Documents` in File Explorer
 2. Select all files (Ctrl + A)
 3. Copy (Ctrl + C)
@@ -38,6 +43,7 @@ All your files (code, components, pages, configs) are already on your computer.
    - Cloud storage (OneDrive, Google Drive, Dropbox)
 
 ### Option 2: Create a ZIP Archive
+
 1. Right-click on `C:\Users\mikia\Documents` folder
 2. Select **Send to > Compressed (zipped) folder**
 3. Name it: `Nexus-Backup-[DATE].zip`
@@ -50,6 +56,7 @@ If you want professional version control:
 1. **Install Git for Windows**: https://git-scm.com/download/win
 
 2. **Initialize Git in your project** (in Command Prompt):
+
    ```cmd
    cd C:\Users\mikia\Documents
    git init
@@ -70,11 +77,13 @@ If you want professional version control:
 ## 🚀 Quick Access Tips
 
 ### Pin to Quick Access
+
 1. Navigate to `C:\Users\mikia\Documents` in File Explorer
 2. Right-click the folder
 3. Select **Pin to Quick access**
 
 ### Add to Taskbar
+
 1. Right-click Cursor/VS Code icon in taskbar
 2. Right-click "Cursor" in the menu
 3. Select **Properties**
@@ -83,12 +92,14 @@ If you want professional version control:
 ## 📋 What to Backup
 
 **Important files to always backup:**
+
 - ✅ All `.tsx`, `.ts`, `.js`, `.json` files (your code)
 - ✅ `package.json` (dependencies list)
 - ✅ `tsconfig.json`, `tailwind.config.ts` (configurations)
 - ✅ `README.md`, `INSTALL.md` (documentation)
 
 **Don't need to backup (can be regenerated):**
+
 - ❌ `node_modules/` (run `npm install` to recreate)
 - ❌ `.next/` (build folder, regenerated on build)
 - ❌ `.env.local` (contains secrets, don't share!)
@@ -96,6 +107,7 @@ If you want professional version control:
 ## ✅ Verify Your Backup
 
 To verify everything is saved:
+
 1. Check that these files exist:
    - `package.json`
    - `next.config.js`
@@ -111,6 +123,7 @@ To verify everything is saved:
 ## 🔄 Regular Backup Schedule
 
 **Recommended backup frequency:**
+
 - **Daily**: If actively developing
 - **Weekly**: If making occasional changes
 - **Before major changes**: Always backup before big updates
@@ -118,6 +131,7 @@ To verify everything is saved:
 ## 📦 Complete Project Structure
 
 Your project includes:
+
 ```
 Documents/
 ├── app/                    # All your pages

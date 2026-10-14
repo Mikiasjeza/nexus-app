@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2024-01-10
 
 ### Added
+
 - Initial release of Nexus
 - Core skill management (create, edit, delete, reorder)
 - Skill levels (beginner, intermediate, advanced, expert)
@@ -50,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive documentation
 
 ### Security
+
 - Input sanitization
 - XSS protection
 - CSRF protection headers
@@ -58,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rate limiting structure
 
 ### Performance
+
 - Code splitting
 - Lazy loading
 - Image optimization

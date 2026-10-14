@@ -19,11 +19,7 @@ export const authApi = {
     return user
   },
 
-  register: async (
-    email: string,
-    password: string,
-    name: string
-  ): Promise<User> => {
+  register: async (email: string, password: string, name: string): Promise<User> => {
     const user = await fetchApi<User>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, password, name }),
@@ -59,7 +55,8 @@ export const authApi = {
     })
   },
 
-  verifyEmail: async (_token: string): Promise<void> => {
+  verifyEmail: async (token: string): Promise<void> => {
+    void token
     await Promise.resolve()
   },
 
@@ -70,11 +67,12 @@ export const authApi = {
   deleteAccount: async (): Promise<void> => {
     await fetchApi<{ ok?: boolean }>('/api/auth/account', {
       method: 'DELETE',
+      body: JSON.stringify({ confirm: 'DELETE' }),
     })
   },
 
   exportData: async (): Promise<Blob> => {
-    const res = await fetch('/api/analytics/export', { credentials: 'include' })
+    const res = await fetch('/api/auth/account/export', { credentials: 'include' })
     if (!res.ok) throw new Error('Export failed')
     return res.blob()
   },
