@@ -6,6 +6,7 @@ import { Menu, X, LogOut, User as UserIcon } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { clsx } from 'clsx'
 import { useUser } from '@/lib/hooks/useUser'
+import NexusLogo from '@/components/UI/NexusLogo'
 
 const MARKETING_PATHS = new Set([
   '/',
@@ -138,9 +139,10 @@ export default function Header() {
         <div className="flex h-9 items-center justify-between gap-2">
           <Link
             href={user ? '/dashboard' : '/'}
-            className="inline-flex h-8 items-center rounded-full px-3 text-[0.9375rem] font-medium tracking-[-0.01em] text-ink"
+            className="inline-flex h-8 items-center rounded-full px-3"
+            aria-label="Nexus home"
           >
-            Nexus
+            <NexusLogo size={18} />
           </Link>
 
           <div className="hidden items-center lg:flex">
