@@ -1,161 +1,71 @@
 'use client'
 
 import Link from 'next/link'
-import NexusLogo from '@/components/UI/NexusLogo'
 import CookiePreferencesButton from '@/components/UI/CookiePreferencesButton'
+
+const columns = [
+  {
+    title: 'Product',
+    links: [
+      { href: '/dashboard', label: 'Dashboard' },
+      { href: '/skills', label: 'Skills' },
+      { href: '/verification', label: 'Verification' },
+      { href: '/analytics', label: 'Analytics' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { href: '/about', label: 'About' },
+      { href: '/how-it-works', label: 'How it works' },
+      { href: '/pricing', label: 'Pricing' },
+      { href: '/marketplace', label: 'Marketplace' },
+      { href: '/contact', label: 'Contact' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { href: '/terms', label: 'Terms' },
+      { href: '/privacy', label: 'Privacy' },
+      { href: '/cookies', label: 'Cookies' },
+    ],
+  },
+]
+
+const linkClass = 'text-[0.9375rem] text-ink-muted transition-colors duration-150 hover:text-ink'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/[0.06] bg-[rgba(9,9,11,0.88)] backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-6 py-14 lg:px-12">
-        <div className="mb-12">
-          <div className="mb-4">
-            <NexusLogo size="default" />
-          </div>
-          <p className="max-w-xl text-[13px] leading-relaxed text-white/45">
-            Nexus turns claims into proof with living skill passports, AI verification, and
-            shareable credibility organized across five skill pillars.
-          </p>
-        </div>
+    <footer className="mt-24 border-t border-line">
+      <div className="mx-auto grid max-w-[90rem] gap-16 px-[clamp(1rem,4vw,3rem)] pb-10 pt-16 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <p className="page-title max-w-[14ch] !text-[clamp(2rem,3.5vw,3.25rem)]">
+          Skill claims, turned into proof.
+        </p>
 
-        <div className="mb-12 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-6">
-          <div className="insight-card p-6">
-            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
-              Product
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/dashboard"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/skills"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Skills
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/verification"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Verification
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/analytics"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Analytics
-                </Link>
-              </li>
-            </ul>
-          </div>
+        <nav aria-label="Footer" className="grid grid-cols-2 gap-10 sm:grid-cols-3 sm:gap-16">
+          {columns.map((column) => (
+            <div key={column.title}>
+              <h2 className="mb-4 text-sm font-normal text-ink-faint">{column.title}</h2>
+              <ul className="space-y-2.5">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className={linkClass}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                {column.title === 'Legal' && (
+                  <li>
+                    <CookiePreferencesButton className={linkClass} />
+                  </li>
+                )}
+              </ul>
+            </div>
+          ))}
+        </nav>
 
-          <div className="insight-card p-6">
-            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
-              Company
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/about"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/pricing"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/marketplace"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Marketplace
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/how-it-works"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  How It Works
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className="insight-card p-6">
-            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
-              Legal
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Terms
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/cookies"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Cookies
-                </Link>
-              </li>
-              <li>
-                <CookiePreferencesButton className="text-[13px] text-white/58 transition-colors hover:text-white" />
-              </li>
-            </ul>
-          </div>
-
-          <div className="insight-card p-6">
-            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
-              Contact
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-[13px] text-white/58 transition-colors hover:text-white"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-white/[0.06] pt-8">
-          <p className="text-[12px] uppercase tracking-[0.14em] text-white/42">
-            © {new Date().getFullYear()} Nexus. All rights reserved.
-          </p>
-        </div>
+        <p className="text-sm text-ink-faint lg:col-span-2">© {new Date().getFullYear()} Nexus</p>
       </div>
     </footer>
   )

@@ -1,37 +1,17 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Video,
-  Code,
-  FileText,
-  Mic,
-  CheckCircle,
-  Brain,
-  Shield,
-  TrendingUp,
-  File,
-  Sparkles,
-  RefreshCw,
-  Upload,
-  X,
-} from 'lucide-react'
+import Link from 'next/link'
+import { File, Upload, X } from 'lucide-react'
 import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
 import { useToast } from '@/components/UI/ToastProvider'
-import Confetti from '@/components/UI/Confetti'
 import { aiApi, authApi, skillsApi } from '@/lib/api'
 import type { AnalysisHistoryItem, EvidenceInput } from '@/lib/api/ai'
 import type { Skill, User } from '@/lib/types'
 import { useRouter } from 'next/navigation'
-import { CATEGORY_COLORS } from '@/lib/utils/constants'
-import {
-  getSkillPillarDetail,
-  getSkillPillarForName,
-  SKILL_PILLAR_DETAILS,
-} from '@/lib/skills-taxonomy'
+import { getSkillPillarDetail, getSkillPillarForName } from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
 import {
   MAX_UPLOAD_BYTES,
   TEXT_UPLOAD_EXTENSIONS,
@@ -48,7 +28,7 @@ type EvidenceTypeId = 'code' | 'video' | 'document' | 'audio' | 'project'
 const evidenceTypes: Array<{
   id: EvidenceTypeId
   name: string
-  icon: typeof Code
+  shortName: string
   description: string
   requirements: string[]
   examples: string[]
@@ -60,7 +40,7 @@ const evidenceTypes: Array<{
   {
     id: 'code',
     name: 'Code Proof',
-    icon: Code,
+    shortName: 'Code',
     description:
       'Paste a code sample, repository context, or implementation notes for AI to assess.',
     requirements: [
@@ -77,7 +57,7 @@ const evidenceTypes: Array<{
   {
     id: 'video',
     name: 'Video Walkthrough',
-    icon: Video,
+    shortName: 'Video',
     description:
       'Share a walkthrough link plus a concise summary of what the reviewer should notice.',
     requirements: ['Explain what was built', 'Call out your role', 'Highlight outcomes or impact'],
@@ -90,7 +70,7 @@ const evidenceTypes: Array<{
   {
     id: 'document',
     name: 'Document Evidence',
-    icon: FileText,
+    shortName: 'Document',
     description:
       'Summarize a case study, report, or written artifact and optionally add a public link.',
     requirements: [
@@ -107,7 +87,7 @@ const evidenceTypes: Array<{
   {
     id: 'audio',
     name: 'Audio Evidence',
-    icon: Mic,
+    shortName: 'Audio',
     description: 'Describe the audio evidence and include a link if it is hosted publicly.',
     requirements: ['Clarify the topic', 'Explain your role', 'Mention the strongest moments'],
     examples: ['Interview', 'Podcast clip', 'Meeting presentation', 'Public talk'],
@@ -119,7 +99,7 @@ const evidenceTypes: Array<{
   {
     id: 'project',
     name: 'Project Proof',
-    icon: File,
+    shortName: 'Project',
     description: 'Point to a live project or portfolio piece and summarize the proof behind it.',
     requirements: [
       'Include a live URL or repository',
@@ -131,33 +111,6 @@ const evidenceTypes: Array<{
     helperText: 'Focus on the result, your scope, and the evidence of quality.',
     needsUrl: true,
     supportsUrl: true,
-  },
-]
-
-const verificationSteps = [
-  {
-    step: 1,
-    title: 'Choose Skill',
-    description: 'Pick the capability you want to prove',
-    icon: Sparkles,
-  },
-  {
-    step: 2,
-    title: 'Add Evidence',
-    description: 'Paste code, notes, links, or project context',
-    icon: FileText,
-  },
-  {
-    step: 3,
-    title: 'AI Review',
-    description: 'Run an objective skill analysis on your proof',
-    icon: Brain,
-  },
-  {
-    step: 4,
-    title: 'Save Result',
-    description: 'Store the analysis and upgrade profile trust',
-    icon: Shield,
   },
 ]
 
@@ -196,10 +149,6 @@ const guestSampleAnalyses: AnalysisHistoryItem[] = [
   },
 ]
 
-function formatConfidence(value: number) {
-  return `${Math.round(value * 100)}%`
-}
-
 function formatRelativeTime(value: string) {
   const diff = Date.now() - new Date(value).getTime()
   const hours = Math.round(diff / (1000 * 60 * 60))
@@ -228,7 +177,6 @@ export default function VerificationPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisHistoryItem | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
-  const [showConfetti, setShowConfetti] = useState(false)
 
   const isGuestPreview = user?.id === 'guest-user'
   const selectedEvidenceType =
@@ -552,11 +500,6 @@ export default function VerificationPage() {
         )
       )
 
-      if (response.data.verified) {
-        setShowConfetti(true)
-        window.setTimeout(() => setShowConfetti(false), 2500)
-      }
-
       addToast({
         type: 'success',
         title: response.data.verified ? 'Skill verified' : 'Analysis complete',
@@ -580,549 +523,413 @@ export default function VerificationPage() {
     }
   }
 
-  return (
-    <AppPageShell className="min-h-screen bg-black">
-      <Confetti trigger={showConfetti} />
+  const level = (value: string | null | undefined) =>
+    value ? value.charAt(0).toUpperCase() + value.slice(1) : ''
 
+  // Visitors who can't run a check see a labelled sample of what one returns.
+  const isSampleResult = !analysisResult && !isLoadingData && (!user || isGuestPreview)
+  const shownResult = analysisResult ?? (isSampleResult ? guestSampleAnalyses[0] : null)
+  const claimedLevel = isSampleResult ? shownResult?.skillLevel : selectedSkill?.level
+
+  return (
+    <AppPageShell>
       <div className="page-shell">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-10 md:mb-16"
-        >
-          <div className="hero-panel p-8 md:p-10">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-3 border border-white/10 bg-white/5">
-                <Brain className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <div className="hero-kicker mb-4">AI Trust Engine</div>
-                <h1 className="text-4xl md:text-6xl font-bold text-white mb-2 tracking-tight leading-[1.1]">
-                  AI Verification
-                </h1>
-                <p className="text-base md:text-lg text-white/68 max-w-2xl">
-                  Turn real work into proof. Nexus reviews each skill through one of five pillars so
-                  the evidence for code, creative work, communication, leadership, or growth gets
-                  scored in the right context.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
-              {['Skill-aware scoring', 'Saved AI feedback', 'Verification-ready trust signals'].map(
-                (item) => (
-                  <div key={item} className="insight-card px-4 py-3 text-sm text-white/72">
-                    {item}
-                  </div>
-                )
-              )}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 mt-6">
-              {SKILL_PILLAR_DETAILS.map((pillar) => (
-                <div
-                  key={pillar.category}
-                  className="insight-card px-4 py-4"
-                  style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
-                >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                    {pillar.shortLabel}
-                  </div>
-                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
-                </div>
+        <PageHeader
+          title="Verification"
+          rule
+          description="Add work that shows the skill. The AI checks it against the level you claim and tells you why."
+        />
+
+        {!isLoadingData && (!user || isGuestPreview) && (
+          <div className="mb-10 flex flex-wrap items-center justify-between gap-4 border-y border-line py-4">
+            <p className="text-sm text-ink-muted">
+              {isGuestPreview
+                ? 'You are viewing sample results. Running a check needs an account.'
+                : 'You are viewing sample results. Sign in to check your own skills.'}
+            </p>
+            <Link
+              href={isGuestPreview ? '/auth/register' : '/auth/login?next=/verification'}
+              className="pill"
+              data-active="true"
+            >
+              {isGuestPreview ? 'Create account' : 'Sign in'}
+            </Link>
+          </div>
+        )}
+
+        {/* Skill picker */}
+        <section aria-labelledby="skill-heading" className="mb-12">
+          <div className="mb-4 flex items-baseline justify-between gap-4">
+            <h2 id="skill-heading" className="text-sm font-normal text-ink-muted">
+              Skill
+            </h2>
+            {user && !isGuestPreview && (
+              <Link href="/skills" className="text-sm text-ink-muted hover:text-ink">
+                Manage skills
+              </Link>
+            )}
+          </div>
+          {isLoadingData ? (
+            <div className="flex gap-2" aria-hidden>
+              {[96, 132, 110].map((w) => (
+                <span
+                  key={w}
+                  className="h-8 animate-pulse rounded-full bg-pill"
+                  style={{ width: w }}
+                />
               ))}
             </div>
-            {isGuestPreview && (
-              <div className="mt-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
-                Guest preview is enabled. You can explore the interface, but running AI verification
-                requires a signed-in account.
-              </div>
-            )}
-            {!user && !isLoadingData && (
-              <div className="mt-6 border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-                Sign in to load your skills and run real AI analyses. Guests can still preview the
-                workflow and sample results.
-              </div>
-            )}
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 md:gap-6 mb-10 md:mb-16">
-          {verificationSteps.map((step, index) => {
-            const Icon = step.icon
-            return (
-              <motion.div
-                key={step.step}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: index * 0.08 }}
-              >
-                <div className="gradient-border-card p-6 text-center">
-                  <div className="w-12 h-12 border border-white/10 bg-white/5 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-2xl font-bold text-white mb-2">{step.step}</div>
-                  <h3 className="font-medium text-white mb-1">{step.title}</h3>
-                  <p className="text-sm text-white/60">{step.description}</p>
-                </div>
-              </motion.div>
-            )
-          })}
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-          <div className="lg:col-span-2 space-y-6 md:space-y-8">
-            <div className="gradient-border-card p-8">
-              <h2 className="text-2xl font-bold text-white mb-6">Choose Evidence Format</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {evidenceTypes.map((type) => {
-                  const Icon = type.icon
-                  const isSelected = selectedType === type.id
-
-                  return (
-                    <button
-                      key={type.id}
-                      type="button"
-                      onClick={() => setSelectedType(type.id)}
-                      className={`rounded-2xl border p-5 text-left transition ${
-                        isSelected
-                          ? 'border-cyan-300/60 bg-white/10'
-                          : 'border-white/10 bg-white/[0.03] hover:border-white/30'
-                      }`}
-                    >
-                      <div className="w-12 h-12 border border-white/10 bg-white/5 flex items-center justify-center mb-4">
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="font-medium text-white mb-2">{type.name}</h3>
-                      <p className="text-sm text-white/60">{type.description}</p>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div className="gradient-border-card p-8">
-              <div className="flex items-start justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">
-                    {selectedEvidenceType.name}
-                  </h2>
-                  <p className="text-white/60">
-                    {selectedPillar
-                      ? `${selectedEvidenceType.helperText} The AI will apply the ${selectedPillar.category.toLowerCase()} lens to this review.`
-                      : selectedEvidenceType.helperText}
-                  </p>
-                </div>
-                <Badge variant="info" size="sm">
-                  Gemini
-                </Badge>
-              </div>
-
-              {selectedPillar && (
-                <div
-                  className="mb-6 rounded-2xl border p-4"
-                  style={{
-                    borderColor: `${CATEGORY_COLORS[selectedPillar.category]}45`,
-                    backgroundColor: `${CATEGORY_COLORS[selectedPillar.category]}12`,
-                  }}
+          ) : skills.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill) => (
+                <button
+                  key={skill.id}
+                  type="button"
+                  className="pill"
+                  aria-pressed={skill.id === selectedSkillId}
+                  onClick={() => setSelectedSkillId(skill.id)}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                    {selectedPillar.shortLabel}
-                  </div>
-                  <div className="mt-2 text-lg font-semibold text-white">
-                    {selectedPillar.category}
-                  </div>
-                  <p className="mt-2 text-sm text-white/72">{selectedPillar.summary}</p>
-                  <p className="mt-3 text-sm text-white/58">{selectedPillar.proofFocus}</p>
-                </div>
+                  {skill.verified && (
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-verified"
+                      aria-label="Verified"
+                      role="img"
+                    />
+                  )}
+                  {skill.name}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-ink-muted">
+              {user ? (
+                <>
+                  You have no skills yet.{' '}
+                  <Link href="/skills" className="metalab-link">
+                    Add your first skill
+                  </Link>{' '}
+                  to check it.
+                </>
+              ) : (
+                'Your skills appear here once you sign in.'
               )}
+            </p>
+          )}
 
-              <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <h4 className="font-medium text-white mb-3">What strong evidence looks like</h4>
-                <ul className="space-y-2">
-                  {selectedEvidenceType.requirements.map((requirement) => (
-                    <li key={requirement} className="flex items-center gap-2 text-sm text-white/65">
-                      <CheckCircle className="w-4 h-4 text-cyan-200" />
-                      {requirement}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {selectedEvidenceType.examples.map((example) => (
-                    <Badge key={example} variant="default" size="sm">
-                      {example}
-                    </Badge>
-                  ))}
-                </div>
+          {selectedSkill && (
+            <div className="mt-8 grid gap-4 border-t border-line pt-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_auto] md:gap-10">
+              <div>
+                <p className="text-lg text-ink">{selectedSkill.name}</p>
+                <p className="mt-1 text-sm text-ink-faint">{selectedPillar?.category}</p>
               </div>
-
-              <div className="grid gap-5">
+              <p className="max-w-[46ch] text-[0.9375rem] leading-relaxed text-ink-muted">
+                {selectedPillar?.proofFocus}
+              </p>
+              <dl className="flex gap-8 text-sm md:flex-col md:gap-1 md:text-right">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-white">
-                    Skill to verify
-                  </label>
-                  <select
-                    value={selectedSkillId}
-                    onChange={(event) => setSelectedSkillId(event.target.value)}
-                    disabled={!user || isLoadingData || skills.length === 0}
-                    className="min-h-[48px] w-full rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none transition focus:border-cyan-300/60 disabled:opacity-50"
-                  >
-                    <option value="">
-                      {isLoadingData
-                        ? 'Loading your skills...'
-                        : skills.length > 0
-                          ? 'Choose a skill'
-                          : user
-                            ? 'Add skills first to run verification'
-                            : 'Sign in to load your skills'}
-                    </option>
-                    {skills.map((skill) => (
-                      <option key={skill.id} value={skill.id}>
-                        {skill.name} {skill.verified ? '(verified)' : ''}
-                      </option>
-                    ))}
-                  </select>
+                  <dt className="sr-only">Claimed level</dt>
+                  <dd className="text-ink">{level(selectedSkill.level)}</dd>
                 </div>
-
-                {selectedType === 'code' ? (
-                  <>
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-white">
-                        Code sample
-                      </label>
-                      <textarea
-                        value={codeSnippet}
-                        onChange={(event) => setCodeSnippet(event.target.value)}
-                        rows={10}
-                        className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-cyan-300/60"
-                        placeholder="Paste the most relevant code, implementation details, or architecture excerpt here."
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-white">Language</label>
-                      <input
-                        type="text"
-                        value={codeLanguage}
-                        onChange={(event) => setCodeLanguage(event.target.value)}
-                        className="min-h-[48px] w-full rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none transition focus:border-cyan-300/60"
-                        placeholder="typescript"
-                      />
-                    </div>
-                  </>
-                ) : null}
-
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-white">
-                    {selectedEvidenceType.primaryLabel}
-                  </label>
-                  <textarea
-                    value={evidenceText}
-                    onChange={(event) => setEvidenceText(event.target.value)}
-                    rows={selectedType === 'code' ? 5 : 8}
-                    className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-cyan-300/60"
-                    placeholder={
-                      selectedType === 'code'
-                        ? 'Describe the problem solved, your role, architectural choices, and why this proves the skill.'
-                        : 'Explain what this evidence shows, what your contribution was, and why it should increase confidence in the selected skill.'
-                    }
-                  />
+                  <dt className="sr-only">Status</dt>
+                  <dd className={selectedSkill.verified ? 'text-verified-ink' : 'text-ink-faint'}>
+                    {selectedSkill.verified ? 'Verified' : 'Not verified yet'}
+                  </dd>
                 </div>
+              </dl>
+            </div>
+          )}
+        </section>
 
-                {selectedEvidenceType.supportsUrl && (
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-16">
+          {/* Evidence */}
+          <section aria-labelledby="evidence-heading" className="min-w-0">
+            <h2 id="evidence-heading" className="mb-4 text-sm font-normal text-ink-muted">
+              Evidence
+            </h2>
+            <div className="mb-3 flex flex-wrap gap-2" role="group" aria-label="Evidence type">
+              {evidenceTypes.map((type) => (
+                <button
+                  key={type.id}
+                  type="button"
+                  className="pill"
+                  aria-pressed={selectedType === type.id}
+                  onClick={() => setSelectedType(type.id)}
+                >
+                  {type.shortName}
+                </button>
+              ))}
+            </div>
+            <p className="mb-8 max-w-[60ch] text-[0.9375rem] text-ink-muted">
+              {selectedEvidenceType.description}
+            </p>
+
+            <div className="grid gap-6">
+              {selectedType === 'code' && (
+                <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_10rem]">
+                  <div className="sm:col-span-2">
+                    <label htmlFor="code-sample" className="metalab-label">
+                      Code sample
+                    </label>
+                    <textarea
+                      id="code-sample"
+                      value={codeSnippet}
+                      onChange={(event) => setCodeSnippet(event.target.value)}
+                      rows={10}
+                      spellCheck={false}
+                      className="metalab-input font-mono text-[0.8125rem] leading-relaxed"
+                      placeholder="Paste the code that best shows the skill."
+                    />
+                  </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-white">
-                      {selectedEvidenceType.needsUrl
-                        ? 'Live URL or repository'
-                        : 'Optional supporting URL'}
+                    <label htmlFor="code-language" className="metalab-label">
+                      Language
                     </label>
                     <input
-                      type="url"
-                      value={evidenceUrl}
-                      onChange={(event) => setEvidenceUrl(event.target.value)}
-                      className="min-h-[48px] w-full rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none transition focus:border-cyan-300/60"
-                      placeholder="https://github.com/your-project or https://your-demo.com"
+                      id="code-language"
+                      type="text"
+                      value={codeLanguage}
+                      onChange={(event) => setCodeLanguage(event.target.value)}
+                      className="metalab-input"
+                      placeholder="typescript"
                     />
                   </div>
-                )}
+                </div>
+              )}
 
+              <div>
+                <label htmlFor="evidence-text" className="metalab-label">
+                  {selectedType === 'code'
+                    ? 'What it does and your part in it'
+                    : selectedEvidenceType.primaryLabel}
+                </label>
+                <textarea
+                  id="evidence-text"
+                  value={evidenceText}
+                  onChange={(event) => setEvidenceText(event.target.value)}
+                  rows={selectedType === 'code' ? 4 : 7}
+                  className="metalab-input leading-relaxed"
+                  placeholder={
+                    selectedType === 'code'
+                      ? 'The problem it solves, what you built, and which parts were yours.'
+                      : selectedEvidenceType.helperText
+                  }
+                />
+                <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-faint">
+                  {selectedEvidenceType.requirements.map((requirement) => (
+                    <li key={requirement}>{requirement}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {selectedEvidenceType.supportsUrl && (
                 <div>
-                  <span className="mb-2 block text-sm font-medium text-white">
-                    Attach a file (optional)
-                  </span>
+                  <label htmlFor="evidence-url" className="metalab-label">
+                    {selectedEvidenceType.needsUrl ? 'Live link or repository' : 'Link (optional)'}
+                  </label>
                   <input
-                    ref={fileInputRef}
-                    id="evidence-file"
-                    type="file"
-                    accept={UPLOAD_ACCEPT}
-                    onChange={handleFileChange}
-                    disabled={isSubmitting}
-                    className="peer sr-only"
+                    id="evidence-url"
+                    type="url"
+                    value={evidenceUrl}
+                    onChange={(event) => setEvidenceUrl(event.target.value)}
+                    className="metalab-input"
+                    placeholder="https://github.com/you/project"
                   />
-                  {evidenceFile ? (
-                    <div className="flex min-h-[48px] items-center justify-between gap-3 rounded-xl border border-cyan-300/30 bg-cyan-300/[0.06] px-4">
-                      <span className="flex min-w-0 items-center gap-2 text-sm text-white">
-                        <File className="h-4 w-4 shrink-0 text-cyan-200" aria-hidden />
-                        <span className="truncate">{evidenceFile.name}</span>
-                        <span className="shrink-0 text-white/45">
-                          {evidenceFile.size < 1024 * 1024
-                            ? `${Math.max(1, Math.round(evidenceFile.size / 1024))}KB`
-                            : `${(evidenceFile.size / 1024 / 1024).toFixed(1)}MB`}
-                        </span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={clearEvidenceFile}
-                        disabled={isSubmitting}
-                        aria-label={`Remove ${evidenceFile.name}`}
-                        className="rounded-lg p-1 text-white/60 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <label
-                      htmlFor="evidence-file"
-                      className="flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/40 px-4 text-sm text-white/70 transition hover:border-cyan-300/50 hover:text-white peer-focus-visible:border-cyan-300 peer-focus-visible:text-white"
-                    >
-                      <Upload className="h-4 w-4" aria-hidden />
-                      Choose a file
-                    </label>
-                  )}
-                  <p className="mt-2 text-xs text-white/45">
-                    Images, PDF, MP4/WebM video, or .txt, .md and .json, up to{' '}
-                    {MAX_UPLOAD_BYTES / 1024 / 1024}MB. The AI reads text files in full; for other
-                    files it relies on the file name and your description above.
+                  <p className="mt-2 text-sm text-ink-faint">
+                    GitHub repositories count as your work when your linked GitHub account
+                    contributed to them.
                   </p>
                 </div>
-              </div>
+              )}
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Button
-                  onClick={handleAnalyze}
-                  isLoading={isSubmitting}
-                  leftIcon={<Brain className="w-5 h-5" />}
-                  disabled={isLoadingData}
-                >
-                  {isSubmitting ? 'Analyzing with AI...' : 'Run AI Analysis'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={resetEvidenceInputs}
-                  leftIcon={<RefreshCw className="w-5 h-5" />}
+              <div>
+                <span className="metalab-label">File (optional)</span>
+                <input
+                  ref={fileInputRef}
+                  id="evidence-file"
+                  type="file"
+                  accept={UPLOAD_ACCEPT}
+                  onChange={handleFileChange}
                   disabled={isSubmitting}
-                >
-                  Clear Inputs
-                </Button>
-              </div>
-
-              {!user && (
-                <p className="mt-4 text-sm text-white/55">
-                  You can explore the workflow here. Sign in to load real skills and save actual
-                  verification results.
-                </p>
-              )}
-            </div>
-
-            <AnimatePresence mode="wait">
-              {analysisResult && (
-                <motion.div
-                  key={analysisResult.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="gradient-border-card p-8"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-                    <div>
-                      <div className="hero-kicker mb-3">Latest result</div>
-                      <h2 className="text-2xl font-bold text-white">{analysisResult.skillName}</h2>
-                      <p className="text-white/60 mt-2">
-                        AI analyzed your evidence and saved the result to your profile history.
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant={analysisResult.verified ? 'success' : 'info'} size="sm">
-                        {analysisResult.verified ? 'Verified signal earned' : 'Analysis saved'}
-                      </Badge>
-                      <Badge variant="default" size="sm">
-                        {analysisResult.model}
-                      </Badge>
-                    </div>
+                  className="peer sr-only"
+                />
+                {evidenceFile ? (
+                  <div className="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-raised px-4">
+                    <span className="flex min-w-0 items-center gap-2 text-sm text-ink">
+                      <File className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden />
+                      <span className="truncate">{evidenceFile.name}</span>
+                      <span className="shrink-0 text-ink-faint tabular">
+                        {evidenceFile.size < 1024 * 1024
+                          ? `${Math.max(1, Math.round(evidenceFile.size / 1024))}KB`
+                          : `${(evidenceFile.size / 1024 / 1024).toFixed(1)}MB`}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearEvidenceFile}
+                      disabled={isSubmitting}
+                      aria-label={`Remove ${evidenceFile.name}`}
+                      className="rounded-full p-1.5 text-ink-muted transition-colors duration-150 hover:bg-pill hover:text-ink"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <div className="insight-card p-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">
-                        Confidence
-                      </div>
-                      <div className="mt-2 text-3xl font-semibold text-white">
-                        {formatConfidence(analysisResult.confidenceScore)}
-                      </div>
-                    </div>
-                    <div className="insight-card p-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">
-                        Suggested level
-                      </div>
-                      <div className="mt-2 text-3xl font-semibold text-white capitalize">
-                        {analysisResult.suggestedLevel ?? selectedSkill?.level ?? 'unchanged'}
-                      </div>
-                    </div>
-                    <div className="insight-card p-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-white/45">
-                        Estimated cost
-                      </div>
-                      <div className="mt-2 text-3xl font-semibold text-white">
-                        ${Number(analysisResult.cost ?? 0).toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-5">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45 mb-3">
-                      Why the AI scored it this way
-                    </h3>
-                    <p className="text-white/78 leading-relaxed">{analysisResult.explanation}</p>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45 mb-3">
-                      How to strengthen this claim
-                    </h3>
-                    <div className="space-y-3">
-                      {analysisResult.improvements.map((improvement) => (
-                        <div key={improvement} className="flex items-start gap-3 text-white/78">
-                          <TrendingUp className="mt-0.5 h-4 w-4 text-cyan-200" />
-                          <span>{improvement}</span>
-                        </div>
-                      ))}
-                      {analysisResult.improvements.length === 0 && (
-                        <p className="text-white/60">
-                          The current evidence already looks strong, so no major follow-up
-                          suggestions were returned.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="space-y-6">
-            <div className="gradient-border-card p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-6 h-6 text-white" />
-                <div>
-                  <h3 className="font-medium text-white">Verification Stats</h3>
-                  <p className="text-sm text-white/60">Based on saved AI analyses</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-2 text-white">
-                    <span>Verified rate</span>
-                    <span className="font-medium">{stats.verifiedRate}%</span>
-                  </div>
-                  <div className="h-2 bg-white/10 overflow-hidden rounded-full">
-                    <div
-                      className="h-full bg-white rounded-full"
-                      style={{ width: `${stats.verifiedRate}%` }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2 text-white">
-                    <span>Average confidence</span>
-                    <span className="font-medium">{stats.avgConfidence}%</span>
-                  </div>
-                  <div className="h-2 bg-white/10 overflow-hidden rounded-full">
-                    <div
-                      className="h-full bg-cyan-200 rounded-full"
-                      style={{ width: `${stats.avgConfidence}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.2em] text-white/45">
-                    Saved analyses
-                  </div>
-                  <div className="mt-2 text-3xl font-semibold text-white">{stats.total}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="gradient-border-card p-6">
-              <h3 className="text-lg font-bold text-white mb-6">
-                {isGuestPreview ? 'Preview Results' : 'Recent AI Analyses'}
-              </h3>
-              <div className="space-y-4">
-                {displayedAnalyses.length === 0 && (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/60">
-                    No saved analyses yet. Run your first AI verification to start building trust
-                    signals.
-                  </div>
-                )}
-
-                {displayedAnalyses.map((analysis) => (
-                  <div
-                    key={analysis.id}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                ) : (
+                  <label
+                    htmlFor="evidence-file"
+                    className="pill cursor-pointer peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--verified)]"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <div className="font-medium text-white">{analysis.skillName}</div>
-                        <div className="text-xs uppercase tracking-[0.18em] text-white/45 mt-1">
-                          {getSkillPillarForName(analysis.skillName).category}
-                        </div>
-                        <div className="text-xs text-white/50">
-                          {formatRelativeTime(analysis.createdAt)}
-                        </div>
-                      </div>
-                      <Badge variant={analysis.verified ? 'success' : 'info'} size="sm">
-                        {formatConfidence(analysis.confidenceScore)}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-white/65 leading-relaxed mb-3">
-                      {analysis.explanation}
-                    </p>
-                    <div className="space-y-2">
-                      {analysis.improvements.slice(0, 2).map((improvement) => (
-                        <div
-                          key={improvement}
-                          className="flex items-start gap-2 text-sm text-white/60"
-                        >
-                          <CheckCircle className="mt-0.5 h-3.5 w-3.5 text-cyan-200" />
-                          <span>{improvement}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                    <Upload className="h-4 w-4" aria-hidden />
+                    Choose a file
+                  </label>
+                )}
+                <p className="mt-2 text-sm text-ink-faint">
+                  Images, PDF, MP4 or WebM video, or .txt, .md and .json up to{' '}
+                  {MAX_UPLOAD_BYTES / 1024 / 1024}MB. Text files are read in full; other files are
+                  judged by their name and your description.
+                </p>
               </div>
             </div>
 
-            <div className="gradient-border-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Brain className="w-6 h-6 text-white" />
-                <div>
-                  <h3 className="font-medium text-white">What&apos;s Next</h3>
-                  <p className="text-sm text-white/60">Best follow-up AI features for Nexus</p>
-                </div>
-              </div>
-              <div className="space-y-3 text-sm text-white/70">
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  AI-generated verification challenges for skills without existing artifacts.
-                </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  Smarter evidence extraction from uploaded files, repos, and live project URLs.
-                </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  Profile-wide recommendations that tell users which proof would move their passport
-                  the most.
-                </div>
-              </div>
+            <div className="mt-10 flex flex-wrap items-center gap-2">
+              <Button onClick={handleAnalyze} isLoading={isSubmitting} disabled={isLoadingData}>
+                {isSubmitting ? 'Checking your evidence' : 'Run AI check'}
+              </Button>
+              <Button variant="ghost" onClick={resetEvidenceInputs} disabled={isSubmitting}>
+                Clear
+              </Button>
             </div>
-          </div>
+          </section>
+
+          {/* Result */}
+          <section
+            aria-labelledby="result-heading"
+            aria-live="polite"
+            className="min-w-0 lg:sticky lg:top-24 lg:self-start"
+          >
+            <h2 id="result-heading" className="mb-4 text-sm font-normal text-ink-muted">
+              {isSampleResult ? 'Sample result' : 'Result'}
+            </h2>
+            {shownResult ? (
+              <div key={shownResult.id} className="page-enter">
+                <div className="flex items-end gap-5 border-b border-line pb-6">
+                  <p className="leading-none">
+                    <span className="display-number text-score">
+                      {Math.round(shownResult.confidenceScore * 100)}
+                    </span>
+                    <span className="display-number text-4xl text-ink-muted">%</span>
+                    <span className="sr-only"> confidence</span>
+                  </p>
+                  <div className="pb-2 text-sm">
+                    <p
+                      className={
+                        shownResult.verified
+                          ? 'flex items-center gap-2 text-verified-ink'
+                          : 'text-ink'
+                      }
+                    >
+                      {shownResult.verified && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-verified" aria-hidden />
+                      )}
+                      {shownResult.verified ? 'Verified' : 'Not verified yet'}
+                    </p>
+                    <p className="mt-1 text-ink-faint">
+                      {shownResult.suggestedLevel && shownResult.suggestedLevel !== claimedLevel
+                        ? `Evidence supports ${level(shownResult.suggestedLevel)}`
+                        : `At ${level(claimedLevel ?? shownResult.skillLevel)}`}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="mt-6 text-[0.9375rem] leading-relaxed text-ink">
+                  {shownResult.explanation}
+                </p>
+
+                <h3 className="mt-8 text-sm font-normal text-ink-muted">
+                  To strengthen this claim
+                </h3>
+                {shownResult.improvements.length > 0 ? (
+                  <ul className="ruled-list mt-3 border-y border-line">
+                    {shownResult.improvements.map((improvement) => (
+                      <li key={improvement} className="py-3 text-[0.9375rem] text-ink">
+                        {improvement}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-[0.9375rem] text-ink-muted">
+                    Nothing to add: the evidence already supports this claim.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="border-y border-line py-8">
+                <p className="display-number text-6xl text-ink-faint" aria-hidden>
+                  —
+                </p>
+                <p className="mt-6 max-w-[38ch] text-[0.9375rem] leading-relaxed text-ink-muted">
+                  Run a check to see your confidence score, the reasons behind it, and what would
+                  raise it. A skill is verified at 80% when the evidence supports the level you
+                  claim.
+                </p>
+              </div>
+            )}
+          </section>
         </div>
+
+        {/* History */}
+        <section aria-labelledby="history-heading" className="mt-24">
+          <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4">
+            <h2 id="history-heading" className="text-2xl font-normal">
+              {isGuestPreview || !user ? 'Sample checks' : 'Recent checks'}
+            </h2>
+            {stats.total > 0 && (
+              <p className="text-sm text-ink-faint tabular">
+                {stats.total} saved · {stats.verifiedRate}% verified · average confidence{' '}
+                {stats.avgConfidence}%
+              </p>
+            )}
+          </div>
+
+          {displayedAnalyses.length === 0 ? (
+            <p className="border-t border-line pt-6 text-ink-muted">
+              No checks yet. Your first result will appear here.
+            </p>
+          ) : (
+            <ul className="ruled-list border-y border-line">
+              {displayedAnalyses.map((analysis) => (
+                <li
+                  key={analysis.id}
+                  className="grid gap-3 py-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_7rem] md:gap-10"
+                >
+                  <div>
+                    <p className="text-ink">{analysis.skillName}</p>
+                    <p className="mt-1 text-sm text-ink-faint">
+                      {getSkillPillarForName(analysis.skillName).category} ·{' '}
+                      {formatRelativeTime(analysis.createdAt)}
+                    </p>
+                  </div>
+                  <p className="line-clamp-2 max-w-[60ch] text-[0.9375rem] leading-relaxed text-ink-muted">
+                    {analysis.explanation}
+                  </p>
+                  <div className="flex items-baseline gap-3 md:justify-end">
+                    <span className="display-number text-4xl leading-none">
+                      {Math.round(analysis.confidenceScore * 100)}
+                      <span className="text-xl text-ink-muted">%</span>
+                    </span>
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        analysis.verified ? 'bg-verified' : 'bg-ink-faint'
+                      }`}
+                      role="img"
+                      aria-label={analysis.verified ? 'Verified' : 'Not verified'}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     </AppPageShell>
   )

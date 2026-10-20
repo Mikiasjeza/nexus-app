@@ -5,10 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Menu, X, LogOut, User as UserIcon } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { clsx } from 'clsx'
-import NexusLogo from '@/components/UI/NexusLogo'
 import { useUser } from '@/lib/hooks/useUser'
-
-const SCROLL_SOLID_AT = 16
 
 const MARKETING_PATHS = new Set([
   '/',
@@ -18,6 +15,7 @@ const MARKETING_PATHS = new Set([
   '/contact',
   '/terms',
   '/privacy',
+  '/cookies',
 ])
 const MARKETING_PREFIXES = ['/company/', '/share/', '/auth/']
 
@@ -43,54 +41,40 @@ const appNav = [
   { href: '/settings', label: 'Settings' },
 ]
 
+const navLinkClass = (active: boolean) =>
+  clsx(
+    'inline-flex h-8 items-center rounded-full px-3 text-sm transition-colors duration-150',
+    active ? 'bg-pill text-ink' : 'text-ink-muted hover:text-ink'
+  )
+
+/** One floating pill bar: wordmark, navigation, account. */
 export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const scrollRaf = useRef<number | null>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const { user, loading: userLoading } = useUser()
 
   const marketing = isMarketing(pathname)
   const navItems = marketing ? marketingNav : appNav
 
-  const updateScrolled = useCallback(() => {
-    if (scrollRaf.current != null) return
-    scrollRaf.current = requestAnimationFrame(() => {
-      scrollRaf.current = null
-      const next = window.scrollY > SCROLL_SOLID_AT
-      setScrolled((prev) => (prev === next ? prev : next))
-    })
-  }, [])
-
-  useEffect(() => {
-    updateScrolled()
-    window.addEventListener('scroll', updateScrolled, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', updateScrolled)
-      if (scrollRaf.current != null) cancelAnimationFrame(scrollRaf.current)
-    }
-  }, [updateScrolled])
-
   useEffect(() => {
     setMobileMenuOpen(false)
+    setUserMenuOpen(false)
   }, [pathname])
 
   useEffect(() => {
-    if (!mobileMenuOpen) return
+    if (!mobileMenuOpen && !userMenuOpen) return
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMobileMenuOpen(false)
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false)
+        setUserMenuOpen(false)
+      }
     }
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.body.style.overflow = prev
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [mobileMenuOpen])
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [mobileMenuOpen, userMenuOpen])
 
   useEffect(() => {
     if (!userMenuOpen) return
@@ -128,201 +112,154 @@ export default function Header() {
         .slice(0, 2)
     : (user?.email?.slice(0, 2).toUpperCase() ?? '?')
 
+  const authActions =
+    !userLoading &&
+    (user ? (
+      <Link href="/dashboard" className="pill">
+        Dashboard
+      </Link>
+    ) : (
+      <>
+        <Link href="/auth/login" className={navLinkClass(false)}>
+          Log in
+        </Link>
+        <Link href="/auth/register" className="pill" data-active="true">
+          Sign up free
+        </Link>
+      </>
+    ))
+
   return (
-    <header
-      className={clsx(
-        'fixed left-0 right-0 top-0 z-50 h-16 border-b transition-[background-color,backdrop-filter,border-color,box-shadow] duration-300 ease-out',
-        scrolled
-          ? 'border-white/[0.08] bg-[rgba(5,7,12,0.88)] shadow-[0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-xl backdrop-saturate-150'
-          : 'border-transparent bg-transparent'
-      )}
-    >
-      <nav className="mx-auto flex h-full max-w-7xl flex-col px-6 lg:px-12">
-        <div className="flex h-16 items-center justify-between">
-          <NexusLogo size="default" interactive />
-
-          {/* Desktop nav links */}
-          <div className="hidden items-center gap-8 md:flex">
-            {navItems.map((item) => {
-              const isActive = isNavItemActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={clsx(
-                    'relative pb-1 text-[13px] font-medium tracking-[0.02em] transition-colors duration-200',
-                    isActive ? 'text-white' : 'text-white/55 hover:text-white/90',
-                    'after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-gradient-to-r after:from-cyan-400/90 after:via-violet-400/90 after:to-rose-400/90 after:transition-transform after:duration-200 after:ease-out',
-                    'hover:after:scale-x-100',
-                    isActive && 'after:scale-x-100'
-                  )}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
-          </div>
-
-          {/* Desktop right side: auth CTAs or user avatar */}
-          <div className="hidden items-center gap-3 md:flex">
-            {marketing
-              ? !userLoading &&
-                (user ? (
-                  <Link
-                    href="/dashboard"
-                    className="button-base button-primary h-9 rounded-lg px-4 text-xs font-medium"
-                  >
-                    Dashboard
-                  </Link>
-                ) : (
-                  <>
-                    <Link
-                      href="/auth/login"
-                      className="text-[13px] font-medium text-white/60 transition-colors hover:text-white"
-                    >
-                      Log in
-                    </Link>
-                    <Link
-                      href="/auth/register"
-                      className="button-base button-primary h-9 rounded-lg px-4 text-xs font-medium"
-                    >
-                      Sign up free
-                    </Link>
-                  </>
-                ))
-              : user && (
-                  <div className="relative" ref={userMenuRef}>
-                    <button
-                      type="button"
-                      onClick={() => setUserMenuOpen((o) => !o)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/60 to-violet-500/60 text-xs font-semibold text-white ring-1 ring-white/20 transition-opacity hover:opacity-80"
-                      aria-expanded={userMenuOpen}
-                      aria-haspopup="true"
-                      aria-label="User menu"
-                    >
-                      {initials}
-                    </button>
-                    {userMenuOpen && (
-                      <div className="absolute right-0 top-10 w-52 rounded-xl border border-white/[0.08] bg-[rgba(5,7,12,0.96)] py-1 shadow-2xl backdrop-blur-xl">
-                        <div className="border-b border-white/[0.06] px-3 py-2.5">
-                          <p className="truncate text-[13px] font-medium text-white">
-                            {user.name || user.email}
-                          </p>
-                          {user.name && (
-                            <p className="truncate text-[11px] text-white/40">{user.email}</p>
-                          )}
-                        </div>
-                        <Link
-                          href="/settings"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/65 transition-colors hover:bg-white/[0.04] hover:text-white"
-                        >
-                          <UserIcon className="h-3.5 w-3.5" />
-                          Profile &amp; Settings
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={handleLogout}
-                          className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/65 transition-colors hover:bg-white/[0.04] hover:text-white"
-                        >
-                          <LogOut className="h-3.5 w-3.5" />
-                          Sign out
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-          </div>
-
-          {/* Mobile hamburger */}
-          <button
-            type="button"
-            className="p-2 text-white transition-opacity hover:opacity-80 md:hidden"
-            onClick={() => setMobileMenuOpen((o) => !o)}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="primary-mobile-navigation"
-            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+    <header className="fixed inset-x-0 top-3 z-50 px-3">
+      <nav
+        aria-label="Primary"
+        className="mx-auto max-w-[60rem] rounded-[1.375rem] bg-[rgba(24,23,25,0.86)] p-1.5 backdrop-blur-md"
+      >
+        <div className="flex h-9 items-center justify-between gap-2">
+          <Link
+            href={user ? '/dashboard' : '/'}
+            className="inline-flex h-8 items-center rounded-full px-3 text-[0.9375rem] font-medium tracking-[-0.01em] text-ink"
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
+            Nexus
+          </Link>
 
-        {/* Mobile menu */}
-        <div
-          id="primary-mobile-navigation"
-          className={clsx(
-            'overflow-hidden transition-[max-height,opacity] duration-300 ease-out md:hidden',
-            mobileMenuOpen ? 'max-h-[min(70vh,30rem)] opacity-100' : 'max-h-0 opacity-0'
-          )}
-        >
-          <div className="flex flex-col gap-1 border-t border-white/[0.06] bg-[rgba(5,7,12,0.95)] py-4 backdrop-blur-md">
+          <div className="hidden items-center lg:flex">
             {navItems.map((item) => {
-              const isActive = isNavItemActive(item.href)
+              const active = isNavItemActive(item.href)
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  aria-current={isActive ? 'page' : undefined}
-                  onClick={() => setMobileMenuOpen(false)}
+                  aria-current={active ? 'page' : undefined}
+                  className={navLinkClass(active)}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
+
+          <div className="flex items-center gap-1">
+            {marketing ? (
+              <div className="hidden items-center gap-1 lg:flex">{authActions}</div>
+            ) : (
+              user && (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((o) => !o)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-pill text-xs font-medium text-ink transition-colors duration-150 hover:bg-pill-hover"
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="menu"
+                    aria-label="Account menu"
+                  >
+                    {initials}
+                  </button>
+                  {userMenuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 top-11 w-56 origin-top-right rounded-2xl bg-raised p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
+                    >
+                      <div className="px-3 py-2.5">
+                        <p className="truncate text-sm text-ink">{user.name || user.email}</p>
+                        {user.name && (
+                          <p className="truncate text-xs text-ink-faint">{user.email}</p>
+                        )}
+                      </div>
+                      <Link
+                        href="/settings"
+                        role="menuitem"
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-muted transition-colors duration-150 hover:bg-pill hover:text-ink"
+                      >
+                        <UserIcon className="h-4 w-4" aria-hidden />
+                        Profile and settings
+                      </Link>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-muted transition-colors duration-150 hover:bg-pill hover:text-ink"
+                      >
+                        <LogOut className="h-4 w-4" aria-hidden />
+                        Sign out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            )}
+
+            <button
+              type="button"
+              className="inline-flex h-8 items-center gap-1.5 rounded-full bg-pill px-3 text-sm text-ink lg:hidden"
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="primary-mobile-navigation"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-4 w-4" aria-hidden />
+              ) : (
+                <Menu className="h-4 w-4" aria-hidden />
+              )}
+              Menu
+            </button>
+          </div>
+        </div>
+
+        {mobileMenuOpen && (
+          <div
+            id="primary-mobile-navigation"
+            className="flex flex-col gap-0.5 px-1 pb-1 pt-2 lg:hidden"
+          >
+            {navItems.map((item) => {
+              const active = isNavItemActive(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? 'page' : undefined}
                   className={clsx(
-                    'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-white/[0.06] text-white'
-                      : 'text-white/65 hover:bg-white/[0.04] hover:text-white'
+                    'rounded-xl px-3 py-2.5 text-base transition-colors duration-150',
+                    active ? 'bg-pill text-ink' : 'text-ink-muted hover:text-ink'
                   )}
                 >
                   {item.label}
                 </Link>
               )
             })}
-
-            {/* Mobile auth section */}
-            {marketing && !userLoading && (
-              <div className="mt-2 flex flex-col gap-2 border-t border-white/[0.06] px-3 pt-3">
-                {user ? (
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="button-base button-primary rounded-lg px-4 py-2.5 text-center text-sm font-medium"
-                  >
-                    Dashboard
-                  </Link>
-                ) : (
-                  <>
-                    <Link
-                      href="/auth/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/65 transition-colors hover:bg-white/[0.04] hover:text-white"
-                    >
-                      Log in
-                    </Link>
-                    <Link
-                      href="/auth/register"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="button-base button-primary rounded-lg px-4 py-2.5 text-center text-sm font-medium"
-                    >
-                      Sign up free
-                    </Link>
-                  </>
-                )}
-              </div>
-            )}
-
+            {marketing && <div className="flex gap-2 px-1 pt-2">{authActions}</div>}
             {!marketing && user && (
-              <div className="mt-2 border-t border-white/[0.06] px-3 pt-3">
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-white/65 transition-colors hover:bg-white/[0.04] hover:text-white"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign out
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-base text-ink-muted hover:text-ink"
+              >
+                <LogOut className="h-4 w-4" aria-hidden />
+                Sign out
+              </button>
             )}
           </div>
-        </div>
+        )}
       </nav>
     </header>
   )

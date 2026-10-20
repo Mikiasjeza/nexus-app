@@ -10,7 +10,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Premium primary palette with subtle gradients
+        // Nexus world (see .impeccable/surfaces): black ground, white ink,
+        // warm grey secondary text, hairlines, translucent pills, and one
+        // violet reserved for verified state, selection and focus.
+        ground: '#000000',
+        raised: '#0e0d0f',
+        ink: {
+          DEFAULT: '#ffffff',
+          muted: '#a19ea3',
+          faint: '#79767a',
+        },
+        line: 'rgba(255, 255, 255, 0.1)',
+        pill: {
+          DEFAULT: 'rgba(186, 186, 186, 0.2)',
+          hover: 'rgba(186, 186, 186, 0.3)',
+        },
+        verified: {
+          DEFAULT: '#8b7bff',
+          ink: '#b9b0ff',
+          wash: 'rgba(139, 123, 255, 0.14)',
+        },
+        caution: '#e8a33d',
+        critical: '#ff6b6b',
+        // Legacy palettes, still referenced by pages not yet redesigned.
         primary: {
           50: '#f0f4ff',
           100: '#e0e9ff',
@@ -47,17 +69,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: [
-          'var(--font-inter)',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'sans-serif',
-        ],
-        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'Times New Roman', 'serif'],
       },
       fontSize: {
+        // Page titles and headline numbers, set in the thin display serif.
+        title: ['clamp(2.75rem, 5vw, 5.5rem)', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
+        score: ['clamp(4.5rem, 8vw, 7.5rem)', { lineHeight: '0.95', letterSpacing: '-0.03em' }],
         'display-2xl': [
           '4.5rem',
           { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' },
