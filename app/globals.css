@@ -188,6 +188,12 @@
     --chart-segment-background: rgba(255, 255, 255, 0.04);
     --chart-segment-line: rgba(255, 255, 255, 0.18);
   }
+
+  /* Ring and pie centres size their text with container units. Tailwind v3
+     has no container-query plugin here, so declare the container directly. */
+  .\@container\/chart-center {
+    container: chart-center / inline-size;
+  }
 }
 
 @layer components {
