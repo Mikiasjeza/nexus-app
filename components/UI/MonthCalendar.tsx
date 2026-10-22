@@ -19,7 +19,7 @@ function startOfMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1)
 }
 
-/** Darker violet for busier days, using the same scale as the activity heatmap. */
+/** Deeper orange for busier days, using the same scale as the activity heatmap. */
 function dayFill(count: number): string | undefined {
   if (count <= 0) return undefined
   if (count === 1) return 'var(--chart-scale-03)'
@@ -28,7 +28,7 @@ function dayFill(count: number): string | undefined {
 }
 
 /**
- * One month as a card of day tiles, active days filled in violet. A double
+ * One month as a card of day tiles, active days filled in orange. A double
  * frame (hairline outside, inset highlight inside) sets it apart from the
  * flat panels around it.
  */
@@ -122,7 +122,14 @@ export default function MonthCalendar({
                 title={count ? plural(count) : undefined}
                 aria-label={`${monthLabel.split(' ')[0]} ${day}: ${count ? plural(count) : 'nothing'}`}
                 className={`tabular flex aspect-square min-h-8 items-center justify-center rounded-xl text-sm font-medium ${
-                  fill ? 'text-white' : isFuture ? 'text-ink-faint/50' : 'text-ink-faint'
+                  // Cream reads on the deeper tiles, dark on full orange.
+                  fill
+                    ? count >= 3
+                      ? 'text-ground'
+                      : 'text-ink'
+                    : isFuture
+                      ? 'text-ink-faint/50'
+                      : 'text-ink-faint'
                 } ${isToday ? 'ring-1 ring-inset ring-ink' : ''}`}
                 style={fill ? { background: fill } : undefined}
               >

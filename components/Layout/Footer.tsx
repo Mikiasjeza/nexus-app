@@ -1,72 +1,77 @@
 'use client'
 
-import Link from 'next/link'
-import CookiePreferencesButton from '@/components/UI/CookiePreferencesButton'
+import { usePathname } from 'next/navigation'
+import HalftoneWordmarkFooter, { type FooterColumn } from '@/components/UI/HalftoneWordmarkFooter'
+import { openCookiePreferences } from '@/lib/consent'
 
-const columns = [
+const company: FooterColumn = {
+  title: 'Company',
+  links: [
+    { label: 'About', href: '/about' },
+    { label: 'How it works', href: '/how-it-works' },
+    { label: 'Pricing', href: '/pricing' },
+    { label: 'Contact', href: '/contact' },
+  ],
+}
+
+const legal: FooterColumn = {
+  title: 'Legal',
+  links: [
+    { label: 'Terms', href: '/terms' },
+    { label: 'Privacy', href: '/privacy' },
+    { label: 'Cookies', href: '/cookies' },
+    { label: 'Cookie settings', onClick: openCookiePreferences },
+  ],
+}
+
+const candidateColumns: FooterColumn[] = [
   {
     title: 'Product',
     links: [
-      { href: '/dashboard', label: 'Dashboard' },
-      { href: '/skills', label: 'Skills' },
-      { href: '/verification', label: 'Verification' },
-      { href: '/analytics', label: 'Analytics' },
+      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'Skills', href: '/skills' },
+      { label: 'Verification', href: '/verification' },
+      { label: 'Analytics', href: '/analytics' },
+      { label: 'Marketplace', href: '/marketplace' },
     ],
   },
   {
-    title: 'Company',
-    links: [
-      { href: '/about', label: 'About' },
-      { href: '/how-it-works', label: 'How it works' },
-      { href: '/pricing', label: 'Pricing' },
-      { href: '/marketplace', label: 'Marketplace' },
-      { href: '/contact', label: 'Contact' },
-    ],
+    ...company,
+    links: [...company.links, { label: 'For employers', href: '/employer/dashboard' }],
   },
-  {
-    title: 'Legal',
-    links: [
-      { href: '/terms', label: 'Terms' },
-      { href: '/privacy', label: 'Privacy' },
-      { href: '/cookies', label: 'Cookies' },
-    ],
-  },
+  legal,
 ]
 
-const linkClass = 'text-[0.9375rem] text-ink-muted transition-colors duration-150 hover:text-ink'
+const employerColumns: FooterColumn[] = [
+  {
+    title: 'Hiring',
+    links: [
+      { label: 'Dashboard', href: '/employer/dashboard' },
+      { label: 'Find talent', href: '/employer/talent' },
+      { label: 'Jobs', href: '/employer/jobs' },
+      { label: 'Talent pools', href: '/employer/pools' },
+    ],
+  },
+  { ...company, links: [...company.links, { label: 'For candidates', href: '/dashboard' }] },
+  legal,
+]
 
+/** Site footer: the "nexus" wordmark in halftone, with links for whichever side you're on. */
 export default function Footer() {
+  const pathname = usePathname() ?? ''
+  const isEmployer = pathname.startsWith('/employer') || pathname.startsWith('/company')
+
   return (
-    <footer className="mt-24 border-t border-line">
-      <div className="mx-auto grid max-w-[90rem] gap-16 px-[clamp(1rem,4vw,3rem)] pb-10 pt-16 lg:grid-cols-[minmax(0,1fr)_auto]">
-        <p className="page-title max-w-[14ch] !text-[clamp(2rem,3.5vw,3.25rem)]">
-          Skill claims, turned into proof.
-        </p>
-
-        <nav aria-label="Footer" className="grid grid-cols-2 gap-10 sm:grid-cols-3 sm:gap-16">
-          {columns.map((column) => (
-            <div key={column.title}>
-              <h2 className="mb-4 text-sm font-normal text-ink-faint">{column.title}</h2>
-              <ul className="space-y-2.5">
-                {column.links.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className={linkClass}>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-                {column.title === 'Legal' && (
-                  <li>
-                    <CookiePreferencesButton className={linkClass} />
-                  </li>
-                )}
-              </ul>
-            </div>
-          ))}
-        </nav>
-
-        <p className="text-sm text-ink-faint lg:col-span-2">© {new Date().getFullYear()} Nexus</p>
-      </div>
-    </footer>
+    <HalftoneWordmarkFooter
+      className="mt-24"
+      label="Nexus"
+      meta={
+        isEmployer
+          ? 'Hire on skills the AI has checked, not on claims.'
+          : 'Skill claims, turned into proof.'
+      }
+      columns={isEmployer ? employerColumns : candidateColumns}
+      legal={`© ${new Date().getFullYear()} Nexus`}
+    />
   )
 }

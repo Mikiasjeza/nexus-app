@@ -13,7 +13,7 @@ export function renderNexusIcon(size: number, { rounded = true } = {}) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#000000',
+        background: '#0c0c0b',
         borderRadius: rounded ? Math.round(size * 0.22) : 0,
       }}
     >
@@ -22,7 +22,7 @@ export function renderNexusIcon(size: number, { rounded = true } = {}) {
         height={mark}
         viewBox={MARK_VIEWBOX}
         fill="none"
-        stroke="#ffffff"
+        stroke="#e9e4da"
         strokeWidth={stroke}
         strokeLinecap="round"
       >

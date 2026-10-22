@@ -134,7 +134,7 @@ export default function Header() {
     <header className="fixed inset-x-0 top-3 z-50 px-3">
       <nav
         aria-label="Primary"
-        className="mx-auto max-w-[60rem] rounded-[1.375rem] bg-[rgba(24,23,25,0.86)] p-1.5 backdrop-blur-md"
+        className="mx-auto max-w-[60rem] rounded-[1.375rem] bg-[rgba(29,27,24,0.86)] p-1.5 backdrop-blur-md"
       >
         <div className="flex h-9 items-center justify-between gap-2">
           <Link

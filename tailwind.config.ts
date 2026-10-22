@@ -10,32 +10,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Nexus world (see .impeccable/surfaces): black ground, white ink,
+        // Nexus world (see .impeccable/surfaces): warm off-black ground, cream ink,
         // warm grey secondary text, hairlines, translucent pills, and one
-        // violet reserved for verified state, selection and focus.
-        ground: '#000000',
-        raised: '#0e0d0f',
+        // orange reserved for verified state, selection and focus.
+        ground: '#0c0c0b',
+        raised: '#151412',
         ink: {
-          DEFAULT: '#ffffff',
-          muted: '#a19ea3',
-          faint: '#79767a',
+          DEFAULT: '#e9e4da',
+          muted: '#a39d92',
+          faint: '#7a746a',
         },
-        line: 'rgba(255, 255, 255, 0.1)',
+        line: 'rgba(233, 228, 218, 0.1)',
         pill: {
-          DEFAULT: 'rgba(186, 186, 186, 0.2)',
-          hover: 'rgba(186, 186, 186, 0.3)',
+          DEFAULT: 'rgba(233, 228, 218, 0.12)',
+          hover: 'rgba(233, 228, 218, 0.2)',
         },
         verified: {
-          DEFAULT: '#8b7bff',
-          ink: '#b9b0ff',
-          wash: 'rgba(139, 123, 255, 0.14)',
+          DEFAULT: '#e9762b',
+          ink: '#f3a066',
+          wash: 'rgba(233, 118, 43, 0.14)',
         },
-        caution: '#e8a33d',
+        caution: '#d9c46b',
         critical: '#ff6b6b',
         // Utilities the Bklit charts (components/charts) use for axis labels,
         // tooltips and ring centres. Values live in globals.css.
-        foreground: '#ffffff',
-        muted: '#141414',
+        foreground: '#e9e4da',
+        muted: '#161512',
         chart: {
           label: 'var(--chart-label)',
           positive: 'var(--chart-positive)',

@@ -4,9 +4,9 @@
 
 /*
  * Nexus visual world. The direction contract lives in
- * .impeccable/surfaces/app-verification-page-tsx.md: black ground, white ink,
+ * .impeccable/surfaces/app-verification-page-tsx.md: warm off-black ground, cream ink,
  * warm grey secondary text, hairline rules, translucent pills for every small
- * control, one violet for verified state, selection and focus. Thin display
+ * control, one orange for verified state, selection and focus. Thin display
  * serif for titles and headline numbers, grotesk for UI text.
  *
  * Legacy class names below are kept so pages not yet redesigned still render,
@@ -16,31 +16,31 @@
 @layer base {
   :root,
   .dark {
-    --ground: #000000;
-    --raised: #0e0d0f;
-    --ink: #ffffff;
-    --ink-muted: #a19ea3;
-    --ink-faint: #79767a;
-    --line: rgba(255, 255, 255, 0.1);
-    --line-strong: rgba(255, 255, 255, 0.18);
-    --pill: rgba(186, 186, 186, 0.2);
-    --pill-hover: rgba(186, 186, 186, 0.3);
-    --verified: #8b7bff;
-    --verified-ink: #b9b0ff;
-    --caution: #e8a33d;
+    --ground: #0c0c0b;
+    --raised: #151412;
+    --ink: #e9e4da;
+    --ink-muted: #a39d92;
+    --ink-faint: #7a746a;
+    --line: rgba(233, 228, 218, 0.1);
+    --line-strong: rgba(233, 228, 218, 0.18);
+    --pill: rgba(233, 228, 218, 0.12);
+    --pill-hover: rgba(233, 228, 218, 0.2);
+    --verified: #e9762b;
+    --verified-ink: #f3a066;
+    --caution: #d9c46b;
     --critical: #ff6b6b;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 
     /* shadcn-style names, read by the Bklit charts and older components. */
-    --background: #000000;
-    --foreground: #ffffff;
-    --card: #0e0d0f;
-    --card-foreground: #ffffff;
-    --popover: #1c1b1d;
-    --popover-foreground: #ffffff;
-    --border: #262528;
-    --muted: #141414;
-    --muted-foreground: #a19ea3;
+    --background: #0c0c0b;
+    --foreground: #e9e4da;
+    --card: #151412;
+    --card-foreground: #e9e4da;
+    --popover: #1d1b18;
+    --popover-foreground: #e9e4da;
+    --border: #2a2824;
+    --muted: #161512;
+    --muted-foreground: #a39d92;
     --bg-primary: var(--ground);
     --bg-secondary: var(--raised);
     --text-primary: var(--ink);
@@ -76,12 +76,12 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     caret-color: var(--verified);
-    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    scrollbar-color: rgba(233, 228, 218, 0.22) transparent;
   }
 
   ::selection {
     background: var(--verified);
-    color: #ffffff;
+    color: #e9e4da;
   }
 
   ::-webkit-scrollbar {
@@ -92,12 +92,12 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(233, 228, 218, 0.18);
     border: 3px solid var(--ground);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(233, 228, 218, 0.3);
   }
 
   :focus-visible {
@@ -148,45 +148,45 @@
   time {
     font-variant-numeric: tabular-nums;
   }
-  /* Bklit chart tokens, mapped onto the Nexus world. Violet carries the
+  /* Bklit chart tokens, mapped onto the Nexus world. Orange carries the
      candidate's own (verified) series; white and greys carry comparisons. */
   :root,
   .dark {
-    --chart-1: #8b7bff;
-    --chart-2: #ffffff;
-    --chart-3: #79767a;
-    --chart-4: #b9b0ff;
-    --chart-5: #e8a33d;
-    --chart-positive: #b9b0ff;
+    --chart-1: #e9762b;
+    --chart-2: #e9e4da;
+    --chart-3: #7a746a;
+    --chart-4: #f3a066;
+    --chart-5: #d9c46b;
+    --chart-positive: #f3a066;
     --chart-negative: #ff6b6b;
-    --chart-background: #000000;
-    --chart-foreground: #ffffff;
-    --chart-foreground-muted: #a19ea3;
+    --chart-background: #0c0c0b;
+    --chart-foreground: #e9e4da;
+    --chart-foreground-muted: #a39d92;
     --chart-line-primary: var(--chart-1);
     --chart-line-secondary: var(--chart-2);
-    --chart-crosshair: rgba(255, 255, 255, 0.35);
-    --chart-grid: rgba(255, 255, 255, 0.1);
+    --chart-crosshair: rgba(233, 228, 218, 0.35);
+    --chart-grid: rgba(233, 228, 218, 0.1);
     --chart-brush-border: var(--chart-grid);
     --chart-tooltip-background: var(--popover);
     --chart-tooltip-foreground: var(--popover-foreground);
-    --chart-tooltip-muted: #a19ea3;
-    --chart-marker-background: #1c1b1d;
-    --chart-marker-border: rgba(255, 255, 255, 0.18);
-    --chart-marker-foreground: #ffffff;
-    --chart-label: #79767a;
-    --chart-scale-mix: #0e0d0f;
-    --chart-scale-01: #19181a;
+    --chart-tooltip-muted: #a39d92;
+    --chart-marker-background: #1d1b18;
+    --chart-marker-border: rgba(233, 228, 218, 0.18);
+    --chart-marker-foreground: #e9e4da;
+    --chart-label: #7a746a;
+    --chart-scale-mix: #151412;
+    --chart-scale-01: #1c1a17;
     --chart-scale-02: color-mix(in oklab, var(--chart-1) 30%, var(--chart-scale-mix));
     --chart-scale-03: color-mix(in oklab, var(--chart-1) 52%, var(--chart-scale-mix));
     --chart-scale-04: color-mix(in oklab, var(--chart-1) 76%, var(--chart-scale-mix));
     --chart-scale-05: var(--chart-1);
-    --chart-scale-pattern-color: #000000;
-    --chart-indicator-color: #ffffff;
-    --chart-indicator-secondary-color: #000000;
-    --chart-marker-badge-background: #ffffff;
-    --chart-marker-badge-foreground: #000000;
-    --chart-segment-background: rgba(255, 255, 255, 0.04);
-    --chart-segment-line: rgba(255, 255, 255, 0.18);
+    --chart-scale-pattern-color: #0c0c0b;
+    --chart-indicator-color: #e9e4da;
+    --chart-indicator-secondary-color: #0c0c0b;
+    --chart-marker-badge-background: #e9e4da;
+    --chart-marker-badge-foreground: #0c0c0b;
+    --chart-segment-background: rgba(233, 228, 218, 0.04);
+    --chart-segment-line: rgba(233, 228, 218, 0.18);
   }
 
   /* Ring and pie centres size their text with container units. Tailwind v3
@@ -625,7 +625,7 @@
   }
 
   .premium-scrollbar {
-    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    scrollbar-color: rgba(233, 228, 218, 0.22) transparent;
   }
 
   .transition-premium {
