@@ -96,14 +96,14 @@ function LoginPageContent() {
     <AuthShell>
       <div className="hero-kicker mb-6">Account access</div>
       <div className="mb-10 text-center">
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Welcome back
         </h1>
         <p className="text-base metalab-muted">Sign in to continue your passport</p>
         <button
           type="button"
           onClick={handleGuestContinue}
-          className="mt-4 text-sm text-cyan-200/80 underline decoration-white/20 underline-offset-4 transition-colors hover:text-cyan-100"
+          className="mt-4 text-sm text-ink underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-ink"
         >
           Continue as guest
         </button>
@@ -121,7 +121,7 @@ function LoginPageContent() {
             Email
           </label>
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               id="login-email"
               type="email"
@@ -141,7 +141,7 @@ function LoginPageContent() {
             Password
           </label>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               id="login-password"
               type={showPassword ? 'text' : 'password'}
@@ -156,7 +156,7 @@ function LoginPageContent() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45 transition-colors hover:text-white"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-faint transition-colors hover:text-ink"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -168,13 +168,13 @@ function LoginPageContent() {
           <label className="flex cursor-pointer items-center gap-2.5 text-sm metalab-muted">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-white/20 bg-black/40 text-cyan-500 focus:ring-cyan-400/30"
+              className="h-4 w-4 rounded border-line-strong bg-ground/70 text-verified focus:ring-verified/40"
             />
             <span>Remember me</span>
           </label>
           <Link
             href="/auth/forgot-password"
-            className="text-sm metalab-muted transition-colors hover:text-white"
+            className="text-sm metalab-muted transition-colors hover:text-ink"
           >
             Forgot password?
           </Link>
@@ -205,7 +205,7 @@ function LoginPageContent() {
         </a>
       </form>
 
-      <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6 text-center">
         <p className="text-sm metalab-muted">
           Don&apos;t have an account?{' '}
           <Link href="/auth/register" className="metalab-link">
@@ -222,7 +222,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <AppPageShell className="flex min-h-screen items-center justify-center" orbs={false}>
-          <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" aria-hidden />
+          <div className="h-9 w-9 animate-pulse rounded-full bg-pill" aria-hidden />
         </AppPageShell>
       }
     >

@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <AppPageShell className="min-h-screen bg-black">
+    <AppPageShell className="min-h-screen bg-ground">
       <div className="page-shell">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -190,10 +190,10 @@ export default function AnalyticsPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div className="flex-1">
                 <div className="hero-kicker mb-5">Growth Intelligence</div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight leading-[1.1]">
+                <h1 className="text-4xl md:text-5xl font-bold text-ink mb-3 tracking-tight leading-[1.1]">
                   Analytics
                 </h1>
-                <p className="text-lg text-white/68 max-w-xl">
+                <p className="text-lg text-ink-muted max-w-xl">
                   See how credibility compounds across your profile, where momentum is building, and
                   what needs proof next.
                 </p>
@@ -202,7 +202,7 @@ export default function AnalyticsPage() {
                 <select
                   value={exportFormat}
                   onChange={(event) => setExportFormat(event.target.value as 'csv' | 'json')}
-                  className="min-h-[40px] rounded-xl border border-white/10 bg-black/40 px-3 text-sm text-white"
+                  className="min-h-[40px] rounded-xl border border-line bg-ground/70 px-3 text-sm text-ink"
                 >
                   <option value="csv">CSV</option>
                   <option value="json">JSON</option>
@@ -220,7 +220,7 @@ export default function AnalyticsPage() {
               </div>
             </div>
             {isGuestPreview && (
-              <div className="mt-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
+              <div className="mt-6 border border-verified/40 bg-verified-wash p-4 text-sm text-ink">
                 You are browsing a guest preview. Sign in or create an account to export analytics.
               </div>
             )}
@@ -234,10 +234,10 @@ export default function AnalyticsPage() {
                 },
               ].map((item) => (
                 <div key={item.label} className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                     {item.label}
                   </div>
-                  <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                  <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
                 </div>
               ))}
             </div>
@@ -245,17 +245,17 @@ export default function AnalyticsPage() {
         </motion.div>
 
         <div className="gradient-border-card p-8 mb-12">
-          <div className="text-xs uppercase tracking-[0.22em] text-white/45 mb-3">
+          <div className="text-xs uppercase tracking-[0.22em] text-ink-faint mb-3">
             Signal narrative
           </div>
-          <p className="text-lg text-white/85 leading-relaxed max-w-4xl">
+          <p className="text-lg text-ink leading-relaxed max-w-4xl">
             {analyticsSummary.insightLead}
           </p>
           {skills.length > 0 && (
             <div className="mt-8 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
-                <h3 className="text-sm font-semibold text-white">Pillar distribution</h3>
-                <span className="text-xs text-white/50">
+                <h3 className="text-sm font-semibold text-ink">Pillar distribution</h3>
+                <span className="text-xs text-ink-faint">
                   {analyticsSummary.pillarSpread} of {SKILL_PILLAR_DETAILS.length} pillars in use ·{' '}
                   {analyticsSummary.lowestVerifiedPillar?.total
                     ? `lowest verification in ${analyticsSummary.lowestVerifiedPillar.shortLabel} (${analyticsSummary.lowestVerifiedPillar.rate}%)`
@@ -267,13 +267,13 @@ export default function AnalyticsPage() {
                   const pct = Math.round((pillar.count / Math.max(1, skills.length)) * 100)
                   return (
                     <div key={pillar.category}>
-                      <div className="flex justify-between text-xs text-white/60 mb-1">
-                        <span className="font-medium text-white/80">{pillar.shortLabel}</span>
+                      <div className="flex justify-between text-xs text-ink-muted mb-1">
+                        <span className="font-medium text-ink">{pillar.shortLabel}</span>
                         <span className="tabular-nums">
                           {pillar.count} skills · {pct}%
                         </span>
                       </div>
-                      <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-2 rounded-full bg-pill overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all"
                           style={{
@@ -325,15 +325,15 @@ export default function AnalyticsPage() {
               <div key={stat.label}>
                 <div className="gradient-border-card p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 border border-white/10 bg-white/5">
-                      <Icon className="w-5 h-5 text-white" />
+                    <div className="p-3 border border-line bg-raised">
+                      <Icon className="w-5 h-5 text-ink" />
                     </div>
                   </div>
-                  <div className="text-4xl font-bold text-white mb-2 tracking-tight tabular-nums">
+                  <div className="text-4xl font-bold text-ink mb-2 tracking-tight tabular-nums">
                     {stat.value}
                     {stat.suffix || ''}
                   </div>
-                  <div className="text-xs text-white/60 uppercase tracking-wider font-medium">
+                  <div className="text-xs text-ink-muted uppercase tracking-wider font-medium">
                     {stat.label}
                   </div>
                 </div>
@@ -345,55 +345,55 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 mb-20">
           <div className="gradient-border-card p-8">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Insight Summary</h2>
-              <p className="text-white/60">
+              <h2 className="text-2xl font-bold text-ink mb-2">Insight Summary</h2>
+              <p className="text-ink-muted">
                 A quick read on where your proof is strongest and what deserves attention next.
               </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                   Strongest pillar
                 </div>
-                <div className="mt-2 text-xl font-semibold text-white">
+                <div className="mt-2 text-xl font-semibold text-ink">
                   {analyticsSummary.strongestPillar?.category ?? 'None yet'}
                 </div>
-                <div className="mt-2 text-sm text-white/60">
+                <div className="mt-2 text-sm text-ink-muted">
                   {analyticsSummary.strongestPillar?.count ?? 0} skills represented
                 </div>
               </div>
               <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                   Needs more proof
                 </div>
-                <div className="mt-2 text-xl font-semibold text-white">
+                <div className="mt-2 text-xl font-semibold text-ink">
                   {analyticsSummary.topProofOpportunity?.name ?? 'No obvious gap'}
                 </div>
-                <div className="mt-2 text-sm text-white/60">
+                <div className="mt-2 text-sm text-ink-muted">
                   {analyticsSummary.topProofOpportunity
                     ? `${analyticsSummary.topProofOpportunity.progress}% progress and still unverified`
                     : 'Your strongest visible skills already have proof attached.'}
                 </div>
               </div>
               <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                   Verified coverage
                 </div>
-                <div className="mt-2 text-xl font-semibold text-white">
+                <div className="mt-2 text-xl font-semibold text-ink">
                   {analyticsSummary.verifiedCoverage}%
                 </div>
-                <div className="mt-2 text-sm text-white/60">
+                <div className="mt-2 text-sm text-ink-muted">
                   How much of your visible skill set is backed by verified signals.
                 </div>
               </div>
               <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                   Underrepresented pillar
                 </div>
-                <div className="mt-2 text-xl font-semibold text-white">
+                <div className="mt-2 text-xl font-semibold text-ink">
                   {analyticsSummary.weakestPillar?.category ?? 'Learning & Growth'}
                 </div>
-                <div className="mt-2 text-sm text-white/60">
+                <div className="mt-2 text-sm text-ink-muted">
                   {analyticsSummary.weakestPillar?.count === 0
                     ? 'No skills in this pillar yet—add one to round out your passport.'
                     : analyticsSummary.lowestVerifiedPillar &&
@@ -407,8 +407,8 @@ export default function AnalyticsPage() {
 
           <div className="gradient-border-card p-8">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Pillar Recommendations</h2>
-              <p className="text-white/60">
+              <h2 className="text-2xl font-bold text-ink mb-2">Pillar Recommendations</h2>
+              <p className="text-ink-muted">
                 Three focused actions that would improve the quality of your passport fastest.
               </p>
             </div>
@@ -426,7 +426,7 @@ export default function AnalyticsPage() {
               ].map((line) => (
                 <div
                   key={line}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/72"
+                  className="rounded-2xl border border-line bg-raised p-4 text-sm text-ink-muted"
                 >
                   {line}
                 </div>

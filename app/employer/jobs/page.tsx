@@ -139,7 +139,7 @@ export default function EmployerJobsPage() {
   }
 
   return (
-    <AppPageShell className="min-h-screen bg-black py-16">
+    <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -150,8 +150,8 @@ export default function EmployerJobsPage() {
           <div className="hero-panel p-8 md:p-10">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">Job Listings</h1>
-                <p className="text-lg text-white/60 max-w-3xl">
+                <h1 className="text-4xl font-bold text-ink mb-2">Job Listings</h1>
+                <p className="text-lg text-ink-muted max-w-3xl">
                   Post roles with clear skill expectations so Nexus can connect them to candidates
                   across build, create, explain, lead, and grow.
                 </p>
@@ -171,10 +171,10 @@ export default function EmployerJobsPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                     {pillar.shortLabel}
                   </div>
-                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                  <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                 </div>
               ))}
             </div>
@@ -187,7 +187,7 @@ export default function EmployerJobsPage() {
               className="gradient-border-card p-6 mb-8 mt-8"
               onSubmit={handleSubmit}
             >
-              <h3 className="text-xl font-semibold mb-4 text-white">New Job</h3>
+              <h3 className="text-xl font-semibold mb-4 text-ink">New Job</h3>
               <div className="space-y-4">
                 <input
                   type="text"
@@ -195,13 +195,13 @@ export default function EmployerJobsPage() {
                   placeholder="Job title"
                   value={formData.title}
                   onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
-                  className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
+                  className="w-full px-4 py-3 border border-line bg-ground/70 text-ink"
                 />
                 <textarea
                   placeholder="Description"
                   value={formData.description}
                   onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                  className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
+                  className="w-full px-4 py-3 border border-line bg-ground/70 text-ink"
                   rows={3}
                 />
                 <input
@@ -209,9 +209,9 @@ export default function EmployerJobsPage() {
                   placeholder="Skills (comma-separated: React, TypeScript, Storytelling, Leadership)"
                   value={formData.skills}
                   onChange={(e) => setFormData((p) => ({ ...p, skills: e.target.value }))}
-                  className="w-full px-4 py-3 border border-white/10 bg-black/40 text-white"
+                  className="w-full px-4 py-3 border border-line bg-ground/70 text-ink"
                 />
-                <p className="text-sm text-white/55">
+                <p className="text-sm text-ink-muted">
                   Add role skills naturally. Nexus will infer which pillars the role emphasizes.
                 </p>
                 {pillarPreview.length > 0 && (
@@ -229,7 +229,7 @@ export default function EmployerJobsPage() {
                     placeholder="Location"
                     value={formData.location}
                     onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
-                    className="px-4 py-3 border border-white/10 bg-black/40 text-white"
+                    className="px-4 py-3 border border-line bg-ground/70 text-ink"
                   />
                   <select
                     value={formData.type}
@@ -239,7 +239,7 @@ export default function EmployerJobsPage() {
                         type: e.target.value as JobType,
                       }))
                     }
-                    className="px-4 py-3 border border-white/10 bg-black/40 text-white"
+                    className="px-4 py-3 border border-line bg-ground/70 text-ink"
                   >
                     <option value="full-time">Full-time</option>
                     <option value="part-time">Part-time</option>
@@ -251,7 +251,7 @@ export default function EmployerJobsPage() {
                     placeholder="Salary range"
                     value={formData.salary}
                     onChange={(e) => setFormData((p) => ({ ...p, salary: e.target.value }))}
-                    className="px-4 py-3 border border-white/10 bg-black/40 text-white"
+                    className="px-4 py-3 border border-line bg-ground/70 text-ink"
                   />
                 </div>
                 <Button type="submit" disabled={submitting}>
@@ -263,12 +263,12 @@ export default function EmployerJobsPage() {
         </motion.div>
 
         {loading ? (
-          <div className="text-white/40">Loading...</div>
+          <div className="text-ink-faint">Loading...</div>
         ) : jobs.length === 0 ? (
           <div className="gradient-border-card p-12 text-center">
-            <Briefcase className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <h3 className="text-xl font-medium text-white mb-2">No jobs posted yet</h3>
-            <p className="text-white/60 mb-4">
+            <Briefcase className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
+            <h3 className="text-xl font-medium text-ink mb-2">No jobs posted yet</h3>
+            <p className="text-ink-muted mb-4">
               Post your first job to reach candidates on the marketplace
             </p>
             <Button onClick={() => setShowForm(true)}>Post Job</Button>
@@ -287,8 +287,8 @@ export default function EmployerJobsPage() {
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-xl font-semibold text-white">{job.title}</h3>
-                    <div className="flex items-center gap-4 mt-2 text-white/60 text-sm">
+                    <h3 className="text-xl font-semibold text-ink">{job.title}</h3>
+                    <div className="flex items-center gap-4 mt-2 text-ink-muted text-sm">
                       <span className="flex items-center gap-1">
                         <Building2 className="w-4 h-4" />
                         {job.company.name}

@@ -65,21 +65,21 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
 
   if (viewMode === 'list') {
     return (
-      <AnimatedCard className="p-6 lg:p-8 group hover:border-neutral-700/50">
+      <AnimatedCard className="p-6 lg:p-8 group hover:border-line">
         <div className="flex items-center justify-between gap-6">
           <div className="flex items-center gap-6 flex-1 min-w-0">
             <motion.div
               whileHover={{ scale: 1.05, rotate: 5 }}
               transition={{ duration: 0.3 }}
-              className="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg relative overflow-hidden flex-shrink-0"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-ink font-bold text-xl relative overflow-hidden flex-shrink-0"
               style={iconStyle}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+              <div className="absolute inset-0" />
               <span className="relative z-10">{skill.name.charAt(0)}</span>
             </motion.div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-3 flex-wrap">
-                <h3 className="text-xl font-bold text-neutral-100 group-hover:text-white transition-colors tracking-tight">
+                <h3 className="text-xl font-bold text-ink group-hover:text-ink transition-colors tracking-tight">
                   {skill.name}
                 </h3>
                 {skill.verified && (
@@ -87,9 +87,9 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    className="p-1 rounded-full bg-primary-500/20 border border-primary-500/30"
+                    className="p-1 rounded-full bg-verified-wash border border-verified/40"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-primary-400" />
+                    <CheckCircle2 className="w-4 h-4 text-verified" />
                   </motion.div>
                 )}
                 <span
@@ -106,7 +106,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                 </span>
               </div>
               {skill.description && (
-                <p className="text-sm text-neutral-400 mb-4 line-clamp-1 font-light leading-relaxed">
+                <p className="text-sm text-ink-muted mb-4 line-clamp-1 font-light leading-relaxed">
                   {skill.description}
                 </p>
               )}
@@ -116,10 +116,10 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                   level={skill.level}
                   className="flex-1 max-w-xs"
                 />
-                <span className="text-sm font-bold text-neutral-200 tabular-nums min-w-[3rem]">
+                <span className="text-sm font-bold text-ink tabular-nums min-w-[3rem]">
                   {skill.progress}%
                 </span>
-                <span className="text-xs text-neutral-500 font-light hidden sm:inline">
+                <span className="text-xs text-ink-faint font-light hidden sm:inline">
                   Updated {format(new Date(skill.updatedAt), 'MMM d, yyyy')}
                 </span>
               </div>
@@ -130,7 +130,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => onEdit(skill)}
-              className="p-2.5 text-neutral-400 hover:text-primary-400 hover:bg-primary-500/10 rounded-xl transition-premium border border-transparent hover:border-primary-500/20"
+              className="p-2.5 text-ink-muted hover:text-verified hover:bg-verified-wash rounded-xl transition-premium border border-transparent hover:border-verified/40"
               aria-label="Edit skill"
             >
               <Edit2 className="w-5 h-5" />
@@ -139,7 +139,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => onDelete(skill.id)}
-              className="p-2.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-premium border border-transparent hover:border-red-500/20"
+              className="p-2.5 text-ink-muted hover:text-critical hover:bg-critical/15 rounded-xl transition-premium border border-transparent hover:border-critical/40"
               aria-label="Delete skill"
             >
               <Trash2 className="w-5 h-5" />
@@ -156,10 +156,10 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
       transition={{ layout: { duration: 0.5, ease: easing.primary } }}
       className="h-full"
     >
-      <AnimatedCard className="p-6 lg:p-8 group hover:border-neutral-700/50 relative overflow-hidden h-full">
+      <AnimatedCard className="p-6 lg:p-8 group hover:border-line relative overflow-hidden h-full">
         {/* Subtle gradient background on hover - like digital credential */}
         <div
-          className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-500"
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-500"
           style={hoverGradientStyle}
         />
 
@@ -171,15 +171,15 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: -5 }}
                   transition={{ duration: 0.3 }}
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg relative overflow-hidden flex-shrink-0"
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center text-ink font-bold text-lg relative overflow-hidden flex-shrink-0"
                   style={iconStyle}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+                  <div className="absolute inset-0" />
                   <span className="relative z-10">{skill.name.charAt(0)}</span>
                 </motion.div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                    <h3 className="text-lg font-bold text-neutral-100 group-hover:text-white transition-colors tracking-tight">
+                    <h3 className="text-lg font-bold text-ink group-hover:text-ink transition-colors tracking-tight">
                       {skill.name}
                     </h3>
                     {skill.verified && (
@@ -187,9 +187,9 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                        className="p-1 rounded-full bg-primary-500/20 border border-primary-500/30"
+                        className="p-1 rounded-full bg-verified-wash border border-verified/40"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-primary-400" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-verified" />
                       </motion.div>
                     )}
                   </div>
@@ -215,7 +215,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onEdit(skill)}
-                className="p-2 text-neutral-500 hover:text-primary-400 hover:bg-primary-500/10 rounded-xl transition-premium border border-transparent hover:border-primary-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="p-2 text-ink-faint hover:text-verified hover:bg-verified-wash rounded-xl transition-premium border border-transparent hover:border-verified/40 opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label="Edit skill"
               >
                 <Edit2 className="w-4 h-4" />
@@ -224,7 +224,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onDelete(skill.id)}
-                className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-premium border border-transparent hover:border-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="p-2 text-ink-faint hover:text-critical hover:bg-critical/15 rounded-xl transition-premium border border-transparent hover:border-critical/40 opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label="Delete skill"
               >
                 <Trash2 className="w-4 h-4" />
@@ -238,14 +238,14 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
           </motion.div>
 
           {skill.description && (
-            <p className="text-sm text-neutral-400 mb-4 line-clamp-2 font-light leading-relaxed">
+            <p className="text-sm text-ink-muted mb-4 line-clamp-2 font-light leading-relaxed">
               {skill.description}
             </p>
           )}
 
           {skill.notes && (
-            <div className="mb-4 p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/50 backdrop-blur-sm">
-              <p className="text-xs text-neutral-400 font-light leading-relaxed">{skill.notes}</p>
+            <div className="mb-4 p-4 rounded-xl bg-raised border border-line backdrop-blur-sm">
+              <p className="text-xs text-ink-muted font-light leading-relaxed">{skill.notes}</p>
             </div>
           )}
 
@@ -254,7 +254,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
               {skill.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-2.5 py-1 bg-neutral-900/50 text-neutral-400 text-xs rounded-lg border border-neutral-800/50 backdrop-blur-sm font-medium"
+                  className="px-2.5 py-1 bg-raised text-ink-muted text-xs rounded-lg border border-line backdrop-blur-sm font-medium"
                 >
                   {tag}
                 </span>
@@ -263,15 +263,15 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
           )}
 
           {skill.evidence && skill.evidence.length > 0 && (
-            <div className="mb-4 p-3 rounded-xl bg-gradient-to-br from-primary-500/10 to-indigo-500/10 border border-primary-500/20 backdrop-blur-sm">
-              <p className="text-xs font-semibold text-primary-300 mb-2 uppercase tracking-wider">
+            <div className="mb-4 p-3 rounded-xl border border-verified/40 backdrop-blur-sm">
+              <p className="text-xs font-semibold text-verified-ink mb-2 uppercase tracking-wider">
                 Evidence
               </p>
               <div className="flex flex-wrap gap-2">
                 {skill.evidence.map((ev, idx) => (
                   <span
                     key={idx}
-                    className="px-2.5 py-1 bg-primary-500/20 text-primary-300 text-xs rounded-lg border border-primary-500/30 font-medium"
+                    className="px-2.5 py-1 bg-verified-wash text-verified-ink text-xs rounded-lg border border-verified/40 font-medium"
                   >
                     {ev.type}
                   </span>
@@ -280,7 +280,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
             </div>
           )}
 
-          <div className="flex items-center justify-between text-xs text-neutral-500 pt-4 border-t border-neutral-800/50">
+          <div className="flex items-center justify-between text-xs text-ink-faint pt-4 border-t border-line">
             <span className="font-light">
               Updated {format(new Date(skill.updatedAt), 'MMM d, yyyy')}
             </span>
@@ -289,7 +289,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                className="flex items-center gap-1.5 text-green-400"
+                className="flex items-center gap-1.5 text-verified"
               >
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span className="font-semibold">Growing</span>

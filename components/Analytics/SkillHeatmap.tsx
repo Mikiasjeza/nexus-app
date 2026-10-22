@@ -28,7 +28,7 @@ export default function SkillHeatmap({ skills, type = 'category' }: SkillHeatmap
 
   return (
     <AnimatedCard className="p-6">
-      <h2 className="text-xl font-bold text-dark-900 mb-6">
+      <h2 className="text-xl font-bold text-ink-faint mb-6">
         Skills by {type === 'category' ? 'Pillar' : 'Level'}
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -60,7 +60,7 @@ export default function SkillHeatmap({ skills, type = 'category' }: SkillHeatmap
                 <p className="text-3xl font-bold mb-1" style={{ color }}>
                   {skillList.length}
                 </p>
-                <p className="text-sm font-medium text-dark-700">{key}</p>
+                <p className="text-sm font-medium text-ink-faint">{key}</p>
               </div>
             </motion.div>
           )

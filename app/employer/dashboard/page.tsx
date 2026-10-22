@@ -54,24 +54,24 @@ export default function EmployerDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="animate-pulse text-white/40">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-ground">
+        <div className="animate-pulse text-ink-faint">Loading...</div>
       </div>
     )
   }
 
   if (error || !company) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center px-6">
+      <div className="min-h-screen bg-ground flex items-center justify-center px-6">
         <div className="max-w-xl w-full gradient-border-card p-8 text-center">
-          <h1 className="text-2xl font-bold text-white mb-3">Employer dashboard unavailable</h1>
-          <p className="text-white/60 mb-6">
+          <h1 className="text-2xl font-bold text-ink mb-3">Employer dashboard unavailable</h1>
+          <p className="text-ink-muted mb-6">
             {error ?? 'We could not load your employer workspace right now.'}
           </p>
           <button
             type="button"
             onClick={loadCompany}
-            className="min-h-[44px] px-5 py-2 border border-white/15 text-white hover:bg-white hover:text-black transition-colors"
+            className="min-h-[44px] px-5 py-2 border border-line-strong text-ink hover:bg-ink hover:text-ground transition-colors"
           >
             Retry
           </button>
@@ -106,7 +106,7 @@ export default function EmployerDashboardPage() {
   ]
 
   return (
-    <AppPageShell className="min-h-screen bg-black py-16">
+    <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -116,19 +116,19 @@ export default function EmployerDashboardPage() {
         >
           <div className="hero-panel p-8 md:p-10">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl bg-pill flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-ink" />
               </div>
               <div>
                 <div className="hero-kicker mb-2">Employer Workspace</div>
-                <h1 className="text-4xl font-bold text-white">{company.name}</h1>
-                <p className="text-white/60">Hiring dashboard · {company.role}</p>
+                <h1 className="text-4xl font-bold text-ink">{company.name}</h1>
+                <p className="text-ink-muted">Hiring dashboard · {company.role}</p>
               </div>
             </div>
 
             <div className="grid gap-8 lg:grid-cols-[1.3fr_0.9fr]">
               <div>
-                <p className="text-lg text-white/68 max-w-3xl">
+                <p className="text-lg text-ink-muted max-w-3xl">
                   Source talent through the same five-pillar system used across Nexus so your team
                   can quickly spot what a candidate builds, creates, explains, leads, and improves
                   over time.
@@ -141,10 +141,10 @@ export default function EmployerDashboardPage() {
                   { label: 'Hiring lens', value: 5 },
                 ].map((item) => (
                   <div key={item.label} className="insight-card p-4">
-                    <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                    <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                       {item.label}
                     </div>
-                    <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                    <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
                   </div>
                 ))}
               </div>
@@ -157,10 +157,10 @@ export default function EmployerDashboardPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                     {pillar.shortLabel}
                   </div>
-                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                  <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                 </div>
               ))}
             </div>
@@ -178,20 +178,20 @@ export default function EmployerDashboardPage() {
               <Link href={action.href}>
                 <AnimatedCard
                   className={`p-6 h-full flex flex-col ${
-                    action.primary ? 'border-cyan-300/25 bg-cyan-400/10' : ''
+                    action.primary ? 'border-verified/40 bg-verified-wash' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
-                      <action.icon className="w-6 h-6 text-white" />
+                    <div className="w-12 h-12 rounded-xl bg-raised flex items-center justify-center">
+                      <action.icon className="w-6 h-6 text-ink" />
                     </div>
                     {action.count !== undefined && (
-                      <span className="text-2xl font-bold text-white">{action.count}</span>
+                      <span className="text-2xl font-bold text-ink">{action.count}</span>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">{action.title}</h3>
-                  <p className="text-white/60 mb-4 flex-1">{action.description}</p>
-                  <div className="flex items-center gap-2 text-cyan-200 font-medium">
+                  <h3 className="text-xl font-semibold text-ink mb-2">{action.title}</h3>
+                  <p className="text-ink-muted mb-4 flex-1">{action.description}</p>
+                  <div className="flex items-center gap-2 text-verified-ink font-medium">
                     <span>Open</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>

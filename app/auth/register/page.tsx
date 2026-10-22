@@ -65,7 +65,7 @@ export default function RegisterPage() {
     <AuthShell maxWidthClass="max-w-md">
       <div className="hero-kicker mb-6">New passport</div>
       <div className="mb-10 text-center">
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Create account
         </h1>
         <p className="text-base metalab-muted">
@@ -85,7 +85,7 @@ export default function RegisterPage() {
             Full name
           </label>
           <div className="relative">
-            <User className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <User className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               id="reg-name"
               type="text"
@@ -105,7 +105,7 @@ export default function RegisterPage() {
             Email
           </label>
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               id="reg-email"
               type="email"
@@ -125,7 +125,7 @@ export default function RegisterPage() {
             Password
           </label>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               id="reg-password"
               type={showPassword ? 'text' : 'password'}
@@ -140,7 +140,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45 transition-colors hover:text-white"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-faint transition-colors hover:text-ink"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -154,7 +154,7 @@ export default function RegisterPage() {
             Confirm password
           </label>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               id="reg-confirm"
               type={showConfirmPassword ? 'text' : 'password'}
@@ -169,7 +169,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45 transition-colors hover:text-white"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-faint transition-colors hover:text-ink"
               aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
             >
               {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -194,7 +194,7 @@ export default function RegisterPage() {
         </Button>
       </form>
 
-      <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6 text-center">
         <p className="text-sm metalab-muted">
           Already have an account?{' '}
           <Link href="/auth/login" className="metalab-link">

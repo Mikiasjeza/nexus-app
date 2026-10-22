@@ -30,7 +30,7 @@ export default function CookiesPage() {
 
       <Section title="Everything we store in your browser">
         <TableWrap>
-          <thead className="bg-white/[0.03] text-white/80">
+          <thead className="bg-raised text-ink">
             <tr>
               <th className="p-3 font-medium">Name</th>
               <th className="p-3 font-medium">Type</th>
@@ -39,10 +39,10 @@ export default function CookiesPage() {
               <th className="p-3 font-medium">Expires</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/10 align-top">
+          <tbody className="divide-y divide-line align-top">
             {STORAGE_ITEMS.map((item) => (
               <tr key={item.name}>
-                <td className="p-3 font-mono text-xs text-white/85">{item.name}</td>
+                <td className="p-3 font-mono text-xs text-ink">{item.name}</td>
                 <td className="p-3">{item.kind}</td>
                 <td className="p-3">
                   {item.category === 'essential' ? 'Essential' : 'Diagnostics (optional)'}
@@ -59,19 +59,19 @@ export default function CookiesPage() {
       <Section title="Categories">
         <List>
           <li>
-            <strong className="text-white/85">Essential:</strong> required for sign-in, security and
+            <strong className="text-ink">Essential:</strong> required for sign-in, security and
             remembering your cookie choice. These don&apos;t need consent and can&apos;t be switched
             off, but you can block them in your browser (sign-in will then stop working).
           </li>
           <li>
-            <strong className="text-white/85">Diagnostics (optional):</strong> if you turn it on,
-            our error monitor (Sentry) keeps a short, privacy-masked replay of the moments before an
+            <strong className="text-ink">Diagnostics (optional):</strong> if you turn it on, our
+            error monitor (Sentry) keeps a short, privacy-masked replay of the moments before an
             error (text, inputs and images hidden) and sends it only if an error happens. Off by
             default. Error reports without replays are sent either way and contain no personal data
             or cookies.
           </li>
           <li>
-            <strong className="text-white/85">Advertising:</strong> we don&apos;t use any.
+            <strong className="text-ink">Advertising:</strong> we don&apos;t use any.
           </li>
         </List>
       </Section>

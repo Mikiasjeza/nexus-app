@@ -60,13 +60,13 @@ export default function GapAnalysis() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.6, ease: easing.primary }}
-      className="border border-black/10 dark:border-white/10 p-6 lg:p-8 bg-white dark:bg-black"
+      className="border border-line dark:border-line p-6 lg:p-8 bg-ink dark:bg-ground"
     >
       <div className="flex items-center gap-3 mb-6">
-        <Target className="w-6 h-6 text-black/60 dark:text-white/60" />
-        <h2 className="text-xl font-semibold text-black dark:text-white">Gap Analysis</h2>
+        <Target className="w-6 h-6 text-ground dark:text-ink-muted" />
+        <h2 className="text-xl font-semibold text-ground dark:text-ink">Gap Analysis</h2>
       </div>
-      <p className="text-sm text-black/60 dark:text-white/60 mb-6">
+      <p className="text-sm text-ground dark:text-ink-muted mb-6">
         Compare your skills to a target role and see what to focus on next.
       </p>
 
@@ -77,8 +77,8 @@ export default function GapAnalysis() {
             onClick={() => setRole(r.id)}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               role === r.id
-                ? 'bg-black dark:bg-white text-white dark:text-black'
-                : 'border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5'
+                ? 'bg-ground dark:bg-ink text-ink dark:text-ground'
+                : 'border border-line dark:border-line hover:bg-ground/70 dark:hover:bg-raised'
             }`}
           >
             {r.label}
@@ -96,7 +96,7 @@ export default function GapAnalysis() {
       </Button>
 
       {error && (
-        <div className="mt-6 p-4 border border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400">
+        <div className="mt-6 p-4 border border-critical/40 bg-critical/15 text-critical dark:text-critical">
           {error}
         </div>
       )}
@@ -118,24 +118,24 @@ export default function GapAnalysis() {
               {result.coveragePercent}%
             </div>
             <div>
-              <p className="font-medium text-black dark:text-white">
+              <p className="font-medium text-ground dark:text-ink">
                 {result.matchedCount} of {result.requiredCount} skills matched
               </p>
-              <p className="text-sm text-black/60 dark:text-white/60">{result.summary}</p>
+              <p className="text-sm text-ground dark:text-ink-muted">{result.summary}</p>
             </div>
           </div>
 
           {result.matched.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-black/60 dark:text-white/60 mb-2 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <h3 className="text-sm font-medium text-ground dark:text-ink-muted mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-verified" />
                 Skills you have
               </h3>
               <div className="flex flex-wrap gap-2">
                 {result.matched.map((m) => (
                   <span
                     key={m.target}
-                    className="px-3 py-1 bg-green-500/10 text-green-700 dark:text-green-400 text-sm"
+                    className="px-3 py-1 bg-verified-wash text-verified dark:text-verified text-sm"
                   >
                     {m.userSkill} ({m.level})
                   </span>
@@ -146,15 +146,15 @@ export default function GapAnalysis() {
 
           {result.missing.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-black/60 dark:text-white/60 mb-2 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-500" />
+              <h3 className="text-sm font-medium text-ground dark:text-ink-muted mb-2 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-caution" />
                 Skills to develop
               </h3>
               <ul className="space-y-2">
                 {result.missing.map((m) => (
                   <li key={m.target} className="flex items-start gap-2 text-sm">
-                    <span className="font-medium text-black dark:text-white">{m.target}</span>
-                    <span className="text-black/60 dark:text-white/60">— {m.recommendation}</span>
+                    <span className="font-medium text-ground dark:text-ink">{m.target}</span>
+                    <span className="text-ground dark:text-ink-muted">— {m.recommendation}</span>
                   </li>
                 ))}
               </ul>

@@ -89,7 +89,7 @@ function ResetPasswordPageContent() {
   const backLink = (
     <Link
       href="/auth/login"
-      className="inline-flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white"
+      className="inline-flex items-center gap-2 text-sm text-ink-faint transition-colors hover:text-ink"
     >
       <ArrowLeft className="h-4 w-4" />
       Back to login
@@ -99,7 +99,7 @@ function ResetPasswordPageContent() {
   return (
     <AuthShell beforeCard={backLink}>
       <div className="hero-kicker mb-6">New credentials</div>
-      <h1 className="mb-3 text-3xl font-semibold tracking-tight text-white">Choose a password</h1>
+      <h1 className="mb-3 text-3xl font-semibold tracking-tight text-ink">Choose a password</h1>
       <p className="mb-8 text-sm leading-relaxed metalab-muted">
         Use at least 8 characters you haven&apos;t used elsewhere.
       </p>
@@ -110,7 +110,7 @@ function ResetPasswordPageContent() {
             New password
           </label>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               type={showPassword ? 'text' : 'password'}
               id="reset-password"
@@ -123,7 +123,7 @@ function ResetPasswordPageContent() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45 transition-colors hover:text-white"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-faint transition-colors hover:text-ink"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -136,7 +136,7 @@ function ResetPasswordPageContent() {
             Confirm password
           </label>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               id="reset-confirm"
@@ -149,7 +149,7 @@ function ResetPasswordPageContent() {
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45 transition-colors hover:text-white"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-faint transition-colors hover:text-ink"
               aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
             >
               {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -162,7 +162,7 @@ function ResetPasswordPageContent() {
         </Button>
       </form>
 
-      <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6 text-center">
         <p className="text-sm metalab-muted">
           Remember your password?{' '}
           <Link href="/auth/login" className="metalab-link">
@@ -179,7 +179,7 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <AppPageShell className="flex min-h-screen items-center justify-center" orbs={false}>
-          <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" aria-hidden />
+          <div className="h-9 w-9 animate-pulse rounded-full bg-pill" aria-hidden />
         </AppPageShell>
       }
     >

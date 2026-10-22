@@ -71,14 +71,11 @@ export default function ProgressChart({ skills, days = 30 }: ProgressChartProps)
         scale: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
       }}
     >
-      <div className="relative overflow-hidden border border-black/10 dark:border-white/10 p-6">
+      <div className="relative overflow-hidden border border-line dark:border-line p-6">
         {/* Gradient accent spine */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-500 via-indigo-500 to-cyan-500 dark:from-violet-400 dark:via-indigo-400 dark:to-cyan-400 opacity-80"
-          aria-hidden
-        />
-        <h2 className="text-xl font-bold text-black dark:text-white mb-6">Progress Over Time</h2>
-        <p className="text-sm text-black/60 dark:text-white/60 mb-6">
+        <div className="absolute left-0 top-0 bottom-0 w-1 opacity-80" aria-hidden />
+        <h2 className="text-xl font-bold text-ground dark:text-ink mb-6">Progress Over Time</h2>
+        <p className="text-sm text-ground dark:text-ink-muted mb-6">
           Illustrative trend based on your current skills. Historical tracking becomes exact once
           long-term progress snapshots are stored.
         </p>

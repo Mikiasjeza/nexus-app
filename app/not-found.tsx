@@ -21,16 +21,16 @@ export default function NotFound() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.15, ease: easing.gentle }}
-            className="mb-6 bg-gradient-to-br from-cyan-400/20 via-violet-400/15 to-rose-400/20 bg-clip-text text-7xl font-bold text-transparent md:mb-8 md:text-9xl"
+            className="mb-6 text-7xl font-bold text-ink md:mb-8 md:text-9xl"
           >
             404
           </motion.div>
 
-          <h1 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
+          <h1 className="mb-4 text-3xl font-bold tracking-tight text-ink md:text-4xl lg:text-5xl">
             Page not found
           </h1>
 
-          <p className="mx-auto mb-10 max-w-md text-lg leading-relaxed text-white/60">
+          <p className="mx-auto mb-10 max-w-md text-lg leading-relaxed text-ink-muted">
             The page you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
 

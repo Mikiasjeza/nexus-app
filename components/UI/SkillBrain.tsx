@@ -272,7 +272,7 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
             >
               {node.verified && (
                 <div
-                  className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-black"
+                  className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-verified border border-line"
                   title="Verified"
                 />
               )}
@@ -284,7 +284,7 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
               style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.15s' }}
             >
               <div
-                className="relative px-2.5 py-1.5 bg-black/90 backdrop-blur-sm whitespace-nowrap"
+                className="relative px-2.5 py-1.5 bg-ground backdrop-blur-sm whitespace-nowrap"
                 style={{ border: `1px solid ${node.color}40` }}
               >
                 <div
@@ -293,7 +293,7 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
                 >
                   {node.category} · {node.score}%
                 </div>
-                <div className="text-white text-[11px] font-medium">{node.label}</div>
+                <div className="text-ink text-[11px] font-medium">{node.label}</div>
                 {/* Corner brackets */}
                 <div
                   className="absolute top-0 left-0 w-2 h-2 border-t border-l"
@@ -329,7 +329,7 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
             transition={{ duration: 0.2 }}
           >
             <div
-              className="bg-black/90 backdrop-blur-xl p-4 relative"
+              className="bg-ground backdrop-blur-md p-4 relative"
               style={{ border: `1px solid ${activeNode.color}40` }}
             >
               {/* HUD corners */}
@@ -356,27 +356,27 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
               >
                 SKILL SIGNAL
               </div>
-              <div className="text-white font-semibold text-sm mb-3">{activeNode.label}</div>
+              <div className="text-ink font-semibold text-sm mb-3">{activeNode.label}</div>
 
               <div className="space-y-1.5">
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-white/40 font-mono">PILLAR</span>
-                  <span className="text-white/80">{activeNode.category}</span>
+                  <span className="text-ink-faint font-mono">PILLAR</span>
+                  <span className="text-ink">{activeNode.category}</span>
                 </div>
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-white/40 font-mono">SCORE</span>
+                  <span className="text-ink-faint font-mono">SCORE</span>
                   <span style={{ color: activeNode.color }}>{activeNode.score}%</span>
                 </div>
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-white/40 font-mono">STATUS</span>
-                  <span className={activeNode.verified ? 'text-emerald-400' : 'text-white/50'}>
+                  <span className="text-ink-faint font-mono">STATUS</span>
+                  <span className={activeNode.verified ? 'text-verified' : 'text-ink-faint'}>
                     {activeNode.verified ? 'VERIFIED' : 'UNVERIFIED'}
                   </span>
                 </div>
               </div>
 
               {/* Score bar */}
-              <div className="mt-3 h-0.5 bg-white/10 overflow-hidden">
+              <div className="mt-3 h-0.5 bg-pill overflow-hidden">
                 <motion.div
                   className="h-full"
                   style={{ background: activeNode.color }}
@@ -389,7 +389,7 @@ export function SkillBrain({ nodes, connections, onNodeClick, className = '' }: 
               <button
                 type="button"
                 onClick={() => setActiveNode(null)}
-                className="mt-3 text-[9px] font-mono tracking-widest text-white/30 hover:text-white/60 transition-colors"
+                className="mt-3 text-[9px] font-mono tracking-widest text-ink-faint hover:text-ink-muted transition-colors"
               >
                 [CLOSE]
               </button>

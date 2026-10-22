@@ -19,18 +19,18 @@ export default function Error({
   return (
     <AppPageShell className="flex min-h-screen items-center justify-center p-4" orbs={false}>
       <div className="gradient-border-card w-full max-w-md p-8 text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-red-400/25 bg-red-500/10">
-          <AlertCircle className="h-8 w-8 text-red-300" />
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-critical/40 bg-critical/15">
+          <AlertCircle className="h-8 w-8 text-critical" />
         </div>
 
-        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-white">
+        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-ink">
           Something went wrong
         </h1>
-        <p className="mb-2 text-sm text-white/60">
+        <p className="mb-2 text-sm text-ink-muted">
           {error.message || 'An unexpected error occurred'}
         </p>
         {error.digest ? (
-          <p className="mb-8 font-mono text-xs text-white/40">ID · {error.digest}</p>
+          <p className="mb-8 font-mono text-xs text-ink-faint">ID · {error.digest}</p>
         ) : (
           <div className="mb-8" />
         )}
@@ -47,7 +47,7 @@ export default function Error({
 
           <Link
             href="/dashboard"
-            className="button-base button-secondary inline-flex flex-1 justify-center rounded-xl border-white/12 bg-white/[0.04] text-white hover:bg-white/[0.07]"
+            className="button-base button-secondary inline-flex flex-1 justify-center rounded-xl border-line bg-raised text-ink hover:bg-raised"
           >
             <Home className="h-5 w-5" />
             Dashboard

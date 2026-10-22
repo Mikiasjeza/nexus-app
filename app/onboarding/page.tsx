@@ -64,28 +64,28 @@ const goals = [
     title: 'Career Growth',
     description: 'Advance in my current field',
     icon: <TrendingUp className="w-6 h-6" />,
-    color: 'from-blue-500 to-cyan-500',
+    color: ' ',
   },
   {
     id: 'job-search',
     title: 'Find New Job',
     description: 'Get matched with opportunities',
     icon: <Briefcase className="w-6 h-6" />,
-    color: 'from-purple-500 to-pink-500',
+    color: ' ',
   },
   {
     id: 'skill-verification',
     title: 'Verify Skills',
     description: 'Get AI-verified credentials',
     icon: <GraduationCap className="w-6 h-6" />,
-    color: 'from-green-500 to-emerald-500',
+    color: ' ',
   },
   {
     id: 'learning',
     title: 'Skill Development',
     description: 'Track my learning journey',
     icon: <User className="w-6 h-6" />,
-    color: 'from-orange-500 to-amber-500',
+    color: ' ',
   },
 ]
 
@@ -97,28 +97,28 @@ const pillarVisuals: Record<
 > = {
   'Technical Skills': {
     icon: <Code className="w-5 h-5" />,
-    cardClass: 'border-cyan-400/20 bg-cyan-500/8',
-    chipClass: 'bg-cyan-400/12 text-cyan-100 hover:bg-cyan-400/18',
+    cardClass: 'border-verified/40 bg-verified-wash',
+    chipClass: 'bg-verified-wash text-verified-ink hover:bg-verified-wash',
   },
   'Creative Skills': {
     icon: <Palette className="w-5 h-5" />,
-    cardClass: 'border-fuchsia-400/20 bg-fuchsia-500/8',
-    chipClass: 'bg-fuchsia-400/12 text-fuchsia-100 hover:bg-fuchsia-400/18',
+    cardClass: 'border-verified/40 bg-verified-wash',
+    chipClass: 'bg-verified-wash text-verified-ink hover:bg-verified-wash',
   },
   'Communication Skills': {
     icon: <MessageSquare className="w-5 h-5" />,
-    cardClass: 'border-emerald-400/20 bg-emerald-500/8',
-    chipClass: 'bg-emerald-400/12 text-emerald-100 hover:bg-emerald-400/18',
+    cardClass: 'border-verified/40 bg-verified-wash',
+    chipClass: 'bg-verified-wash text-verified-ink hover:bg-verified-wash',
   },
   'Professional Skills': {
     icon: <Briefcase className="w-5 h-5" />,
-    cardClass: 'border-indigo-400/20 bg-indigo-500/8',
-    chipClass: 'bg-indigo-400/12 text-indigo-100 hover:bg-indigo-400/18',
+    cardClass: 'border-verified/40 bg-verified-wash',
+    chipClass: 'bg-verified-wash text-verified-ink hover:bg-verified-wash',
   },
   'Learning & Growth': {
     icon: <TrendingUp className="w-5 h-5" />,
-    cardClass: 'border-amber-400/20 bg-amber-500/8',
-    chipClass: 'bg-amber-400/12 text-amber-100 hover:bg-amber-400/18',
+    cardClass: 'border-caution/40 bg-caution/15',
+    chipClass: 'bg-caution/15 text-caution hover:bg-caution/15',
   },
 }
 
@@ -258,7 +258,7 @@ export default function OnboardingPage() {
     (currentStep === 3 && selectedSkills.length === 0)
 
   return (
-    <AppPageShell className="flex min-h-screen items-center justify-center bg-black p-4">
+    <AppPageShell className="flex min-h-screen items-center justify-center bg-ground p-4">
       <Confetti trigger={showConfetti} />
 
       <div className="w-full max-w-4xl">
@@ -273,14 +273,14 @@ export default function OnboardingPage() {
                     animate={{ scale: 1 }}
                     transition={{ delay: index * 0.1 }}
                     className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors ${
-                      currentStep >= step.id ? 'bg-white text-black' : 'bg-white/10 text-white/45'
+                      currentStep >= step.id ? 'bg-ink text-ground' : 'bg-pill text-ink-faint'
                     }`}
                   >
                     {currentStep > step.id ? <CheckCircle className="w-6 h-6" /> : step.icon}
                   </motion.div>
                   <span
                     className={`text-xs font-medium ${
-                      currentStep >= step.id ? 'text-cyan-200' : 'text-white/45'
+                      currentStep >= step.id ? 'text-verified-ink' : 'text-ink-faint'
                     }`}
                   >
                     {step.title}
@@ -289,7 +289,7 @@ export default function OnboardingPage() {
                 {index < steps.length - 1 && (
                   <div
                     className={`flex-1 h-0.5 mx-2 ${
-                      currentStep > step.id ? 'bg-cyan-300/80' : 'bg-white/10'
+                      currentStep > step.id ? 'bg-verified-wash' : 'bg-pill'
                     }`}
                   />
                 )}
@@ -311,38 +311,38 @@ export default function OnboardingPage() {
                 transition={{ duration: 0.8, ease: easing.primary }}
                 className="text-center"
               >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="w-10 h-10 text-white" />
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Sparkles className="w-10 h-10 text-ink" />
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-4">Welcome to Nexus</h2>
-                <p className="text-white/60 mb-8 max-w-2xl mx-auto">
+                <h2 className="text-3xl font-bold text-ink mb-4">Welcome to Nexus</h2>
+                <p className="text-ink-muted mb-8 max-w-2xl mx-auto">
                   Build your profile around five skill pillars so Nexus can understand what you
                   build, create, explain, lead, and improve over time.
                 </p>
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
-                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
-                    <CheckCircle className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Pillar-based verification</p>
+                  <div className="p-4 rounded-xl border border-line bg-raised">
+                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
+                    <p className="text-sm font-medium text-ink">Pillar-based verification</p>
                   </div>
-                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
-                    <CheckCircle className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Proof that feels credible</p>
+                  <div className="p-4 rounded-xl border border-line bg-raised">
+                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
+                    <p className="text-sm font-medium text-ink">Proof that feels credible</p>
                   </div>
-                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Better matches and guidance</p>
+                  <div className="p-4 rounded-xl border border-line bg-raised">
+                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
+                    <p className="text-sm font-medium text-ink">Better matches and guidance</p>
                   </div>
                 </div>
                 <div className="grid gap-3 md:grid-cols-5">
                   {SKILL_PILLAR_DETAILS.map((pillar) => (
                     <div
                       key={pillar.category}
-                      className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-4 text-left"
+                      className="rounded-2xl border border-line bg-raised px-3 py-4 text-left"
                     >
-                      <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                      <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                         {pillar.shortLabel}
                       </div>
-                      <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                      <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                     </div>
                   ))}
                 </div>
@@ -359,11 +359,11 @@ export default function OnboardingPage() {
                 transition={{ duration: 0.8, ease: easing.primary }}
               >
                 <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
-                    <Target className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Target className="w-8 h-8 text-ink" />
                   </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">What are your goals?</h2>
-                  <p className="text-white/60">Optional. Select any that apply, or skip.</p>
+                  <h2 className="text-3xl font-bold text-ink mb-2">What are your goals?</h2>
+                  <p className="text-ink-muted">Optional. Select any that apply, or skip.</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   {goals.map((goal) => (
@@ -374,17 +374,17 @@ export default function OnboardingPage() {
                       onClick={() => handleGoalToggle(goal.id)}
                       className={`p-6 rounded-xl border-2 transition-all text-left ${
                         selectedGoals.includes(goal.id)
-                          ? 'border-cyan-300/70 bg-white/10'
-                          : 'border-white/10 hover:border-cyan-300/40'
+                          ? 'border-verified/40 bg-pill'
+                          : 'border-line hover:border-verified/40'
                       }`}
                     >
                       <div
-                        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${goal.color} flex items-center justify-center text-white mb-4`}
+                        className={`w-12 h-12 rounded-xl  ${goal.color} flex items-center justify-center text-ink mb-4`}
                       >
                         {goal.icon}
                       </div>
-                      <h3 className="font-semibold text-white mb-1">{goal.title}</h3>
-                      <p className="text-sm text-white/60">{goal.description}</p>
+                      <h3 className="font-semibold text-ink mb-1">{goal.title}</h3>
+                      <p className="text-sm text-ink-muted">{goal.description}</p>
                     </motion.button>
                   ))}
                 </div>
@@ -401,16 +401,16 @@ export default function OnboardingPage() {
                 transition={{ duration: 0.8, ease: easing.primary }}
               >
                 <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
-                    <Plus className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Plus className="w-8 h-8 text-ink" />
                   </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">Add Your Skills</h2>
-                  <p className="text-white/60">
+                  <h2 className="text-3xl font-bold text-ink mb-2">Add Your Skills</h2>
+                  <p className="text-ink-muted">
                     Choose from the five pillars below or add your own custom skills.
                   </p>
                 </div>
                 <div className="max-w-3xl mx-auto">
-                  <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="mb-6 rounded-2xl border border-line bg-raised p-4">
                     <div className="flex flex-col gap-3 md:flex-row">
                       <input
                         type="text"
@@ -427,7 +427,7 @@ export default function OnboardingPage() {
                             handleCustomSkillAdd()
                           }
                         }}
-                        className="min-h-[48px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none transition focus:border-cyan-300/60"
+                        className="min-h-[48px] flex-1 rounded-xl border border-line bg-ground/70 px-4 text-ink outline-none transition focus:border-verified/40"
                         placeholder="Add your own skill, like Salesforce, C++, or Recruiting"
                       />
                       <Button type="button" onClick={handleCustomSkillAdd}>
@@ -435,13 +435,13 @@ export default function OnboardingPage() {
                       </Button>
                     </div>
                     {customSkillError && (
-                      <p className="mt-3 text-sm text-rose-300">{customSkillError}</p>
+                      <p className="mt-3 text-sm text-critical">{customSkillError}</p>
                     )}
                   </div>
 
                   {selectedSkills.length > 0 && (
                     <div className="mb-6">
-                      <div className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-white/45">
+                      <div className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-ink-faint">
                         Selected skills
                       </div>
                       <div className="flex flex-wrap gap-3">
@@ -450,7 +450,7 @@ export default function OnboardingPage() {
                             key={skill}
                             type="button"
                             onClick={() => handleSkillToggle(skill)}
-                            className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-white transition hover:border-cyan-200 hover:bg-cyan-300/15"
+                            className="rounded-full border border-verified/40 bg-verified-wash px-4 py-2 text-sm font-medium text-ink transition hover:border-verified/40 hover:bg-verified-wash"
                           >
                             {skill} x
                           </button>
@@ -467,11 +467,11 @@ export default function OnboardingPage() {
                           key={pillar.category}
                           className={`rounded-2xl border px-4 py-4 ${visual.cardClass}`}
                         >
-                          <div className="mb-3 inline-flex rounded-xl border border-white/10 bg-black/20 p-2 text-white">
+                          <div className="mb-3 inline-flex rounded-xl border border-line bg-ground/70 p-2 text-ink">
                             {visual.icon}
                           </div>
-                          <div className="text-sm font-semibold text-white">{pillar.category}</div>
-                          <p className="mt-2 text-sm text-white/65">{pillar.summary}</p>
+                          <div className="text-sm font-semibold text-ink">{pillar.category}</div>
+                          <p className="mt-2 text-sm text-ink-muted">{pillar.summary}</p>
                         </div>
                       )
                     })}
@@ -483,16 +483,16 @@ export default function OnboardingPage() {
                         key={group.id}
                         className={`rounded-3xl border p-5 ${pillarVisuals[group.label as SkillCategory].cardClass}`}
                       >
-                        <div className="mb-2 flex items-center gap-3 text-white">
-                          <div className="rounded-xl border border-white/10 bg-black/20 p-2">
+                        <div className="mb-2 flex items-center gap-3 text-ink">
+                          <div className="rounded-xl border border-line bg-ground/70 p-2">
                             {pillarVisuals[group.label as SkillCategory].icon}
                           </div>
-                          <div className="text-sm font-medium uppercase tracking-[0.2em] text-white/60">
+                          <div className="text-sm font-medium uppercase tracking-[0.2em] text-ink-muted">
                             {group.label}
                           </div>
                         </div>
-                        <p className="mb-4 max-w-2xl text-sm text-white/65">{group.description}</p>
-                        <div className="mb-3 text-xs font-medium uppercase tracking-[0.24em] text-white/40">
+                        <p className="mb-4 max-w-2xl text-sm text-ink-muted">{group.description}</p>
+                        <div className="mb-3 text-xs font-medium uppercase tracking-[0.24em] text-ink-faint">
                           Suggested skills
                         </div>
                         <div className="flex flex-wrap gap-3">
@@ -510,7 +510,7 @@ export default function OnboardingPage() {
                                 onClick={() => handleSkillToggle(skill)}
                                 className={`px-4 py-2 rounded-full font-medium transition-all ${
                                   isSelected
-                                    ? 'bg-white text-black'
+                                    ? 'bg-ink text-ground'
                                     : pillarVisuals[group.label as SkillCategory].chipClass
                                 }`}
                               >
@@ -523,7 +523,7 @@ export default function OnboardingPage() {
                     ))}
                   </div>
                 </div>
-                <p className="text-center text-sm text-white/45 mt-6">
+                <p className="text-center text-sm text-ink-faint mt-6">
                   Selected: {selectedSkills.length} of {MAX_ONBOARDING_SKILLS} skills
                 </p>
               </motion.div>
@@ -543,34 +543,34 @@ export default function OnboardingPage() {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                  className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-6"
+                  className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
                 >
-                  <CheckCircle className="w-10 h-10 text-white" />
+                  <CheckCircle className="w-10 h-10 text-ink" />
                 </motion.div>
-                <h2 className="text-3xl font-bold text-white mb-4">You&apos;re All Set</h2>
-                <p className="text-white/60 mb-8 max-w-2xl mx-auto">
+                <h2 className="text-3xl font-bold text-ink mb-4">You&apos;re All Set</h2>
+                <p className="text-ink-muted mb-8 max-w-2xl mx-auto">
                   Your Nexus profile is ready. Start building proof across the five pillars, verify
                   your strongest skills, and unlock better career guidance.
                 </p>
                 {completionError && (
-                  <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                  <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-critical/40 bg-critical/15 px-4 py-3 text-sm text-critical">
                     {completionError}
                   </div>
                 )}
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
                   <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
                     <p className="text-sm font-medium">Profile Created</p>
                   </AnimatedCard>
                   <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
                     <p className="text-sm font-medium">
                       {selectedSkills.length} {selectedSkills.length === 1 ? 'skill' : 'skills'} to
                       add
                     </p>
                   </AnimatedCard>
                   <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
                     <p className="text-sm font-medium">Ready to Verify</p>
                   </AnimatedCard>
                 </div>
@@ -579,7 +579,7 @@ export default function OnboardingPage() {
           </AnimatePresence>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-8 border-t border-white/10">
+          <div className="flex items-center justify-between mt-8 pt-8 border-t border-line">
             <Button
               variant="outline"
               leftIcon={<ArrowLeft className="w-5 h-5" />}
@@ -588,7 +588,7 @@ export default function OnboardingPage() {
             >
               Back
             </Button>
-            <div className="text-sm text-white/45">
+            <div className="text-sm text-ink-faint">
               Step {currentStep} of {steps.length}
             </div>
             <Button

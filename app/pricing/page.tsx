@@ -119,7 +119,7 @@ export default function PricingPage() {
   }
 
   return (
-    <AppPageShell className="min-h-screen bg-black">
+    <AppPageShell className="min-h-screen bg-ground">
       <div className="page-shell">
         {/* Header */}
         <motion.div
@@ -132,17 +132,14 @@ export default function PricingPage() {
         >
           <div className="hero-panel p-8 text-center md:p-10">
             <div className="hero-kicker mx-auto mb-6 inline-flex">Flexible pricing</div>
-            <h1 className="mx-auto mb-4 max-w-[12ch] text-4xl font-semibold tracking-tight text-white md:mb-6 md:max-w-none md:text-6xl">
-              Choose your{' '}
-              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">
-                plan
-              </span>
+            <h1 className="mx-auto mb-4 max-w-[12ch] text-4xl font-semibold tracking-tight text-ink md:mb-6 md:max-w-none md:text-6xl">
+              Choose your <span className="text-ink">plan</span>
             </h1>
-            <p className="text-base md:text-lg text-white/68 max-w-[42ch] md:max-w-3xl mx-auto">
+            <p className="text-base md:text-lg text-ink-muted max-w-[42ch] md:max-w-3xl mx-auto">
               Start with the free plan, prove your capabilities, and upgrade when you are ready for
               paid verification and billing features.
             </p>
-            <div className="mt-6 text-sm text-white/58">
+            <div className="mt-6 text-sm text-ink-muted">
               {isSignedIn
                 ? 'You are signed in. Paid upgrades go straight to secure Stripe checkout.'
                 : 'Create an account first, then upgrade when you are ready to start billing.'}
@@ -157,7 +154,7 @@ export default function PricingPage() {
           className="grid sm:grid-cols-3 gap-3 mb-10"
         >
           {['Solo builders', 'Growing professionals', 'Hiring teams'].map((item) => (
-            <div key={item} className="insight-card px-4 py-3 text-sm text-white/72 text-center">
+            <div key={item} className="insight-card px-4 py-3 text-sm text-ink-muted text-center">
               {item}
             </div>
           ))}
@@ -176,26 +173,26 @@ export default function PricingPage() {
                 className="relative"
               >
                 <div className="gradient-border-card p-8 h-full">
-                  <div className="w-16 h-16 border border-white/10 bg-white/5 flex items-center justify-center mb-6">
-                    <Icon className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 border border-line bg-raised flex items-center justify-center mb-6">
+                    <Icon className="w-8 h-8 text-ink" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                  <h3 className="text-2xl font-bold text-ink mb-2">{plan.name}</h3>
                   <div className="mb-4">
-                    <span className="text-4xl font-bold text-white">{plan.displayPrice}</span>
+                    <span className="text-4xl font-bold text-ink">{plan.displayPrice}</span>
                     {plan.period && (
-                      <span className="text-white/60">
+                      <span className="text-ink-muted">
                         {' '}
                         {plan.period === 'forever' ? 'forever' : `/ ${plan.period}`}
                       </span>
                     )}
                   </div>
-                  <p className="text-white/60 mb-6">{plan.description}</p>
+                  <p className="text-ink-muted mb-6">{plan.description}</p>
 
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3">
-                        <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-white/75">{feature}</span>
+                        <Check className="w-4 h-4 text-verified flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-ink">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -211,7 +208,7 @@ export default function PricingPage() {
                         Contact Sales
                         <ArrowRight className="w-5 h-5" />
                       </Link>
-                      <p className="text-xs text-white/45 text-center">
+                      <p className="text-xs text-ink-faint text-center">
                         Enterprise setup is handled with a custom conversation.
                       </p>
                     </div>
@@ -235,7 +232,7 @@ export default function PricingPage() {
                           <ArrowRight className="w-5 h-5" />
                         </Link>
                       )}
-                      <p className="text-xs leading-relaxed text-white/50">
+                      <p className="text-xs leading-relaxed text-ink-faint">
                         {plan.displayPrice}/month plus applicable tax, billed when you subscribe and
                         renewing monthly until you cancel. Cancel any time in Settings.
                       </p>
@@ -256,17 +253,17 @@ export default function PricingPage() {
           transition={{ duration: 0.5, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="mb-16"
         >
-          <h2 className="text-3xl font-bold text-white text-center mb-12">All Plans Include</h2>
+          <h2 className="text-3xl font-bold text-ink text-center mb-12">All Plans Include</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon
               return (
                 <div key={index} className="gradient-border-card p-6 text-center">
-                  <div className="w-12 h-12 border border-white/10 bg-white/5 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 border border-line bg-raised flex items-center justify-center mx-auto mb-4">
+                    <Icon className="w-6 h-6 text-ink" />
                   </div>
-                  <h3 className="font-medium text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-white/60">{feature.description}</p>
+                  <h3 className="font-medium text-ink mb-2">{feature.title}</h3>
+                  <p className="text-sm text-ink-muted">{feature.description}</p>
                 </div>
               )
             })}
@@ -282,7 +279,7 @@ export default function PricingPage() {
           transition={{ duration: 0.5, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center"
         >
-          <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-ink mb-8">Frequently Asked Questions</h2>
           <div className="max-w-3xl mx-auto space-y-2">
             {faqs.map((item, i) => (
               <div key={i} className="gradient-border-card overflow-hidden">
@@ -291,9 +288,9 @@ export default function PricingPage() {
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   className="flex w-full items-center justify-between p-6 text-left"
                 >
-                  <h3 className="font-medium text-white">{item.q}</h3>
+                  <h3 className="font-medium text-ink">{item.q}</h3>
                   <ChevronDown
-                    className={`w-4 h-4 text-white/40 flex-shrink-0 ml-4 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-ink-faint flex-shrink-0 ml-4 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
                   />
                 </button>
                 <AnimatePresence initial={false}>
@@ -306,7 +303,7 @@ export default function PricingPage() {
                       transition={{ duration: 0.22, ease: 'easeOut' }}
                       className="overflow-hidden"
                     >
-                      <p className="px-6 pb-6 text-white/55 text-sm leading-relaxed">{item.a}</p>
+                      <p className="px-6 pb-6 text-ink-muted text-sm leading-relaxed">{item.a}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -325,8 +322,8 @@ export default function PricingPage() {
           className="mt-16 text-center"
         >
           <div className="gradient-border-card p-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Ready to get started?</h2>
-            <p className="text-white/60 mb-8">
+            <h2 className="text-3xl font-bold text-ink mb-4">Ready to get started?</h2>
+            <p className="text-ink-muted mb-8">
               Start on the free plan today and upgrade only if you need more AI verifications.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

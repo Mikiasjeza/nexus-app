@@ -16,7 +16,7 @@ export default function TermsPage() {
       current="/terms"
       summary={
         <>
-          <p className="mb-2 font-medium text-white">The short version</p>
+          <p className="mb-2 font-medium text-ink">The short version</p>
           <List>
             <li>
               You own your content. You give us permission to use it only to run Nexus for you.
@@ -39,7 +39,7 @@ export default function TermsPage() {
           creating an account or using the service you agree to them and to our{' '}
           <Link
             href="/privacy"
-            className="underline decoration-white/20 underline-offset-2 hover:text-white"
+            className="underline decoration-line-strong underline-offset-2 hover:text-ink"
           >
             Privacy Policy
           </Link>
@@ -142,38 +142,37 @@ export default function TermsPage() {
       <Section title="6. Plans, billing and cancellation">
         <List>
           <li>
-            <strong className="text-white/85">Free plan:</strong> available at no cost with the
-            limits shown on the{' '}
+            <strong className="text-ink">Free plan:</strong> available at no cost with the limits
+            shown on the{' '}
             <Link
               href="/pricing"
-              className="underline decoration-white/20 underline-offset-2 hover:text-white"
+              className="underline decoration-line-strong underline-offset-2 hover:text-ink"
             >
               pricing page
             </Link>
             .
           </li>
           <li>
-            <strong className="text-white/85">Paid plans</strong> are billed monthly in advance
-            through Stripe at the price shown before you confirm checkout, plus any applicable
-            taxes.{' '}
-            <strong className="text-white/85">
+            <strong className="text-ink">Paid plans</strong> are billed monthly in advance through
+            Stripe at the price shown before you confirm checkout, plus any applicable taxes.{' '}
+            <strong className="text-ink">
               They renew automatically each month until you cancel.
             </strong>
           </li>
           <li>
-            <strong className="text-white/85">Cancel any time</strong> in Settings → Billing →
-            Manage billing. Cancellation stops future renewals; you keep paid features until the end
-            of the current billing period. We don&apos;t ask you to call or email to cancel.
+            <strong className="text-ink">Cancel any time</strong> in Settings → Billing → Manage
+            billing. Cancellation stops future renewals; you keep paid features until the end of the
+            current billing period. We don&apos;t ask you to call or email to cancel.
           </li>
           <li>
-            <strong className="text-white/85">Refunds:</strong> payments are non-refundable except
-            where required by law or if we fail to provide the service. If you&apos;re in a
-            jurisdiction with a statutory withdrawal right, it applies.
+            <strong className="text-ink">Refunds:</strong> payments are non-refundable except where
+            required by law or if we fail to provide the service. If you&apos;re in a jurisdiction
+            with a statutory withdrawal right, it applies.
           </li>
           <li>
-            <strong className="text-white/85">Price changes:</strong> we&apos;ll email you at least
-            30 days before a price change affects your subscription, and you can cancel before it
-            takes effect.
+            <strong className="text-ink">Price changes:</strong> we&apos;ll email you at least 30
+            days before a price change affects your subscription, and you can cancel before it takes
+            effect.
           </li>
         </List>
       </Section>

@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
   const backLink = (
     <Link
       href="/auth/login"
-      className="inline-flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white"
+      className="inline-flex items-center gap-2 text-sm text-ink-faint transition-colors hover:text-ink"
     >
       <ArrowLeft className="h-4 w-4" />
       Back to login
@@ -53,19 +53,19 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell beforeCard={backLink}>
       <div className="hero-kicker mb-6">Recovery</div>
-      <h1 className="mb-3 text-3xl font-semibold tracking-tight text-white">Reset password</h1>
+      <h1 className="mb-3 text-3xl font-semibold tracking-tight text-ink">Reset password</h1>
       <p className="mb-8 text-sm leading-relaxed metalab-muted">
         Enter your email and we&apos;ll send a secure link to choose a new password.
       </p>
 
       {sent ? (
         <div className="py-4 text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
-            <Mail className="h-8 w-8 text-cyan-200/90" />
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-line bg-raised">
+            <Mail className="h-8 w-8 text-verified-ink" />
           </div>
-          <h2 className="mb-2 text-lg font-semibold text-white">Check your email</h2>
+          <h2 className="mb-2 text-lg font-semibold text-ink">Check your email</h2>
           <p className="mb-8 text-sm metalab-muted">
-            We sent a reset link to <span className="text-white/85">{email}</span>
+            We sent a reset link to <span className="text-ink">{email}</span>
           </p>
           <Button
             variant="outline"
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
               Email
             </label>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
               <input
                 type="email"
                 id="forgot-email"
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
         </form>
       )}
 
-      <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6 text-center">
         <p className="text-sm metalab-muted">
           Remember your password?{' '}
           <Link href="/auth/login" className="metalab-link">

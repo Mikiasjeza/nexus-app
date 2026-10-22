@@ -46,13 +46,11 @@ export default function SkillGrid({
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="text-center py-16 lg:py-24"
       >
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-neutral-900/50 border border-neutral-800/50 mb-6">
-          <Circle className="w-10 h-10 text-neutral-600" />
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-raised border border-line mb-6">
+          <Circle className="w-10 h-10 text-ink-faint" />
         </div>
-        <p className="text-xl font-semibold text-neutral-200 mb-2 tracking-tight">
-          No skills found
-        </p>
-        <p className="text-neutral-400 font-light max-w-md mx-auto">
+        <p className="text-xl font-semibold text-ink mb-2 tracking-tight">No skills found</p>
+        <p className="text-ink-muted font-light max-w-md mx-auto">
           {filterCategory || filterLevel
             ? 'Try adjusting your filters to see more results'
             : 'Add your first skill to get started building your passport'}

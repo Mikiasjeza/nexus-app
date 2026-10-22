@@ -60,7 +60,7 @@ export default function ContactPage() {
   }
 
   return (
-    <AppPageShell className="min-h-screen bg-black">
+    <AppPageShell className="min-h-screen bg-ground">
       <div className="page-shell pb-24 pt-8 md:pt-12">
         <section className="relative mb-16 md:mb-20">
           <motion.div
@@ -74,13 +74,10 @@ export default function ContactPage() {
               <Clock className="h-3.5 w-3.5" />
               We reply by email
             </div>
-            <h1 className="mb-4 max-w-[14ch] text-4xl font-semibold leading-[1.08] tracking-tight text-white md:mb-6 md:max-w-none md:text-6xl lg:text-7xl">
-              Get in{' '}
-              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">
-                touch
-              </span>
+            <h1 className="mb-4 max-w-[14ch] text-4xl font-semibold leading-[1.08] tracking-tight text-ink md:mb-6 md:max-w-none md:text-6xl lg:text-7xl">
+              Get in <span className="text-ink">touch</span>
             </h1>
-            <p className="max-w-xl text-base leading-relaxed text-white/65 md:text-xl">
+            <p className="max-w-xl text-base leading-relaxed text-ink-muted md:text-xl">
               Product questions, partnerships, or support — we read every message.
             </p>
           </motion.div>
@@ -99,30 +96,30 @@ export default function ContactPage() {
                   className="insight-card space-y-6 p-6"
                 >
                   <div>
-                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
-                      <Mail className="h-5 w-5 text-cyan-200/90" />
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-raised">
+                      <Mail className="h-5 w-5 text-verified-ink" />
                     </div>
-                    <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
+                    <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-faint">
                       Email
                     </h3>
                     <a
                       href="mailto:hello@nexus.ai"
-                      className="text-sm text-white/72 transition-colors hover:text-white"
+                      className="text-sm text-ink-muted transition-colors hover:text-ink"
                     >
                       hello@nexus.ai
                     </a>
                   </div>
 
-                  <div className="border-t border-white/[0.06] pt-6">
-                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
-                      <MessageSquare className="h-5 w-5 text-violet-200/90" />
+                  <div className="border-t border-line pt-6">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-raised">
+                      <MessageSquare className="h-5 w-5 text-verified-ink" />
                     </div>
-                    <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
+                    <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-faint">
                       Support
                     </h3>
                     <a
                       href="mailto:support@nexus.ai"
-                      className="text-sm text-white/72 transition-colors hover:text-white"
+                      className="text-sm text-ink-muted transition-colors hover:text-ink"
                     >
                       support@nexus.ai
                     </a>
@@ -140,9 +137,9 @@ export default function ContactPage() {
                 >
                   {submitted ? (
                     <div className="gradient-border-card p-12 text-center">
-                      <CheckCircle2 className="w-16 h-16 text-white mx-auto mb-6" />
-                      <h2 className="text-2xl font-bold text-white mb-4">Message Sent!</h2>
-                      <p className="text-white/60 mb-8">
+                      <CheckCircle2 className="w-16 h-16 text-ink mx-auto mb-6" />
+                      <h2 className="text-2xl font-bold text-ink mb-4">Message Sent!</h2>
+                      <p className="text-ink-muted mb-8">
                         Your note was delivered. We&apos;ll reply as soon as possible.
                       </p>
                       <Button variant="outline" onClick={() => setSubmitted(false)}>

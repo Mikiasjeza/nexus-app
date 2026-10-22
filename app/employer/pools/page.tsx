@@ -81,7 +81,7 @@ export default function EmployerPoolsPage() {
   }
 
   return (
-    <AppPageShell className="min-h-screen bg-black py-16">
+    <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -90,8 +90,8 @@ export default function EmployerPoolsPage() {
           className="mb-12"
         >
           <div className="hero-panel p-8 md:p-10">
-            <h1 className="text-4xl font-bold text-white mb-2">Talent Pools</h1>
-            <p className="text-lg text-white/60 mb-8 max-w-3xl">
+            <h1 className="text-4xl font-bold text-ink mb-2">Talent Pools</h1>
+            <p className="text-lg text-ink-muted mb-8 max-w-3xl">
               Organize candidates by the pillars your team hires for most often, then revisit the
               strongest profiles without losing context.
             </p>
@@ -103,10 +103,10 @@ export default function EmployerPoolsPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                     {pillar.shortLabel}
                   </div>
-                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
+                  <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                 </div>
               ))}
             </div>
@@ -117,7 +117,7 @@ export default function EmployerPoolsPage() {
                 placeholder="New pool name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                className="flex-1 px-4 py-3 border border-white/10 bg-black/40 text-white"
+                className="flex-1 px-4 py-3 border border-line bg-ground/70 text-ink"
               />
               <Button type="submit" disabled={creating || !newName.trim()}>
                 <Plus className="w-4 h-4 mr-2" />
@@ -128,12 +128,12 @@ export default function EmployerPoolsPage() {
         </motion.div>
 
         {loading ? (
-          <div className="text-white/40">Loading...</div>
+          <div className="text-ink-faint">Loading...</div>
         ) : pools.length === 0 ? (
           <div className="gradient-border-card p-12 text-center">
-            <Users className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <h3 className="text-xl font-medium text-white mb-2">No talent pools yet</h3>
-            <p className="text-white/60 mb-4">
+            <Users className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
+            <h3 className="text-xl font-medium text-ink mb-2">No talent pools yet</h3>
+            <p className="text-ink-muted mb-4">
               Create a pool to save candidates from your talent search
             </p>
             <Link href="/employer/talent">
@@ -151,8 +151,8 @@ export default function EmployerPoolsPage() {
                 className="gradient-border-card p-6 flex items-center justify-between"
               >
                 <Link href={`/employer/pools/${pool.id}`} className="flex-1">
-                  <h3 className="text-xl font-semibold text-white">{pool.name}</h3>
-                  <p className="text-white/60 text-sm mt-1">
+                  <h3 className="text-xl font-semibold text-ink">{pool.name}</h3>
+                  <p className="text-ink-muted text-sm mt-1">
                     {pool.candidateCount} candidate{pool.candidateCount !== 1 ? 's' : ''}
                   </p>
                 </Link>

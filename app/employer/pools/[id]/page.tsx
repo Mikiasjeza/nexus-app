@@ -91,7 +91,7 @@ export default function EmployerPoolDetailPage() {
   if (loading || !pool) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-black/40 dark:text-white/40">Loading...</div>
+        <div className="animate-pulse text-ground dark:text-ink-faint">Loading...</div>
       </div>
     )
   }
@@ -108,19 +108,19 @@ export default function EmployerPoolDetailPage() {
   )
 
   return (
-    <AppPageShell className="min-h-screen bg-black py-16">
+    <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <Link
           href="/employer/pools"
-          className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-8"
+          className="inline-flex items-center gap-2 text-ink-muted hover:text-ink mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Pools
         </Link>
 
         <div className="hero-panel p-8 md:p-10 mb-12">
-          <h1 className="text-4xl font-bold text-white mb-2">{pool.name}</h1>
-          <p className="text-white/60 mb-8">
+          <h1 className="text-4xl font-bold text-ink mb-2">{pool.name}</h1>
+          <p className="text-ink-muted mb-8">
             {pool.candidates.length} candidate{pool.candidates.length !== 1 ? 's' : ''} saved with
             pillar-aware skill proof.
           </p>
@@ -131,11 +131,11 @@ export default function EmployerPoolDetailPage() {
                 className="insight-card p-4"
                 style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
               >
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                   {pillar.shortLabel}
                 </div>
-                <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
-                <div className="mt-3 text-2xl font-semibold text-white">
+                <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
+                <div className="mt-3 text-2xl font-semibold text-ink">
                   {poolPillarCounts[pillar.category] ?? 0}
                 </div>
               </div>
@@ -145,8 +145,8 @@ export default function EmployerPoolDetailPage() {
 
         {pool.candidates.length === 0 ? (
           <div className="gradient-border-card p-12 text-center">
-            <User className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <p className="text-white/60 mb-4">No candidates in this pool yet</p>
+            <User className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
+            <p className="text-ink-muted mb-4">No candidates in this pool yet</p>
             <Link href="/employer/talent">
               <Button>Search Talent</Button>
             </Link>
@@ -159,7 +159,7 @@ export default function EmployerPoolDetailPage() {
                 className="gradient-border-card p-6 flex items-center justify-between"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-raised flex items-center justify-center">
                     {c.avatar ? (
                       <Image
                         src={c.avatar}
@@ -170,11 +170,11 @@ export default function EmployerPoolDetailPage() {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                     ) : (
-                      <User className="w-6 h-6 text-white/40" />
+                      <User className="w-6 h-6 text-ink-faint" />
                     )}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">{c.name}</h3>
+                    <h3 className="font-semibold text-ink">{c.name}</h3>
                     <div className="flex flex-wrap gap-2 mt-2 mb-3">
                       {getCandidatePillars(c.skills)
                         .slice(0, 3)

@@ -190,14 +190,14 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <p className="text-white/60">Please log in to view settings</p>
+      <div className="min-h-screen flex items-center justify-center bg-ground">
+        <p className="text-ink-muted">Please log in to view settings</p>
       </div>
     )
   }
 
   return (
-    <AppPageShell className="min-h-screen bg-black">
+    <AppPageShell className="min-h-screen bg-ground">
       <div className="mx-auto max-w-4xl px-6 py-16 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -208,10 +208,10 @@ export default function SettingsPage() {
         >
           <div className="hero-panel p-8 md:p-10">
             <div className="hero-kicker mb-5">Identity Controls</div>
-            <h1 className="mb-4 text-4xl font-semibold leading-[1.08] tracking-tight text-white md:text-5xl lg:text-6xl">
+            <h1 className="mb-4 text-4xl font-semibold leading-[1.08] tracking-tight text-ink md:text-5xl lg:text-6xl">
               Settings
             </h1>
-            <p className="text-lg text-white/68 max-w-2xl">
+            <p className="text-lg text-ink-muted max-w-2xl">
               Shape how your profile appears, how employers discover you, and how your Nexus
               identity behaves.
             </p>
@@ -220,7 +220,7 @@ export default function SettingsPage() {
 
         <div className="space-y-8">
           {isGuestPreview && (
-            <div className="border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
+            <div className="border border-verified/40 bg-verified-wash p-4 text-sm text-ink">
               You are viewing Settings in guest preview mode. Actions that change account data are
               disabled.
             </div>
@@ -234,12 +234,12 @@ export default function SettingsPage() {
           >
             <div className="gradient-border-card p-8">
               <div className="mb-8 flex items-center gap-3">
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
-                  <UserIcon className="h-5 w-5 text-cyan-200/90" />
+                <div className="rounded-xl border border-line bg-raised p-2.5">
+                  <UserIcon className="h-5 w-5 text-verified-ink" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-white">Profile</h2>
-                  <p className="mt-1 text-sm text-white/55">Name, email, and bio</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-ink">Profile</h2>
+                  <p className="mt-1 text-sm text-ink-muted">Name, email, and bio</p>
                 </div>
               </div>
               <div className="space-y-6">
@@ -263,7 +263,7 @@ export default function SettingsPage() {
                     Email
                   </label>
                   <div className="relative">
-                    <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/38" />
+                    <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
                     <input
                       id="settings-email"
                       type="email"
@@ -272,7 +272,7 @@ export default function SettingsPage() {
                       className="metalab-input cursor-not-allowed pl-11 opacity-70"
                     />
                   </div>
-                  <p className="mt-2 text-xs text-white/45">Email cannot be changed</p>
+                  <p className="mt-2 text-xs text-ink-faint">Email cannot be changed</p>
                 </div>
                 <div>
                   <label className="metalab-label" htmlFor="settings-bio">
@@ -302,19 +302,19 @@ export default function SettingsPage() {
           >
             <div className="gradient-border-card p-8">
               <div className="mb-8 flex items-center gap-3">
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
-                  <Globe className="h-5 w-5 text-cyan-200/90" />
+                <div className="rounded-xl border border-line bg-raised p-2.5">
+                  <Globe className="h-5 w-5 text-verified-ink" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-white">Privacy</h2>
-                  <p className="mt-1 text-sm text-white/55">Control how you appear to others</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-ink">Privacy</h2>
+                  <p className="mt-1 text-sm text-ink-muted">Control how you appear to others</p>
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.08] bg-black/25 p-5">
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-line bg-ground/70 p-5">
                   <div className="min-w-0 flex-1">
-                    <h3 className="mb-1 font-medium text-white">Public profile</h3>
-                    <p className="text-sm leading-relaxed text-white/55">
+                    <h3 className="mb-1 font-medium text-ink">Public profile</h3>
+                    <p className="text-sm leading-relaxed text-ink-muted">
                       Allow others to view your Nexus profile via shareable link
                     </p>
                   </div>
@@ -325,10 +325,10 @@ export default function SettingsPage() {
                     }}
                   />
                 </div>
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.08] bg-black/25 p-5">
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-line bg-ground/70 p-5">
                   <div className="min-w-0 flex-1">
-                    <h3 className="mb-1 font-medium text-white">Discoverable by employers</h3>
-                    <p className="text-sm leading-relaxed text-white/55">
+                    <h3 className="mb-1 font-medium text-ink">Discoverable by employers</h3>
+                    <p className="text-sm leading-relaxed text-ink-muted">
                       Let employer search include your profile when skills match. Requires Public
                       Profile. Employers see your name, bio, avatar and public skills, never your
                       email. Turning this off removes you from their results and shortlists.
@@ -346,9 +346,9 @@ export default function SettingsPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     transition={{ duration: 0.3 }}
-                    className="rounded-xl border border-white/[0.08] bg-black/25 p-5"
+                    className="rounded-xl border border-line bg-ground/70 p-5"
                   >
-                    <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                    <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
                       Shareable link
                     </p>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -388,12 +388,12 @@ export default function SettingsPage() {
           >
             <div className="gradient-border-card p-8">
               <div className="mb-8 flex items-center gap-3">
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
-                  <Lock className="h-5 w-5 text-violet-200/90" />
+                <div className="rounded-xl border border-line bg-raised p-2.5">
+                  <Lock className="h-5 w-5 text-verified-ink" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-white">Security</h2>
-                  <p className="mt-1 text-sm text-white/55">Credentials and account actions</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-ink">Security</h2>
+                  <p className="mt-1 text-sm text-ink-muted">Credentials and account actions</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -419,7 +419,7 @@ export default function SettingsPage() {
                     Connect GitHub
                   </Button>
                 </a>
-                <p className="text-xs text-white/45">
+                <p className="text-xs text-ink-faint">
                   Lets you sign in with GitHub. We only read your public profile and verified email.
                 </p>
               </div>
@@ -429,18 +429,18 @@ export default function SettingsPage() {
           {/* Privacy & data */}
           <div id="privacy" className="gradient-border-card scroll-mt-24 p-8">
             <div className="mb-8 flex items-center gap-3">
-              <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
-                <Shield className="h-5 w-5 text-cyan-200/90" />
+              <div className="rounded-xl border border-line bg-raised p-2.5">
+                <Shield className="h-5 w-5 text-verified-ink" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold tracking-tight text-white">
+                <h2 className="text-xl font-semibold tracking-tight text-ink">
                   Privacy &amp; data
                 </h2>
-                <p className="mt-1 text-sm text-white/55">
+                <p className="mt-1 text-sm text-ink-muted">
                   Your data, your call. See our{' '}
                   <Link
                     href="/privacy"
-                    className="underline decoration-white/20 underline-offset-2 hover:text-white"
+                    className="underline decoration-line-strong underline-offset-2 hover:text-ink"
                   >
                     Privacy Policy
                   </Link>
@@ -449,10 +449,10 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className="space-y-4">
-              <div className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-black/25 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-xl border border-line bg-ground/70 p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="mb-1 font-medium text-white">Download my data</h3>
-                  <p className="text-sm text-white/55">
+                  <h3 className="mb-1 font-medium text-ink">Download my data</h3>
+                  <p className="text-sm text-ink-muted">
                     A JSON copy of your account, skills, evidence, AI results, activity and company
                     memberships.
                   </p>
@@ -467,20 +467,20 @@ export default function SettingsPage() {
                   Download
                 </Button>
               </div>
-              <div className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-black/25 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-xl border border-line bg-ground/70 p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="mb-1 font-medium text-white">Cookie settings</h3>
-                  <p className="text-sm text-white/55">
+                  <h3 className="mb-1 font-medium text-ink">Cookie settings</h3>
+                  <p className="text-sm text-ink-muted">
                     Essential cookies only, unless you turn on diagnostics.
                   </p>
                 </div>
-                <CookiePreferencesButton className="rounded-lg border border-white/15 px-4 py-2 text-sm text-white transition-colors hover:bg-white/5">
+                <CookiePreferencesButton className="rounded-lg border border-line-strong px-4 py-2 text-sm text-ink transition-colors hover:bg-raised">
                   Manage cookies
                 </CookiePreferencesButton>
               </div>
-              <div className="rounded-xl border border-red-500/30 bg-black/25 p-5">
-                <h3 className="mb-1 font-medium text-white">Delete account</h3>
-                <p className="mb-4 text-sm text-white/55">
+              <div className="rounded-xl border border-critical/40 bg-ground/70 p-5">
+                <h3 className="mb-1 font-medium text-ink">Delete account</h3>
+                <p className="mb-4 text-sm text-ink-muted">
                   Permanently deletes your account, skills, evidence files and history, removes you
                   from employer shortlists, and cancels any active subscription. Companies where you
                   are the only member are deleted too. This can&apos;t be undone, so consider
@@ -488,7 +488,7 @@ export default function SettingsPage() {
                 </p>
                 {deleteOpen ? (
                   <div className="space-y-3">
-                    <label htmlFor="delete-confirm" className="block text-sm text-white">
+                    <label htmlFor="delete-confirm" className="block text-sm text-ink">
                       Type <span className="font-mono font-semibold">DELETE</span> to confirm
                     </label>
                     <input
@@ -545,17 +545,17 @@ export default function SettingsPage() {
             <div className="gradient-border-card p-8">
               <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
                 <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-white">Billing</h2>
-                  <p className="mt-1 text-sm text-white/55">
+                  <h2 className="text-xl font-semibold tracking-tight text-ink">Billing</h2>
+                  <p className="mt-1 text-sm text-ink-muted">
                     Plan · {subscription?.plan ?? 'free'} · {subscription?.status ?? 'active'}
                   </p>
                   {subscription?.currentPeriodEnd && (
-                    <p className="mt-2 text-xs text-white/45">
+                    <p className="mt-2 text-xs text-ink-faint">
                       {subscription.cancelAtPeriodEnd ? 'Access ends' : 'Renews'}{' '}
                       {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                     </p>
                   )}
-                  <p className="mt-2 text-xs text-white/45">
+                  <p className="mt-2 text-xs text-ink-faint">
                     Change plan, update payment details or cancel any time under Manage Billing.
                   </p>
                 </div>

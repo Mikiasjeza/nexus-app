@@ -64,7 +64,7 @@ export default function MonthCalendar({
     <div
       className={`rounded-[1.5rem] border border-line p-2 transition-colors duration-100 hover:border-verified/40 ${className}`}
     >
-      <div className="rounded-2xl border border-white/[0.06] p-4 shadow-[inset_0_2px_1.5px_rgba(165,174,184,0.2)]">
+      <div className="rounded-2xl border border-line p-4 shadow-[inset_0_2px_1.5px_rgba(233,228,218,0.14)]">
         <div className="flex items-center justify-between gap-3">
           <p className="flex items-center gap-2 text-sm">
             <span className="font-medium">{monthLabel}</span>

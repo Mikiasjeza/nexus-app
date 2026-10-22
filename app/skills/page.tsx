@@ -166,7 +166,7 @@ export default function SkillsPage() {
   )
 
   return (
-    <AppPageShell className="min-h-screen bg-black">
+    <AppPageShell className="min-h-screen bg-ground">
       <div className="page-shell">
         {/* Header */}
         <motion.div
@@ -180,10 +180,10 @@ export default function SkillsPage() {
             <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
                 <div className="hero-kicker mb-5">Skill Passport Studio</div>
-                <h1 className="text-4xl md:text-6xl font-bold text-white mb-3 md:mb-4 tracking-tight leading-[1.1] max-w-[12ch] md:max-w-none">
+                <h1 className="text-4xl md:text-6xl font-bold text-ink mb-3 md:mb-4 tracking-tight leading-[1.1] max-w-[12ch] md:max-w-none">
                   Skills
                 </h1>
-                <p className="text-base md:text-lg text-white/68 max-w-[36ch] md:max-w-2xl">
+                <p className="text-base md:text-lg text-ink-muted max-w-[36ch] md:max-w-2xl">
                   Turn scattered experience into a vivid skill passport organized around what you
                   build, create, explain, lead, and improve over time.
                 </p>
@@ -229,10 +229,10 @@ export default function SkillsPage() {
                 },
               ].map((item) => (
                 <div key={item.label} className="insight-card px-4 py-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                     {item.label}
                   </div>
-                  <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                  <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
                 </div>
               ))}
             </div>
@@ -254,16 +254,16 @@ export default function SkillsPage() {
                 style={{ borderColor: `${color}30`, boxShadow: `inset 0 0 0 1px ${color}15` }}
               >
                 <div className="flex items-center justify-between">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                     {pillar.shortLabel}
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-2 text-white">
+                  <div className="rounded-xl border border-line bg-ground/70 p-2 text-ink">
                     {pillarIcons[pillar.category]}
                   </div>
                 </div>
-                <div className="mt-3 text-base font-semibold text-white">{pillar.category}</div>
-                <p className="mt-2 text-sm text-white/62">{pillar.summary}</p>
-                <div className="mt-4 text-2xl font-semibold text-white">
+                <div className="mt-3 text-base font-semibold text-ink">{pillar.category}</div>
+                <p className="mt-2 text-sm text-ink-muted">{pillar.summary}</p>
+                <div className="mt-4 text-2xl font-semibold text-ink">
                   {pillarCounts[pillar.category] ?? 0}
                 </div>
               </div>
@@ -272,7 +272,7 @@ export default function SkillsPage() {
         </motion.div>
 
         {isGuestPreview && (
-          <div className="mb-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
+          <div className="mb-6 border border-verified/40 bg-verified-wash p-4 text-sm text-ink">
             You are browsing a guest preview. Sign in or create an account to add, edit, and delete
             skills.
           </div>
@@ -286,13 +286,13 @@ export default function SkillsPage() {
           className="mb-6 md:mb-8"
         >
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-ink-faint" />
             <input
               type="text"
               placeholder="Search skills..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-5 py-3 border border-white/10 bg-black/55 backdrop-blur-xl text-white placeholder:text-white/40 focus:outline-none focus:border-cyan-300/60 transition-colors"
+              className="w-full pl-12 pr-5 py-3 border border-line bg-ground/70 backdrop-blur-md text-ink placeholder:text-ink-faint focus:outline-none focus:border-verified/40 transition-colors"
             />
           </div>
         </motion.div>
@@ -304,13 +304,13 @@ export default function SkillsPage() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex items-center justify-between mb-6 md:mb-8"
         >
-          <div className="flex items-center gap-2 border border-white/10 bg-black/45 p-1 backdrop-blur-xl">
+          <div className="flex items-center gap-2 border border-line bg-ground/70 p-1 backdrop-blur-md">
             <button
               onClick={() => setViewMode('grid')}
               className={`min-h-[44px] min-w-[44px] p-2.5 transition-opacity ${
                 viewMode === 'grid'
-                  ? 'bg-white text-black opacity-100'
-                  : 'text-white/60 hover:opacity-100 opacity-60'
+                  ? 'bg-ink text-ground opacity-100'
+                  : 'text-ink-muted hover:opacity-100 opacity-60'
               }`}
             >
               <Grid className="w-5 h-5" />
@@ -319,15 +319,15 @@ export default function SkillsPage() {
               onClick={() => setViewMode('list')}
               className={`min-h-[44px] min-w-[44px] p-2.5 transition-opacity ${
                 viewMode === 'list'
-                  ? 'bg-white text-black opacity-100'
-                  : 'text-white/60 hover:opacity-100 opacity-60'
+                  ? 'bg-ink text-ground opacity-100'
+                  : 'text-ink-muted hover:opacity-100 opacity-60'
               }`}
             >
               <List className="w-5 h-5" />
             </button>
           </div>
-          <div className="text-sm text-white/60">
-            <span className="font-medium text-white">{skills.length}</span>{' '}
+          <div className="text-sm text-ink-muted">
+            <span className="font-medium text-ink">{skills.length}</span>{' '}
             {skills.length === 1 ? 'skill' : 'skills'}
           </div>
         </motion.div>
@@ -343,23 +343,23 @@ export default function SkillsPage() {
               className="mb-8 insight-card p-6"
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-white">Filters</h3>
+                <h3 className="text-lg font-bold text-ink">Filters</h3>
                 <button
                   onClick={clearFilters}
-                  className="min-h-[44px] px-2 text-sm text-white/55 hover:text-white transition-colors"
+                  className="min-h-[44px] px-2 text-sm text-ink-muted hover:text-ink transition-colors"
                 >
                   Clear all
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="mb-3 block text-sm font-medium uppercase tracking-wider text-white">
+                  <label className="mb-3 block text-sm font-medium uppercase tracking-wider text-ink">
                     Category
                   </label>
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
-                    className="w-full border border-white/10 bg-black/40 px-4 py-3 text-white focus:border-cyan-300/60 focus:outline-none transition-colors"
+                    className="w-full border border-line bg-ground/70 px-4 py-3 text-ink focus:border-verified/40 focus:outline-none transition-colors"
                   >
                     <option value="">All Categories</option>
                     {SKILL_CATEGORIES.map((cat) => (
@@ -370,13 +370,13 @@ export default function SkillsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-3 block text-sm font-medium uppercase tracking-wider text-white">
+                  <label className="mb-3 block text-sm font-medium uppercase tracking-wider text-ink">
                     Level
                   </label>
                   <select
                     value={filterLevel}
                     onChange={(e) => setFilterLevel(e.target.value)}
-                    className="w-full border border-white/10 bg-black/40 px-4 py-3 text-white focus:border-cyan-300/60 focus:outline-none transition-colors"
+                    className="w-full border border-line bg-ground/70 px-4 py-3 text-ink focus:border-verified/40 focus:outline-none transition-colors"
                   >
                     <option value="">All Levels</option>
                     {SKILL_LEVELS.map((level) => (
@@ -416,9 +416,9 @@ export default function SkillsPage() {
           size="sm"
         >
           <div className="space-y-5">
-            <p className="text-sm text-white/60 leading-relaxed">
+            <p className="text-sm text-ink-muted leading-relaxed">
               Are you sure you want to delete{' '}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-ink">
                 {skills.find((s) => s.id === deleteConfirmId)?.name ?? 'this skill'}
               </span>
               ? This cannot be undone.
@@ -427,14 +427,14 @@ export default function SkillsPage() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmId(null)}
-                className="rounded-lg border border-white/10 px-4 py-2 text-sm text-white/65 transition-colors hover:text-white"
+                className="rounded-lg border border-line px-4 py-2 text-sm text-ink-muted transition-colors hover:text-ink"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmDelete}
-                className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                className="rounded-lg bg-critical/15 px-4 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90"
               >
                 Delete
               </button>

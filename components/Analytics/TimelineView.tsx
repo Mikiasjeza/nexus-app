@@ -16,8 +16,8 @@ export default function TimelineView({ skills }: TimelineViewProps) {
   )
 
   return (
-    <div className="border border-black/10 dark:border-white/10 p-6">
-      <h2 className="text-xl font-bold text-black dark:text-white mb-6">Skill Timeline</h2>
+    <div className="border border-line dark:border-line p-6">
+      <h2 className="text-xl font-bold text-ground dark:text-ink mb-6">Skill Timeline</h2>
       <div className="relative">
         {/* Timeline line - animates from past to present */}
         <motion.div
@@ -25,7 +25,7 @@ export default function TimelineView({ skills }: TimelineViewProps) {
           whileInView={{ scaleY: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="absolute left-4 top-0 bottom-0 w-0.5 origin-top bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500"
+          className="absolute left-4 top-0 bottom-0 w-0.5 origin-top"
         />
 
         <div className="space-y-6">
@@ -56,19 +56,19 @@ export default function TimelineView({ skills }: TimelineViewProps) {
                     delay: index * 0.12 + 0.2,
                     ease: [0.25, 0.46, 0.45, 0.94],
                   }}
-                  className="absolute left-2 top-2 w-4 h-4 rounded-full border-2 border-white dark:border-black shadow-lg"
+                  className="absolute left-2 top-2 w-4 h-4 rounded-full border-2 border-line-strong dark:border-line"
                   style={{ backgroundColor: levelColor }}
                 />
 
                 {/* Skill card - historical milestones fade in */}
-                <div className="border border-black/10 dark:border-white/10 p-4 bg-white dark:bg-black hover:border-black dark:hover:border-white transition-colors">
+                <div className="border border-line dark:border-line p-4 bg-ink dark:bg-ground hover:border-line dark:hover:border-line-strong transition-colors">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h3 className="font-semibold text-black dark:text-white">{skill.name}</h3>
-                      <p className="text-sm text-black/60 dark:text-white/60">{skill.category}</p>
+                      <h3 className="font-semibold text-ground dark:text-ink">{skill.name}</h3>
+                      <p className="text-sm text-ground dark:text-ink-muted">{skill.category}</p>
                     </div>
                     <span
-                      className="px-2.5 py-1 border border-black/10 dark:border-white/10 text-xs font-semibold"
+                      className="px-2.5 py-1 border border-line dark:border-line text-xs font-semibold"
                       style={{
                         color: levelColor,
                       }}
@@ -76,7 +76,7 @@ export default function TimelineView({ skills }: TimelineViewProps) {
                       {LEVEL_LABELS[skill.level]}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-black/60 dark:text-white/60">
+                  <div className="flex items-center justify-between text-xs text-ground dark:text-ink-muted">
                     <span>{format(createdAt, 'MMM d, yyyy')}</span>
                     <motion.span
                       initial={{ opacity: 0 }}

@@ -178,7 +178,7 @@ export default function EmployerTalentPage() {
   }))
 
   return (
-    <AppPageShell className="min-h-screen bg-black py-16">
+    <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -187,14 +187,14 @@ export default function EmployerTalentPage() {
           className="mb-12"
         >
           <div className="hero-panel p-8 md:p-10">
-            <h1 className="text-4xl font-bold text-white mb-2">Talent Search</h1>
-            <p className="text-lg text-white/60 mb-8 max-w-3xl">
+            <h1 className="text-4xl font-bold text-ink mb-2">Talent Search</h1>
+            <p className="text-lg text-ink-muted mb-8 max-w-3xl">
               Find candidates by verified proof and the pillars that matter most to your team, from
               technical execution to communication, leadership, and growth.
             </p>
 
             {selectedJobTitle && (
-              <div className="mb-6 rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.06] px-4 py-3 text-sm text-cyan-100">
+              <div className="mb-6 rounded-2xl border border-verified/40 bg-verified-wash px-4 py-3 text-sm text-verified-ink">
                 Matching candidates against{' '}
                 <span className="font-semibold">{selectedJobTitle}</span> using role skills, pillar
                 coverage, and verified proof.
@@ -208,10 +208,10 @@ export default function EmployerTalentPage() {
                 { label: 'Saved pools', value: pools.length },
               ].map((item) => (
                 <div key={item.label} className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                     {item.label}
                   </div>
-                  <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
+                  <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
                 </div>
               ))}
             </div>
@@ -223,31 +223,31 @@ export default function EmployerTalentPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
+                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
                     {pillar.shortLabel}
                   </div>
-                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
-                  <div className="mt-3 text-2xl font-semibold text-white">{pillar.count}</div>
+                  <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
+                  <div className="mt-3 text-2xl font-semibold text-ink">{pillar.count}</div>
                 </div>
               ))}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint" />
                 <input
                   type="text"
                   placeholder="Search skills or pillars, like React, Public Speaking, Leadership, or Growth"
                   value={skillsQuery}
                   onChange={(e) => setSkillsQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && search()}
-                  className="w-full pl-12 pr-4 py-3 border border-white/10 bg-black/40 text-white"
+                  className="w-full pl-12 pr-4 py-3 border border-line bg-ground/70 text-ink"
                 />
               </div>
               <select
                 value={selectedJobId}
                 onChange={(e) => setSelectedJobId(e.target.value)}
-                className="px-4 py-3 border border-white/10 bg-black/40 text-white"
+                className="px-4 py-3 border border-line bg-ground/70 text-ink"
               >
                 <option value="">All roles</option>
                 {jobs.map((job) => (
@@ -259,7 +259,7 @@ export default function EmployerTalentPage() {
               <select
                 value={levelFilter}
                 onChange={(e) => setLevelFilter(e.target.value)}
-                className="px-4 py-3 border border-white/10 bg-black/40 text-white"
+                className="px-4 py-3 border border-line bg-ground/70 text-ink"
               >
                 <option value="">All levels</option>
                 {levels.map((l) => (
@@ -291,7 +291,7 @@ export default function EmployerTalentPage() {
         </motion.div>
 
         {loading ? (
-          <div className="text-center py-16 text-white/40">Searching...</div>
+          <div className="text-center py-16 text-ink-faint">Searching...</div>
         ) : (
           <div className="space-y-6">
             {candidates.map((c, index) => (
@@ -304,7 +304,7 @@ export default function EmployerTalentPage() {
               >
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex items-start gap-4 flex-1">
-                    <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+                    <div className="w-14 h-14 rounded-full bg-raised flex items-center justify-center shrink-0">
                       {c.avatar ? (
                         <Image
                           src={c.avatar}
@@ -315,17 +315,17 @@ export default function EmployerTalentPage() {
                           className="w-14 h-14 rounded-full object-cover"
                         />
                       ) : (
-                        <User className="w-7 h-7 text-white/40" />
+                        <User className="w-7 h-7 text-ink-faint" />
                       )}
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-white">{c.name}</h3>
+                        <h3 className="text-xl font-semibold text-ink">{c.name}</h3>
                         <Badge variant={c.matchScore >= 80 ? 'primary' : 'default'} size="sm">
                           {c.matchScore}% match
                         </Badge>
                       </div>
-                      {c.bio && <p className="text-white/60 text-sm mb-4 line-clamp-2">{c.bio}</p>}
+                      {c.bio && <p className="text-ink-muted text-sm mb-4 line-clamp-2">{c.bio}</p>}
                       <div className="mb-4 flex flex-wrap gap-2">
                         {getCandidatePillars(c.skills)
                           .slice(0, 3)
@@ -355,7 +355,9 @@ export default function EmployerTalentPage() {
                           </Badge>
                         ))}
                         {c.skills.length > 8 && (
-                          <span className="text-sm text-white/40">+{c.skills.length - 8} more</span>
+                          <span className="text-sm text-ink-faint">
+                            +{c.skills.length - 8} more
+                          </span>
                         )}
                       </div>
                     </div>
@@ -393,9 +395,9 @@ export default function EmployerTalentPage() {
 
             {candidates.length === 0 && (
               <div className="gradient-border-card p-12 text-center">
-                <User className="w-16 h-16 mx-auto mb-4 text-white/40" />
-                <h3 className="text-xl font-medium text-white mb-2">No candidates found</h3>
-                <p className="text-white/60 mb-4">
+                <User className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
+                <h3 className="text-xl font-medium text-ink mb-2">No candidates found</h3>
+                <p className="text-ink-muted mb-4">
                   Try adjusting your search. Candidates must have public profiles and opt-in to
                   employer discovery.
                 </p>

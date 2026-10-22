@@ -180,16 +180,16 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: easing.primary }}
-                className="mb-8 inline-flex items-center gap-2 self-start rounded-full border border-white/[0.1] bg-white/[0.04] px-4 py-1.5"
+                className="mb-8 inline-flex items-center gap-2 self-start rounded-full border border-line bg-raised px-4 py-1.5"
               >
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                <span className="text-[11px] font-medium tracking-[0.18em] uppercase text-white/50">
+                <div className="h-1.5 w-1.5 rounded-full bg-verified" />
+                <span className="text-[11px] font-medium tracking-[0.18em] uppercase text-ink-faint">
                   Skill verification · Live
                 </span>
               </motion.div>
 
               <motion.h1
-                className="mb-6 font-black leading-[0.96] tracking-[-0.04em] text-white"
+                className="mb-6 font-black leading-[0.96] tracking-[-0.04em] text-ink"
                 style={{ fontSize: 'clamp(3.5rem, 9vw, 7rem)' }}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -198,7 +198,7 @@ export default function HomePage() {
                 Your skills.
                 <br />
                 <span
-                  className="bg-clip-text text-transparent"
+                  className="text-ink"
                   style={{
                     backgroundImage:
                       'linear-gradient(135deg, #22d3ee 0%, #a78bfa 50%, #f472b6 100%)',
@@ -209,7 +209,7 @@ export default function HomePage() {
               </motion.h1>
 
               <motion.p
-                className="mb-10 max-w-md text-lg leading-relaxed text-white/45"
+                className="mb-10 max-w-md text-lg leading-relaxed text-ink-faint"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.25, ease: easing.primary }}
@@ -225,7 +225,7 @@ export default function HomePage() {
               >
                 <Link
                   href={ctaHref}
-                  className="group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.03]"
+                  className="group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-ink transition-all duration-300 hover:scale-[1.03]"
                   style={{
                     background:
                       'linear-gradient(135deg, rgba(34,211,238,0.9), rgba(139,92,246,0.9))',
@@ -238,7 +238,7 @@ export default function HomePage() {
 
                 <Link
                   href="/how-it-works"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] px-7 py-3.5 text-sm font-medium text-white/55 transition-all duration-200 hover:border-white/[0.2] hover:text-white/90"
+                  className="inline-flex items-center gap-2 rounded-full border border-line px-7 py-3.5 text-sm font-medium text-ink-muted transition-all duration-200 hover:border-line-strong hover:text-ink"
                 >
                   How it works
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -247,7 +247,7 @@ export default function HomePage() {
 
               {/* Stats divide pattern */}
               <motion.div
-                className="mt-14 grid grid-cols-3 divide-x divide-white/[0.07] border-t border-white/[0.07] pt-8"
+                className="mt-14 grid grid-cols-3 divide-x divide-line border-t border-line pt-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.6, ease: easing.primary }}
@@ -258,10 +258,8 @@ export default function HomePage() {
                   { value: '5', label: 'Skill pillars' },
                 ].map((stat) => (
                   <div key={stat.label} className="pl-6 first:pl-0">
-                    <div className="text-3xl font-black tracking-tight text-white">
-                      {stat.value}
-                    </div>
-                    <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">
+                    <div className="text-3xl font-black tracking-tight text-ink">{stat.value}</div>
+                    <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-ink-faint">
                       {stat.label}
                     </div>
                   </div>
@@ -278,7 +276,7 @@ export default function HomePage() {
             >
               <div style={{ perspective: '1400px', width: '100%' }}>
                 <motion.div
-                  className="relative w-full overflow-hidden rounded-3xl border border-white/[0.07] bg-white/[0.02]"
+                  className="relative w-full overflow-hidden rounded-3xl border border-line bg-raised"
                   initial={{ rotateX: 6, rotateY: -8 }}
                   whileHover={{ rotateX: 0, rotateY: 0 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -304,15 +302,15 @@ export default function HomePage() {
                       exit={{ opacity: 0 }}
                       className="absolute bottom-4 left-4 right-4"
                     >
-                      <div className="rounded-xl border border-white/[0.1] bg-[rgba(9,9,11,0.88)] px-4 py-2.5 backdrop-blur-md">
-                        <p className="text-[12px] font-medium text-white/75">{activeSkill.label}</p>
+                      <div className="rounded-xl border border-line bg-[rgba(9,9,11,0.88)] px-4 py-2.5 backdrop-blur-md">
+                        <p className="text-[12px] font-medium text-ink">{activeSkill.label}</p>
                       </div>
                     </motion.div>
                   )}
 
                   {!activeSkill && (
                     <div className="absolute bottom-4 right-4">
-                      <span className="text-[10px] tracking-[0.18em] uppercase text-white/20">
+                      <span className="text-[10px] tracking-[0.18em] uppercase text-ink-faint">
                         Hover to explore
                       </span>
                     </div>
@@ -325,7 +323,7 @@ export default function HomePage() {
                 {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
                   <div key={cat} className="flex items-center gap-1.5">
                     <div className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
-                    <span className="text-[10px] uppercase tracking-[0.15em] text-white/30">
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-ink-faint">
                       {cat}
                     </span>
                   </div>
@@ -348,10 +346,10 @@ export default function HomePage() {
         <div className="marquee-track flex items-center gap-0">
           {[...TICKER, ...TICKER].map((item, i) => (
             <span key={i} className="flex items-center shrink-0">
-              <span className="px-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              <span className="px-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-ink-faint">
                 {item}
               </span>
-              <span className="text-white/10 shrink-0">·</span>
+              <span className="text-ink-faint shrink-0">·</span>
             </span>
           ))}
         </div>
@@ -371,16 +369,16 @@ export default function HomePage() {
             transition={{ duration: 0.6, ease: easing.primary }}
           >
             <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-ink-faint">
                 01
               </span>
-              <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              <div className="h-px w-10 bg-pill" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-ink-faint">
                 Capabilities
               </span>
             </div>
             <h2
-              className="font-black tracking-[-0.03em] text-white"
+              className="font-black tracking-[-0.03em] text-ink"
               style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
             >
               Built for serious
@@ -404,7 +402,7 @@ export default function HomePage() {
                 >
                   <TiltCard
                     strength={4}
-                    className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 flex flex-col justify-between overflow-hidden relative"
+                    className="h-full rounded-2xl border border-line bg-raised p-8 flex flex-col justify-between overflow-hidden relative"
                   >
                     {/* Ambient color blob */}
                     <div
@@ -422,8 +420,8 @@ export default function HomePage() {
                       >
                         <HeroIcon className="h-6 w-6" style={{ color: FEATURES[0].color }} />
                       </div>
-                      <h3 className="mb-3 text-2xl font-bold text-white">{FEATURES[0].title}</h3>
-                      <p className="max-w-sm text-base leading-relaxed text-white/45">
+                      <h3 className="mb-3 text-2xl font-bold text-ink">{FEATURES[0].title}</h3>
+                      <p className="max-w-sm text-base leading-relaxed text-ink-faint">
                         {FEATURES[0].desc}
                       </p>
                     </div>
@@ -437,10 +435,10 @@ export default function HomePage() {
                       ].map((bar) => (
                         <div key={bar.label}>
                           <div className="mb-1 flex justify-between">
-                            <span className="text-[11px] text-white/35">{bar.label}</span>
-                            <span className="text-[11px] text-white/35">{bar.pct}%</span>
+                            <span className="text-[11px] text-ink-faint">{bar.label}</span>
+                            <span className="text-[11px] text-ink-faint">{bar.pct}%</span>
                           </div>
-                          <div className="h-px w-full bg-white/[0.06]">
+                          <div className="h-px w-full bg-raised">
                             <div
                               className="h-px rounded-full"
                               style={{ width: `${bar.pct}%`, background: FEATURES[0].color }}
@@ -465,7 +463,7 @@ export default function HomePage() {
               >
                 <TiltCard
                   strength={10}
-                  className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 flex flex-col justify-between overflow-hidden relative"
+                  className="h-full rounded-2xl border border-line bg-raised p-6 flex flex-col justify-between overflow-hidden relative"
                 >
                   <div
                     className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-[0.12] blur-[60px]"
@@ -478,8 +476,8 @@ export default function HomePage() {
                     <f.icon className="h-5 w-5" style={{ color: f.color }} />
                   </div>
                   <div>
-                    <h3 className="mb-2 text-base font-semibold text-white">{f.title}</h3>
-                    <p className="text-sm leading-relaxed text-white/40">{f.desc}</p>
+                    <h3 className="mb-2 text-base font-semibold text-ink">{f.title}</h3>
+                    <p className="text-sm leading-relaxed text-ink-faint">{f.desc}</p>
                   </div>
                 </TiltCard>
               </motion.div>
@@ -502,16 +500,16 @@ export default function HomePage() {
             transition={{ duration: 0.6, ease: easing.primary }}
           >
             <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-ink-faint">
                 02
               </span>
-              <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              <div className="h-px w-10 bg-pill" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-ink-faint">
                 Process
               </span>
             </div>
             <h2
-              className="font-black tracking-[-0.03em] text-white"
+              className="font-black tracking-[-0.03em] text-ink"
               style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
             >
               Three steps
@@ -559,7 +557,7 @@ export default function HomePage() {
               >
                 <TiltCard
                   strength={8}
-                  className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-7 h-full"
+                  className="relative overflow-hidden rounded-2xl border border-line bg-raised p-7 h-full"
                 >
                   <div
                     className="pointer-events-none absolute -top-12 -right-12 h-48 w-48 rounded-full opacity-[0.1] blur-[70px]"
@@ -577,8 +575,8 @@ export default function HomePage() {
                   >
                     <item.icon className="h-5 w-5" style={{ color: item.color }} />
                   </div>
-                  <h3 className="mb-2 text-lg font-bold text-white">{item.title}</h3>
-                  <p className="text-sm leading-relaxed text-white/45">{item.desc}</p>
+                  <h3 className="mb-2 text-lg font-bold text-ink">{item.title}</h3>
+                  <p className="text-sm leading-relaxed text-ink-faint">{item.desc}</p>
                 </TiltCard>
               </motion.div>
             ))}
@@ -594,7 +592,7 @@ export default function HomePage() {
         }}
       >
         <div className="mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 divide-x divide-y md:grid-cols-4 md:divide-y-0 divide-white/[0.06]">
+          <div className="grid grid-cols-2 divide-x divide-y md:grid-cols-4 md:divide-y-0 divide-line">
             {[
               // Product facts only; never show usage numbers or ratings we can't back up.
               { value: '0', label: 'Ad trackers' },
@@ -610,8 +608,8 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.07 }}
               >
-                <p className="text-5xl font-black tracking-tight text-white">{stat.value}</p>
-                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">
+                <p className="text-5xl font-black tracking-tight text-ink">{stat.value}</p>
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-ink-faint">
                   {stat.label}
                 </p>
               </motion.div>
@@ -631,16 +629,16 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-ink-faint">
                 03
               </span>
-              <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              <div className="h-px w-10 bg-pill" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-ink-faint">
                 Signal comparison
               </span>
             </div>
             <h2
-              className="font-black tracking-[-0.03em] text-white"
+              className="font-black tracking-[-0.03em] text-ink"
               style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
             >
               Why it feels
@@ -651,13 +649,13 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <motion.div
-              className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8"
+              className="rounded-2xl border border-line bg-raised p-8"
               initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/25">
+              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-ink-faint">
                 Traditional profile
               </p>
               <ul className="space-y-4">
@@ -666,8 +664,8 @@ export default function HomePage() {
                   'Self-reported skills with zero verification',
                   'One-size-fits-all presentation',
                 ].map((line) => (
-                  <li key={line} className="flex items-start gap-3 text-sm text-white/35">
-                    <span className="mt-2.5 h-px w-3 flex-shrink-0 bg-white/20" />
+                  <li key={line} className="flex items-start gap-3 text-sm text-ink-faint">
+                    <span className="mt-2.5 h-px w-3 flex-shrink-0 bg-pill" />
                     {line}
                   </li>
                 ))}
@@ -675,13 +673,13 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div
-              className="rounded-2xl border border-white/[0.12] bg-white/[0.04] p-8"
+              className="rounded-2xl border border-line bg-raised p-8"
               initial={{ opacity: 0, x: 16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.08 }}
             >
-              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/45">
+              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-ink-faint">
                 Nexus passport
               </p>
               <ul className="space-y-4">
@@ -690,8 +688,8 @@ export default function HomePage() {
                   'Continuous updates from real project proof',
                   'Portable, shareable neural graph for any context',
                 ].map((line) => (
-                  <li key={line} className="flex items-start gap-3 text-sm text-white/75">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" />
+                  <li key={line} className="flex items-start gap-3 text-sm text-ink">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-verified" />
                     {line}
                   </li>
                 ))}
@@ -726,29 +724,29 @@ export default function HomePage() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.6, ease: easing.primary }}
           >
-            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
+            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.3em] text-ink-faint">
               Get started
             </p>
             <h2
-              className="mb-6 font-black tracking-[-0.04em] text-white"
+              className="mb-6 font-black tracking-[-0.04em] text-ink"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}
             >
               Start mapping your{' '}
               <span
-                className="bg-clip-text text-transparent"
+                className="text-ink"
                 style={{ backgroundImage: 'linear-gradient(135deg, #22d3ee, #a78bfa)' }}
               >
                 neural graph
               </span>
             </h2>
-            <p className="mb-10 text-lg text-white/40">
+            <p className="mb-10 text-lg text-ink-faint">
               Every skill node you add becomes part of a living, verifiable record that employers
               can trust.
             </p>
 
             <Link
               href={ctaHref}
-              className="group inline-flex items-center gap-3 rounded-full px-9 py-4 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.04]"
+              className="group inline-flex items-center gap-3 rounded-full px-9 py-4 text-sm font-semibold text-ink transition-all duration-300 hover:scale-[1.04]"
               style={{
                 background: 'linear-gradient(135deg, rgba(34,211,238,0.85), rgba(139,92,246,0.85))',
                 boxShadow: '0 0 48px rgba(34,211,238,0.14)',

@@ -54,7 +54,7 @@ export default function CompanyPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-black/40 dark:text-white/40">Loading...</div>
+        <div className="animate-pulse text-ground dark:text-ink-faint">Loading...</div>
       </div>
     )
   }
@@ -63,9 +63,9 @@ export default function CompanyPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Building2 className="w-16 h-16 mx-auto mb-4 text-black/40 dark:text-white/40" />
-          <h2 className="text-xl font-medium text-black dark:text-white mb-2">Company not found</h2>
-          <a href="/marketplace" className="text-primary-600 dark:text-primary-400">
+          <Building2 className="w-16 h-16 mx-auto mb-4 text-ground dark:text-ink-faint" />
+          <h2 className="text-xl font-medium text-ground dark:text-ink mb-2">Company not found</h2>
+          <a href="/marketplace" className="text-verified dark:text-verified">
             Browse jobs
           </a>
         </div>
@@ -74,7 +74,7 @@ export default function CompanyPage() {
   }
 
   return (
-    <AppPageShell className="min-h-screen bg-black py-16">
+    <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -84,7 +84,7 @@ export default function CompanyPage() {
         >
           <div className="hero-panel p-8 md:p-10">
             <div className="flex items-start gap-6">
-              <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
+              <div className="w-20 h-20 rounded-2xl bg-raised flex items-center justify-center shrink-0">
                 {company.logo ? (
                   <Image
                     src={company.logo}
@@ -95,23 +95,23 @@ export default function CompanyPage() {
                     className="w-20 h-20 rounded-2xl object-cover"
                   />
                 ) : (
-                  <Building2 className="w-10 h-10 text-white/40" />
+                  <Building2 className="w-10 h-10 text-ink-faint" />
                 )}
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">{company.name}</h1>
-                <p className="text-white/60 max-w-2xl mb-4">
+                <h1 className="text-4xl font-bold text-ink mb-2">{company.name}</h1>
+                <p className="text-ink-muted max-w-2xl mb-4">
                   Explore open roles and the skill pillars this team is hiring for most often.
                 </p>
                 {company.description && (
-                  <p className="text-white/60 max-w-2xl mb-4">{company.description}</p>
+                  <p className="text-ink-muted max-w-2xl mb-4">{company.description}</p>
                 )}
                 {company.website && (
                   <a
                     href={company.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-cyan-200 hover:underline"
+                    className="flex items-center gap-2 text-verified-ink hover:underline"
                   >
                     <Globe className="w-4 h-4" />
                     {company.website}
@@ -127,11 +127,11 @@ export default function CompanyPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h2 className="text-2xl font-bold text-white mb-6">Open Roles</h2>
+          <h2 className="text-2xl font-bold text-ink mb-6">Open Roles</h2>
           {jobs.length === 0 ? (
             <div className="gradient-border-card p-12 text-center">
-              <Briefcase className="w-16 h-16 mx-auto mb-4 text-white/40" />
-              <p className="text-white/60">No open positions at the moment</p>
+              <Briefcase className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
+              <p className="text-ink-muted">No open positions at the moment</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -145,8 +145,8 @@ export default function CompanyPage() {
                 >
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-white mb-2">{job.title}</h3>
-                      <div className="flex flex-wrap gap-4 text-white/60 text-sm mb-3">
+                      <h3 className="text-xl font-semibold text-ink mb-2">{job.title}</h3>
+                      <div className="flex flex-wrap gap-4 text-ink-muted text-sm mb-3">
                         {job.location && (
                           <span className="flex items-center gap-1">
                             <MapPin className="w-4 h-4" />
@@ -164,7 +164,9 @@ export default function CompanyPage() {
                         </Badge>
                       </div>
                       {job.description && (
-                        <p className="text-white/60 text-sm mb-4 line-clamp-2">{job.description}</p>
+                        <p className="text-ink-muted text-sm mb-4 line-clamp-2">
+                          {job.description}
+                        </p>
                       )}
                       <div className="flex flex-wrap gap-2 mb-3">
                         {Array.from(

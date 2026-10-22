@@ -32,32 +32,25 @@ export default class ErrorBoundary extends Component<Props, State> {
   render(): ReactNode {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-          <div className="max-w-md w-full glass-card rounded-3xl p-8 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
-            </div>
-
-            <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <div className="flex min-h-screen items-center justify-center bg-ground p-6 text-ink">
+          <div className="w-full max-w-md">
+            <AlertCircle className="mb-6 size-6 text-critical" aria-hidden />
+            <h1 className="page-title !text-[clamp(2rem,4vw,3rem)]">Something went wrong</h1>
+            <p className="mt-4 text-ink-muted">
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="mt-8 flex flex-wrap gap-2">
               <button
+                type="button"
                 onClick={() => window.location.reload()}
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary-600 to-purple-600 text-white font-medium hover:opacity-90 transition-opacity"
+                className="button-base button-primary min-h-11 px-5"
               >
-                <RefreshCw className="w-5 h-5" />
-                Reload Page
+                <RefreshCw className="size-4" aria-hidden />
+                Reload page
               </button>
-
-              <Link
-                href="/dashboard"
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-300 dark:border-gray-700 hover:border-primary-500 transition-colors"
-              >
-                <Home className="w-5 h-5" />
-                Go Home
+              <Link href="/dashboard" className="button-base button-secondary min-h-11 px-5">
+                <Home className="size-4" aria-hidden />
+                Go to dashboard
               </Link>
             </div>
           </div>
