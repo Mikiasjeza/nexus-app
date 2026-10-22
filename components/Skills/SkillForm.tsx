@@ -102,7 +102,7 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
           exit={{ opacity: 0, scale: 0.95 }}
           className="gradient-border-card w-full max-w-2xl max-h-[90vh] overflow-y-auto outline-none"
         >
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-[rgba(6,8,14,0.9)] px-6 py-4 backdrop-blur-md">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-raised px-6 py-4 backdrop-blur-md">
             <h2 id={titleId} className="text-2xl font-bold text-ink">
               {skill ? 'Edit Skill' : 'Add New Skill'}
             </h2>

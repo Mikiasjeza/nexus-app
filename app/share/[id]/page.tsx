@@ -131,7 +131,7 @@ export default function SharePage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: easing.primary }}
-          className="mb-12 lg:mb-16 print-card rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm p-6 lg:p-8"
+          className="mb-12 lg:mb-16 print-card rounded-2xl border border-line bg-raised p-6 lg:p-8"
         >
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div>
@@ -177,7 +177,7 @@ export default function SharePage() {
             ].map((cell) => (
               <div
                 key={cell.label}
-                className="rounded-xl border border-line bg-[rgba(6,8,14,0.45)] px-3 py-3 backdrop-blur-sm"
+                className="rounded-xl border border-line bg-raised px-3 py-3 backdrop-blur-sm"
               >
                 <div className="text-[10px] uppercase tracking-wider text-ink-faint">
                   {cell.label}
@@ -212,7 +212,7 @@ export default function SharePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: easing.gentle }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-line bg-raised mb-8"
           >
             <Globe className="w-4 h-4 text-ink" />
             <span className="text-sm font-medium text-ink uppercase tracking-wider">
@@ -252,7 +252,7 @@ export default function SharePage() {
             {SKILL_PILLAR_DETAILS.map((pillar) => (
               <div
                 key={pillar.category}
-                className="rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm px-4 py-4 text-left"
+                className="rounded-2xl border border-line bg-raised px-4 py-4 text-left"
                 style={{ boxShadow: `inset 0 0 0 1px ${CATEGORY_COLORS[pillar.category]}20` }}
               >
                 <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
@@ -344,10 +344,10 @@ export default function SharePage() {
                   delay: 0.4 + index * 0.15,
                   ease: easing.gentle,
                 }}
-                className="rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm p-8 text-center"
+                className="rounded-2xl border border-line bg-raised p-8 text-center"
               >
                 <div className="flex items-center justify-center mb-6">
-                  <div className="p-3 rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm">
+                  <div className="p-3 rounded-2xl border border-line bg-raised">
                     <Icon className="w-6 h-6 text-ink" />
                   </div>
                 </div>
@@ -370,7 +370,7 @@ export default function SharePage() {
           transition={{ duration: 0.8, delay: 0.3, ease: easing.gentle }}
           className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 mb-20"
         >
-          <div className="print-card rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm p-8">
+          <div className="print-card rounded-2xl border border-line bg-raised p-8">
             <div className="text-xs uppercase tracking-[0.22em] text-ink-faint mb-4">
               Recruiter Snapshot
             </div>
@@ -379,7 +379,7 @@ export default function SharePage() {
               {recruiterSummary.map((line) => (
                 <div
                   key={line}
-                  className="rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm px-4 py-3 text-sm text-ink-muted"
+                  className="rounded-2xl border border-line bg-raised px-4 py-3 text-sm text-ink-muted"
                 >
                   {line}
                 </div>
@@ -394,17 +394,14 @@ export default function SharePage() {
             </div>
           </div>
 
-          <div className="print-card rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm p-8">
+          <div className="print-card rounded-2xl border border-line bg-raised p-8">
             <div className="text-xs uppercase tracking-[0.22em] text-ink-faint mb-4">
               Standout Skills
             </div>
             <h2 className="text-2xl font-bold text-ink mb-4">Best proof at a glance</h2>
             <div className="space-y-3">
               {standoutSkills.map((skill) => (
-                <div
-                  key={skill.id}
-                  className="rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm px-4 py-4"
-                >
+                <div key={skill.id} className="rounded-2xl border border-line bg-raised px-4 py-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="font-semibold text-ink">{skill.name}</div>
@@ -452,21 +449,21 @@ export default function SharePage() {
                   delay: index * 0.08,
                   ease: easing.gentle,
                 }}
-                className="print-skill-card rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm p-8"
+                className="print-skill-card rounded-2xl border border-line bg-raised p-8"
               >
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex-1 min-w-0">
                     <h3 className="text-xl font-bold text-ink mb-4 tracking-tight">{skill.name}</h3>
                     <div className="flex items-center gap-2.5 mb-6 flex-wrap">
                       <span
-                        className="px-3 py-1.5 rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm text-xs font-bold uppercase tracking-wider"
+                        className="px-3 py-1.5 rounded-2xl border border-line bg-raised text-xs font-bold uppercase tracking-wider"
                         style={{
                           color: LEVEL_COLORS[skill.level],
                         }}
                       >
                         {LEVEL_LABELS[skill.level]}
                       </span>
-                      <span className="rounded-full border border-line bg-[rgba(6,8,14,0.45)] px-3 py-1.5 text-xs font-medium text-ink-muted backdrop-blur-sm">
+                      <span className="rounded-full border border-line bg-raised px-3 py-1.5 text-xs font-medium text-ink-muted backdrop-blur-sm">
                         {getSkillPillarDetail(normalizeSkillCategory(skill.category)).shortLabel}:{' '}
                         {normalizeSkillCategory(skill.category)}
                       </span>
@@ -480,7 +477,7 @@ export default function SharePage() {
                             damping: 30,
                             delay: 0.5 + index * 0.08,
                           }}
-                          className="p-1 rounded-2xl border border-line bg-[rgba(6,8,14,0.45)] backdrop-blur-sm"
+                          className="p-1 rounded-2xl border border-line bg-raised"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 text-ink" />
                         </motion.div>

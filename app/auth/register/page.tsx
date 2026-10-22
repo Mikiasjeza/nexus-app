@@ -63,11 +63,8 @@ export default function RegisterPage() {
 
   return (
     <AuthShell maxWidthClass="max-w-md">
-      <div className="hero-kicker mb-6">New passport</div>
-      <div className="mb-10 text-center">
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
-          Create account
-        </h1>
+      <div className="mb-10">
+        <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">Create account</h1>
         <p className="text-base metalab-muted">
           Start with your name, email, and a secure password
         </p>
@@ -194,7 +191,7 @@ export default function RegisterPage() {
         </Button>
       </form>
 
-      <div className="mt-8 border-t border-line pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6">
         <p className="text-sm metalab-muted">
           Already have an account?{' '}
           <Link href="/auth/login" className="metalab-link">

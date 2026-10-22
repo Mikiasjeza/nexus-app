@@ -94,11 +94,8 @@ function LoginPageContent() {
 
   return (
     <AuthShell>
-      <div className="hero-kicker mb-6">Account access</div>
-      <div className="mb-10 text-center">
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
-          Welcome back
-        </h1>
+      <div className="mb-10">
+        <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">Welcome back</h1>
         <p className="text-base metalab-muted">Sign in to continue your passport</p>
         <button
           type="button"
@@ -188,8 +185,8 @@ function LoginPageContent() {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t metalab-divider" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase tracking-[0.2em]">
-            <span className="bg-[rgba(6,8,14,0.95)] px-4 metalab-muted">Or continue with</span>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-raised px-3 metalab-muted">or</span>
           </div>
         </div>
 
@@ -205,7 +202,7 @@ function LoginPageContent() {
         </a>
       </form>
 
-      <div className="mt-8 border-t border-line pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6">
         <p className="text-sm metalab-muted">
           Don&apos;t have an account?{' '}
           <Link href="/auth/register" className="metalab-link">

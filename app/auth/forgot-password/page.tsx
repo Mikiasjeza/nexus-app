@@ -52,8 +52,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthShell beforeCard={backLink}>
-      <div className="hero-kicker mb-6">Recovery</div>
-      <h1 className="mb-3 text-3xl font-semibold tracking-tight text-ink">Reset password</h1>
+      <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">Reset password</h1>
       <p className="mb-8 text-sm leading-relaxed metalab-muted">
         Enter your email and we&apos;ll send a secure link to choose a new password.
       </p>
@@ -63,7 +62,7 @@ export default function ForgotPasswordPage() {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-line bg-raised">
             <Mail className="h-8 w-8 text-verified-ink" />
           </div>
-          <h2 className="mb-2 text-lg font-semibold text-ink">Check your email</h2>
+          <h2 className="mb-2 text-lg font-medium">Check your email</h2>
           <p className="mb-8 text-sm metalab-muted">
             We sent a reset link to <span className="text-ink">{email}</span>
           </p>
@@ -103,7 +102,7 @@ export default function ForgotPasswordPage() {
         </form>
       )}
 
-      <div className="mt-8 border-t border-line pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6">
         <p className="text-sm metalab-muted">
           Remember your password?{' '}
           <Link href="/auth/login" className="metalab-link">

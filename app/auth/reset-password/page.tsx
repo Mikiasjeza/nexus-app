@@ -98,8 +98,9 @@ function ResetPasswordPageContent() {
 
   return (
     <AuthShell beforeCard={backLink}>
-      <div className="hero-kicker mb-6">New credentials</div>
-      <h1 className="mb-3 text-3xl font-semibold tracking-tight text-ink">Choose a password</h1>
+      <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">
+        Choose a password
+      </h1>
       <p className="mb-8 text-sm leading-relaxed metalab-muted">
         Use at least 8 characters you haven&apos;t used elsewhere.
       </p>
@@ -162,7 +163,7 @@ function ResetPasswordPageContent() {
         </Button>
       </form>
 
-      <div className="mt-8 border-t border-line pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6">
         <p className="text-sm metalab-muted">
           Remember your password?{' '}
           <Link href="/auth/login" className="metalab-link">
