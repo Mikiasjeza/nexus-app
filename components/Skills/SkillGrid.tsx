@@ -2,8 +2,6 @@
 
 import { Skill } from '@/lib/types'
 import SkillCard from './SkillCard'
-import { motion } from 'framer-motion'
-import { Circle } from 'lucide-react'
 
 interface SkillGridProps {
   skills: Skill[]
@@ -13,6 +11,8 @@ interface SkillGridProps {
   filterLevel?: string
   searchQuery?: string
   viewMode?: 'grid' | 'list'
+  /** Shown when nothing matches; the page knows whether filters are on. */
+  emptyMessage?: string
 }
 
 export default function SkillGrid({
@@ -23,6 +23,7 @@ export default function SkillGrid({
   filterLevel,
   searchQuery = '',
   viewMode = 'grid',
+  emptyMessage,
 }: SkillGridProps) {
   const filteredSkills = skills.filter((skill) => {
     if (filterCategory && skill.category !== filterCategory) return false
@@ -40,28 +41,21 @@ export default function SkillGrid({
 
   if (filteredSkills.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="text-center py-16 lg:py-24"
-      >
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-raised border border-line mb-6">
-          <Circle className="w-10 h-10 text-ink-faint" />
-        </div>
-        <p className="text-xl font-semibold text-ink mb-2 tracking-tight">No skills found</p>
-        <p className="text-ink-muted font-light max-w-md mx-auto">
-          {filterCategory || filterLevel
-            ? 'Try adjusting your filters to see more results'
-            : 'Add your first skill to get started building your passport'}
+      <div className="border-y border-line py-16">
+        <p className="font-display text-3xl font-light">No skills here yet</p>
+        <p className="mt-3 max-w-md text-ink-muted">
+          {emptyMessage ??
+            (filterCategory || filterLevel || searchQuery
+              ? 'Nothing matches these filters. Clear them to see every skill.'
+              : 'Add your first skill, then attach work that shows it.')}
         </p>
-      </motion.div>
+      </div>
     )
   }
 
   if (viewMode === 'list') {
     return (
-      <div className="space-y-4">
+      <div className="ruled-list border-y border-line">
         {filteredSkills.map((skill) => (
           <SkillCard
             key={skill.id}
@@ -76,7 +70,7 @@ export default function SkillGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {filteredSkills.map((skill) => (
         <SkillCard
           key={skill.id}

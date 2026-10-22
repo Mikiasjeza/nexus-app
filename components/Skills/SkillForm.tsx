@@ -90,29 +90,30 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-ground/70 p-4 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-ground/70 p-4 backdrop-blur-sm">
         <motion.div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
           tabIndex={-1}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="gradient-border-card w-full max-w-2xl max-h-[90vh] overflow-y-auto outline-none"
+          initial={{ opacity: 0, scale: 0.98, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
+          exit={{ opacity: 0, scale: 0.98, y: 8 }}
+          className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-line bg-raised outline-none"
         >
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-raised px-6 py-4 backdrop-blur-md">
-            <h2 id={titleId} className="text-2xl font-bold text-ink">
-              {skill ? 'Edit Skill' : 'Add New Skill'}
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-raised px-6 py-4">
+            <h2 id={titleId} className="text-xl font-medium">
+              {skill ? 'Edit skill' : 'Add a skill'}
             </h2>
             <button
               type="button"
               onClick={onCancel}
-              className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-raised hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-verified/40"
+              className="pill size-9 justify-center p-0"
               aria-label="Close skill form"
             >
-              <X className="w-5 h-5" />
+              <X className="size-4" aria-hidden />
             </button>
           </div>
 
@@ -251,13 +252,13 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
                   {formData.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 rounded-full border border-verified/40 bg-verified-wash px-3 py-1 text-sm text-verified-ink"
+                      className="inline-flex items-center gap-1 rounded-full bg-pill px-3 py-1 text-sm text-ink"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="rounded-full p-0.5 text-verified-ink hover:bg-verified-wash hover:text-verified-ink"
+                        className="rounded-full p-0.5 text-ink-faint hover:bg-pill-hover hover:text-ink"
                         aria-label={`Remove ${tag} tag`}
                       >
                         <X className="w-3 h-3" />
