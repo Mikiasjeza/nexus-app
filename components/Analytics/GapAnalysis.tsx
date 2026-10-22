@@ -1,10 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Target, CheckCircle2, AlertCircle } from 'lucide-react'
 import Button from '@/components/UI/Button'
-import { easing } from '@/lib/utils/animations'
 
 const ROLES = [
   { id: 'frontend-developer', label: 'Frontend Developer' },
@@ -24,6 +21,7 @@ interface GapResult {
   summary: string
 }
 
+/** Compare the passport to a target role and list what's covered and what's missing. */
 export default function GapAnalysis() {
   const [role, setRole] = useState<string>('frontend-developer')
   const [loading, setLoading] = useState(false)
@@ -45,8 +43,7 @@ export default function GapAnalysis() {
         const data = await res.json().catch(() => ({}))
         throw new Error((data as { error?: string }).error ?? 'Analysis failed')
       }
-      const data = await res.json()
-      setResult(data)
+      setResult(await res.json())
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to run analysis')
     } finally {
@@ -55,113 +52,79 @@ export default function GapAnalysis() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.6, ease: easing.primary }}
-      className="border border-line dark:border-line p-6 lg:p-8 bg-ink dark:bg-ground"
-    >
-      <div className="flex items-center gap-3 mb-6">
-        <Target className="w-6 h-6 text-ground dark:text-ink-muted" />
-        <h2 className="text-xl font-semibold text-ground dark:text-ink">Gap Analysis</h2>
-      </div>
-      <p className="text-sm text-ground dark:text-ink-muted mb-6">
-        Compare your skills to a target role and see what to focus on next.
-      </p>
-
-      <div className="flex flex-wrap gap-3 mb-6">
+    <div>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Target role">
         {ROLES.map((r) => (
           <button
             key={r.id}
+            type="button"
             onClick={() => setRole(r.id)}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              role === r.id
-                ? 'bg-ground dark:bg-ink text-ink dark:text-ground'
-                : 'border border-line dark:border-line hover:bg-ground/70 dark:hover:bg-raised'
-            }`}
+            aria-pressed={role === r.id}
+            className="pill"
           >
             {r.label}
           </button>
         ))}
       </div>
 
-      <Button
-        onClick={runAnalysis}
-        disabled={loading}
-        isLoading={loading}
-        leftIcon={<Target className="w-4 h-4" />}
-      >
-        Analyze Gaps
+      <Button className="mt-6" onClick={runAnalysis} disabled={loading} isLoading={loading}>
+        Compare my skills
       </Button>
 
       {error && (
-        <div className="mt-6 p-4 border border-critical/40 bg-critical/15 text-critical dark:text-critical">
+        <p role="alert" className="mt-6 text-sm text-critical">
           {error}
-        </div>
+        </p>
       )}
 
       {result && (
-        <div className="mt-8 space-y-6">
-          <div className="flex items-center gap-4">
-            <div
-              className="text-4xl font-bold"
-              style={{
-                color:
-                  result.coveragePercent >= 80
-                    ? '#10b981'
-                    : result.coveragePercent >= 50
-                      ? '#f59e0b'
-                      : '#ef4444',
-              }}
-            >
-              {result.coveragePercent}%
-            </div>
-            <div>
-              <p className="font-medium text-ground dark:text-ink">
-                {result.matchedCount} of {result.requiredCount} skills matched
-              </p>
-              <p className="text-sm text-ground dark:text-ink-muted">{result.summary}</p>
-            </div>
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          <div>
+            <p className="flex items-baseline gap-3">
+              <span className="display-number text-score leading-none">
+                {result.coveragePercent}%
+              </span>
+            </p>
+            <p className="mt-3 text-ink">
+              {result.matchedCount} of {result.requiredCount} skills covered
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-muted">{result.summary}</p>
           </div>
 
-          {result.matched.length > 0 && (
+          <div className="grid gap-10 md:grid-cols-2">
             <div>
-              <h3 className="text-sm font-medium text-ground dark:text-ink-muted mb-2 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-verified" />
-                Skills you have
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {result.matched.map((m) => (
-                  <span
-                    key={m.target}
-                    className="px-3 py-1 bg-verified-wash text-verified dark:text-verified text-sm"
-                  >
-                    {m.userSkill} ({m.level})
-                  </span>
-                ))}
-              </div>
+              <h3 className="text-sm text-ink-faint">You have</h3>
+              {result.matched.length > 0 ? (
+                <ul className="ruled-list mt-3 border-y border-line">
+                  {result.matched.map((m) => (
+                    <li key={m.target} className="flex justify-between gap-4 py-3 text-sm">
+                      <span>{m.userSkill}</span>
+                      <span className="text-ink-faint">{m.level}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-ink-muted">None of this role’s skills yet.</p>
+              )}
             </div>
-          )}
-
-          {result.missing.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-ground dark:text-ink-muted mb-2 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-caution" />
-                Skills to develop
-              </h3>
-              <ul className="space-y-2">
-                {result.missing.map((m) => (
-                  <li key={m.target} className="flex items-start gap-2 text-sm">
-                    <span className="font-medium text-ground dark:text-ink">{m.target}</span>
-                    <span className="text-ground dark:text-ink-muted">— {m.recommendation}</span>
-                  </li>
-                ))}
-              </ul>
+              <h3 className="text-sm text-ink-faint">To develop</h3>
+              {result.missing.length > 0 ? (
+                <ul className="ruled-list mt-3 border-y border-line">
+                  {result.missing.map((m) => (
+                    <li key={m.target} className="py-3 text-sm">
+                      <span className="text-ink">{m.target}</span>
+                      <span className="mt-1 block text-ink-muted">{m.recommendation}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-ink-muted">Nothing missing for this role.</p>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }
