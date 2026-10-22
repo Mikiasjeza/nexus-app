@@ -2,7 +2,6 @@
 
 import React, { useState, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   Target,
   Plus,
@@ -22,7 +21,6 @@ import Button from '@/components/UI/Button'
 import AnimatedCard from '@/components/UI/AnimatedCard'
 import { useToast } from '@/components/UI/ToastProvider'
 import Confetti from '@/components/UI/Confetti'
-import { easing } from '@/lib/utils/animations'
 import {
   normalizeSkillName,
   SKILL_PILLAR_DETAILS,
@@ -268,16 +266,13 @@ export default function OnboardingPage() {
             {steps.map((step, index) => (
               <Fragment key={step.id}>
                 <div className="flex flex-col items-center flex-1">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
+                  <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors ${
                       currentStep >= step.id ? 'bg-ink text-ground' : 'bg-pill text-ink-faint'
                     }`}
                   >
                     {currentStep > step.id ? <CheckCircle className="w-6 h-6" /> : step.icon}
-                  </motion.div>
+                  </div>
                   <span
                     className={`text-xs font-medium ${
                       currentStep >= step.id ? 'text-verified-ink' : 'text-ink-faint'
@@ -300,17 +295,10 @@ export default function OnboardingPage() {
 
         {/* Content */}
         <AnimatedCard className="gradient-border-card p-8 md:p-12">
-          <AnimatePresence mode="wait">
+          <>
             {/* Step 1: Welcome */}
             {currentStep === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-                className="text-center"
-              >
+              <div key="step1" className="text-center">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Sparkles className="w-10 h-10 text-ink" />
                 </div>
@@ -339,25 +327,17 @@ export default function OnboardingPage() {
                       key={pillar.category}
                       className="rounded-2xl border border-line bg-raised px-3 py-4 text-left"
                     >
-                      <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                        {pillar.shortLabel}
-                      </div>
+                      <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
                       <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* Step 2: Goals */}
             {currentStep === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-              >
+              <div key="step2">
                 <div className="text-center mb-8">
                   <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Target className="w-8 h-8 text-ink" />
@@ -367,10 +347,8 @@ export default function OnboardingPage() {
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   {goals.map((goal) => (
-                    <motion.button
+                    <button
                       key={goal.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
                       onClick={() => handleGoalToggle(goal.id)}
                       className={`p-6 rounded-xl border-2 transition-all text-left ${
                         selectedGoals.includes(goal.id)
@@ -385,21 +363,15 @@ export default function OnboardingPage() {
                       </div>
                       <h3 className="font-semibold text-ink mb-1">{goal.title}</h3>
                       <p className="text-sm text-ink-muted">{goal.description}</p>
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* Step 3: Skills */}
             {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-              >
+              <div key="step3">
                 <div className="text-center mb-8">
                   <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Plus className="w-8 h-8 text-ink" />
@@ -441,9 +413,7 @@ export default function OnboardingPage() {
 
                   {selectedSkills.length > 0 && (
                     <div className="mb-6">
-                      <div className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-ink-faint">
-                        Selected skills
-                      </div>
+                      <div className="mb-3 text-sm font-medium text-ink-faint">Selected skills</div>
                       <div className="flex flex-wrap gap-3">
                         {selectedSkills.map((skill) => (
                           <button
@@ -487,12 +457,10 @@ export default function OnboardingPage() {
                           <div className="rounded-xl border border-line bg-ground/70 p-2">
                             {pillarVisuals[group.label as SkillCategory].icon}
                           </div>
-                          <div className="text-sm font-medium uppercase tracking-[0.2em] text-ink-muted">
-                            {group.label}
-                          </div>
+                          <div className="text-sm font-medium text-ink-muted">{group.label}</div>
                         </div>
                         <p className="mb-4 max-w-2xl text-sm text-ink-muted">{group.description}</p>
-                        <div className="mb-3 text-xs font-medium uppercase tracking-[0.24em] text-ink-faint">
+                        <div className="mb-3 text-sm font-medium text-ink-faint">
                           Suggested skills
                         </div>
                         <div className="flex flex-wrap gap-3">
@@ -502,11 +470,9 @@ export default function OnboardingPage() {
                             )
 
                             return (
-                              <motion.button
+                              <button
                                 key={skill}
                                 type="button"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
                                 onClick={() => handleSkillToggle(skill)}
                                 className={`px-4 py-2 rounded-full font-medium transition-all ${
                                   isSelected
@@ -515,7 +481,7 @@ export default function OnboardingPage() {
                                 }`}
                               >
                                 {skill}
-                              </motion.button>
+                              </button>
                             )
                           })}
                         </div>
@@ -526,27 +492,15 @@ export default function OnboardingPage() {
                 <p className="text-center text-sm text-ink-faint mt-6">
                   Selected: {selectedSkills.length} of {MAX_ONBOARDING_SKILLS} skills
                 </p>
-              </motion.div>
+              </div>
             )}
 
             {/* Step 4: Complete */}
             {currentStep === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-                className="text-center"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                  className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-                >
+              <div key="step4" className="text-center">
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CheckCircle className="w-10 h-10 text-ink" />
-                </motion.div>
+                </div>
                 <h2 className="text-3xl font-bold text-ink mb-4">You&apos;re All Set</h2>
                 <p className="text-ink-muted mb-8 max-w-2xl mx-auto">
                   Your Nexus profile is ready. Start building proof across the five pillars, verify
@@ -574,9 +528,9 @@ export default function OnboardingPage() {
                     <p className="text-sm font-medium">Ready to Verify</p>
                   </AnimatedCard>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
+          </>
 
           {/* Navigation */}
           <div className="flex items-center justify-between mt-8 pt-8 border-t border-line">

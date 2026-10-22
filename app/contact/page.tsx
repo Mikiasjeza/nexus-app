@@ -1,9 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { Mail, MessageSquare, Send, CheckCircle2, Clock } from 'lucide-react'
-import { easing } from '@/lib/utils/animations'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
@@ -63,13 +61,7 @@ export default function ContactPage() {
     <AppPageShell className="min-h-screen bg-ground">
       <div className="page-shell pb-24 pt-8 md:pt-12">
         <section className="relative mb-16 md:mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.5, ease: easing.primary }}
-            className="hero-panel p-8 md:p-10"
-          >
+          <div className="hero-panel p-8 md:p-10">
             <div className="hero-kicker mb-6">
               <Clock className="h-3.5 w-3.5" />
               We reply by email
@@ -80,7 +72,7 @@ export default function ContactPage() {
             <p className="max-w-xl text-base leading-relaxed text-ink-muted md:text-xl">
               Product questions, partnerships, or support — we read every message.
             </p>
-          </motion.div>
+          </div>
         </section>
 
         <section>
@@ -88,20 +80,12 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
               {/* Contact Info */}
               <div className="lg:col-span-1">
-                <motion.div
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-100px' }}
-                  transition={{ duration: 0.5, ease: easing.primary }}
-                  className="insight-card space-y-6 p-6"
-                >
+                <div className="insight-card space-y-6 p-6">
                   <div>
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-raised">
                       <Mail className="h-5 w-5 text-verified-ink" />
                     </div>
-                    <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-faint">
-                      Email
-                    </h3>
+                    <h3 className="mb-1 text-sm text-ink-faint">Email</h3>
                     <a
                       href="mailto:hello@nexus.ai"
                       className="text-sm text-ink-muted transition-colors hover:text-ink"
@@ -114,9 +98,7 @@ export default function ContactPage() {
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-raised">
                       <MessageSquare className="h-5 w-5 text-verified-ink" />
                     </div>
-                    <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-faint">
-                      Support
-                    </h3>
+                    <h3 className="mb-1 text-sm text-ink-faint">Support</h3>
                     <a
                       href="mailto:support@nexus.ai"
                       className="text-sm text-ink-muted transition-colors hover:text-ink"
@@ -124,17 +106,12 @@ export default function ContactPage() {
                       support@nexus.ai
                     </a>
                   </div>
-                </motion.div>
+                </div>
               </div>
 
               {/* Form */}
               <div className="lg:col-span-2">
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-100px' }}
-                  transition={{ duration: 0.8, ease: easing.primary }}
-                >
+                <div>
                   {submitted ? (
                     <div className="gradient-border-card p-12 text-center">
                       <CheckCircle2 className="w-16 h-16 text-ink mx-auto mb-6" />
@@ -220,7 +197,7 @@ export default function ContactPage() {
                       </Button>
                     </form>
                   )}
-                </motion.div>
+                </div>
               </div>
             </div>
           </div>

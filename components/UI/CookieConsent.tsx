@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Cookie } from 'lucide-react'
 import Link from 'next/link'
 import Button from './Button'
@@ -48,17 +47,13 @@ export default function CookieConsent() {
   }
 
   return (
-    <AnimatePresence>
+    <>
       {open ? (
-        <motion.div
+        <div
           role="dialog"
           aria-modal="false"
           aria-labelledby="cookie-consent-title"
           aria-describedby="cookie-consent-desc"
-          initial={{ y: 24, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 24, opacity: 0 }}
-          transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
           className="cookie-consent-banner fixed bottom-0 left-0 right-0 z-[60] border-t border-line bg-[rgba(21,20,18,0.96)] backdrop-blur-md"
         >
           <div className="mx-auto max-w-7xl px-4 py-4 md:px-6 md:py-5">
@@ -135,8 +130,8 @@ export default function CookieConsent() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       ) : null}
-    </AnimatePresence>
+    </>
   )
 }

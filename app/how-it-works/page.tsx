@@ -1,9 +1,7 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, Upload, Brain, Shield, Share2, CheckCircle2, Sparkles } from 'lucide-react'
-import { easing } from '@/lib/utils/animations'
 import AppPageShell from '@/components/Layout/AppPageShell'
 
 export default function HowItWorksPage() {
@@ -11,13 +9,7 @@ export default function HowItWorksPage() {
     <AppPageShell>
       <div className="page-shell">
         <section className="relative mb-16 md:mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.primary }}
-            className="hero-panel p-8 md:p-10"
-          >
+          <div className="hero-panel p-8 md:p-10">
             <span className="hero-kicker mb-6 inline-flex items-center gap-2">
               <Sparkles className="h-3.5 w-3.5" />
               Four workflow steps
@@ -29,26 +21,14 @@ export default function HowItWorksPage() {
               A simple process for turning skills across five pillars into proof you can verify and
               share.
             </p>
-          </motion.div>
+          </div>
         </section>
 
         <section className="border-t border-line py-16 md:py-24">
           <div className="mx-auto max-w-5xl">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1, ease: easing.primary }}
-              className="insight-card mb-14 p-5 md:p-6"
-            >
+            <div className="insight-card mb-14 p-5 md:p-6">
               <div className="h-1.5 overflow-hidden rounded-full bg-pill">
-                <motion.div
-                  className="h-full"
-                  initial={{ width: '0%' }}
-                  whileInView={{ width: '100%' }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, ease: easing.primary }}
-                />
+                <div className="h-full" />
               </div>
               <p className="mt-4 text-sm text-ink-muted">
                 From first skill to shared passport in under 10 minutes.
@@ -57,7 +37,7 @@ export default function HowItWorksPage() {
                 The four steps below are the workflow. Your skills still roll up into five pillars:
                 build, create, explain, lead, and grow.
               </p>
-            </motion.div>
+            </div>
 
             <div className="space-y-10 md:space-y-16">
               {[
@@ -112,12 +92,8 @@ export default function HowItWorksPage() {
               ].map((step, index) => {
                 const Icon = step.icon
                 return (
-                  <motion.div
+                  <div
                     key={step.title}
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-100px' }}
-                    transition={{ duration: 0.8, delay: index * 0.12, ease: easing.primary }}
                     className="gradient-border-card flex flex-col gap-10 p-8 md:flex-row md:items-start md:gap-12 md:p-10"
                   >
                     <div className="shrink-0">
@@ -144,7 +120,7 @@ export default function HowItWorksPage() {
                         ))}
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 )
               })}
             </div>
@@ -152,13 +128,7 @@ export default function HowItWorksPage() {
         </section>
 
         <section className="border-t border-line py-16 md:py-28">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.primary }}
-            className="gradient-border-card mx-auto max-w-3xl p-10 text-center md:p-12"
-          >
+          <div className="gradient-border-card mx-auto max-w-3xl p-10 text-center md:p-12">
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-ink md:text-4xl">
               Ready to get started?
             </h2>
@@ -172,7 +142,7 @@ export default function HowItWorksPage() {
               Create your passport
               <ArrowRight className="h-4 w-4" />
             </Link>
-          </motion.div>
+          </div>
         </section>
       </div>
     </AppPageShell>

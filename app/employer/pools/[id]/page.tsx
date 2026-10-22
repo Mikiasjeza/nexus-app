@@ -131,9 +131,7 @@ export default function EmployerPoolDetailPage() {
                 className="insight-card p-4"
                 style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
               >
-                <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                  {pillar.shortLabel}
-                </div>
+                <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
                 <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                 <div className="mt-3 text-2xl font-semibold text-ink">
                   {poolPillarCounts[pillar.category] ?? 0}

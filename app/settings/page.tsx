@@ -4,14 +4,12 @@ import React, { useState, useEffect } from 'react'
 import { User } from '@/lib/types'
 import { authApi, billingApi } from '@/lib/api'
 import ToggleSwitch from '@/components/UI/ToggleSwitch'
-import { motion } from 'framer-motion'
 import { Save, User as UserIcon, Mail, Globe, Lock, Shield, Download } from 'lucide-react'
 import Link from 'next/link'
 import CookiePreferencesButton from '@/components/UI/CookiePreferencesButton'
 import Loader from '@/components/UI/Loader'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
-import { easing } from '@/lib/utils/animations'
 import AppPageShell from '@/components/Layout/AppPageShell'
 
 export default function SettingsPage() {
@@ -199,15 +197,8 @@ export default function SettingsPage() {
   return (
     <AppPageShell className="min-h-screen bg-ground">
       <div className="mx-auto max-w-4xl px-6 py-16 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
-        >
+        <div className="mb-12">
           <div className="hero-panel p-8 md:p-10">
-            <div className="hero-kicker mb-5">Identity Controls</div>
             <h1 className="mb-4 text-4xl font-semibold leading-[1.08] tracking-tight text-ink md:text-5xl lg:text-6xl">
               Settings
             </h1>
@@ -216,7 +207,7 @@ export default function SettingsPage() {
               identity behaves.
             </p>
           </div>
-        </motion.div>
+        </div>
 
         <div className="space-y-8">
           {isGuestPreview && (
@@ -226,12 +217,7 @@ export default function SettingsPage() {
             </div>
           )}
           {/* Profile Information */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.1, ease: easing.primary }}
-          >
+          <div>
             <div className="gradient-border-card p-8">
               <div className="mb-8 flex items-center gap-3">
                 <div className="rounded-xl border border-line bg-raised p-2.5">
@@ -291,15 +277,10 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Privacy Settings */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.2, ease: easing.primary }}
-          >
+          <div>
             <div className="gradient-border-card p-8">
               <div className="mb-8 flex items-center gap-3">
                 <div className="rounded-xl border border-line bg-raised p-2.5">
@@ -342,15 +323,8 @@ export default function SettingsPage() {
                   />
                 </div>
                 {formData.publicProfile && user?.shareableId && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    transition={{ duration: 0.3 }}
-                    className="rounded-xl border border-line bg-ground/70 p-5"
-                  >
-                    <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
-                      Shareable link
-                    </p>
+                  <div className="rounded-xl border border-line bg-ground/70 p-5">
+                    <p className="mb-3 text-sm text-ink-faint">Shareable link</p>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <input
                         type="text"
@@ -373,19 +347,14 @@ export default function SettingsPage() {
                         Copy
                       </Button>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Security */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.3, ease: easing.primary }}
-          >
+          <div>
             <div className="gradient-border-card p-8">
               <div className="mb-8 flex items-center gap-3">
                 <div className="rounded-xl border border-line bg-raised p-2.5">
@@ -424,7 +393,7 @@ export default function SettingsPage() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Privacy & data */}
           <div id="privacy" className="gradient-border-card scroll-mt-24 p-8">
@@ -536,12 +505,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Billing */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.35, ease: easing.primary }}
-          >
+          <div>
             <div className="gradient-border-card p-8">
               <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
                 <div>
@@ -569,16 +533,10 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Save Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.4, ease: easing.primary }}
-            className="flex justify-end pt-4"
-          >
+          <div className="flex justify-end pt-4">
             <Button
               leftIcon={<Save className="w-5 h-5" />}
               onClick={handleSave}
@@ -587,7 +545,7 @@ export default function SettingsPage() {
             >
               Save Changes
             </Button>
-          </motion.div>
+          </div>
         </div>
       </div>
     </AppPageShell>

@@ -3,7 +3,6 @@
 import { useState, useEffect, useId, useRef } from 'react'
 import { Skill, SkillLevel, SkillCategory } from '@/lib/types'
 import { SKILL_LEVELS, SKILL_CATEGORIES } from '@/lib/utils/constants'
-import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import Link from 'next/link'
 
@@ -89,18 +88,14 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
   }
 
   return (
-    <AnimatePresence>
+    <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-ground/70 p-4 backdrop-blur-sm">
-        <motion.div
+        <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
           tabIndex={-1}
-          initial={{ opacity: 0, scale: 0.98, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-          exit={{ opacity: 0, scale: 0.98, y: 8 }}
           className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-line bg-raised outline-none"
         >
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-raised px-6 py-4">
@@ -303,8 +298,8 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
               </button>
             </div>
           </form>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
+    </>
   )
 }

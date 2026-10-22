@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -15,7 +14,6 @@ import {
   BadgeCheck,
   Building2,
 } from 'lucide-react'
-import { easing } from '@/lib/utils/animations'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import { useUser } from '@/lib/hooks/useUser'
 
@@ -27,13 +25,7 @@ export default function AboutPage() {
     <AppPageShell>
       <div className="page-shell">
         <section className="relative mb-16 md:mb-24">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.primary }}
-            className="hero-panel p-8 md:p-10"
-          >
+          <div className="hero-panel p-8 md:p-10">
             <span className="hero-kicker mb-6 inline-flex items-center gap-2">
               <Sparkles className="h-3.5 w-3.5" />
               Why Nexus Exists
@@ -54,17 +46,11 @@ export default function AboutPage() {
                 )
               )}
             </div>
-          </motion.div>
+          </div>
         </section>
 
         <section className="border-t border-line py-16 md:py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.gentle }}
-            className="gradient-border-card p-8 md:p-10"
-          >
+          <div className="gradient-border-card p-8 md:p-10">
             <h2 className="mb-6 text-3xl font-bold tracking-tight text-ink md:text-4xl">
               Our Mission
             </h2>
@@ -79,25 +65,19 @@ export default function AboutPage() {
               that proof across five pillars: build, create, explain, lead, and grow. This creates a
               trusted skill identity that works across employers, industries, and countries.
             </p>
-          </motion.div>
+          </div>
         </section>
 
         {/* How verification works — 3-step visual */}
         <section className="border-t border-line py-16 md:py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.primary }}
-            className="mb-14 text-center"
-          >
+          <div className="mb-14 text-center">
             <h2 className="mb-3 text-3xl font-bold tracking-tight text-ink md:text-4xl">
               How verification works
             </h2>
             <p className="mx-auto max-w-xl text-ink-muted">
               Three steps from skill claim to verified passport.
             </p>
-          </motion.div>
+          </div>
 
           <div className="relative mx-auto max-w-4xl">
             {/* Connector line (desktop) */}
@@ -135,28 +115,19 @@ export default function AboutPage() {
                   border: 'border-critical/40',
                   bg: 'bg-critical/15',
                 },
-              ].map((s, i) => {
+              ].map((s) => {
                 const Icon = s.icon
                 return (
-                  <motion.div
-                    key={s.step}
-                    initial={{ opacity: 0, y: 32 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-80px' }}
-                    transition={{ duration: 0.6, delay: i * 0.1, ease: easing.primary }}
-                    className={`insight-card border p-6 ${s.border}`}
-                  >
+                  <div key={s.step} className={`insight-card border p-6 ${s.border}`}>
                     <div
                       className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${s.bg}`}
                     >
                       <Icon className={`h-5 w-5 ${s.color}`} />
                     </div>
-                    <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-faint">
-                      {s.step}
-                    </div>
+                    <div className="mb-2 text-sm text-ink-faint">{s.step}</div>
                     <h3 className="mb-2 text-lg font-bold tracking-tight text-ink">{s.title}</h3>
                     <p className="text-sm leading-relaxed text-ink-muted">{s.description}</p>
-                  </motion.div>
+                  </div>
                 )
               })}
             </div>
@@ -164,20 +135,14 @@ export default function AboutPage() {
         </section>
 
         <section className="border-t border-line py-16 md:py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.primary }}
-            className="mb-14 text-center"
-          >
+          <div className="mb-14 text-center">
             <h2 className="mb-3 text-3xl font-bold tracking-tight text-ink md:text-4xl">
               Our Values
             </h2>
             <p className="mx-auto max-w-xl text-ink-muted">
               Principles that shape how we verify and present capability.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             {[
@@ -217,15 +182,11 @@ export default function AboutPage() {
                 description:
                   'Built for the future of work—remote, global, and skills-based hiring.',
               },
-            ].map((value, index) => {
+            ].map((value) => {
               const Icon = value.icon
               return (
-                <motion.div
+                <div
                   key={value.title}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-100px' }}
-                  transition={{ duration: 0.8, delay: index * 0.08, ease: easing.primary }}
                   className="group insight-card p-6 transition-shadow duration-300"
                 >
                   <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-raised transition-colors group-hover:border-verified/40 group-hover:bg-verified-wash">
@@ -233,7 +194,7 @@ export default function AboutPage() {
                   </div>
                   <h3 className="mb-3 text-xl font-bold tracking-tight text-ink">{value.title}</h3>
                   <p className="leading-relaxed text-ink-muted">{value.description}</p>
-                </motion.div>
+                </div>
               )
             })}
           </div>
@@ -241,13 +202,7 @@ export default function AboutPage() {
 
         {/* CTA section — two buttons: talent + employers */}
         <section className="border-t border-line py-16 md:py-28">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.primary }}
-            className="gradient-border-card mx-auto max-w-3xl p-10 text-center md:p-12"
-          >
+          <div className="gradient-border-card mx-auto max-w-3xl p-10 text-center md:p-12">
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-ink md:text-4xl">
               Join the revolution
             </h2>
@@ -271,7 +226,7 @@ export default function AboutPage() {
                 For employers
               </Link>
             </div>
-          </motion.div>
+          </div>
         </section>
       </div>
     </AppPageShell>

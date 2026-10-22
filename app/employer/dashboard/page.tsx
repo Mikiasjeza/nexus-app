@@ -1,11 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
 import { Building2, Users, Briefcase, Search, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import AnimatedCard from '@/components/UI/AnimatedCard'
-import { easing } from '@/lib/utils/animations'
 import { SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
 import AppPageShell from '@/components/Layout/AppPageShell'
@@ -108,19 +106,13 @@ export default function EmployerDashboardPage() {
   return (
     <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
-        >
+        <div className="mb-12">
           <div className="hero-panel p-8 md:p-10">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-xl bg-pill flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-ink" />
               </div>
               <div>
-                <div className="hero-kicker mb-2">Employer Workspace</div>
                 <h1 className="text-4xl font-bold text-ink">{company.name}</h1>
                 <p className="text-ink-muted">Hiring dashboard · {company.role}</p>
               </div>
@@ -141,9 +133,7 @@ export default function EmployerDashboardPage() {
                   { label: 'Hiring lens', value: 5 },
                 ].map((item) => (
                   <div key={item.label} className="insight-card p-4">
-                    <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                      {item.label}
-                    </div>
+                    <div className="text-sm text-ink-faint">{item.label}</div>
                     <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
                   </div>
                 ))}
@@ -157,24 +147,17 @@ export default function EmployerDashboardPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                    {pillar.shortLabel}
-                  </div>
+                  <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
                   <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                 </div>
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {actions.map((action, index) => (
-            <motion.div
-              key={action.href}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
+          {actions.map((action) => (
+            <div key={action.href}>
               <Link href={action.href}>
                 <AnimatedCard
                   className={`p-6 h-full flex flex-col ${
@@ -197,7 +180,7 @@ export default function EmployerDashboardPage() {
                   </div>
                 </AnimatedCard>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

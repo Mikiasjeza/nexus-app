@@ -1,11 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { Users, Plus, Trash2 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
-import { easing } from '@/lib/utils/animations'
 import Link from 'next/link'
 import { SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
@@ -83,12 +81,7 @@ export default function EmployerPoolsPage() {
   return (
     <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
-        >
+        <div className="mb-12">
           <div className="hero-panel p-8 md:p-10">
             <h1 className="text-4xl font-bold text-ink mb-2">Talent Pools</h1>
             <p className="text-lg text-ink-muted mb-8 max-w-3xl">
@@ -103,9 +96,7 @@ export default function EmployerPoolsPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                    {pillar.shortLabel}
-                  </div>
+                  <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
                   <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                 </div>
               ))}
@@ -125,7 +116,7 @@ export default function EmployerPoolsPage() {
               </Button>
             </form>
           </div>
-        </motion.div>
+        </div>
 
         {loading ? (
           <div className="text-ink-faint">Loading...</div>
@@ -142,12 +133,9 @@ export default function EmployerPoolsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {pools.map((pool, index) => (
-              <motion.div
+            {pools.map((pool) => (
+              <div
                 key={pool.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
                 className="gradient-border-card p-6 flex items-center justify-between"
               >
                 <Link href={`/employer/pools/${pool.id}`} className="flex-1">
@@ -159,7 +147,7 @@ export default function EmployerPoolsPage() {
                 <Button variant="outline" size="sm" onClick={() => handleDelete(pool.id)}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

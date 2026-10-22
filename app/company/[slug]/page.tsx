@@ -3,11 +3,9 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { Building2, Briefcase, MapPin, DollarSign, ExternalLink, Globe } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
-import { easing } from '@/lib/utils/animations'
 import { getSkillPillarForName } from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
 
@@ -76,12 +74,7 @@ export default function CompanyPage() {
   return (
     <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
-        >
+        <div className="mb-12">
           <div className="hero-panel p-8 md:p-10">
             <div className="flex items-start gap-6">
               <div className="w-20 h-20 rounded-2xl bg-raised flex items-center justify-center shrink-0">
@@ -120,13 +113,9 @@ export default function CompanyPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
+        <div>
           <h2 className="text-2xl font-bold text-ink mb-6">Open Roles</h2>
           {jobs.length === 0 ? (
             <div className="gradient-border-card p-12 text-center">
@@ -135,14 +124,8 @@ export default function CompanyPage() {
             </div>
           ) : (
             <div className="space-y-6">
-              {jobs.map((job, index) => (
-                <motion.div
-                  key={job.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="gradient-border-card p-6"
-                >
+              {jobs.map((job) => (
+                <div key={job.id} className="gradient-border-card p-6">
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-ink mb-2">{job.title}</h3>
@@ -193,11 +176,11 @@ export default function CompanyPage() {
                       </a>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </AppPageShell>
   )

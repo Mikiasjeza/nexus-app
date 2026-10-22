@@ -4,13 +4,11 @@ import Link from 'next/link'
 import React, { useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { User, Skill } from '@/lib/types'
-import { motion } from 'framer-motion'
 import { Globe, User as UserIcon, Share2, Download, CheckCircle2, TrendingUp } from 'lucide-react'
 import Loader from '@/components/UI/Loader'
 import { CATEGORY_COLORS, LEVEL_COLORS, LEVEL_LABELS } from '@/lib/utils/constants'
 import Button from '@/components/UI/Button'
 import { cn } from '@/lib/utils/cn'
-import { easing } from '@/lib/utils/animations'
 import {
   getSkillPillarDetail,
   normalizeSkillCategory,
@@ -75,19 +73,14 @@ export default function SharePage() {
   if (notFound || !user) {
     return (
       <AppPageShell className="flex min-h-screen items-center justify-center bg-ground p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.45, ease: easing.gentle }}
-          className="gradient-border-card max-w-md p-10 text-center"
-        >
+        <div className="gradient-border-card max-w-md p-10 text-center">
           <h1 className="mb-3 text-2xl font-semibold tracking-tight text-ink md:text-3xl">
             Profile not found
           </h1>
           <p className="text-sm leading-relaxed text-ink-muted">
             This profile is private or does not exist.
           </p>
-        </motion.div>
+        </div>
       </AppPageShell>
     )
   }
@@ -127,17 +120,10 @@ export default function SharePage() {
   return (
     <AppPageShell className="min-h-screen bg-ground">
       <div className="share-passport-print mx-auto max-w-6xl px-6 py-16 lg:px-12 lg:py-24">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: easing.primary }}
-          className="mb-12 lg:mb-16 print-card rounded-2xl border border-line bg-raised p-6 lg:p-8"
-        >
+        <div className="mb-12 lg:mb-16 print-card rounded-2xl border border-line bg-raised p-6 lg:p-8">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div>
-              <div className="text-xs uppercase tracking-[0.22em] text-ink-faint mb-2">
-                Recruiter view
-              </div>
+              <div className="text-sm text-ink-faint mb-2">Recruiter view</div>
               <h2 className="text-xl font-bold text-ink tracking-tight">Scan-first summary</h2>
               <p className="mt-2 text-sm text-ink-muted max-w-xl leading-relaxed">
                 Five-pillar skill passport · {skills.length} skills · {activePillars} pillars active
@@ -179,9 +165,7 @@ export default function SharePage() {
                 key={cell.label}
                 className="rounded-xl border border-line bg-raised px-3 py-3 backdrop-blur-sm"
               >
-                <div className="text-[10px] uppercase tracking-wider text-ink-faint">
-                  {cell.label}
-                </div>
+                <div className="text-sm text-ink-faint">{cell.label}</div>
                 <div className="mt-1 text-lg font-semibold text-ink tabular-nums">{cell.value}</div>
               </div>
             ))}
@@ -198,81 +182,42 @@ export default function SharePage() {
               </p>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Editorial Header - Slower, more deliberate pacing */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, delay: 0.1, ease: easing.primary }}
-          className="text-center mb-16 lg:mb-24"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: easing.gentle }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-line bg-raised mb-8"
-          >
+        <div className="text-center mb-16 lg:mb-24">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-line bg-raised mb-8">
             <Globe className="w-4 h-4 text-ink" />
-            <span className="text-sm font-medium text-ink uppercase tracking-wider">
-              Public Nexus Profile
-            </span>
-          </motion.div>
+            <span className="text-sm font-medium text-ink">Public Nexus Profile</span>
+          </div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.2, ease: easing.primary }}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold text-ink mb-6 tracking-tight leading-[1.1]"
-          >
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-ink mb-6 tracking-tight leading-[1.1]">
             {user.name}
-          </motion.h1>
+          </h1>
 
           {user.bio && (
-            <motion.p
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.8, delay: 0.3, ease: easing.primary }}
-              className="text-lg text-ink-muted max-w-2xl mx-auto mb-12 leading-relaxed"
-            >
+            <p className="text-lg text-ink-muted max-w-2xl mx-auto mb-12 leading-relaxed">
               {user.bio}
-            </motion.p>
+            </p>
           )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.8, delay: 0.35, ease: easing.primary }}
-            className="share-pillar-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 max-w-5xl mx-auto mb-12"
-          >
+          <div className="share-pillar-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 max-w-5xl mx-auto mb-12">
             {SKILL_PILLAR_DETAILS.map((pillar) => (
               <div
                 key={pillar.category}
                 className="rounded-2xl border border-line bg-raised px-4 py-4 text-left"
                 style={{ boxShadow: `inset 0 0 0 1px ${CATEGORY_COLORS[pillar.category]}20` }}
               >
-                <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                  {pillar.shortLabel}
-                </div>
+                <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
                 <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                 <div className="mt-3 text-2xl font-semibold text-ink">
                   {pillarCounts[pillar.category] ?? 0}
                 </div>
               </div>
             ))}
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.4, ease: easing.primary }}
-            className="no-print flex items-center justify-center gap-4 flex-wrap"
-          >
+          <div className="no-print flex items-center justify-center gap-4 flex-wrap">
             <Button
               variant="outline"
               size="sm"
@@ -298,17 +243,11 @@ export default function SharePage() {
             >
               Print / Save PDF
             </Button>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Stats Cards - Editorial spacing and pacing */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 1, delay: 0.2, ease: easing.gentle }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
           {[
             {
               icon: UserIcon,
@@ -331,19 +270,11 @@ export default function SharePage() {
                   : '0',
               suffix: '%',
             },
-          ].map((stat, index) => {
+          ].map((stat) => {
             const Icon = stat.icon
             return (
-              <motion.div
+              <div
                 key={stat.label}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{
-                  duration: 1,
-                  delay: 0.4 + index * 0.15,
-                  ease: easing.gentle,
-                }}
                 className="rounded-2xl border border-line bg-raised p-8 text-center"
               >
                 <div className="flex items-center justify-center mb-6">
@@ -351,29 +282,19 @@ export default function SharePage() {
                     <Icon className="w-6 h-6 text-ink" />
                   </div>
                 </div>
-                <h3 className="text-xs uppercase tracking-wider font-medium text-ink-muted mb-4">
-                  {stat.label}
-                </h3>
+                <h3 className="text-sm font-medium text-ink-muted mb-4">{stat.label}</h3>
                 <p className="text-4xl lg:text-5xl font-bold text-ink tracking-tight tabular-nums">
                   {stat.value}
                   {stat.suffix || ''}
                 </p>
-              </motion.div>
+              </div>
             )
           })}
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.8, delay: 0.3, ease: easing.gentle }}
-          className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 mb-20"
-        >
+        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 mb-20">
           <div className="print-card rounded-2xl border border-line bg-raised p-8">
-            <div className="text-xs uppercase tracking-[0.22em] text-ink-faint mb-4">
-              Recruiter Snapshot
-            </div>
+            <div className="text-sm text-ink-faint mb-4">Recruiter Snapshot</div>
             <h2 className="text-2xl font-bold text-ink mb-4">Fast scan summary</h2>
             <div className="space-y-3">
               {recruiterSummary.map((line) => (
@@ -395,9 +316,7 @@ export default function SharePage() {
           </div>
 
           <div className="print-card rounded-2xl border border-line bg-raised p-8">
-            <div className="text-xs uppercase tracking-[0.22em] text-ink-faint mb-4">
-              Standout Skills
-            </div>
+            <div className="text-sm text-ink-faint mb-4">Standout Skills</div>
             <h2 className="text-2xl font-bold text-ink mb-4">Best proof at a glance</h2>
             <div className="space-y-3">
               {standoutSkills.map((skill) => (
@@ -418,37 +337,18 @@ export default function SharePage() {
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Skills Portfolio - Editorial presentation */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 1.2, ease: easing.gentle }}
-        >
-          <motion.h2
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 1, delay: 0.2, ease: easing.gentle }}
-            className="text-3xl lg:text-4xl font-bold text-ink mb-12 lg:mb-16 tracking-tight"
-          >
+        <div>
+          <h2 className="text-3xl lg:text-4xl font-bold text-ink mb-12 lg:mb-16 tracking-tight">
             Skills Across Five Pillars
-          </motion.h2>
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-            {skills.map((skill, index) => (
-              <motion.div
+            {skills.map((skill) => (
+              <div
                 key={skill.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{
-                  duration: 0.8,
-                  delay: index * 0.08,
-                  ease: easing.gentle,
-                }}
                 className="print-skill-card rounded-2xl border border-line bg-raised p-8"
               >
                 <div className="flex items-start justify-between mb-6">
@@ -456,7 +356,7 @@ export default function SharePage() {
                     <h3 className="text-xl font-bold text-ink mb-4 tracking-tight">{skill.name}</h3>
                     <div className="flex items-center gap-2.5 mb-6 flex-wrap">
                       <span
-                        className="px-3 py-1.5 rounded-2xl border border-line bg-raised text-xs font-bold uppercase tracking-wider"
+                        className="px-3 py-1.5 rounded-2xl border border-line bg-raised text-sm"
                         style={{
                           color: LEVEL_COLORS[skill.level],
                         }}
@@ -468,19 +368,9 @@ export default function SharePage() {
                         {normalizeSkillCategory(skill.category)}
                       </span>
                       {skill.verified && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 500,
-                            damping: 30,
-                            delay: 0.5 + index * 0.08,
-                          }}
-                          className="p-1 rounded-2xl border border-line bg-raised"
-                        >
+                        <div className="p-1 rounded-2xl border border-line bg-raised">
                           <CheckCircle2 className="w-3.5 h-3.5 text-ink" />
-                        </motion.div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -489,24 +379,14 @@ export default function SharePage() {
                 {/* Progress bar - animates forward */}
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-medium text-ink-muted uppercase tracking-wider">
-                      Progress
-                    </span>
+                    <span className="text-sm font-medium text-ink-muted">Progress</span>
                     <span className="text-sm font-bold text-ink tabular-nums">
                       {skill.progress}%
                     </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden bg-pill">
-                    <motion.div
+                    <div
                       className="h-full"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${skill.progress}%` }}
-                      viewport={{ once: true, margin: '-50px' }}
-                      transition={{
-                        duration: 1.5,
-                        delay: 0.6 + index * 0.08,
-                        ease: easing.gentle,
-                      }}
                       style={{
                         backgroundColor: LEVEL_COLORS[skill.level],
                       }}
@@ -519,10 +399,10 @@ export default function SharePage() {
                     {skill.description}
                   </p>
                 )}
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </AppPageShell>
   )

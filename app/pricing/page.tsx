@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   Check,
   ChevronDown,
@@ -122,16 +121,8 @@ export default function PricingPage() {
     <AppPageShell className="min-h-screen bg-ground">
       <div className="page-shell">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mb-16"
-        >
+        <div className="mb-16">
           <div className="hero-panel p-8 text-center md:p-10">
-            <div className="hero-kicker mx-auto mb-6 inline-flex">Flexible pricing</div>
             <h1 className="mx-auto mb-4 max-w-[12ch] text-4xl font-semibold tracking-tight text-ink md:mb-6 md:max-w-none md:text-6xl">
               Choose your <span className="text-ink">plan</span>
             </h1>
@@ -145,33 +136,22 @@ export default function PricingPage() {
                 : 'Create an account first, then upgrade when you are ready to start billing.'}
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="grid sm:grid-cols-3 gap-3 mb-10"
-        >
+        <div className="grid sm:grid-cols-3 gap-3 mb-10">
           {['Solo builders', 'Growing professionals', 'Hiring teams'].map((item) => (
             <div key={item} className="insight-card px-4 py-3 text-sm text-ink-muted text-center">
               {item}
             </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-16">
-          {plans.map((plan, index) => {
+          {plans.map((plan) => {
             const Icon = plan.icon
             return (
-              <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="relative"
-              >
+              <div key={plan.id} className="relative">
                 <div className="gradient-border-card p-8 h-full">
                   <div className="w-16 h-16 border border-line bg-raised flex items-center justify-center mb-6">
                     <Icon className="w-8 h-8 text-ink" />
@@ -239,20 +219,13 @@ export default function PricingPage() {
                     </div>
                   )}
                 </div>
-              </motion.div>
+              </div>
             )
           })}
         </div>
 
         {/* Features Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mb-16"
-        >
+        <div className="mb-16">
           <h2 className="text-3xl font-bold text-ink text-center mb-12">All Plans Include</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => {
@@ -268,17 +241,10 @@ export default function PricingPage() {
               )
             })}
           </div>
-        </motion.div>
+        </div>
 
         {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center"
-        >
+        <div className="text-center">
           <h2 className="text-3xl font-bold text-ink mb-8">Frequently Asked Questions</h2>
           <div className="max-w-3xl mx-auto space-y-2">
             {faqs.map((item, i) => (
@@ -293,34 +259,20 @@ export default function PricingPage() {
                     className={`w-4 h-4 text-ink-faint flex-shrink-0 ml-4 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
                   />
                 </button>
-                <AnimatePresence initial={false}>
+                <>
                   {openFaq === i && (
-                    <motion.div
-                      key="content"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.22, ease: 'easeOut' }}
-                      className="overflow-hidden"
-                    >
+                    <div key="content" className="overflow-hidden">
                       <p className="px-6 pb-6 text-ink-muted text-sm leading-relaxed">{item.a}</p>
-                    </motion.div>
+                    </div>
                   )}
-                </AnimatePresence>
+                </>
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mt-16 text-center"
-        >
+        <div className="mt-16 text-center">
           <div className="gradient-border-card p-12">
             <h2 className="text-3xl font-bold text-ink mb-4">Ready to get started?</h2>
             <p className="text-ink-muted mb-8">
@@ -354,7 +306,7 @@ export default function PricingPage() {
               </Link>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </AppPageShell>
   )

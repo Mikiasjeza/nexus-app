@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   Briefcase,
   MapPin,
@@ -20,7 +19,6 @@ import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
 import { useSkills } from '@/lib/hooks/useSkills'
 import { aiApi, authApi } from '@/lib/api'
-import { easing } from '@/lib/utils/animations'
 import {
   getSkillPillarDetail,
   inferSkillCategory,
@@ -270,17 +268,10 @@ export default function MarketplacePage() {
   return (
     <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
-        >
+        <div className="mb-12">
           <div className="hero-panel p-8 md:p-10">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between mb-6">
               <div>
-                <div className="hero-kicker mb-4">Opportunity Radar</div>
                 <h1 className="text-5xl md:text-6xl font-bold text-ink mb-2 tracking-tight">
                   Career Marketplace
                 </h1>
@@ -308,9 +299,7 @@ export default function MarketplacePage() {
                 { label: 'Skills detected', value: userSkills.length },
               ].map((item) => (
                 <div key={item.label} className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                    {item.label}
-                  </div>
+                  <div className="text-sm text-ink-faint">{item.label}</div>
                   <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
                 </div>
               ))}
@@ -323,9 +312,7 @@ export default function MarketplacePage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${pillar.color}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                    {pillar.shortLabel}
-                  </div>
+                  <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
                   <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                   <div className="mt-3 text-2xl font-semibold text-ink">{pillar.count}</div>
                 </div>
@@ -362,13 +349,12 @@ export default function MarketplacePage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 mb-12">
           <div className="gradient-border-card p-8">
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
-                <div className="hero-kicker mb-3">AI Job Matching</div>
                 <h2 className="text-2xl font-bold text-ink">Best-fit roles right now</h2>
                 <p className="text-ink-muted mt-2">
                   {aiSummary ||
@@ -453,7 +439,6 @@ export default function MarketplacePage() {
             <div className="flex items-center gap-3 mb-5">
               <MessageSquare className="w-6 h-6 text-ink" />
               <div>
-                <div className="hero-kicker mb-2">AI Career Coach</div>
                 <h2 className="text-2xl font-bold text-ink">Ask what to do next</h2>
                 <p className="text-sm text-ink-muted mt-2">
                   Get advice based on your strongest pillars, missing proof, and the roles you are
@@ -518,15 +503,9 @@ export default function MarketplacePage() {
         </div>
 
         <div className="space-y-6">
-          <AnimatePresence>
-            {filteredJobs.map((job, index) => (
-              <motion.div
-                key={job.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-              >
+          <>
+            {filteredJobs.map((job) => (
+              <div key={job.id}>
                 <div className="gradient-border-card p-6">
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
@@ -653,9 +632,9 @@ export default function MarketplacePage() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </AnimatePresence>
+          </>
 
           {filteredJobs.length === 0 && (
             <div className="gradient-border-card p-12 text-center">
@@ -666,13 +645,7 @@ export default function MarketplacePage() {
           )}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mt-16"
-        >
+        <div className="mt-16">
           <div className="gradient-border-card p-8">
             <div className="grid md:grid-cols-3 gap-8 text-center">
               <div>
@@ -697,7 +670,7 @@ export default function MarketplacePage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </AppPageShell>
   )

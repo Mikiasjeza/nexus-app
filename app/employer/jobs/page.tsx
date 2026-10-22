@@ -1,12 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { Briefcase, Plus, MapPin, DollarSign, Building2 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
 import { useToast } from '@/components/UI/ToastProvider'
-import { easing } from '@/lib/utils/animations'
 import { inferSkillCategory, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
 import AppPageShell from '@/components/Layout/AppPageShell'
@@ -141,12 +139,7 @@ export default function EmployerJobsPage() {
   return (
     <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
-        >
+        <div className="mb-12">
           <div className="hero-panel p-8 md:p-10">
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -171,9 +164,7 @@ export default function EmployerJobsPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                    {pillar.shortLabel}
-                  </div>
+                  <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
                   <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                 </div>
               ))}
@@ -181,12 +172,7 @@ export default function EmployerJobsPage() {
           </div>
 
           {showForm && (
-            <motion.form
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="gradient-border-card p-6 mb-8 mt-8"
-              onSubmit={handleSubmit}
-            >
+            <form className="gradient-border-card p-6 mb-8 mt-8" onSubmit={handleSubmit}>
               <h3 className="text-xl font-semibold mb-4 text-ink">New Job</h3>
               <div className="space-y-4">
                 <input
@@ -258,9 +244,9 @@ export default function EmployerJobsPage() {
                   Post Job
                 </Button>
               </div>
-            </motion.form>
+            </form>
           )}
-        </motion.div>
+        </div>
 
         {loading ? (
           <div className="text-ink-faint">Loading...</div>
@@ -275,12 +261,9 @@ export default function EmployerJobsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {jobs.map((job, index) => (
-              <motion.div
+            {jobs.map((job) => (
+              <div
                 key={job.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
                 className={`gradient-border-card p-6 ${
                   job.status === 'closed' ? 'opacity-60' : ''
                 }`}
@@ -332,7 +315,7 @@ export default function EmployerJobsPage() {
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

@@ -2,12 +2,10 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
 import { Search, User, Shield, Plus } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import Badge from '@/components/UI/Badge'
 import { useToast } from '@/components/UI/ToastProvider'
-import { easing } from '@/lib/utils/animations'
 import Link from 'next/link'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
 import {
@@ -180,12 +178,7 @@ export default function EmployerTalentPage() {
   return (
     <AppPageShell className="min-h-screen bg-ground py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
-        >
+        <div className="mb-12">
           <div className="hero-panel p-8 md:p-10">
             <h1 className="text-4xl font-bold text-ink mb-2">Talent Search</h1>
             <p className="text-lg text-ink-muted mb-8 max-w-3xl">
@@ -208,9 +201,7 @@ export default function EmployerTalentPage() {
                 { label: 'Saved pools', value: pools.length },
               ].map((item) => (
                 <div key={item.label} className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                    {item.label}
-                  </div>
+                  <div className="text-sm text-ink-faint">{item.label}</div>
                   <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
                 </div>
               ))}
@@ -223,9 +214,7 @@ export default function EmployerTalentPage() {
                   className="insight-card p-4"
                   style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-                    {pillar.shortLabel}
-                  </div>
+                  <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
                   <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
                   <div className="mt-3 text-2xl font-semibold text-ink">{pillar.count}</div>
                 </div>
@@ -288,20 +277,14 @@ export default function EmployerTalentPage() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {loading ? (
           <div className="text-center py-16 text-ink-faint">Searching...</div>
         ) : (
           <div className="space-y-6">
-            {candidates.map((c, index) => (
-              <motion.div
-                key={c.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="gradient-border-card p-6"
-              >
+            {candidates.map((c) => (
+              <div key={c.id} className="gradient-border-card p-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex items-start gap-4 flex-1">
                     <div className="w-14 h-14 rounded-full bg-raised flex items-center justify-center shrink-0">
@@ -390,7 +373,7 @@ export default function EmployerTalentPage() {
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
 
             {candidates.length === 0 && (
