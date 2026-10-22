@@ -210,7 +210,10 @@ export default function VerificationPage() {
 
         setSkills(skillData)
         setRecentAnalyses(historyData)
-        setSelectedSkillId((prev) => prev || skillData[0]?.id || '')
+        // The dashboard's next step links here with ?skill=<id>.
+        const requested = new URLSearchParams(window.location.search).get('skill')
+        const initial = skillData.find((skill) => skill.id === requested) ?? skillData[0]
+        setSelectedSkillId((prev) => prev || initial?.id || '')
       } catch (error) {
         if (!isActive) return
         console.error('Verification page load error:', error)
