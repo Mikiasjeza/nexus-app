@@ -13,11 +13,12 @@ import ActivityCalendar from '@/components/Dashboard/ActivityCalendar'
 import PillarRings from '@/components/Dashboard/PillarRings'
 import RecentChecks from '@/components/Dashboard/RecentChecks'
 import VerifiedGrowth from '@/components/Dashboard/VerifiedGrowth'
+import MonthCalendar from '@/components/UI/MonthCalendar'
 
 /**
  * Candidate dashboard: the one thing to do next, then where things stand
- * (verified skills over time, verified per pillar, recent AI checks) and a
- * year of activity.
+ * (verified skills over time, verified per pillar, recent AI checks), and
+ * activity as a year at a glance beside this month day by day.
  */
 export default function DashboardPage() {
   const router = useRouter()
@@ -135,12 +136,20 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        <section aria-labelledby="activity-heading" className="mt-16 border-t border-line pt-10">
-          <SectionHeading id="activity-heading" note="Checks run and changes made">
-            Activity
-          </SectionHeading>
-          <ActivityCalendar activity={summary.activity} />
-        </section>
+        <div className="mt-16 grid gap-12 border-t border-line pt-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-10">
+          <section aria-labelledby="activity-heading">
+            <SectionHeading id="activity-heading" note="Checks run and changes made">
+              Activity
+            </SectionHeading>
+            <ActivityCalendar activity={summary.activity} />
+          </section>
+          <section aria-labelledby="month-heading">
+            <SectionHeading id="month-heading" note="Day by day">
+              This month
+            </SectionHeading>
+            <MonthCalendar activity={summary.activity} navigable className="mt-6" />
+          </section>
+        </div>
       </div>
     </AppPageShell>
   )
