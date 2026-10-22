@@ -4,13 +4,14 @@ import React, { useState, useEffect } from 'react'
 import { User } from '@/lib/types'
 import { authApi, billingApi } from '@/lib/api'
 import ToggleSwitch from '@/components/UI/ToggleSwitch'
-import { Save, User as UserIcon, Mail, Globe, Lock, Shield, Download } from 'lucide-react'
+import { Save, Download } from 'lucide-react'
 import Link from 'next/link'
 import CookiePreferencesButton from '@/components/UI/CookiePreferencesButton'
 import Loader from '@/components/UI/Loader'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
 
 export default function SettingsPage() {
   const { addToast } = useToast()
@@ -51,8 +52,10 @@ export default function SettingsPage() {
             discoverableByEmployers: currentUser.discoverableByEmployers ?? false,
           })
         }
-        const sub = await billingApi.getSubscription().catch(() => null)
-        setSubscription(sub)
+        // Guests have no billing; asking returns 401, which would bounce them to sign-in.
+        if (currentUser && currentUser.id !== 'guest-user') {
+          setSubscription(await billingApi.getSubscription().catch(() => null))
+        }
       } catch (error) {
         console.error('Failed to load user:', error)
       } finally {
@@ -180,285 +183,262 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader />
-      </div>
+      <AppPageShell>
+        <div className="page-shell">
+          <Loader />
+        </div>
+      </AppPageShell>
     )
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-ground">
-        <p className="text-ink-muted">Please log in to view settings</p>
-      </div>
+      <AppPageShell>
+        <div className="page-shell">
+          <PageHeader
+            title="Settings"
+            rule
+            description="Sign in to change your profile, visibility and account."
+            actions={
+              <Link
+                href="/auth/login?next=/settings"
+                className="button-base button-primary min-h-11 px-5"
+              >
+                Sign in
+              </Link>
+            }
+          />
+        </div>
+      </AppPageShell>
     )
   }
 
+  const shareLink = user?.shareableId
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/share/${user.shareableId}`
+    : ''
+
   return (
-    <AppPageShell className="min-h-screen bg-ground">
-      <div className="mx-auto max-w-4xl px-6 py-16 lg:px-12">
-        <div className="mb-12">
-          <div className="hero-panel p-8 md:p-10">
-            <h1 className="mb-4 text-4xl font-semibold leading-[1.08] tracking-tight text-ink md:text-5xl lg:text-6xl">
-              Settings
-            </h1>
-            <p className="text-lg text-ink-muted max-w-2xl">
-              Shape how your profile appears, how employers discover you, and how your Nexus
-              identity behaves.
-            </p>
+    <AppPageShell>
+      <div className="page-shell">
+        {isGuestPreview && (
+          <div className="mb-4 border-b border-line pb-4 text-sm text-ink-muted">
+            You are viewing Settings as a guest. Changes to account data are turned off.
           </div>
-        </div>
+        )}
 
-        <div className="space-y-8">
-          {isGuestPreview && (
-            <div className="border border-verified/40 bg-verified-wash p-4 text-sm text-ink">
-              You are viewing Settings in guest preview mode. Actions that change account data are
-              disabled.
-            </div>
-          )}
-          {/* Profile Information */}
-          <div>
-            <div className="gradient-border-card p-8">
-              <div className="mb-8 flex items-center gap-3">
-                <div className="rounded-xl border border-line bg-raised p-2.5">
-                  <UserIcon className="h-5 w-5 text-verified-ink" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-ink">Profile</h2>
-                  <p className="mt-1 text-sm text-ink-muted">Name, email, and bio</p>
-                </div>
-              </div>
-              <div className="space-y-6">
-                <div>
-                  <label className="metalab-label" htmlFor="settings-name">
-                    Name
-                  </label>
-                  <input
-                    id="settings-name"
-                    type="text"
-                    value={formData.name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="metalab-input"
-                    placeholder="Your full name"
-                  />
-                </div>
-                <div>
-                  <label className="metalab-label" htmlFor="settings-email">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
-                    <input
-                      id="settings-email"
-                      type="email"
-                      value={formData.email}
-                      disabled
-                      className="metalab-input cursor-not-allowed pl-11 opacity-70"
-                    />
-                  </div>
-                  <p className="mt-2 text-xs text-ink-faint">Email cannot be changed</p>
-                </div>
-                <div>
-                  <label className="metalab-label" htmlFor="settings-bio">
-                    Bio
-                  </label>
-                  <textarea
-                    id="settings-bio"
-                    value={formData.bio}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      setFormData({ ...formData, bio: e.target.value })
-                    }
-                    rows={4}
-                    className="metalab-input resize-none"
-                    placeholder="Tell us about yourself..."
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+        <PageHeader
+          title="Settings"
+          rule
+          description="How your profile looks, who can find you, and your account and data."
+          actions={
+            <Button
+              leftIcon={<Save className="size-4" aria-hidden />}
+              onClick={handleSave}
+              disabled={saving || isGuestPreview}
+              isLoading={saving}
+            >
+              Save changes
+            </Button>
+          }
+        />
 
-          {/* Privacy Settings */}
-          <div>
-            <div className="gradient-border-card p-8">
-              <div className="mb-8 flex items-center gap-3">
-                <div className="rounded-xl border border-line bg-raised p-2.5">
-                  <Globe className="h-5 w-5 text-verified-ink" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-ink">Privacy</h2>
-                  <p className="mt-1 text-sm text-ink-muted">Control how you appear to others</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-line bg-ground/70 p-5">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="mb-1 font-medium text-ink">Public profile</h3>
-                    <p className="text-sm leading-relaxed text-ink-muted">
-                      Allow others to view your Nexus profile via shareable link
-                    </p>
-                  </div>
-                  <ToggleSwitch
-                    checked={formData.publicProfile}
-                    onChange={(checked: boolean) => {
-                      setFormData({ ...formData, publicProfile: checked })
-                    }}
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-line bg-ground/70 p-5">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="mb-1 font-medium text-ink">Discoverable by employers</h3>
-                    <p className="text-sm leading-relaxed text-ink-muted">
-                      Let employer search include your profile when skills match. Requires Public
-                      Profile. Employers see your name, bio, avatar and public skills, never your
-                      email. Turning this off removes you from their results and shortlists.
-                    </p>
-                  </div>
-                  <ToggleSwitch
-                    checked={formData.discoverableByEmployers}
-                    onChange={(checked: boolean) => {
-                      setFormData({ ...formData, discoverableByEmployers: checked })
-                    }}
-                  />
-                </div>
-                {formData.publicProfile && user?.shareableId && (
-                  <div className="rounded-xl border border-line bg-ground/70 p-5">
-                    <p className="mb-3 text-sm text-ink-faint">Shareable link</p>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <input
-                        type="text"
-                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${user.shareableId}`}
-                        readOnly
-                        className="metalab-input flex-1 font-mono text-xs"
-                      />
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/${user.shareableId}`
-                          navigator.clipboard.writeText(link)
-                          addToast({
-                            type: 'success',
-                            title: 'Link Copied',
-                            message: 'Shareable link copied to clipboard!',
-                          })
-                        }}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Security */}
-          <div>
-            <div className="gradient-border-card p-8">
-              <div className="mb-8 flex items-center gap-3">
-                <div className="rounded-xl border border-line bg-raised p-2.5">
-                  <Lock className="h-5 w-5 text-verified-ink" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-ink">Security</h2>
-                  <p className="mt-1 text-sm text-ink-muted">Credentials and account actions</p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <Link
-                  href="/auth/forgot-password"
-                  className={isGuestPreview ? 'pointer-events-none block' : 'block'}
-                >
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    leftIcon={<Lock className="w-4 h-4" />}
-                    disabled={isGuestPreview}
-                  >
-                    Change Password
-                  </Button>
-                </Link>
-                {/* Full navigation (not <Link>): the OAuth flow leaves the app. */}
-                <a
-                  href="/api/auth/github/authorize"
-                  className={isGuestPreview ? 'pointer-events-none block' : 'block'}
-                >
-                  <Button variant="outline" fullWidth disabled={isGuestPreview}>
-                    Connect GitHub
-                  </Button>
-                </a>
-                <p className="text-xs text-ink-faint">
-                  Lets you sign in with GitHub. We only read your public profile and verified email.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Privacy & data */}
-          <div id="privacy" className="gradient-border-card scroll-mt-24 p-8">
-            <div className="mb-8 flex items-center gap-3">
-              <div className="rounded-xl border border-line bg-raised p-2.5">
-                <Shield className="h-5 w-5 text-verified-ink" />
+        <div className="border-t border-line">
+          <SettingsSection title="Profile" description="Your name and a short bio.">
+            <div className="space-y-6">
+              <div>
+                <label className="metalab-label" htmlFor="settings-name">
+                  Name
+                </label>
+                <input
+                  id="settings-name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="metalab-input"
+                  placeholder="Your full name"
+                />
               </div>
               <div>
-                <h2 className="text-xl font-semibold tracking-tight text-ink">
-                  Privacy &amp; data
-                </h2>
-                <p className="mt-1 text-sm text-ink-muted">
-                  Your data, your call. See our{' '}
-                  <Link
-                    href="/privacy"
-                    className="underline decoration-line-strong underline-offset-2 hover:text-ink"
-                  >
-                    Privacy Policy
-                  </Link>
-                  .
+                <label className="metalab-label" htmlFor="settings-email">
+                  Email
+                </label>
+                <input
+                  id="settings-email"
+                  type="email"
+                  value={formData.email}
+                  disabled
+                  aria-describedby="settings-email-note"
+                  className="metalab-input"
+                />
+                <p id="settings-email-note" className="mt-2 text-sm text-ink-faint">
+                  Email can’t be changed.
                 </p>
               </div>
+              <div>
+                <label className="metalab-label" htmlFor="settings-bio">
+                  Bio
+                </label>
+                <textarea
+                  id="settings-bio"
+                  value={formData.bio}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setFormData({ ...formData, bio: e.target.value })
+                  }
+                  rows={4}
+                  className="metalab-input resize-none"
+                  placeholder="A line or two about what you do"
+                />
+              </div>
             </div>
-            <div className="space-y-4">
-              <div className="flex flex-col gap-3 rounded-xl border border-line bg-ground/70 p-5 sm:flex-row sm:items-center sm:justify-between">
+          </SettingsSection>
+
+          <SettingsSection title="Visibility" description="Who can see your passport.">
+            <ul className="ruled-list border-y border-line">
+              <li className="flex items-start justify-between gap-6 py-5">
                 <div>
-                  <h3 className="mb-1 font-medium text-ink">Download my data</h3>
-                  <p className="text-sm text-ink-muted">
+                  <p className="font-medium">Public profile</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+                    Anyone with your link can view your passport.
+                  </p>
+                </div>
+                <ToggleSwitch
+                  checked={formData.publicProfile}
+                  onChange={(checked: boolean) =>
+                    setFormData({ ...formData, publicProfile: checked })
+                  }
+                />
+              </li>
+              <li className="flex items-start justify-between gap-6 py-5">
+                <div>
+                  <p className="font-medium">Discoverable by employers</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+                    Employer search can include you when your skills match. Needs a public profile.
+                    Employers see your name, bio, avatar and public skills, never your email.
+                    Turning this off removes you from their results and shortlists.
+                  </p>
+                </div>
+                <ToggleSwitch
+                  checked={formData.discoverableByEmployers}
+                  onChange={(checked: boolean) =>
+                    setFormData({ ...formData, discoverableByEmployers: checked })
+                  }
+                />
+              </li>
+              {formData.publicProfile && shareLink && (
+                <li className="py-5">
+                  <label htmlFor="settings-share-link" className="font-medium">
+                    Your link
+                  </label>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      id="settings-share-link"
+                      type="text"
+                      value={shareLink}
+                      readOnly
+                      className="metalab-input flex-1 text-sm"
+                    />
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        navigator.clipboard.writeText(shareLink)
+                        addToast({
+                          type: 'success',
+                          title: 'Link copied',
+                          message: 'Your passport link is on the clipboard.',
+                        })
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                </li>
+              )}
+            </ul>
+          </SettingsSection>
+
+          <SettingsSection title="Sign-in" description="Your password and connected accounts.">
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/auth/forgot-password"
+                aria-disabled={isGuestPreview || undefined}
+                className={`button-base button-secondary min-h-11 px-5 ${isGuestPreview ? 'pointer-events-none opacity-40' : ''}`}
+              >
+                Change password
+              </Link>
+              {/* Full navigation (not <Link>): the OAuth flow leaves the app. */}
+              <a
+                href="/api/auth/github/authorize"
+                aria-disabled={isGuestPreview || undefined}
+                className={`button-base button-secondary min-h-11 px-5 ${isGuestPreview ? 'pointer-events-none opacity-40' : ''}`}
+              >
+                Connect GitHub
+              </a>
+            </div>
+            <p className="mt-3 text-sm text-ink-faint">
+              GitHub sign-in reads only your public profile and verified email.
+            </p>
+          </SettingsSection>
+
+          <SettingsSection
+            id="privacy"
+            title="Privacy & data"
+            description={
+              <>
+                Your data, your call. See the{' '}
+                <Link
+                  href="/privacy"
+                  className="text-ink underline decoration-line-strong underline-offset-2 hover:decoration-ink"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </>
+            }
+          >
+            <ul className="ruled-list border-y border-line">
+              <li className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium">Download my data</p>
+                  <p className="mt-1 text-sm text-ink-muted">
                     A JSON copy of your account, skills, evidence, AI results, activity and company
                     memberships.
                   </p>
                 </div>
                 <Button
-                  variant="outline"
-                  leftIcon={<Download className="w-4 h-4" />}
+                  variant="secondary"
+                  leftIcon={<Download className="size-4" aria-hidden />}
                   onClick={handleExport}
                   isLoading={exporting}
                   disabled={exporting || isGuestPreview}
                 >
                   Download
                 </Button>
-              </div>
-              <div className="flex flex-col gap-3 rounded-xl border border-line bg-ground/70 p-5 sm:flex-row sm:items-center sm:justify-between">
+              </li>
+              <li className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="mb-1 font-medium text-ink">Cookie settings</h3>
-                  <p className="text-sm text-ink-muted">
+                  <p className="font-medium">Cookies</p>
+                  <p className="mt-1 text-sm text-ink-muted">
                     Essential cookies only, unless you turn on diagnostics.
                   </p>
                 </div>
-                <CookiePreferencesButton className="rounded-lg border border-line-strong px-4 py-2 text-sm text-ink transition-colors hover:bg-raised">
-                  Manage cookies
+                <CookiePreferencesButton className="button-base button-secondary min-h-11 px-5">
+                  Cookie settings
                 </CookiePreferencesButton>
-              </div>
-              <div className="rounded-xl border border-critical/40 bg-ground/70 p-5">
-                <h3 className="mb-1 font-medium text-ink">Delete account</h3>
-                <p className="mb-4 text-sm text-ink-muted">
+              </li>
+              <li className="py-5">
+                <p className="font-medium text-critical">Delete account</p>
+                <p className="mt-1 max-w-[40rem] text-sm leading-relaxed text-ink-muted">
                   Permanently deletes your account, skills, evidence files and history, removes you
                   from employer shortlists, and cancels any active subscription. Companies where you
-                  are the only member are deleted too. This can&apos;t be undone, so consider
-                  downloading your data first.
+                  are the only member are deleted too. This can’t be undone, so download your data
+                  first if you want a copy.
                 </p>
                 {deleteOpen ? (
-                  <div className="space-y-3">
-                    <label htmlFor="delete-confirm" className="block text-sm text-ink">
-                      Type <span className="font-mono font-semibold">DELETE</span> to confirm
+                  <div className="mt-4 max-w-sm space-y-3">
+                    <label htmlFor="delete-confirm" className="block text-sm">
+                      Type <span className="font-medium">DELETE</span> to confirm
                     </label>
                     <input
                       id="delete-confirm"
@@ -470,7 +450,7 @@ export default function SettingsPage() {
                       }
                       className="metalab-input"
                     />
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant="danger"
                         onClick={handleDeleteAccount}
@@ -480,7 +460,7 @@ export default function SettingsPage() {
                         Permanently delete
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={() => {
                           setDeleteOpen(false)
                           setDeleteConfirm('')
@@ -493,6 +473,7 @@ export default function SettingsPage() {
                   </div>
                 ) : (
                   <Button
+                    className="mt-4"
                     variant="danger"
                     onClick={() => setDeleteOpen(true)}
                     disabled={isGuestPreview}
@@ -500,54 +481,73 @@ export default function SettingsPage() {
                     Delete account
                   </Button>
                 )}
-              </div>
-            </div>
-          </div>
+              </li>
+            </ul>
+          </SettingsSection>
 
-          {/* Billing */}
-          <div>
-            <div className="gradient-border-card p-8">
-              <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-ink">Billing</h2>
+          <SettingsSection title="Billing" description="Your plan and payment details.">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-medium capitalize">
+                  {subscription?.plan ?? 'free'}{' '}
+                  <span className="font-normal text-ink-faint">
+                    · {subscription?.status ?? 'active'}
+                  </span>
+                </p>
+                {subscription?.currentPeriodEnd && (
                   <p className="mt-1 text-sm text-ink-muted">
-                    Plan · {subscription?.plan ?? 'free'} · {subscription?.status ?? 'active'}
+                    {subscription.cancelAtPeriodEnd ? 'Access ends' : 'Renews'}{' '}
+                    {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                   </p>
-                  {subscription?.currentPeriodEnd && (
-                    <p className="mt-2 text-xs text-ink-faint">
-                      {subscription.cancelAtPeriodEnd ? 'Access ends' : 'Renews'}{' '}
-                      {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                    </p>
-                  )}
-                  <p className="mt-2 text-xs text-ink-faint">
-                    Change plan, update payment details or cancel any time under Manage Billing.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={openBillingPortal}
-                  isLoading={billingLoading}
-                  disabled={billingLoading || isGuestPreview}
-                >
-                  Manage Billing
-                </Button>
+                )}
+                <p className="mt-1 text-sm text-ink-faint">
+                  Change plan, update payment details or cancel any time.
+                </p>
               </div>
+              <Button
+                variant="secondary"
+                onClick={openBillingPortal}
+                isLoading={billingLoading}
+                disabled={billingLoading || isGuestPreview}
+              >
+                Manage billing
+              </Button>
             </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end pt-4">
-            <Button
-              leftIcon={<Save className="w-5 h-5" />}
-              onClick={handleSave}
-              disabled={saving || isGuestPreview}
-              isLoading={saving}
-            >
-              Save Changes
-            </Button>
-          </div>
+          </SettingsSection>
         </div>
       </div>
     </AppPageShell>
+  )
+}
+
+/** One settings group: its name and purpose on the left, controls on the right. */
+function SettingsSection({
+  id,
+  title,
+  description,
+  children,
+}: {
+  id?: string
+  title: string
+  description: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <section
+      id={id}
+      aria-labelledby={`${title.replace(/\W+/g, '-').toLowerCase()}-heading`}
+      className="grid scroll-mt-28 gap-6 border-b border-line py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10"
+    >
+      <div>
+        <h2
+          id={`${title.replace(/\W+/g, '-').toLowerCase()}-heading`}
+          className="text-base font-medium"
+        >
+          {title}
+        </h2>
+        <p className="mt-1 max-w-[22rem] text-sm text-ink-muted">{description}</p>
+      </div>
+      <div>{children}</div>
+    </section>
   )
 }
