@@ -1,35 +1,20 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import {
-  Briefcase,
-  MapPin,
-  DollarSign,
-  Search,
-  Building2,
-  Calendar,
-  ExternalLink,
-  Brain,
-  MessageSquare,
-  Send,
-  RefreshCw,
-} from 'lucide-react'
+import { Search, ExternalLink, Send, RefreshCw } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
+import Loader from '@/components/UI/Loader'
 import { useSkills } from '@/lib/hooks/useSkills'
 import { aiApi, authApi } from '@/lib/api'
-import {
-  getSkillPillarDetail,
-  inferSkillCategory,
-  skillsLooselyMatch,
-  SKILL_PILLAR_DETAILS,
-} from '@/lib/skills-taxonomy'
+import { skillsLooselyMatch, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
 import type { AIJobMatchItem } from '@/lib/api/ai'
 import type { SkillCategory, User } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
+import Link from 'next/link'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
 
 interface ApiJob {
   id: string
@@ -190,12 +175,6 @@ export default function MarketplacePage() {
     })).sort((a, b) => b.count - a.count)
   }, [userPillarCounts])
 
-  const getPillarsForSkills = (skillNames: string[]) => {
-    return Array.from(new Set(skillNames.map((skill) => inferSkillCategory(skill)))).map(
-      (category) => getSkillPillarDetail(category)
-    )
-  }
-
   const filteredJobs = matchedJobs
     .filter((job) => {
       if (
@@ -256,114 +235,83 @@ export default function MarketplacePage() {
 
   if (loading) {
     return (
-      <AppPageShell
-        className="flex min-h-screen items-center justify-center bg-ground"
-        orbs={false}
-      >
-        <div className="text-ink-muted">Loading opportunities...</div>
+      <AppPageShell>
+        <div className="page-shell">
+          <Loader />
+        </div>
       </AppPageShell>
     )
   }
 
+  const strongestPillars = topPillars.filter((pillar) => pillar.count > 0).slice(0, 2)
+  const averageFit =
+    Math.round(
+      aiMatches.reduce((sum, match) => sum + match.matchScore, 0) / Math.max(aiMatches.length, 1)
+    ) || 0
+
   return (
-    <AppPageShell className="min-h-screen bg-ground py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <div className="mb-12">
-          <div className="hero-panel p-8 md:p-10">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between mb-6">
-              <div>
-                <h1 className="text-5xl md:text-6xl font-bold text-ink mb-2 tracking-tight">
-                  Career Marketplace
-                </h1>
-                <p className="text-lg text-ink-muted max-w-2xl">
-                  Discover openings matched to your strongest pillars, with AI-ranked fit reasons,
-                  gap analysis, and coaching grounded in the same skill system across Nexus.
-                </p>
-              </div>
-              <Badge variant="primary" size="lg">
-                {filteredJobs.length} Jobs In View
-              </Badge>
-            </div>
-
-            {isGuestPreview && (
-              <div className="mb-6 border border-verified/40 bg-verified-wash p-4 text-sm text-ink">
-                You are browsing as a guest. AI recommendations are shown in preview mode. Sign in
-                or create an account to apply or save jobs.
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-6">
-              {[
-                { label: 'Open roles', value: matchedJobs.length },
-                { label: 'AI recommendations', value: aiMatches.length },
-                { label: 'Skills detected', value: userSkills.length },
-              ].map((item) => (
-                <div key={item.label} className="insight-card p-4">
-                  <div className="text-sm text-ink-faint">{item.label}</div>
-                  <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5 mb-6">
-              {topPillars.map((pillar) => (
-                <div
-                  key={pillar.category}
-                  className="insight-card p-4"
-                  style={{ borderColor: `${pillar.color}30` }}
-                >
-                  <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
-                  <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
-                  <div className="mt-3 text-2xl font-semibold text-ink">{pillar.count}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-ink-faint" />
-                <input
-                  type="text"
-                  placeholder="Search jobs..."
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-line bg-ground/70 text-ink placeholder:text-ink-faint focus:outline-none focus:border-verified/40 transition-colors"
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {['all', 'full-time', 'part-time', 'contract', 'internship'].map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setSelectedType(type)}
-                    className={`px-4 py-2 text-sm font-medium transition-opacity ${
-                      selectedType === type
-                        ? 'bg-ink text-ground opacity-100'
-                        : 'border border-line text-ink-muted hover:opacity-100 opacity-70'
-                    }`}
-                  >
-                    {type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
-                  </button>
-                ))}
-              </div>
-            </div>
+    <AppPageShell>
+      <div className="page-shell">
+        {(isGuestPreview || !user) && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
+            <p className="text-sm text-ink-muted">
+              AI matches are shown as a preview. Applying and saving jobs needs an account.
+            </p>
+            <Link
+              href={user ? '/auth/register' : '/auth/login?next=/marketplace'}
+              className="pill"
+              data-active="true"
+            >
+              {user ? 'Create account' : 'Sign in'}
+            </Link>
           </div>
-        </div>
+        )}
 
-        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 mb-12">
-          <div className="gradient-border-card p-8">
-            <div className="flex items-start justify-between gap-4 mb-6">
+        <PageHeader
+          title="Marketplace"
+          rule
+          description={
+            strongestPillars.length > 0
+              ? `Open roles ranked against your skills. Your strongest pillars right now: ${strongestPillars.map((p) => p.shortLabel).join(' and ')}.`
+              : 'Open roles ranked against your skills, with the reasons for each match.'
+          }
+        />
+
+        <dl className="grid grid-cols-2 border-y border-line md:grid-cols-4">
+          {[
+            { label: 'Open roles', value: jobs.length },
+            { label: 'AI matches', value: aiMatches.length },
+            { label: 'Average AI fit', value: `${averageFit}%` },
+            { label: 'Your skills', value: userSkills.length },
+          ].map((stat, i) => (
+            <div
+              key={stat.label}
+              className={`py-8 ${i % 2 === 1 ? 'pl-6' : ''} ${i > 1 ? 'border-t border-line md:border-t-0' : ''} ${i > 0 ? 'md:border-l md:border-line md:pl-8' : ''}`}
+            >
+              <dt className="text-sm text-ink-faint">{stat.label}</dt>
+              <dd className="display-number mt-3 text-[clamp(2.5rem,4vw,3.5rem)] leading-none">
+                {stat.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="grid gap-12 py-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-10">
+          <section aria-labelledby="best-fit-heading">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-ink">Best-fit roles right now</h2>
-                <p className="text-ink-muted mt-2">
+                <h2 id="best-fit-heading" className="text-base font-medium">
+                  Best fit right now
+                </h2>
+                <p className="mt-1 max-w-[34rem] text-sm text-ink-muted">
                   {aiSummary ||
-                    'AI is comparing your strongest pillars and skill proof against active roles to surface the best opportunities.'}
+                    'The AI compares your skills and their proof against every open role.'}
                 </p>
               </div>
               <Button
-                variant="outline"
-                leftIcon={<RefreshCw className="w-4 h-4" />}
+                variant="secondary"
+                size="sm"
+                leftIcon={<RefreshCw className="size-3.5" aria-hidden />}
                 onClick={() => {
                   if (!user) {
                     promptSignIn()
@@ -380,96 +328,85 @@ export default function MarketplacePage() {
                 }}
                 disabled={aiLoading}
               >
-                {aiLoading ? 'Refreshing...' : 'Refresh AI'}
+                {aiLoading ? 'Refreshing' : 'Refresh'}
               </Button>
             </div>
 
-            <div className="space-y-4">
-              {aiMatches.length === 0 && (
-                <div className="rounded-2xl border border-line bg-raised p-5 text-sm text-ink-muted">
-                  {user
-                    ? 'Add more skills or wait for active jobs to load so AI can generate stronger recommendations.'
-                    : 'Sign in to unlock AI-ranked matches tailored to your skill profile.'}
-                </div>
-              )}
-
-              {aiMatches.slice(0, 3).map((match) => (
-                <div key={match.jobId} className="rounded-2xl border border-line bg-raised p-5">
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div>
-                      <div className="font-semibold text-ink">
-                        {match.job?.title || 'Recommended role'}
+            {aiMatches.length === 0 ? (
+              <p className="mt-6 border-y border-line py-6 text-sm text-ink-muted">
+                {user
+                  ? 'No matches yet. Add skills, or check back when more roles are open.'
+                  : 'Sign in to see roles ranked against your own skills.'}
+              </p>
+            ) : (
+              <ul className="ruled-list mt-6 border-y border-line">
+                {aiMatches.slice(0, 3).map((match) => (
+                  <li key={match.jobId} className="py-5">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <div>
+                        <p className="font-medium">{match.job?.title || 'Recommended role'}</p>
+                        <p className="text-sm text-ink-faint">{match.job?.company.name}</p>
                       </div>
-                      <div className="text-sm text-ink-muted">{match.job?.company.name}</div>
+                      <span
+                        className={`display-number text-3xl leading-none ${match.recommended ? 'text-verified' : ''}`}
+                      >
+                        {match.matchScore}%
+                      </span>
                     </div>
-                    <Badge variant={match.recommended ? 'primary' : 'default'} size="sm">
-                      {match.matchScore}% fit
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-ink-muted mb-3">{match.reason}</p>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {getPillarsForSkills(match.matchingSkills).map((pillar) => (
-                      <Badge key={pillar.category} variant="default" size="sm">
-                        {pillar.shortLabel}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {match.matchingSkills.map((skill) => (
-                      <Badge key={skill} variant="primary" size="sm">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                  {match.gaps.length > 0 && (
-                    <div className="text-xs text-ink-muted">
-                      Gap pillars:{' '}
-                      {getPillarsForSkills(match.gaps)
-                        .map((pillar) => pillar.shortLabel)
-                        .join(', ')}
-                      . Missing skills: {match.gaps.join(', ')}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+                    <p className="mt-3 text-sm leading-relaxed text-ink-muted">{match.reason}</p>
+                    {match.matchingSkills.length > 0 && (
+                      <p className="mt-3 text-sm">
+                        <span className="text-ink-faint">You have </span>
+                        {match.matchingSkills.join(', ')}
+                      </p>
+                    )}
+                    {match.gaps.length > 0 && (
+                      <p className="mt-1 text-sm">
+                        <span className="text-ink-faint">Missing </span>
+                        {match.gaps.join(', ')}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
-          <div className="gradient-border-card p-8">
-            <div className="flex items-center gap-3 mb-5">
-              <MessageSquare className="w-6 h-6 text-ink" />
-              <div>
-                <h2 className="text-2xl font-bold text-ink">Ask what to do next</h2>
-                <p className="text-sm text-ink-muted mt-2">
-                  Get advice based on your strongest pillars, missing proof, and the roles you are
-                  closest to landing.
-                </p>
-              </div>
-            </div>
+          <section aria-labelledby="coach-heading" className="flex flex-col">
+            <h2 id="coach-heading" className="text-base font-medium">
+              Ask what to do next
+            </h2>
+            <p className="mt-1 text-sm text-ink-muted">
+              Advice based on your pillars, missing proof and the roles you’re closest to.
+            </p>
 
-            <div className="space-y-3 mb-5 max-h-[22rem] overflow-y-auto pr-1">
+            <div
+              className="mt-6 max-h-[22rem] space-y-3 overflow-y-auto pr-1"
+              aria-live="polite"
+              aria-label="Conversation"
+            >
               {chatMessages.map((message, index) => (
-                <div
+                <p
                   key={`${message.role}-${index}`}
-                  className={`rounded-2xl px-4 py-3 text-sm ${
+                  className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                     message.role === 'assistant'
-                      ? 'border border-line bg-raised text-ink'
-                      : 'bg-ink text-ground'
+                      ? 'bg-raised text-ink'
+                      : 'ml-auto bg-ink text-ground'
                   }`}
                 >
                   {message.content}
-                </div>
+                </p>
               ))}
             </div>
 
             {latestAssistantPrompts.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {latestAssistantPrompts.map((prompt) => (
                   <button
                     key={prompt}
                     type="button"
                     onClick={() => void sendChat(prompt)}
-                    className="rounded-full border border-line bg-raised px-3 py-2 text-xs text-ink-muted transition hover:border-line-strong hover:text-ink"
+                    className="pill text-left"
                   >
                     {prompt}
                   </button>
@@ -477,200 +414,165 @@ export default function MarketplacePage() {
               </div>
             )}
 
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(event) => setChatInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    void sendChat(chatInput)
-                  }
-                }}
-                placeholder="Ask about your best role, missing skills, or how to improve your fit..."
-                className="min-h-[48px] flex-1 rounded-xl border border-line bg-ground/70 px-4 text-ink outline-none transition focus:border-verified/40"
-              />
+            <form
+              className="mt-4 flex gap-2"
+              onSubmit={(event) => {
+                event.preventDefault()
+                void sendChat(chatInput)
+              }}
+            >
+              <label className="flex-1">
+                <span className="sr-only">Your question</span>
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(event) => setChatInput(event.target.value)}
+                  placeholder="Ask about a role, a missing skill, or your fit"
+                  className="metalab-input"
+                />
+              </label>
               <Button
-                onClick={() => void sendChat(chatInput)}
+                type="submit"
                 isLoading={chatLoading}
-                rightIcon={<Send className="w-4 h-4" />}
+                rightIcon={<Send className="size-4" aria-hidden />}
               >
                 Send
               </Button>
-            </div>
-          </div>
+            </form>
+          </section>
         </div>
 
-        <div className="space-y-6">
-          <>
-            {filteredJobs.map((job) => (
-              <div key={job.id}>
-                <div className="gradient-border-card p-6">
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-4 gap-4">
-                        <div>
-                          <h3 className="text-2xl font-bold text-ink mb-2">{job.title}</h3>
-                          <div className="flex flex-wrap items-center gap-4 text-ink-muted mb-3">
-                            <a
-                              href={`/company/${job.company.slug}`}
-                              className="flex items-center gap-1 hover:underline"
-                            >
-                              <Building2 className="w-4 h-4" />
-                              <span>{job.company.name}</span>
-                            </a>
-                            {job.location && (
-                              <div className="flex items-center gap-1">
-                                <MapPin className="w-4 h-4" />
-                                <span>{job.location}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant={job.match >= 85 ? 'primary' : 'default'} size="lg">
-                          {job.match}% Match
-                        </Badge>
-                      </div>
+        <section aria-labelledby="roles-heading" className="border-t border-line pt-10">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <h2 id="roles-heading" className="text-base font-medium">
+              All roles <span className="text-ink-faint">{filteredJobs.length}</span>
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Job type">
+                {['all', 'full-time', 'part-time', 'contract', 'internship'].map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setSelectedType(type)}
+                    aria-pressed={selectedType === type}
+                    className="pill"
+                  >
+                    {type === 'all'
+                      ? 'All'
+                      : type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
+                  </button>
+                ))}
+              </div>
+              <label className="relative">
+                <span className="sr-only">Search roles</span>
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+                  aria-hidden
+                />
+                <input
+                  type="search"
+                  placeholder="Search roles or companies"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="metalab-input !min-h-9 w-64 !py-1.5 pl-9 text-sm"
+                />
+              </label>
+            </div>
+          </div>
 
-                      <div className="flex flex-wrap items-center gap-4 mb-4">
-                        {job.salary && (
-                          <div className="flex items-center gap-2 text-ink-muted">
-                            <DollarSign className="w-4 h-4" />
-                            <span className="font-medium">{job.salary}</span>
-                          </div>
-                        )}
-                        <Badge variant="default" size="sm">
-                          {job.type.replace('-', ' ')}
-                        </Badge>
-                        <div className="flex items-center gap-2 text-ink-muted">
-                          <Calendar className="w-4 h-4" />
-                          <span>{job.posted}</span>
-                        </div>
-                      </div>
+          {filteredJobs.length === 0 ? (
+            <p className="mt-6 border-y border-line py-12 text-ink-muted">
+              No roles match. Try another search or job type.
+            </p>
+          ) : (
+            <ul className="ruled-list mt-6 border-y border-line">
+              {filteredJobs.map((job) => (
+                <li
+                  key={job.id}
+                  className="grid gap-6 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_12rem]"
+                >
+                  <div>
+                    <h3 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight">
+                      {job.title}
+                    </h3>
+                    <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
+                      <Link href={`/company/${job.company.slug}`} className="hover:text-ink">
+                        {job.company.name}
+                      </Link>
+                      {job.location && <span>{job.location}</span>}
+                      <span>{job.type.replace('-', ' ')}</span>
+                      {job.salary && <span>{job.salary}</span>}
+                      <span className="text-ink-faint">Posted {job.posted}</span>
+                    </p>
+                  </div>
 
-                      {job.aiMatch && (
-                        <div className="mb-4 rounded-2xl border border-verified/40 bg-verified-wash p-4">
-                          <div className="flex items-center gap-2 text-sm font-medium text-verified-ink mb-2">
-                            <Brain className="w-4 h-4" />
-                            AI match insight
-                          </div>
-                          <p className="text-sm text-ink mb-3">{job.aiMatch.reason}</p>
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {getPillarsForSkills(job.aiMatch.matchingSkills).map((pillar) => (
-                              <Badge key={pillar.category} variant="default" size="sm">
-                                {pillar.shortLabel}
-                              </Badge>
-                            ))}
-                          </div>
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {job.aiMatch.matchingSkills.map((skill) => (
-                              <Badge key={skill} variant="primary" size="sm">
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                          {job.aiMatch.gaps.length > 0 && (
-                            <div className="text-xs text-ink-muted">
-                              Skill gaps to address: {job.aiMatch.gaps.join(', ')}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="mb-4">
-                        <p className="text-sm font-medium text-ink mb-2">Required Skills:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {job.skills.map((skill) => (
-                            <Badge
+                  <div className="text-sm">
+                    {job.aiMatch?.reason && (
+                      <p className="leading-relaxed text-ink-muted">{job.aiMatch.reason}</p>
+                    )}
+                    {job.skills.length > 0 && (
+                      <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Required skills">
+                        {job.skills.map((skill) => {
+                          const has = userSkills.some((userSkill) =>
+                            skillsLooselyMatch(userSkill, skill)
+                          )
+                          return (
+                            <li
                               key={skill}
-                              variant={
-                                userSkills.some((userSkill) => skillsLooselyMatch(userSkill, skill))
-                                  ? 'primary'
-                                  : 'default'
-                              }
-                              size="sm"
+                              className={`rounded-full px-2.5 py-0.5 text-xs ${has ? 'bg-verified-wash text-verified-ink' : 'bg-pill text-ink-muted'}`}
                             >
                               {skill}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                              {has && <span className="sr-only"> (you have this)</span>}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+                  </div>
 
-                    <div className="flex flex-col justify-between gap-4 md:w-48">
-                      <div className="space-y-2">
-                        <Button
-                          variant="primary"
-                          rightIcon={<ExternalLink className="w-4 h-4" />}
-                          fullWidth
-                          onClick={() => {
-                            if (isGuestPreview || !user) {
-                              promptSignIn()
-                            }
-                          }}
-                        >
-                          Apply Now
-                        </Button>
-                        <Button
-                          variant="outline"
-                          fullWidth
-                          onClick={() => {
-                            if (isGuestPreview || !user) {
-                              promptSignIn()
-                              return
-                            }
-
-                            setChatInput(
-                              `How should I position myself for the ${job.title} role at ${job.company.name}?`
-                            )
-                          }}
-                        >
-                          Ask AI About Fit
-                        </Button>
-                      </div>
+                  <div className="flex flex-col gap-3 lg:items-end">
+                    <p className="flex items-baseline gap-2">
+                      <span
+                        className={`display-number text-4xl leading-none ${job.match >= 85 ? 'text-verified' : ''}`}
+                      >
+                        {job.match}%
+                      </span>
+                      <span className="text-sm text-ink-faint">match</span>
+                    </p>
+                    <div className="flex flex-wrap gap-2 lg:justify-end">
+                      <Button
+                        size="sm"
+                        rightIcon={<ExternalLink className="size-3.5" aria-hidden />}
+                        onClick={() => {
+                          if (isGuestPreview || !user) {
+                            promptSignIn()
+                          }
+                        }}
+                      >
+                        Apply
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          if (isGuestPreview || !user) {
+                            promptSignIn()
+                            return
+                          }
+                          setChatInput(
+                            `How should I position myself for the ${job.title} role at ${job.company.name}?`
+                          )
+                        }}
+                      >
+                        Ask AI
+                      </Button>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </>
-
-          {filteredJobs.length === 0 && (
-            <div className="gradient-border-card p-12 text-center">
-              <Briefcase className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
-              <h3 className="text-xl font-medium text-ink mb-2">No jobs found</h3>
-              <p className="text-ink-muted">Try adjusting your search or filters.</p>
-            </div>
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
-
-        <div className="mt-16">
-          <div className="gradient-border-card p-8">
-            <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div>
-                <div className="text-4xl font-bold text-ink mb-2">{jobs.length}</div>
-                <div className="text-ink-muted">Active Jobs</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-ink mb-2">
-                  {aiMatches.filter((match) => match.recommended).length}
-                </div>
-                <div className="text-ink-muted">AI Recommendations</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-ink mb-2">
-                  {Math.round(
-                    aiMatches.reduce((sum, match) => sum + match.matchScore, 0) /
-                      Math.max(aiMatches.length, 1)
-                  ) || 0}
-                  %
-                </div>
-                <div className="text-ink-muted">Average AI Fit</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
     </AppPageShell>
   )
