@@ -32,6 +32,18 @@ const config: Config = {
         },
         caution: '#e8a33d',
         critical: '#ff6b6b',
+        // Utilities the Bklit charts (components/charts) use for axis labels,
+        // tooltips and ring centres. Values live in globals.css.
+        foreground: '#ffffff',
+        muted: '#141414',
+        chart: {
+          label: 'var(--chart-label)',
+          positive: 'var(--chart-positive)',
+          negative: 'var(--chart-negative)',
+          'tooltip-background': 'var(--chart-tooltip-background)',
+          'tooltip-foreground': 'var(--chart-tooltip-foreground)',
+          'tooltip-muted': 'var(--chart-tooltip-muted)',
+        },
         // Legacy palettes, still referenced by pages not yet redesigned.
         primary: {
           50: '#f0f4ff',

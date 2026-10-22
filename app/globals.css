@@ -31,14 +31,16 @@
     --critical: #ff6b6b;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 
-    /* Older token names still read by some components. */
-    --background: 0 0 0;
-    --foreground: 255 255 255;
-    --card: 14 13 15;
-    --card-foreground: 255 255 255;
-    --border: 38 37 40;
-    --muted: 20 20 20;
-    --muted-foreground: 161 158 163;
+    /* shadcn-style names, read by the Bklit charts and older components. */
+    --background: #000000;
+    --foreground: #ffffff;
+    --card: #0e0d0f;
+    --card-foreground: #ffffff;
+    --popover: #1c1b1d;
+    --popover-foreground: #ffffff;
+    --border: #262528;
+    --muted: #141414;
+    --muted-foreground: #a19ea3;
     --bg-primary: var(--ground);
     --bg-secondary: var(--raised);
     --text-primary: var(--ink);
@@ -145,6 +147,46 @@
   .tabular,
   time {
     font-variant-numeric: tabular-nums;
+  }
+  /* Bklit chart tokens, mapped onto the Nexus world. Violet carries the
+     candidate's own (verified) series; white and greys carry comparisons. */
+  :root,
+  .dark {
+    --chart-1: #8b7bff;
+    --chart-2: #ffffff;
+    --chart-3: #79767a;
+    --chart-4: #b9b0ff;
+    --chart-5: #e8a33d;
+    --chart-positive: #b9b0ff;
+    --chart-negative: #ff6b6b;
+    --chart-background: #000000;
+    --chart-foreground: #ffffff;
+    --chart-foreground-muted: #a19ea3;
+    --chart-line-primary: var(--chart-1);
+    --chart-line-secondary: var(--chart-2);
+    --chart-crosshair: rgba(255, 255, 255, 0.35);
+    --chart-grid: rgba(255, 255, 255, 0.1);
+    --chart-brush-border: var(--chart-grid);
+    --chart-tooltip-background: var(--popover);
+    --chart-tooltip-foreground: var(--popover-foreground);
+    --chart-tooltip-muted: #a19ea3;
+    --chart-marker-background: #1c1b1d;
+    --chart-marker-border: rgba(255, 255, 255, 0.18);
+    --chart-marker-foreground: #ffffff;
+    --chart-label: #79767a;
+    --chart-scale-mix: #0e0d0f;
+    --chart-scale-01: #19181a;
+    --chart-scale-02: color-mix(in oklab, var(--chart-1) 30%, var(--chart-scale-mix));
+    --chart-scale-03: color-mix(in oklab, var(--chart-1) 52%, var(--chart-scale-mix));
+    --chart-scale-04: color-mix(in oklab, var(--chart-1) 76%, var(--chart-scale-mix));
+    --chart-scale-05: var(--chart-1);
+    --chart-scale-pattern-color: #000000;
+    --chart-indicator-color: #ffffff;
+    --chart-indicator-secondary-color: #000000;
+    --chart-marker-badge-background: #ffffff;
+    --chart-marker-badge-foreground: #000000;
+    --chart-segment-background: rgba(255, 255, 255, 0.04);
+    --chart-segment-line: rgba(255, 255, 255, 0.18);
   }
 }
 
