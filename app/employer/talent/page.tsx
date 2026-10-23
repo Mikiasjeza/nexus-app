@@ -2,20 +2,18 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Search, User, Shield, Plus } from 'lucide-react'
-import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
-import { useToast } from '@/components/UI/ToastProvider'
 import Link from 'next/link'
-import { CATEGORY_COLORS } from '@/lib/utils/constants'
+import { Search } from 'lucide-react'
+import Button from '@/components/UI/Button'
+import { useToast } from '@/components/UI/ToastProvider'
 import {
   getSkillPillarDetail,
   inferSkillCategory,
   normalizeSkillCategory,
-  SKILL_PILLAR_DETAILS,
 } from '@/lib/skills-taxonomy'
 import type { SkillCategory } from '@/lib/types'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
 
 interface Candidate {
   id: string
@@ -41,9 +39,9 @@ interface JobOption {
   skills: string[]
 }
 
-function getCandidatePillars(
-  skills: Candidate['skills']
-): Array<{ category: SkillCategory; count: number; shortLabel: string }> {
+const LEVELS = ['beginner', 'intermediate', 'advanced', 'expert']
+
+function getCandidatePillars(skills: Candidate['skills']) {
   const counts = skills.reduce(
     (acc, skill) => {
       const category = normalizeSkillCategory(skill.category)
@@ -52,15 +50,15 @@ function getCandidatePillars(
     },
     {} as Record<SkillCategory, number>
   )
-
   return Object.entries(counts)
-    .map(([category, count]) => {
-      const pillar = getSkillPillarDetail(category as SkillCategory)
-      return { category: pillar.category, count, shortLabel: pillar.shortLabel }
-    })
+    .map(([category, count]) => ({
+      shortLabel: getSkillPillarDetail(category as SkillCategory).shortLabel,
+      count,
+    }))
     .sort((left, right) => right.count - left.count)
 }
 
+/** Search discoverable candidates by skill, pillar, level or one of your roles. */
 export default function EmployerTalentPage() {
   const { addToast } = useToast()
   const [candidates, setCandidates] = useState<Candidate[]>([])
@@ -72,12 +70,13 @@ export default function EmployerTalentPage() {
   const [selectedJobId, setSelectedJobId] = useState('')
   const [selectedJobTitle, setSelectedJobTitle] = useState('')
 
-  const search = () => {
+  const search = (overrides: { jobId?: string } = {}) => {
     setLoading(true)
     const params = new URLSearchParams()
+    const jobId = overrides.jobId ?? selectedJobId
     if (skillsQuery.trim()) params.set('skills', skillsQuery.trim())
     if (levelFilter) params.set('level', levelFilter)
-    if (selectedJobId) params.set('jobId', selectedJobId)
+    if (jobId) params.set('jobId', jobId)
     params.set('limit', '20')
     fetch(`/api/employer/talent?${params}`, { credentials: 'include' })
       .then((r) => r.json())
@@ -140,7 +139,7 @@ export default function EmployerTalentPage() {
             : pool
         )
       )
-      addToast({ type: 'success', title: 'Candidate added to pool' })
+      addToast({ type: 'success', title: 'Added to the shortlist' })
     } catch (err) {
       addToast({
         type: 'error',
@@ -151,245 +150,207 @@ export default function EmployerTalentPage() {
   }
 
   useEffect(() => {
-    search()
+    // The dashboard links here with ?jobId=<id> to rank candidates against that role.
+    const jobId = new URLSearchParams(window.location.search).get('jobId') ?? ''
+    if (jobId) setSelectedJobId(jobId)
+    search({ jobId })
     loadPools()
     void loadJobs()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const levels = ['beginner', 'intermediate', 'advanced', 'expert']
-  const totalVerifiedSignals = candidates.reduce(
+  const selectedJob = jobs.find((job) => job.id === selectedJobId) ?? null
+  const verifiedInView = candidates.reduce(
     (sum, candidate) => sum + candidate.skills.filter((skill) => skill.verified).length,
     0
   )
-  const selectedJob = jobs.find((job) => job.id === selectedJobId) ?? null
-  const dominantPillars = SKILL_PILLAR_DETAILS.map((pillar) => ({
-    ...pillar,
-    count: candidates.reduce(
-      (sum, candidate) =>
-        sum +
-        candidate.skills.filter(
-          (skill) => normalizeSkillCategory(skill.category) === pillar.category
-        ).length,
-      0
-    ),
-  }))
+  const jobPillars = selectedJob
+    ? Array.from(
+        new Set(
+          selectedJob.skills.map(
+            (skill) => getSkillPillarDetail(inferSkillCategory(skill)).shortLabel
+          )
+        )
+      )
+    : []
 
   return (
-    <AppPageShell className="min-h-screen bg-ground py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <div className="mb-12">
-          <div className="hero-panel p-8 md:p-10">
-            <h1 className="text-4xl font-bold text-ink mb-2">Talent Search</h1>
-            <p className="text-lg text-ink-muted mb-8 max-w-3xl">
-              Find candidates by verified proof and the pillars that matter most to your team, from
-              technical execution to communication, leadership, and growth.
+    <AppPageShell>
+      <div className="page-shell">
+        <PageHeader
+          title="Find talent"
+          rule
+          description={
+            selectedJobTitle
+              ? `Ranked against ${selectedJobTitle}: role skills, pillar coverage and verified proof.`
+              : 'Search by skill, pillar or level. Only people who chose to be discoverable appear here.'
+          }
+        />
+
+        <form
+          className="flex flex-col gap-2 border-t border-line pt-6 lg:flex-row lg:items-center"
+          onSubmit={(event) => {
+            event.preventDefault()
+            search()
+          }}
+        >
+          <label className="relative flex-1">
+            <span className="sr-only">Skills or pillars</span>
+            <Search
+              className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+              aria-hidden
+            />
+            <input
+              type="search"
+              placeholder="Skills or pillars, like React, public speaking or Lead"
+              value={skillsQuery}
+              onChange={(e) => setSkillsQuery(e.target.value)}
+              className="metalab-input pl-10"
+            />
+          </label>
+          <label>
+            <span className="sr-only">Rank against a role</span>
+            <select
+              value={selectedJobId}
+              onChange={(e) => setSelectedJobId(e.target.value)}
+              className="metalab-input lg:w-56"
+            >
+              <option value="">Any role</option>
+              {jobs.map((job) => (
+                <option key={job.id} value={job.id}>
+                  {job.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="sr-only">Level</span>
+            <select
+              value={levelFilter}
+              onChange={(e) => setLevelFilter(e.target.value)}
+              className="metalab-input lg:w-44"
+            >
+              <option value="">Any level</option>
+              {LEVELS.map((l) => (
+                <option key={l} value={l}>
+                  {l.charAt(0).toUpperCase() + l.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button type="submit" disabled={loading}>
+            Search
+          </Button>
+        </form>
+
+        <p className="mt-4 text-sm text-ink-faint">
+          {loading
+            ? 'Searching'
+            : `${candidates.length} ${candidates.length === 1 ? 'person' : 'people'} · ${verifiedInView} verified skills in view`}
+          {jobPillars.length > 0 && ` · role needs ${jobPillars.join(', ')}`}
+        </p>
+
+        {!loading && candidates.length === 0 ? (
+          <div className="mt-6 border-y border-line py-12">
+            <p className="font-display text-3xl font-light">No one matches yet</p>
+            <p className="mt-3 max-w-md text-ink-muted">
+              Try fewer or broader skills. Candidates appear only with a public profile and employer
+              discovery turned on.
             </p>
-
-            {selectedJobTitle && (
-              <div className="mb-6 rounded-2xl border border-verified/40 bg-verified-wash px-4 py-3 text-sm text-verified-ink">
-                Matching candidates against{' '}
-                <span className="font-semibold">{selectedJobTitle}</span> using role skills, pillar
-                coverage, and verified proof.
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-6">
-              {[
-                { label: 'Candidates in view', value: candidates.length },
-                { label: 'Verified signals', value: totalVerifiedSignals },
-                { label: 'Saved pools', value: pools.length },
-              ].map((item) => (
-                <div key={item.label} className="insight-card p-4">
-                  <div className="text-sm text-ink-faint">{item.label}</div>
-                  <div className="mt-2 text-3xl font-semibold text-ink">{item.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5 mb-8">
-              {dominantPillars.map((pillar) => (
-                <div
-                  key={pillar.category}
-                  className="insight-card p-4"
-                  style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
-                >
-                  <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
-                  <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
-                  <div className="mt-3 text-2xl font-semibold text-ink">{pillar.count}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint" />
-                <input
-                  type="text"
-                  placeholder="Search skills or pillars, like React, Public Speaking, Leadership, or Growth"
-                  value={skillsQuery}
-                  onChange={(e) => setSkillsQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && search()}
-                  className="w-full pl-12 pr-4 py-3 border border-line bg-ground/70 text-ink"
-                />
-              </div>
-              <select
-                value={selectedJobId}
-                onChange={(e) => setSelectedJobId(e.target.value)}
-                className="px-4 py-3 border border-line bg-ground/70 text-ink"
-              >
-                <option value="">All roles</option>
-                {jobs.map((job) => (
-                  <option key={job.id} value={job.id}>
-                    {job.title}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={levelFilter}
-                onChange={(e) => setLevelFilter(e.target.value)}
-                className="px-4 py-3 border border-line bg-ground/70 text-ink"
-              >
-                <option value="">All levels</option>
-                {levels.map((l) => (
-                  <option key={l} value={l}>
-                    {l.charAt(0).toUpperCase() + l.slice(1)}
-                  </option>
-                ))}
-              </select>
-              <Button onClick={search} disabled={loading}>
-                Search
-              </Button>
-            </div>
-            {selectedJob && selectedJob.skills.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {Array.from(
-                  new Set(
-                    selectedJob.skills.map(
-                      (skill) => getSkillPillarDetail(inferSkillCategory(skill)).shortLabel
-                    )
-                  )
-                ).map((shortLabel) => (
-                  <Badge key={shortLabel} variant="default" size="sm">
-                    {shortLabel}
-                  </Badge>
-                ))}
-              </div>
-            )}
           </div>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-16 text-ink-faint">Searching...</div>
         ) : (
-          <div className="space-y-6">
+          <ul className="ruled-list mt-6 border-y border-line" aria-busy={loading}>
             {candidates.map((c) => (
-              <div key={c.id} className="gradient-border-card p-6">
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className="w-14 h-14 rounded-full bg-raised flex items-center justify-center shrink-0">
-                      {c.avatar ? (
-                        <Image
-                          src={c.avatar}
-                          alt={`${c.name} avatar`}
-                          width={56}
-                          height={56}
-                          unoptimized
-                          className="w-14 h-14 rounded-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-7 h-7 text-ink-faint" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-ink">{c.name}</h3>
-                        <Badge variant={c.matchScore >= 80 ? 'primary' : 'default'} size="sm">
-                          {c.matchScore}% match
-                        </Badge>
-                      </div>
-                      {c.bio && <p className="text-ink-muted text-sm mb-4 line-clamp-2">{c.bio}</p>}
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        {getCandidatePillars(c.skills)
-                          .slice(0, 3)
-                          .map((pillar) => (
-                            <Badge key={pillar.category} variant="default" size="sm">
-                              {pillar.shortLabel} {pillar.count}
-                            </Badge>
-                          ))}
-                        {typeof c.matchedVerifiedSignals === 'number' &&
-                          c.matchedVerifiedSignals > 0 && (
-                            <Badge variant="primary" size="sm">
-                              Verified matches {c.matchedVerifiedSignals}
-                            </Badge>
-                          )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {c.skills.slice(0, 8).map((s) => (
-                          <Badge
-                            key={s.name}
-                            variant={s.verified ? 'primary' : 'default'}
-                            size="sm"
-                          >
-                            <span className="flex items-center gap-1">
-                              {s.verified && <Shield className="w-3 h-3" />}
-                              {s.name} ({s.level})
-                            </span>
-                          </Badge>
-                        ))}
-                        {c.skills.length > 8 && (
-                          <span className="text-sm text-ink-faint">
-                            +{c.skills.length - 8} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
+              <li
+                key={c.id}
+                className="grid gap-6 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_13rem]"
+              >
+                <div className="flex gap-4">
+                  <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pill text-ink-muted">
+                    {c.avatar ? (
+                      <Image
+                        src={c.avatar}
+                        alt=""
+                        width={48}
+                        height={48}
+                        unoptimized
+                        className="size-12 object-cover"
+                      />
+                    ) : (
+                      <span aria-hidden>{c.name.charAt(0)}</span>
+                    )}
                   </div>
-                  <div className="flex flex-col gap-2 shrink-0">
-                    <Link href={`/share/${c.shareableId}`} target="_blank">
-                      <Button variant="primary" rightIcon={<Plus className="w-4 h-4" />}>
-                        View Profile
-                      </Button>
+                  <div className="min-w-0">
+                    <h2 className="font-display text-[2rem] font-light leading-tight">{c.name}</h2>
+                    {c.bio && <p className="mt-1 line-clamp-2 text-sm text-ink-muted">{c.bio}</p>}
+                    <p className="mt-2 text-sm text-ink-faint">
+                      {getCandidatePillars(c.skills)
+                        .slice(0, 3)
+                        .map((p) => `${p.shortLabel} ${p.count}`)
+                        .join(' · ')}
+                    </p>
+                  </div>
+                </div>
+
+                <ul
+                  className="flex flex-wrap content-start gap-1.5"
+                  aria-label={`${c.name}’s skills`}
+                >
+                  {c.skills.slice(0, 10).map((s) => (
+                    <li
+                      key={s.name}
+                      className={`rounded-full px-2.5 py-1 text-xs ${s.verified ? 'bg-verified-wash text-verified-ink' : 'bg-pill text-ink-muted'}`}
+                    >
+                      {s.name}
+                      <span className="opacity-60"> · {s.level}</span>
+                      {s.verified && <span className="sr-only"> (verified)</span>}
+                    </li>
+                  ))}
+                  {c.skills.length > 10 && (
+                    <li className="px-1 py-1 text-xs text-ink-faint">
+                      +{c.skills.length - 10} more
+                    </li>
+                  )}
+                </ul>
+
+                <div className="flex flex-col gap-3 lg:items-end">
+                  <p className="flex items-baseline gap-2">
+                    <span
+                      className={`display-number text-4xl leading-none ${c.matchScore >= 80 ? 'text-verified' : ''}`}
+                    >
+                      {c.matchScore}%
+                    </span>
+                    <span className="text-sm text-ink-faint">match</span>
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 lg:justify-end">
+                    <Link
+                      href={`/share/${c.shareableId}`}
+                      target="_blank"
+                      className="button-base button-primary min-h-9 px-4 text-sm"
+                    >
+                      View passport
                     </Link>
                     {pools.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {pools.map((pool) => (
-                          <Button
-                            key={pool.id}
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addToPool(pool.id, c.id)}
-                          >
-                            Add to {pool.name}
-                          </Button>
-                        ))}
-                      </div>
+                      pools.map((pool) => (
+                        <button
+                          key={pool.id}
+                          type="button"
+                          className="pill"
+                          onClick={() => addToPool(pool.id, c.id)}
+                        >
+                          Add to {pool.name}
+                        </button>
+                      ))
                     ) : (
-                      <Link href="/employer/pools">
-                        <Button variant="outline" size="sm">
-                          Create pool to save
-                        </Button>
+                      <Link href="/employer/pools" className="pill">
+                        Start a shortlist
                       </Link>
                     )}
                   </div>
                 </div>
-              </div>
+              </li>
             ))}
-
-            {candidates.length === 0 && (
-              <div className="gradient-border-card p-12 text-center">
-                <User className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
-                <h3 className="text-xl font-medium text-ink mb-2">No candidates found</h3>
-                <p className="text-ink-muted mb-4">
-                  Try adjusting your search. Candidates must have public profiles and opt-in to
-                  employer discovery.
-                </p>
-                <Link href="/employer/dashboard">
-                  <Button variant="outline">Back to Dashboard</Button>
-                </Link>
-              </div>
-            )}
-          </div>
+          </ul>
         )}
       </div>
     </AppPageShell>

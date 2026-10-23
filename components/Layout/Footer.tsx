@@ -49,7 +49,7 @@ const employerColumns: FooterColumn[] = [
       { label: 'Dashboard', href: '/employer/dashboard' },
       { label: 'Find talent', href: '/employer/talent' },
       { label: 'Jobs', href: '/employer/jobs' },
-      { label: 'Talent pools', href: '/employer/pools' },
+      { label: 'Shortlists', href: '/employer/pools' },
     ],
   },
   { ...company, links: [...company.links, { label: 'For candidates', href: '/dashboard' }] },

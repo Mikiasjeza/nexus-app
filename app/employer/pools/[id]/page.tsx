@@ -2,19 +2,14 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useParams } from 'next/navigation'
-import { User, Shield, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
-import { CATEGORY_COLORS } from '@/lib/utils/constants'
-import {
-  getSkillPillarDetail,
-  normalizeSkillCategory,
-  SKILL_PILLAR_DETAILS,
-} from '@/lib/skills-taxonomy'
+import { useParams } from 'next/navigation'
+import Loader from '@/components/UI/Loader'
+import { useToast } from '@/components/UI/ToastProvider'
+import { getSkillPillarDetail, normalizeSkillCategory } from '@/lib/skills-taxonomy'
 import type { SkillCategory } from '@/lib/types'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
 
 interface Candidate {
   id: string
@@ -30,9 +25,7 @@ interface PoolDetail {
   candidates: Candidate[]
 }
 
-function getCandidatePillars(
-  skills: Candidate['skills']
-): Array<{ category: SkillCategory; shortLabel: string; count: number }> {
+function pillarSummary(skills: Candidate['skills']): string {
   const counts = skills.reduce(
     (acc, skill) => {
       const category = normalizeSkillCategory(skill.category)
@@ -41,18 +34,21 @@ function getCandidatePillars(
     },
     {} as Record<SkillCategory, number>
   )
-
   return Object.entries(counts)
-    .map(([category, count]) => {
-      const pillar = getSkillPillarDetail(category as SkillCategory)
-      return { category: pillar.category, shortLabel: pillar.shortLabel, count }
-    })
-    .sort((left, right) => right.count - left.count)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(
+      ([category, count]) =>
+        `${getSkillPillarDetail(category as SkillCategory).shortLabel} ${count}`
+    )
+    .join(' · ')
 }
 
+/** One shortlist: the people in it, their verified skills, and a way to drop them. */
 export default function EmployerPoolDetailPage() {
   const params = useParams()
   const poolId = params.id as string
+  const { addToast } = useToast()
   const [pool, setPool] = useState<PoolDetail | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -60,151 +56,140 @@ export default function EmployerPoolDetailPage() {
     if (!poolId) return
     fetch(`/api/employer/pools/${poolId}`, { credentials: 'include' })
       .then((r) => r.json())
-      .then((data) => {
-        if (data.id) setPool(data)
-      })
+      .then((data) => setPool(data.id ? data : null))
+      .catch(() => setPool(null))
       .finally(() => setLoading(false))
   }, [poolId])
 
-  const handleRemove = async (candidateId: string) => {
-    if (!poolId) return
+  const handleRemove = async (candidate: Candidate) => {
     try {
-      await fetch(`/api/employer/pools/${poolId}`, {
+      const res = await fetch(`/api/employer/pools/${poolId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ removeCandidateId: candidateId }),
+        body: JSON.stringify({ removeCandidateId: candidate.id }),
       })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Failed to remove')
       setPool((prev) =>
-        prev
-          ? {
-              ...prev,
-              candidates: prev.candidates.filter((c) => c.id !== candidateId),
-            }
-          : null
+        prev ? { ...prev, candidates: prev.candidates.filter((c) => c.id !== candidate.id) } : null
       )
-    } catch {
-      // ignore
+      addToast({ type: 'success', title: `Removed ${candidate.name}` })
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Could not remove',
+        message: err instanceof Error ? err.message : 'Please try again.',
+      })
     }
   }
 
-  if (loading || !pool) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-ground dark:text-ink-faint">Loading...</div>
-      </div>
+      <AppPageShell>
+        <div className="page-shell">
+          <Loader />
+        </div>
+      </AppPageShell>
     )
   }
 
-  const poolPillarCounts = pool.candidates.reduce(
-    (acc, candidate) => {
-      candidate.skills.forEach((skill) => {
-        const category = normalizeSkillCategory(skill.category)
-        acc[category] = (acc[category] ?? 0) + 1
-      })
-      return acc
-    },
-    {} as Record<SkillCategory, number>
-  )
+  if (!pool) {
+    return (
+      <AppPageShell>
+        <div className="page-shell">
+          <PageHeader
+            title="Shortlist not found"
+            rule
+            description="It may have been deleted, or it belongs to another company."
+            actions={
+              <Link href="/employer/pools" className="button-base button-secondary min-h-11 px-5">
+                All shortlists
+              </Link>
+            }
+          />
+        </div>
+      </AppPageShell>
+    )
+  }
 
   return (
-    <AppPageShell className="min-h-screen bg-ground py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <Link
-          href="/employer/pools"
-          className="inline-flex items-center gap-2 text-ink-muted hover:text-ink mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Pools
+    <AppPageShell>
+      <div className="page-shell">
+        <Link href="/employer/pools" className="text-sm text-ink-muted hover:text-ink">
+          ← Shortlists
         </Link>
-
-        <div className="hero-panel p-8 md:p-10 mb-12">
-          <h1 className="text-4xl font-bold text-ink mb-2">{pool.name}</h1>
-          <p className="text-ink-muted mb-8">
-            {pool.candidates.length} candidate{pool.candidates.length !== 1 ? 's' : ''} saved with
-            pillar-aware skill proof.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
-            {SKILL_PILLAR_DETAILS.map((pillar) => (
-              <div
-                key={pillar.category}
-                className="insight-card p-4"
-                style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
-              >
-                <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
-                <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
-                <div className="mt-3 text-2xl font-semibold text-ink">
-                  {poolPillarCounts[pillar.category] ?? 0}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PageHeader
+          title={pool.name}
+          rule
+          description={`${pool.candidates.length} ${pool.candidates.length === 1 ? 'person' : 'people'}. Only people who are still discoverable are shown.`}
+          actions={
+            <Link href="/employer/talent" className="button-base button-secondary min-h-11 px-5">
+              Add from a search
+            </Link>
+          }
+        />
 
         {pool.candidates.length === 0 ? (
-          <div className="gradient-border-card p-12 text-center">
-            <User className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
-            <p className="text-ink-muted mb-4">No candidates in this pool yet</p>
-            <Link href="/employer/talent">
-              <Button>Search Talent</Button>
-            </Link>
+          <div className="border-y border-line py-12">
+            <p className="font-display text-3xl font-light">Nobody here yet</p>
+            <p className="mt-3 max-w-md text-ink-muted">
+              Search for talent and use “Add to {pool.name}” on anyone worth a second look.
+            </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <ul className="ruled-list border-y border-line">
             {pool.candidates.map((c) => (
-              <div
+              <li
                 key={c.id}
-                className="gradient-border-card p-6 flex items-center justify-between"
+                className="grid gap-6 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_auto] lg:items-center"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-raised flex items-center justify-center">
+                  <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pill text-ink-muted">
                     {c.avatar ? (
                       <Image
                         src={c.avatar}
-                        alt={`${c.name} avatar`}
+                        alt=""
                         width={48}
                         height={48}
                         unoptimized
-                        className="w-12 h-12 rounded-full object-cover"
+                        className="size-12 object-cover"
                       />
                     ) : (
-                      <User className="w-6 h-6 text-ink-faint" />
+                      <span aria-hidden>{c.name.charAt(0)}</span>
                     )}
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-ink">{c.name}</h3>
-                    <div className="flex flex-wrap gap-2 mt-2 mb-3">
-                      {getCandidatePillars(c.skills)
-                        .slice(0, 3)
-                        .map((pillar) => (
-                          <Badge key={pillar.category} variant="default" size="sm">
-                            {pillar.shortLabel}: {pillar.count}
-                          </Badge>
-                        ))}
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {c.skills.slice(0, 5).map((s) => (
-                        <Badge key={s.name} variant={s.verified ? 'primary' : 'default'} size="sm">
-                          {s.verified && <Shield className="w-3 h-3" />}
-                          {s.name}
-                        </Badge>
-                      ))}
-                    </div>
+                  <div className="min-w-0">
+                    <h2 className="font-display text-[2rem] font-light leading-tight">{c.name}</h2>
+                    <p className="text-sm text-ink-faint">{pillarSummary(c.skills)}</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Link href={`/share/${c.shareableId}`} target="_blank">
-                    <Button variant="primary" size="sm">
-                      View
-                    </Button>
+                <ul className="flex flex-wrap gap-1.5" aria-label={`${c.name}’s skills`}>
+                  {c.skills.slice(0, 8).map((s) => (
+                    <li
+                      key={s.name}
+                      className={`rounded-full px-2.5 py-1 text-xs ${s.verified ? 'bg-verified-wash text-verified-ink' : 'bg-pill text-ink-muted'}`}
+                    >
+                      {s.name}
+                      {s.verified && <span className="sr-only"> (verified)</span>}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex gap-1.5 lg:justify-end">
+                  <Link
+                    href={`/share/${c.shareableId}`}
+                    target="_blank"
+                    className="button-base button-primary min-h-9 px-4 text-sm"
+                  >
+                    View passport
                   </Link>
-                  <Button variant="outline" size="sm" onClick={() => handleRemove(c.id)}>
+                  <button type="button" className="pill" onClick={() => handleRemove(c)}>
                     Remove
-                  </Button>
+                  </button>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
     </AppPageShell>
