@@ -23,8 +23,8 @@ export default function CookiesPage() {
     >
       <Section title="What cookies are">
         <p>
-          Cookies are small text files a website stores in your browser. &quot;Local storage&quot;
-          is a similar browser feature. This policy covers both.
+          Cookies are small text files a website stores in your browser. “Local storage” is a
+          similar browser feature. This policy covers both.
         </p>
       </Section>
 

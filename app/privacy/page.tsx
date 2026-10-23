@@ -36,8 +36,8 @@ export default function PrivacyPage() {
     >
       <Section title="1. Who we are">
         <p>
-          {LEGAL.LEGAL_ENTITY} (&quot;Nexus&quot;, &quot;we&quot;, &quot;us&quot;) operates this
-          service and is the controller of your personal data.
+          {LEGAL.LEGAL_ENTITY} (“Nexus”, “we”, “us”) operates this service and is the controller of
+          your personal data.
           {LEGAL.POSTAL_ADDRESS ? ` Our address is ${LEGAL.POSTAL_ADDRESS}.` : ''} Questions or
           requests: <Mail to={LEGAL.contact.privacy} />.
         </p>
@@ -86,8 +86,8 @@ export default function PrivacyPage() {
             enforce plan limits.
           </li>
           <li>
-            <strong className="text-ink">Activity log:</strong> in-product events such as
-            &quot;skill added&quot; shown on your dashboard.
+            <strong className="text-ink">Activity log:</strong> in-product events such as “skill
+            added” shown on your dashboard.
           </li>
           <li>
             <strong className="text-ink">Billing status:</strong> your plan, subscription status and
@@ -98,7 +98,7 @@ export default function PrivacyPage() {
             an HTTP-only cookie.
           </li>
         </List>
-        <p className="font-medium text-ink">If you choose &quot;Continue with GitHub&quot;</p>
+        <p className="font-medium text-ink">If you choose “Continue with GitHub”</p>
         <List>
           <li>
             Your GitHub user ID, username, display name, avatar and email. We request read-only
@@ -119,8 +119,8 @@ export default function PrivacyPage() {
             address, cookies or account details.
           </li>
           <li>
-            Only if you allow &quot;Diagnostics&quot; in cookie settings: a short replay of the
-            moments before an error, with all text, form inputs and images hidden.
+            Only if you allow “Diagnostics” in cookie settings: a short replay of the moments before
+            an error, with all text, form inputs and images hidden.
           </li>
         </List>
         <p className="font-medium text-ink">What we deliberately don&apos;t collect</p>
@@ -215,11 +215,11 @@ export default function PrivacyPage() {
 
       <Section title="5. Who we share data with">
         <p>
-          We don&apos;t sell or rent personal data, and we don&apos;t &quot;share&quot; it for
-          cross-context behavioral advertising (as those terms are defined under California law). We
-          share data only with the service providers below, who process it on our behalf. Apart from
-          our error monitor (Sentry), we call them from our servers and none of them load scripts on
-          Nexus pages. Sentry&apos;s browser reporting goes through our own domain. (Stripe&apos;s
+          We don&apos;t sell or rent personal data, and we don&apos;t “share” it for cross-context
+          behavioral advertising (as those terms are defined under California law). We share data
+          only with the service providers below, who process it on our behalf. Apart from our error
+          monitor (Sentry), we call them from our servers and none of them load scripts on Nexus
+          pages. Sentry&apos;s browser reporting goes through our own domain. (Stripe&apos;s
           checkout and billing pages are hosted by Stripe under its own privacy policy.)
         </p>
         <TableWrap>
@@ -262,13 +262,12 @@ export default function PrivacyPage() {
         </p>
         <p>
           <strong className="text-ink">Employers:</strong> employers on Nexus can search for
-          candidates only if you turn on <em>both</em> your public profile and &quot;Discoverable by
-          employers&quot; in Settings. They see the same information as your public profile (name,
-          bio, avatar, public skills and verification status), never your email or private skills,
-          and they can save you to a shortlist (&quot;talent pool&quot;). If you switch either
-          setting off or delete your account, you disappear from search and from every shortlist
-          straight away. Employers must use what they see only for recruiting, as required by our
-          Terms.
+          candidates only if you turn on <em>both</em> your public profile and “Discoverable by
+          employers” in Settings. They see the same information as your public profile (name, bio,
+          avatar, public skills and verification status), never your email or private skills, and
+          they can save you to a shortlist (“talent pool”). If you switch either setting off or
+          delete your account, you disappear from search and from every shortlist straight away.
+          Employers must use what they see only for recruiting, as required by our Terms.
         </p>
         <p>
           We may also disclose data if required by law, or to protect the rights and safety of our

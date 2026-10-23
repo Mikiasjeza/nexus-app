@@ -35,8 +35,8 @@ export default function TermsPage() {
     >
       <Section title="1. Agreement">
         <p>
-          These terms are an agreement between you and {LEGAL.LEGAL_ENTITY} (&quot;Nexus&quot;). By
-          creating an account or using the service you agree to them and to our{' '}
+          These terms are an agreement between you and {LEGAL.LEGAL_ENTITY} (“Nexus”). By creating
+          an account or using the service you agree to them and to our{' '}
           <Link
             href="/privacy"
             className="underline decoration-line-strong underline-offset-2 hover:text-ink"
@@ -63,11 +63,11 @@ export default function TermsPage() {
 
       <Section title="3. Your content">
         <p>
-          You keep all rights to the skills, evidence, files and other content you submit
-          (&quot;Your Content&quot;). You grant Nexus a limited, non-exclusive, worldwide,
-          royalty-free licence to host, process, display and transmit Your Content only as needed to
-          provide the service to you, including sending evidence to our AI provider when you request
-          verification and showing content you mark public on your shareable profile.
+          You keep all rights to the skills, evidence, files and other content you submit (“Your
+          Content”). You grant Nexus a limited, non-exclusive, worldwide, royalty-free licence to
+          host, process, display and transmit Your Content only as needed to provide the service to
+          you, including sending evidence to our AI provider when you request verification and
+          showing content you mark public on your shareable profile.
         </p>
         <p>
           This licence ends when you delete the content or your account, except for copies that
@@ -204,10 +204,10 @@ export default function TermsPage() {
 
       <Section title="10. Disclaimers">
         <p>
-          Nexus is provided &quot;as is&quot; and &quot;as available&quot;. To the extent permitted
-          by law, we disclaim implied warranties of merchantability, fitness for a particular
-          purpose and non-infringement. We don&apos;t guarantee that the service will be
-          uninterrupted or error-free, or that any employer will accept a verification.
+          Nexus is provided “as is” and “as available”. To the extent permitted by law, we disclaim
+          implied warranties of merchantability, fitness for a particular purpose and
+          non-infringement. We don&apos;t guarantee that the service will be uninterrupted or
+          error-free, or that any employer will accept a verification.
         </p>
       </Section>
 
