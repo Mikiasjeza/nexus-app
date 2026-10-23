@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import { AlertCircle, RefreshCw, Home } from 'lucide-react'
 import Link from 'next/link'
 import AppPageShell from '@/components/Layout/AppPageShell'
 
@@ -17,40 +16,26 @@ export default function Error({
   }, [error])
 
   return (
-    <AppPageShell className="flex min-h-screen items-center justify-center p-4" orbs={false}>
-      <div className="gradient-border-card w-full max-w-md p-8 text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-critical/40 bg-critical/15">
-          <AlertCircle className="h-8 w-8 text-critical" />
-        </div>
-
-        <h1 className="mb-2 text-2xl font-semibold tracking-tight text-ink">
+    <AppPageShell>
+      <div className="page-shell flex min-h-[70vh] flex-col justify-center">
+        <h1 className="page-title">
           Something went wrong
+          <span className="title-rule" aria-hidden />
         </h1>
-        <p className="mb-2 text-sm text-ink-muted">
-          {error.message || 'An unexpected error occurred'}
+        <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-ink-muted">
+          {error.message || 'An unexpected error occurred.'}
         </p>
-        {error.digest ? (
-          <p className="mb-8 font-mono text-xs text-ink-faint">ID · {error.digest}</p>
-        ) : (
-          <div className="mb-8" />
-        )}
-
-        <div className="flex flex-col justify-center gap-3 sm:flex-row">
+        {error.digest && <p className="mt-2 text-sm text-ink-faint">Reference {error.digest}</p>}
+        <div className="mt-10 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={reset}
-            className="button-base button-primary inline-flex flex-1 justify-center rounded-xl"
+            className="button-base button-primary min-h-11 px-5"
           >
-            <RefreshCw className="h-5 w-5" />
             Try again
           </button>
-
-          <Link
-            href="/dashboard"
-            className="button-base button-secondary inline-flex flex-1 justify-center rounded-xl border-line bg-raised text-ink hover:bg-raised"
-          >
-            <Home className="h-5 w-5" />
-            Dashboard
+          <Link href="/dashboard" className="button-base button-secondary min-h-11 px-5">
+            Go to dashboard
           </Link>
         </div>
       </div>

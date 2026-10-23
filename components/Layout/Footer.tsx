@@ -60,10 +60,13 @@ const employerColumns: FooterColumn[] = [
 export default function Footer() {
   const pathname = usePathname() ?? ''
   const isEmployer = pathname.startsWith('/employer') || pathname.startsWith('/company')
+  // Pricing keeps the theme but not the dot wordmark.
+  const printed = pathname !== '/pricing'
 
   return (
     <HalftoneWordmarkFooter
       className="mt-24"
+      printed={printed}
       label="Nexus"
       meta={
         isEmployer

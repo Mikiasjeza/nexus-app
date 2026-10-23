@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'
-import { AlertCircle, RefreshCw } from 'lucide-react'
 import './globals.css'
 
 export default function GlobalError({
@@ -17,30 +16,27 @@ export default function GlobalError({
     Sentry.captureException(error)
   }, [error])
 
+  // The root layout (and its fonts) failed, so this page stands alone on system fonts.
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#06070d] text-ink antialiased">
-        <div className="flex min-h-screen items-center justify-center p-4">
-          <div className="gradient-border-card w-full max-w-md p-8 text-center">
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-critical/40 bg-critical/15">
-              <AlertCircle className="h-8 w-8 text-critical" />
-            </div>
-
-            <h1 className="mb-2 text-2xl font-semibold tracking-tight text-ink">Critical error</h1>
-            <p className="mb-8 text-sm text-ink-muted">
-              A critical error occurred. Please reload the application.
-            </p>
-
+      <body className="min-h-screen bg-ground font-sans text-ink antialiased">
+        <main className="mx-auto flex min-h-screen max-w-[90rem] flex-col justify-center px-[clamp(1rem,4vw,3rem)]">
+          <h1 className="font-display text-[clamp(2.75rem,5vw,5.5rem)] font-extralight leading-[1.08]">
+            Nexus hit a problem
+          </h1>
+          <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-ink-muted">
+            Something failed while loading the app. Reloading usually fixes it.
+          </p>
+          <div className="mt-10">
             <button
               type="button"
               onClick={reset}
-              className="button-base button-primary inline-flex w-full justify-center rounded-xl"
+              className="button-base button-primary min-h-11 px-5"
             >
-              <RefreshCw className="h-5 w-5" />
-              Reload application
+              Reload
             </button>
           </div>
-        </div>
+        </main>
       </body>
     </html>
   )

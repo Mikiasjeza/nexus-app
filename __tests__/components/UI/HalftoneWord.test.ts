@@ -1,10 +1,4 @@
-import {
-  hwfFitSize,
-  hwfHex,
-  hwfRadius,
-  hwfStep,
-  hwfWarmth,
-} from '@/components/UI/HalftoneWordmarkFooter'
+import { hwfFitSize, hwfHex, hwfRadius, hwfStep, hwfWarmth } from '@/components/UI/HalftoneWord'
 
 describe('halftone footer helpers', () => {
   it('parses short and long hex, and rejects anything else', () => {
