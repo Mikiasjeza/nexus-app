@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Building2, Briefcase, MapPin, DollarSign, ExternalLink, Globe } from 'lucide-react'
-import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
 import { getSkillPillarForName } from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
+import Loader from '@/components/UI/Loader'
 
 interface Job {
   id: string
@@ -28,6 +28,7 @@ interface Company {
   description?: string
 }
 
+/** Public company profile: who they are and the roles they have open. */
 export default function CompanyPage() {
   const params = useParams()
   const slug = params.slug as string
@@ -51,136 +52,125 @@ export default function CompanyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-ground dark:text-ink-faint">Loading...</div>
-      </div>
+      <AppPageShell>
+        <div className="page-shell">
+          <Loader />
+        </div>
+      </AppPageShell>
     )
   }
 
   if (!company) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Building2 className="w-16 h-16 mx-auto mb-4 text-ground dark:text-ink-faint" />
-          <h2 className="text-xl font-medium text-ground dark:text-ink mb-2">Company not found</h2>
-          <a href="/marketplace" className="text-verified dark:text-verified">
-            Browse jobs
-          </a>
+      <AppPageShell>
+        <div className="page-shell">
+          <PageHeader
+            title="Company not found"
+            rule
+            description="This company page doesn’t exist, or it has been removed."
+            actions={
+              <Link href="/marketplace" className="button-base button-secondary min-h-11 px-5">
+                Browse roles
+              </Link>
+            }
+          />
         </div>
-      </div>
+      </AppPageShell>
     )
   }
 
+  const hiringPillars = Array.from(
+    new Set(
+      jobs.flatMap((job) => job.skills.map((skill) => getSkillPillarForName(skill).shortLabel))
+    )
+  )
+
   return (
-    <AppPageShell className="min-h-screen bg-ground py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <div className="mb-12">
-          <div className="hero-panel p-8 md:p-10">
-            <div className="flex items-start gap-6">
-              <div className="w-20 h-20 rounded-2xl bg-raised flex items-center justify-center shrink-0">
-                {company.logo ? (
-                  <Image
-                    src={company.logo}
-                    alt={`${company.name} logo`}
-                    width={80}
-                    height={80}
-                    unoptimized
-                    className="w-20 h-20 rounded-2xl object-cover"
-                  />
-                ) : (
-                  <Building2 className="w-10 h-10 text-ink-faint" />
-                )}
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-ink mb-2">{company.name}</h1>
-                <p className="text-ink-muted max-w-2xl mb-4">
-                  Explore open roles and the skill pillars this team is hiring for most often.
-                </p>
-                {company.description && (
-                  <p className="text-ink-muted max-w-2xl mb-4">{company.description}</p>
-                )}
-                {company.website && (
+    <AppPageShell>
+      <div className="page-shell">
+        <div className="flex items-start gap-6">
+          {company.logo && (
+            <Image
+              src={company.logo}
+              alt=""
+              width={64}
+              height={64}
+              unoptimized
+              className="mt-8 size-16 shrink-0 rounded-2xl object-cover"
+            />
+          )}
+          <div className="min-w-0 flex-1">
+            <PageHeader
+              title={company.name}
+              rule
+              description={
+                company.description ||
+                (hiringPillars.length
+                  ? `Hiring for ${hiringPillars.join(', ')}.`
+                  : 'No open roles at the moment.')
+              }
+              actions={
+                company.website ? (
                   <a
                     href={company.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-verified-ink hover:underline"
+                    className="button-base button-secondary min-h-11 px-5"
                   >
-                    <Globe className="w-4 h-4" />
-                    {company.website}
+                    Website ↗
                   </a>
-                )}
-              </div>
-            </div>
+                ) : undefined
+              }
+            />
           </div>
         </div>
 
-        <div>
-          <h2 className="text-2xl font-bold text-ink mb-6">Open Roles</h2>
+        <section aria-labelledby="roles-heading" className="border-t border-line pt-10">
+          <h2 id="roles-heading" className="text-base font-medium">
+            Open roles <span className="text-ink-faint">{jobs.length}</span>
+          </h2>
           {jobs.length === 0 ? (
-            <div className="gradient-border-card p-12 text-center">
-              <Briefcase className="w-16 h-16 mx-auto mb-4 text-ink-faint" />
-              <p className="text-ink-muted">No open positions at the moment</p>
-            </div>
+            <p className="mt-6 border-y border-line py-12 text-ink-muted">
+              No open roles right now. Check back later.
+            </p>
           ) : (
-            <div className="space-y-6">
+            <ul className="ruled-list mt-6 border-y border-line">
               {jobs.map((job) => (
-                <div key={job.id} className="gradient-border-card p-6">
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-ink mb-2">{job.title}</h3>
-                      <div className="flex flex-wrap gap-4 text-ink-muted text-sm mb-3">
-                        {job.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-4 h-4" />
-                            {job.location}
-                          </span>
-                        )}
-                        {job.salary && (
-                          <span className="flex items-center gap-1">
-                            <DollarSign className="w-4 h-4" />
-                            {job.salary}
-                          </span>
-                        )}
-                        <Badge variant="default" size="sm">
-                          {job.type}
-                        </Badge>
-                      </div>
-                      {job.description && (
-                        <p className="text-ink-muted text-sm mb-4 line-clamp-2">
-                          {job.description}
-                        </p>
-                      )}
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {Array.from(
-                          new Set(job.skills.map((skill) => getSkillPillarForName(skill).category))
-                        ).map((pillar) => (
-                          <Badge key={pillar} variant="default" size="sm">
-                            {pillar}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {job.skills.slice(0, 6).map((s) => (
-                          <Badge key={s} variant="default" size="sm">
-                            {s}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="shrink-0">
-                      <a href={`/marketplace?job=${job.id}`}>
-                        <Button variant="primary" rightIcon={<ExternalLink className="w-4 h-4" />}>
-                          View & Apply
-                        </Button>
-                      </a>
-                    </div>
+                <li
+                  key={job.id}
+                  className="grid gap-4 py-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] lg:items-center"
+                >
+                  <div>
+                    <h3 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight">
+                      {job.title}
+                    </h3>
+                    <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
+                      {job.location && <span>{job.location}</span>}
+                      <span>{job.type.replace('-', ' ')}</span>
+                      {job.salary && <span>{job.salary}</span>}
+                    </p>
                   </div>
-                </div>
+                  <div className="text-sm">
+                    {job.description && (
+                      <p className="line-clamp-2 leading-relaxed text-ink-muted">
+                        {job.description}
+                      </p>
+                    )}
+                    {job.skills.length > 0 && (
+                      <p className="mt-1 text-ink-faint">{job.skills.slice(0, 6).join(', ')}</p>
+                    )}
+                  </div>
+                  <Link
+                    href="/marketplace"
+                    className="button-base button-primary min-h-9 px-4 text-sm lg:justify-self-end"
+                  >
+                    View and apply
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
-        </div>
+        </section>
       </div>
     </AppPageShell>
   )
