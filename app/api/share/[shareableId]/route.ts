@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { mapSkill } from '@/lib/skills-mapper'
+import { isGuestRequest } from '@/lib/auth/session'
+import { guestPassport } from '@/lib/mock/employer'
 
 /**
  * Public route: get user profile and public skills by shareableId.
@@ -14,6 +16,12 @@ export async function GET(
     const { shareableId } = await params
     if (!shareableId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    // Sample candidates from the employer guest preview.
+    if (shareableId.startsWith('sample-') && (await isGuestRequest())) {
+      const passport = guestPassport(shareableId)
+      if (passport) return NextResponse.json(passport)
     }
 
     const user = await prisma.user.findUnique({

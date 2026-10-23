@@ -193,3 +193,27 @@ export function guestJobList(params: URLSearchParams) {
       (!companySlug || job.company.slug === companySlug)
   )
 }
+
+/** A sample candidate's public passport, in the shape /api/share returns. */
+export function guestPassport(shareableId: string) {
+  const candidate = GUEST_CANDIDATES.find((c) => c.shareableId === shareableId)
+  if (!candidate) return null
+  const createdAt = daysAgo(40)
+  return {
+    user: {
+      name: candidate.name,
+      bio: candidate.bio,
+      publicProfile: true,
+      shareableId: candidate.shareableId,
+    },
+    skills: candidate.skills.map((skill, i) => ({
+      id: `${candidate.id}-skill-${i}`,
+      ...skill,
+      progress: 0,
+      createdAt,
+      updatedAt: createdAt,
+      visibility: 'public',
+      status: 'published',
+    })),
+  }
+}
