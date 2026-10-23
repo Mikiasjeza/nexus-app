@@ -1,124 +1,56 @@
 'use client'
 
-import React, { useState, Fragment } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Target,
-  Plus,
-  Sparkles,
-  CheckCircle,
-  ArrowRight,
-  ArrowLeft,
-  User,
-  Briefcase,
-  GraduationCap,
-  TrendingUp,
-  Code,
-  Palette,
-  MessageSquare,
-} from 'lucide-react'
+import { ArrowRight, ArrowLeft } from 'lucide-react'
 import Button from '@/components/UI/Button'
-import AnimatedCard from '@/components/UI/AnimatedCard'
 import { useToast } from '@/components/UI/ToastProvider'
-import Confetti from '@/components/UI/Confetti'
 import {
   normalizeSkillName,
   SKILL_PILLAR_DETAILS,
   SKILL_SUGGESTION_GROUPS,
 } from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
-import type { SkillCategory } from '@/lib/types'
 
 const steps = [
   {
     id: 1,
     title: 'Welcome',
-    description: "Let's set up your Nexus profile",
-    icon: <Sparkles className="w-8 h-8" />,
+    heading: 'Welcome to Nexus',
+    body: 'Your skills sit in five pillars. Add what you can do, attach work that shows it, and the AI checks it against the level you claim.',
   },
   {
     id: 2,
-    title: 'Your Goals',
-    description: 'What are you looking to achieve?',
-    icon: <Target className="w-8 h-8" />,
+    title: 'Goals',
+    heading: 'What are you here for?',
+    body: 'Optional. Pick any that apply; it shapes what your dashboard suggests first.',
   },
   {
     id: 3,
-    title: 'Add Skills',
-    description: 'Add your first skills to get started',
-    icon: <Plus className="w-8 h-8" />,
+    title: 'Skills',
+    heading: 'Add a few skills',
+    body: 'Pick from the suggestions or add your own. You can change these any time.',
   },
   {
     id: 4,
-    title: 'Complete',
-    description: "You're all set!",
-    icon: <CheckCircle className="w-8 h-8" />,
+    title: 'Done',
+    heading: 'You’re set',
+    body: 'Your passport is ready. Next, attach proof to a skill and run your first check.',
   },
 ]
 
 const goals = [
-  {
-    id: 'career',
-    title: 'Career Growth',
-    description: 'Advance in my current field',
-    icon: <TrendingUp className="w-6 h-6" />,
-    color: ' ',
-  },
-  {
-    id: 'job-search',
-    title: 'Find New Job',
-    description: 'Get matched with opportunities',
-    icon: <Briefcase className="w-6 h-6" />,
-    color: ' ',
-  },
+  { id: 'career', title: 'Grow in my field', description: 'Show progress where I already work.' },
+  { id: 'job-search', title: 'Find a new job', description: 'Get matched with open roles.' },
   {
     id: 'skill-verification',
-    title: 'Verify Skills',
-    description: 'Get AI-verified credentials',
-    icon: <GraduationCap className="w-6 h-6" />,
-    color: ' ',
+    title: 'Verify my skills',
+    description: 'Turn claims into checked proof.',
   },
-  {
-    id: 'learning',
-    title: 'Skill Development',
-    description: 'Track my learning journey',
-    icon: <User className="w-6 h-6" />,
-    color: ' ',
-  },
+  { id: 'learning', title: 'Track my learning', description: 'See new skills take shape.' },
 ]
 
 const MAX_ONBOARDING_SKILLS = 15
-
-const pillarVisuals: Record<
-  SkillCategory,
-  { icon: React.ReactNode; cardClass: string; chipClass: string }
-> = {
-  'Technical Skills': {
-    icon: <Code className="w-5 h-5" />,
-    cardClass: 'border-verified/40 bg-verified-wash',
-    chipClass: 'bg-verified-wash text-verified-ink hover:bg-verified-wash',
-  },
-  'Creative Skills': {
-    icon: <Palette className="w-5 h-5" />,
-    cardClass: 'border-verified/40 bg-verified-wash',
-    chipClass: 'bg-verified-wash text-verified-ink hover:bg-verified-wash',
-  },
-  'Communication Skills': {
-    icon: <MessageSquare className="w-5 h-5" />,
-    cardClass: 'border-verified/40 bg-verified-wash',
-    chipClass: 'bg-verified-wash text-verified-ink hover:bg-verified-wash',
-  },
-  'Professional Skills': {
-    icon: <Briefcase className="w-5 h-5" />,
-    cardClass: 'border-verified/40 bg-verified-wash',
-    chipClass: 'bg-verified-wash text-verified-ink hover:bg-verified-wash',
-  },
-  'Learning & Growth': {
-    icon: <TrendingUp className="w-5 h-5" />,
-    cardClass: 'border-caution/40 bg-caution/15',
-    chipClass: 'bg-caution/15 text-caution hover:bg-caution/15',
-  },
-}
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -130,7 +62,6 @@ export default function OnboardingPage() {
   const [customSkillError, setCustomSkillError] = useState<string | null>(null)
   const [completionError, setCompletionError] = useState<string | null>(null)
   const [isCompleting, setIsCompleting] = useState(false)
-  const [showConfetti, setShowConfetti] = useState(false)
 
   const handleGoalToggle = (goalId: string) => {
     setSelectedGoals((prev) =>
@@ -227,14 +158,12 @@ export default function OnboardingPage() {
         )
       }
 
-      setShowConfetti(true)
       addToast({
         type: 'success',
         title: 'Welcome to Nexus!',
-        message: 'Your profile is ready. Opening your dashboard now.',
+        message: 'Your passport is ready.',
       })
 
-      await new Promise((resolve) => window.setTimeout(resolve, 1200))
       router.replace('/dashboard')
     } catch (error) {
       const message =
@@ -254,313 +183,224 @@ export default function OnboardingPage() {
   const isSkippableEmptyStep =
     (currentStep === 2 && selectedGoals.length === 0) ||
     (currentStep === 3 && selectedSkills.length === 0)
+  const step = steps[currentStep - 1]
 
   return (
-    <AppPageShell className="flex min-h-screen items-center justify-center bg-ground p-4">
-      <Confetti trigger={showConfetti} />
-
-      <div className="w-full max-w-4xl">
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {steps.map((step, index) => (
-              <Fragment key={step.id}>
-                <div className="flex flex-col items-center flex-1">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors ${
-                      currentStep >= step.id ? 'bg-ink text-ground' : 'bg-pill text-ink-faint'
-                    }`}
-                  >
-                    {currentStep > step.id ? <CheckCircle className="w-6 h-6" /> : step.icon}
-                  </div>
-                  <span
-                    className={`text-xs font-medium ${
-                      currentStep >= step.id ? 'text-verified-ink' : 'text-ink-faint'
-                    }`}
-                  >
-                    {step.title}
-                  </span>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-2 ${
-                      currentStep > step.id ? 'bg-verified-wash' : 'bg-pill'
-                    }`}
-                  />
-                )}
-              </Fragment>
-            ))}
+    <AppPageShell>
+      <div className="page-shell max-w-[64rem]">
+        <div className="flex items-center gap-4 text-sm text-ink-faint">
+          <span className="tabular">
+            {currentStep} / {steps.length}
+          </span>
+          <div className="h-px flex-1 bg-line" aria-hidden>
+            <div
+              className="h-px bg-ink transition-[width] duration-200 ease-out"
+              style={{ width: `${(currentStep / steps.length) * 100}%` }}
+            />
           </div>
+          <span>{step.title}</span>
         </div>
 
-        {/* Content */}
-        <AnimatedCard className="gradient-border-card p-8 md:p-12">
-          <>
-            {/* Step 1: Welcome */}
-            {currentStep === 1 && (
-              <div key="step1" className="text-center">
-                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="w-10 h-10 text-ink" />
-                </div>
-                <h2 className="text-3xl font-bold text-ink mb-4">Welcome to Nexus</h2>
-                <p className="text-ink-muted mb-8 max-w-2xl mx-auto">
-                  Build your profile around five skill pillars so Nexus can understand what you
-                  build, create, explain, lead, and improve over time.
+        <section aria-labelledby="onboarding-step" className="py-12">
+          <h1 id="onboarding-step" className="page-title">
+            {step.heading}
+            <span className="title-rule" aria-hidden />
+          </h1>
+          <p className="mt-6 max-w-[36rem] text-lg leading-relaxed text-ink-muted">{step.body}</p>
+
+          {currentStep === 1 && (
+            <ul className="ruled-list mt-12 border-y border-line">
+              {SKILL_PILLAR_DETAILS.map((pillar) => (
+                <li
+                  key={pillar.category}
+                  className="grid grid-cols-[6rem_minmax(0,1fr)] gap-6 py-5"
+                >
+                  <span className="font-medium">{pillar.shortLabel}</span>
+                  <span className="text-ink-muted">{pillar.summary}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {currentStep === 2 && (
+            <div className="mt-12 grid gap-2 sm:grid-cols-2" role="group" aria-label="Goals">
+              {goals.map((goal) => {
+                const selected = selectedGoals.includes(goal.id)
+                return (
+                  <button
+                    key={goal.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => handleGoalToggle(goal.id)}
+                    className={`rounded-2xl border p-6 text-left transition-colors duration-150 ${
+                      selected
+                        ? 'border-verified bg-verified-wash'
+                        : 'border-line hover:border-line-strong'
+                    }`}
+                  >
+                    <span className="block font-display text-[1.75rem] font-light leading-tight">
+                      {goal.title}
+                    </span>
+                    <span className="mt-2 block text-sm text-ink-muted">{goal.description}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="mt-12">
+              <form
+                className="flex flex-col gap-2 sm:flex-row"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  handleCustomSkillAdd()
+                }}
+              >
+                <label className="flex-1">
+                  <span className="sr-only">Add your own skill</span>
+                  <input
+                    type="text"
+                    value={customSkill}
+                    onChange={(event) => {
+                      setCustomSkill(event.target.value)
+                      if (customSkillError) setCustomSkillError(null)
+                    }}
+                    className="metalab-input"
+                    placeholder="Add your own, like Salesforce, C++ or recruiting"
+                    aria-describedby={customSkillError ? 'custom-skill-error' : undefined}
+                  />
+                </label>
+                <Button type="submit" variant="secondary">
+                  Add
+                </Button>
+              </form>
+              {customSkillError && (
+                <p id="custom-skill-error" className="mt-2 text-sm text-critical">
+                  {customSkillError}
                 </p>
-                <div className="grid md:grid-cols-3 gap-4 mb-8">
-                  <div className="p-4 rounded-xl border border-line bg-raised">
-                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
-                    <p className="text-sm font-medium text-ink">Pillar-based verification</p>
-                  </div>
-                  <div className="p-4 rounded-xl border border-line bg-raised">
-                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
-                    <p className="text-sm font-medium text-ink">Proof that feels credible</p>
-                  </div>
-                  <div className="p-4 rounded-xl border border-line bg-raised">
-                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
-                    <p className="text-sm font-medium text-ink">Better matches and guidance</p>
-                  </div>
-                </div>
-                <div className="grid gap-3 md:grid-cols-5">
-                  {SKILL_PILLAR_DETAILS.map((pillar) => (
-                    <div
-                      key={pillar.category}
-                      className="rounded-2xl border border-line bg-raised px-3 py-4 text-left"
-                    >
-                      <div className="text-sm text-ink-faint">{pillar.shortLabel}</div>
-                      <div className="mt-2 text-sm font-semibold text-ink">{pillar.category}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Step 2: Goals */}
-            {currentStep === 2 && (
-              <div key="step2">
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Target className="w-8 h-8 text-ink" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-ink mb-2">What are your goals?</h2>
-                  <p className="text-ink-muted">Optional. Select any that apply, or skip.</p>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {goals.map((goal) => (
-                    <button
-                      key={goal.id}
-                      onClick={() => handleGoalToggle(goal.id)}
-                      className={`p-6 rounded-xl border-2 transition-all text-left ${
-                        selectedGoals.includes(goal.id)
-                          ? 'border-verified/40 bg-pill'
-                          : 'border-line hover:border-verified/40'
-                      }`}
-                    >
-                      <div
-                        className={`w-12 h-12 rounded-xl  ${goal.color} flex items-center justify-center text-ink mb-4`}
-                      >
-                        {goal.icon}
-                      </div>
-                      <h3 className="font-semibold text-ink mb-1">{goal.title}</h3>
-                      <p className="text-sm text-ink-muted">{goal.description}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Skills */}
-            {currentStep === 3 && (
-              <div key="step3">
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Plus className="w-8 h-8 text-ink" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-ink mb-2">Add Your Skills</h2>
-                  <p className="text-ink-muted">
-                    Choose from the five pillars below or add your own custom skills.
+              {selectedSkills.length > 0 && (
+                <div className="mt-6">
+                  <p className="text-sm text-ink-faint">
+                    Selected {selectedSkills.length} of {MAX_ONBOARDING_SKILLS}. Tap one to remove
+                    it.
                   </p>
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {selectedSkills.map((skill) => (
+                      <li key={skill}>
+                        <button
+                          type="button"
+                          className="pill"
+                          data-active="true"
+                          onClick={() => handleSkillToggle(skill)}
+                          aria-label={`Remove ${skill}`}
+                        >
+                          {skill} ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="max-w-3xl mx-auto">
-                  <div className="mb-6 rounded-2xl border border-line bg-raised p-4">
-                    <div className="flex flex-col gap-3 md:flex-row">
-                      <input
-                        type="text"
-                        value={customSkill}
-                        onChange={(event) => {
-                          setCustomSkill(event.target.value)
-                          if (customSkillError) {
-                            setCustomSkillError(null)
-                          }
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter') {
-                            event.preventDefault()
-                            handleCustomSkillAdd()
-                          }
-                        }}
-                        className="min-h-[48px] flex-1 rounded-xl border border-line bg-ground/70 px-4 text-ink outline-none transition focus:border-verified/40"
-                        placeholder="Add your own skill, like Salesforce, C++, or Recruiting"
-                      />
-                      <Button type="button" onClick={handleCustomSkillAdd}>
-                        Add Skill
-                      </Button>
-                    </div>
-                    {customSkillError && (
-                      <p className="mt-3 text-sm text-critical">{customSkillError}</p>
-                    )}
-                  </div>
+              )}
 
-                  {selectedSkills.length > 0 && (
-                    <div className="mb-6">
-                      <div className="mb-3 text-sm font-medium text-ink-faint">Selected skills</div>
-                      <div className="flex flex-wrap gap-3">
-                        {selectedSkills.map((skill) => (
+              <ul className="ruled-list mt-10 border-y border-line">
+                {SKILL_SUGGESTION_GROUPS.map((group) => (
+                  <li
+                    key={group.id}
+                    className="grid gap-4 py-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-8"
+                  >
+                    <div>
+                      <p className="font-medium">{group.label}</p>
+                      <p className="mt-1 text-sm text-ink-muted">{group.description}</p>
+                    </div>
+                    <div
+                      className="flex flex-wrap content-start gap-2"
+                      role="group"
+                      aria-label={group.label}
+                    >
+                      {group.skills.map((skill) => {
+                        const isSelected = selectedSkills.some(
+                          (selected) => selected.toLowerCase() === skill.toLowerCase()
+                        )
+                        return (
                           <button
                             key={skill}
                             type="button"
+                            aria-pressed={isSelected}
                             onClick={() => handleSkillToggle(skill)}
-                            className="rounded-full border border-verified/40 bg-verified-wash px-4 py-2 text-sm font-medium text-ink transition hover:border-verified/40 hover:bg-verified-wash"
+                            className="pill"
                           >
-                            {skill} x
+                            {skill}
                           </button>
-                        ))}
-                      </div>
+                        )
+                      })}
                     </div>
-                  )}
-
-                  <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                    {SKILL_PILLAR_DETAILS.map((pillar) => {
-                      const visual = pillarVisuals[pillar.category]
-                      return (
-                        <div
-                          key={pillar.category}
-                          className={`rounded-2xl border px-4 py-4 ${visual.cardClass}`}
-                        >
-                          <div className="mb-3 inline-flex rounded-xl border border-line bg-ground/70 p-2 text-ink">
-                            {visual.icon}
-                          </div>
-                          <div className="text-sm font-semibold text-ink">{pillar.category}</div>
-                          <p className="mt-2 text-sm text-ink-muted">{pillar.summary}</p>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="space-y-5">
-                    {SKILL_SUGGESTION_GROUPS.map((group) => (
-                      <div
-                        key={group.id}
-                        className={`rounded-3xl border p-5 ${pillarVisuals[group.label as SkillCategory].cardClass}`}
-                      >
-                        <div className="mb-2 flex items-center gap-3 text-ink">
-                          <div className="rounded-xl border border-line bg-ground/70 p-2">
-                            {pillarVisuals[group.label as SkillCategory].icon}
-                          </div>
-                          <div className="text-sm font-medium text-ink-muted">{group.label}</div>
-                        </div>
-                        <p className="mb-4 max-w-2xl text-sm text-ink-muted">{group.description}</p>
-                        <div className="mb-3 text-sm font-medium text-ink-faint">
-                          Suggested skills
-                        </div>
-                        <div className="flex flex-wrap gap-3">
-                          {group.skills.map((skill) => {
-                            const isSelected = selectedSkills.some(
-                              (selectedSkill) => selectedSkill.toLowerCase() === skill.toLowerCase()
-                            )
-
-                            return (
-                              <button
-                                key={skill}
-                                type="button"
-                                onClick={() => handleSkillToggle(skill)}
-                                className={`px-4 py-2 rounded-full font-medium transition-all ${
-                                  isSelected
-                                    ? 'bg-ink text-ground'
-                                    : pillarVisuals[group.label as SkillCategory].chipClass
-                                }`}
-                              >
-                                {skill}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-center text-sm text-ink-faint mt-6">
-                  Selected: {selectedSkills.length} of {MAX_ONBOARDING_SKILLS} skills
-                </p>
-              </div>
-            )}
-
-            {/* Step 4: Complete */}
-            {currentStep === 4 && (
-              <div key="step4" className="text-center">
-                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle className="w-10 h-10 text-ink" />
-                </div>
-                <h2 className="text-3xl font-bold text-ink mb-4">You&apos;re All Set</h2>
-                <p className="text-ink-muted mb-8 max-w-2xl mx-auto">
-                  Your Nexus profile is ready. Start building proof across the five pillars, verify
-                  your strongest skills, and unlock better career guidance.
-                </p>
-                {completionError && (
-                  <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-critical/40 bg-critical/15 px-4 py-3 text-sm text-critical">
-                    {completionError}
-                  </div>
-                )}
-                <div className="grid md:grid-cols-3 gap-4 mb-8">
-                  <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
-                    <p className="text-sm font-medium">Profile Created</p>
-                  </AnimatedCard>
-                  <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
-                    <p className="text-sm font-medium">
-                      {selectedSkills.length} {selectedSkills.length === 1 ? 'skill' : 'skills'} to
-                      add
-                    </p>
-                  </AnimatedCard>
-                  <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-verified mx-auto mb-2" />
-                    <p className="text-sm font-medium">Ready to Verify</p>
-                  </AnimatedCard>
-                </div>
-              </div>
-            )}
-          </>
-
-          {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-8 border-t border-line">
-            <Button
-              variant="outline"
-              leftIcon={<ArrowLeft className="w-5 h-5" />}
-              onClick={handleBack}
-              disabled={currentStep === 1 || isCompleting}
-            >
-              Back
-            </Button>
-            <div className="text-sm text-ink-faint">
-              Step {currentStep} of {steps.length}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <Button
-              rightIcon={
-                currentStep === steps.length ? undefined : <ArrowRight className="w-5 h-5" />
-              }
-              onClick={handleNext}
-              isLoading={isCompleting}
-              disabled={isCompleting}
-            >
-              {currentStep === steps.length
-                ? 'Get Started'
-                : isSkippableEmptyStep
-                  ? 'Skip for now'
-                  : 'Next'}
-            </Button>
-          </div>
-        </AnimatedCard>
+          )}
+
+          {currentStep === 4 && (
+            <div className="mt-12">
+              {completionError && (
+                <p role="alert" className="mb-6 text-sm text-critical">
+                  {completionError}
+                </p>
+              )}
+              <ul className="ruled-list border-y border-line">
+                <li className="flex justify-between gap-4 py-4">
+                  <span className="text-ink-muted">Goals</span>
+                  <span>
+                    {selectedGoals.length
+                      ? goals
+                          .filter((goal) => selectedGoals.includes(goal.id))
+                          .map((goal) => goal.title)
+                          .join(', ')
+                      : 'None yet'}
+                  </span>
+                </li>
+                <li className="flex justify-between gap-4 py-4">
+                  <span className="text-ink-muted">Skills to add</span>
+                  <span>{selectedSkills.length || 'None yet'}</span>
+                </li>
+                <li className="flex justify-between gap-4 py-4">
+                  <span className="text-ink-muted">Next</span>
+                  <span>Attach proof and run your first check</span>
+                </li>
+              </ul>
+            </div>
+          )}
+        </section>
+
+        <div className="flex items-center justify-between gap-4 border-t border-line pt-6">
+          <Button
+            variant="ghost"
+            leftIcon={<ArrowLeft className="size-4" aria-hidden />}
+            onClick={handleBack}
+            disabled={currentStep === 1 || isCompleting}
+          >
+            Back
+          </Button>
+          <Button
+            rightIcon={
+              currentStep === steps.length ? undefined : (
+                <ArrowRight className="size-4" aria-hidden />
+              )
+            }
+            onClick={handleNext}
+            isLoading={isCompleting}
+            disabled={isCompleting}
+          >
+            {currentStep === steps.length
+              ? 'Go to my dashboard'
+              : isSkippableEmptyStep
+                ? 'Skip for now'
+                : 'Next'}
+          </Button>
+        </div>
       </div>
     </AppPageShell>
   )
