@@ -17,6 +17,20 @@ const nextConfig = {
   },
   reactStrictMode: true,
 
+  // Assessment sandboxes load WebAssembly from their own package folders at
+  // runtime, so they stay unbundled and their files ship with the routes.
+  serverExternalPackages: ['sql.js', 'quickjs-emscripten', '@jitl/quickjs-wasmfile-release-sync'],
+  outputFileTracingIncludes: {
+    '/api/assessments/**/*': [
+      './node_modules/sql.js/dist/sql-wasm-inline.js',
+      './node_modules/@jitl/quickjs-wasmfile-release-sync/dist/**/*',
+    ],
+    '/api/admin/assessments/**/*': [
+      './node_modules/sql.js/dist/sql-wasm-inline.js',
+      './node_modules/@jitl/quickjs-wasmfile-release-sync/dist/**/*',
+    ],
+  },
+
   // Image optimization
   images: {
     remotePatterns: [
