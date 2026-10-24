@@ -16,6 +16,7 @@ import {
 import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
+import type { PublicCredential } from '@/lib/assessments/verify'
 
 export default function SharePage() {
   const { addToast } = useToast()
@@ -23,6 +24,7 @@ export default function SharePage() {
   const shareableId = params.id as string
   const [user, setUser] = useState<User | null>(null)
   const [skills, setSkills] = useState<Skill[]>([])
+  const [credentials, setCredentials] = useState<PublicCredential[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [printOrigin, setPrintOrigin] = useState('')
@@ -46,6 +48,7 @@ export default function SharePage() {
         const data = await res.json()
         setUser(data.user)
         setSkills(data.skills ?? [])
+        setCredentials(data.credentials ?? [])
       } catch (error) {
         console.error('Failed to load profile:', error)
         setNotFound(true)
@@ -154,6 +157,38 @@ export default function SharePage() {
             </div>
           ))}
         </dl>
+
+        {credentials.length > 0 && (
+          <section aria-labelledby="assessed-heading" className="pt-12">
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 id="assessed-heading" className="text-base font-medium">
+                Assessed
+              </h2>
+              <span className="text-sm text-ink-faint">Passed a timed Nexus assessment</span>
+            </div>
+            <ul className="ruled-list mt-6 border-y border-line">
+              {credentials.map((credential) => (
+                <li
+                  key={credential.id}
+                  className="print-skill-card grid gap-x-6 gap-y-1 py-5 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)] md:items-baseline"
+                >
+                  <span className="font-display text-[clamp(1.5rem,2.4vw,2rem)] font-light leading-tight">
+                    {credential.skillName}
+                  </span>
+                  <span className="text-ink-muted">
+                    {credential.modeLabel} · score {credential.score}
+                  </span>
+                  <Link
+                    href={`/verify/${credential.id}`}
+                    className="text-sm text-verified-ink underline decoration-verified/40 underline-offset-4 hover:decoration-verified md:text-right"
+                  >
+                    {credential.id}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section aria-labelledby="verified-heading" className="py-12">
           <div className="flex items-baseline justify-between gap-4">

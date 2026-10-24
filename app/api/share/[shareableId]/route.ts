@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { mapSkill } from '@/lib/skills-mapper'
 import { isGuestRequest } from '@/lib/auth/session'
 import { guestPassport } from '@/lib/mock/employer'
+import { liveCredentials, sampleCredential, type PublicCredential } from '@/lib/assessments/verify'
 
 /**
  * Public route: get user profile and public skills by shareableId.
@@ -21,7 +22,9 @@ export async function GET(
     // Sample candidates from the employer guest preview.
     if (shareableId.startsWith('sample-') && (await isGuestRequest())) {
       const passport = guestPassport(shareableId)
-      if (passport) return NextResponse.json(passport)
+      // One sample candidate shows how an assessed skill looks on a passport.
+      const credentials = shareableId === 'sample-amara' ? [sampleCredential(new Date())] : []
+      if (passport) return NextResponse.json({ ...passport, credentials })
     }
 
     const user = await prisma.user.findUnique({
@@ -49,7 +52,16 @@ export async function GET(
       orderBy: [{ order: 'asc' }, { updatedAt: 'desc' }],
     })
 
+    // Assessed credentials; the passport still loads if they can't be read.
+    let credentials: PublicCredential[] = []
+    try {
+      credentials = await liveCredentials(user.id)
+    } catch (error) {
+      console.error('Passport credentials unavailable:', error)
+    }
+
     return NextResponse.json({
+      credentials,
       user: {
         name: user.name,
         bio: user.bio ?? undefined,
