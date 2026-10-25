@@ -8,7 +8,7 @@ import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
 import CriteriaList from '@/components/Assessments/CriteriaList'
-import Workspace, { type WorkspaceAdapter } from '@/components/Assessments/Workspace'
+import Workspace, { briefTitle, type WorkspaceAdapter } from '@/components/Assessments/Workspace'
 import {
   assessmentsApi,
   type CatalogEntry,
@@ -178,7 +178,7 @@ export default function PracticePage() {
       <div className="page-shell !pt-0">
         <Workspace
           key={`${round}:${state.stage}`}
-          title={entry?.title ?? brief.title}
+          title={briefTitle(brief)}
           brief={brief}
           initialWork={state.work[state.stage] ?? null}
           mode="independent"

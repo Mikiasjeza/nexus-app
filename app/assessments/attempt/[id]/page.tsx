@@ -7,7 +7,7 @@ import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
-import Workspace, { type WorkspaceAdapter } from '@/components/Assessments/Workspace'
+import Workspace, { briefTitle, type WorkspaceAdapter } from '@/components/Assessments/Workspace'
 import {
   ApiError,
   assessmentsApi,
@@ -203,7 +203,7 @@ export default function AttemptPage() {
       <div className="page-shell !pt-0">
         <Workspace
           key={view.stage}
-          title={view.title}
+          title={briefTitle(view.brief)}
           brief={view.brief}
           initialWork={view.draft}
           mode={view.mode}

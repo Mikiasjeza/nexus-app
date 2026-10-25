@@ -5,6 +5,7 @@ import { explainQuestions } from '@/lib/assessments/engine'
 import { ANCHORS } from '@/lib/assessments/grading'
 import {
   AssessmentError,
+  attemptCtx,
   retryEvaluation,
   reviewAttempt,
   revokeCredential,
@@ -53,9 +54,10 @@ export async function GET(_request: Request, { params }: Params) {
         ? {
             skillName: def.skillName,
             title: def.title,
+            challengeId: attempt.challengeId,
             workspace: def.workspace,
             rubric: def.rubric,
-            explainQuestions: explainQuestions(def),
+            explainQuestions: explainQuestions(attemptCtx(attempt)),
           }
         : null,
       submissions: Object.fromEntries(

@@ -10,6 +10,7 @@ import {
   totalMinutes,
 } from '@/lib/assessments/catalog'
 import { ACTIVE_STATUSES, effectiveStatus, retakeStatus } from '@/lib/assessments/service'
+import { usesExternalRunner } from '@/lib/assessments/engine'
 import { assessmentDeps, handle } from '@/lib/assessments/http'
 import type { AttemptRecord, CredentialRecord } from '@/lib/assessments/store'
 
@@ -51,69 +52,73 @@ export async function GET() {
           { label, description: MODE_DESCRIPTIONS[mode as keyof typeof MODE_DESCRIPTIONS] },
         ])
       ),
-      assessments: ASSESSMENTS.map((def) => {
-        const mine = attempts.filter((a) => a.slug === def.slug)
-        const open = mine.find((a) => ACTIVE_STATUSES.includes(a.status))
-        const latest = mine.find(
-          (a) => !ACTIVE_STATUSES.includes(a.status) && a.status !== 'CANCELLED'
-        )
-        const credential = credentials.find(
-          (c) => c.slug === def.slug && effectiveStatus(c, now) === 'ACTIVE'
-        )
-        const retake = retakeStatus(mine, now)
-        return {
-          slug: def.slug,
-          skillName: def.skillName,
-          category: def.category,
-          title: def.title,
-          level: def.level,
-          summary: def.summary,
-          measures: def.measures,
-          workspace: def.workspace,
-          language: def.language ?? null,
-          minutes: totalMinutes(def),
-          stageMinutes: def.stageMinutes,
-          modes: def.modes,
-          available: isAvailable(def),
-          credentialValidMonths: def.credentialValidMonths,
-          rubric: {
-            id: def.rubric.id,
-            version: def.rubric.version,
-            passThreshold: Math.round(def.rubric.passThreshold * 100),
-            criteria: def.rubric.criteria.map((c) => ({
-              label: c.label,
-              weight: c.weight,
-              description: c.description,
-              automatic: !c.source.startsWith('ai:'),
-            })),
-          },
-          personal: userId
-            ? {
-                openAttempt: open ? { id: open.id, status: open.status } : null,
-                latest: latest
-                  ? {
-                      id: latest.id,
-                      status: latest.status,
-                      result: latest.result,
-                      completedAt: latest.completedAt?.toISOString() ?? null,
-                    }
-                  : null,
-                credential: credential
-                  ? {
-                      id: credential.id,
-                      mode: credential.mode,
-                      expiresAt: credential.expiresAt.toISOString(),
-                    }
-                  : null,
-                retake: {
-                  allowed: retake.allowed,
-                  reason: retake.reason ?? null,
-                  nextAt: retake.nextAt?.toISOString() ?? null,
-                },
-              }
-            : null,
-        }
-      }),
+      assessments: await Promise.all(
+        ASSESSMENTS.map(async (def) => {
+          const mine = attempts.filter((a) => a.slug === def.slug)
+          const open = mine.find((a) => ACTIVE_STATUSES.includes(a.status))
+          const latest = mine.find(
+            (a) => !ACTIVE_STATUSES.includes(a.status) && a.status !== 'CANCELLED'
+          )
+          const credential = credentials.find(
+            (c) => c.slug === def.slug && effectiveStatus(c, now) === 'ACTIVE'
+          )
+          const retake = retakeStatus(mine, now)
+          return {
+            slug: def.slug,
+            skillName: def.skillName,
+            category: def.category,
+            title: def.title,
+            level: def.level,
+            summary: def.summary,
+            measures: def.measures,
+            workspace: def.workspace,
+            language: def.language ?? null,
+            minutes: totalMinutes(def),
+            stageMinutes: def.stageMinutes,
+            modes: def.modes,
+            available: isAvailable(def),
+            // Code that runs on the metered external runner needs an account, even in practice.
+            practiceNeedsAccount: await usesExternalRunner(def),
+            credentialValidMonths: def.credentialValidMonths,
+            rubric: {
+              id: def.rubric.id,
+              version: def.rubric.version,
+              passThreshold: Math.round(def.rubric.passThreshold * 100),
+              criteria: def.rubric.criteria.map((c) => ({
+                label: c.label,
+                weight: c.weight,
+                description: c.description,
+                automatic: !c.source.startsWith('ai:'),
+              })),
+            },
+            personal: userId
+              ? {
+                  openAttempt: open ? { id: open.id, status: open.status } : null,
+                  latest: latest
+                    ? {
+                        id: latest.id,
+                        status: latest.status,
+                        result: latest.result,
+                        completedAt: latest.completedAt?.toISOString() ?? null,
+                      }
+                    : null,
+                  credential: credential
+                    ? {
+                        id: credential.id,
+                        mode: credential.mode,
+                        expiresAt: credential.expiresAt.toISOString(),
+                      }
+                    : null,
+                  retake: {
+                    allowed: retake.allowed,
+                    reason: retake.reason ?? null,
+                    nextAt: retake.nextAt?.toISOString() ?? null,
+                  },
+                }
+              : null,
+          }
+        })
+      ),
     })
   })
 }

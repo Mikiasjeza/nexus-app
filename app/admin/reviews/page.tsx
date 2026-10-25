@@ -16,7 +16,21 @@ type QueueRow = {
   status: string
   submittedAt: string | null
 }
+type Runtime = { id: number; name: string } | null
+
 type Queue = {
+  runner: {
+    configured: boolean
+    provider: 'self-hosted' | 'rapidapi' | null
+    reachable: boolean
+    version: string | null
+    python: Runtime
+    javascript: Runtime
+    javascriptRunsOn: 'judge0' | 'quickjs'
+    error: string | null
+    devPython: boolean
+    usage: { today: number; limit: number }
+  }
   costs: {
     windowDays: number
     graded: number
@@ -151,6 +165,8 @@ export default function ReviewsPage() {
           rule
           description="Attempts waiting for a person, gradings that failed, and appeals. Automatic scores can’t be changed here."
         />
+        <RunnerPanel runner={queue.runner} />
+
         <dl className="mb-12 grid grid-cols-2 gap-x-10 gap-y-6 border-t border-line pt-6 md:grid-cols-4">
           <div>
             <dt className="text-sm text-ink-faint">Graded, last {queue.costs.windowDays} days</dt>
@@ -471,6 +487,71 @@ export default function ReviewsPage() {
         </div>
       </div>
     </AppPageShell>
+  )
+}
+
+/** Is code execution up, and where does each language run? */
+function RunnerPanel({ runner }: { runner: Queue['runner'] }) {
+  const status = !runner.configured
+    ? runner.devPython
+      ? { text: 'Local development: Python runs in Pyodide', tone: 'text-caution' }
+      : { text: 'No code runner is set up: Python is closed', tone: 'text-caution' }
+    : runner.reachable
+      ? {
+          text: `${runner.version ?? 'Code runner'} connected`,
+          tone: 'text-verified-ink',
+        }
+      : { text: `Judge0 unreachable: ${runner.error ?? 'no answer'}`, tone: 'text-critical' }
+  const share = runner.usage.limit ? Math.min(1, runner.usage.today / runner.usage.limit) : 0
+  return (
+    <section aria-labelledby="runner-heading" className="mb-12 rounded-2xl bg-raised p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 id="runner-heading" className="text-base font-medium">
+          Code runner
+        </h2>
+        <span className={`text-sm ${status.tone}`}>{status.text}</span>
+      </div>
+      <dl className="mt-5 grid gap-x-10 gap-y-4 text-sm sm:grid-cols-3">
+        <div>
+          <dt className="text-ink-faint">Python</dt>
+          <dd className="mt-1 text-ink">
+            {runner.python?.name ?? (runner.devPython ? 'Pyodide (local only)' : 'Not available')}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-ink-faint">JavaScript and TypeScript</dt>
+          <dd className="mt-1 text-ink">
+            {runner.javascriptRunsOn === 'judge0'
+              ? `${runner.javascript?.name} on the code runner`
+              : 'QuickJS sandbox in the app'}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-ink-faint">Runner calls today</dt>
+          <dd className="mt-1 text-ink tabular-nums">
+            {runner.usage.today} of {runner.usage.limit}
+          </dd>
+          <div
+            className="mt-2 h-1 overflow-hidden rounded-full bg-pill"
+            role="meter"
+            aria-label="Share of today's runner allowance used"
+            aria-valuemin={0}
+            aria-valuemax={runner.usage.limit}
+            aria-valuenow={runner.usage.today}
+          >
+            <div
+              className={`h-full rounded-full ${share >= 0.9 ? 'bg-caution' : 'bg-verified'}`}
+              style={{ width: `${share * 100}%` }}
+            />
+          </div>
+        </div>
+      </dl>
+      {runner.provider === 'rapidapi' && (
+        <p className="mt-4 text-xs text-ink-faint">
+          Using RapidAPI: their plan’s own request quota applies on top of this daily cap.
+        </p>
+      )}
+    </section>
   )
 }
 

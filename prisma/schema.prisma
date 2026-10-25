@@ -421,3 +421,10 @@ model AuditLog {
   @@index([targetType, targetId])
   @@index([createdAt])
 }
+
+/// Calls to the external code runner per UTC day, for the daily spending cap.
+model RunnerUsage {
+  day       String   @id // YYYY-MM-DD, UTC
+  calls     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}

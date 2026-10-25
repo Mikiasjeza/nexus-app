@@ -5,7 +5,7 @@ import {
   practiceBrief,
   practiceRunFor,
 } from '@/lib/assessments/service'
-import { clientKey, handle, limit, readJson } from '@/lib/assessments/http'
+import { clientKey, guardMeteredPractice, handle, limit, readJson } from '@/lib/assessments/http'
 import { newSeed } from '@/lib/assessments/random'
 import { STAGES, type Stage } from '@/lib/assessments/types'
 
@@ -25,8 +25,9 @@ const seedOf = (value: unknown): number => {
 }
 
 /**
- * Practice rounds: no account, nothing stored, no AI, no credential. The
- * browser keeps the seed and the work; these routes only compute.
+ * Practice rounds: nothing stored, no AI, no credential. The browser keeps
+ * the seed and the work; these routes only compute. No account is needed,
+ * except to run code on the metered external runner (Judge0).
  */
 export async function POST(request: Request, { params }: { params: Promise<{ action: string }> }) {
   return handle('Practice round', async () => {
@@ -44,11 +45,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ act
       }
       case 'run': {
         limit(`practice-run:${key}`, 20)
+        await guardMeteredPractice(slug, 10)
         const stage = stageOf(body.stage)
         return NextResponse.json(await practiceRunFor(slug, seedOf(body.seed), stage, body.work))
       }
       case 'grade': {
         limit(`practice-grade:${key}`, 6)
+        await guardMeteredPractice(slug, 3)
         const work = (body.work && typeof body.work === 'object' ? body.work : {}) as Partial<
           Record<Stage, unknown>
         >

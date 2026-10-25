@@ -9,7 +9,8 @@
  * on the server; the browser never sees them.
  */
 
-import type { CodeLanguage, CodeTestCase, Rubric, Stage } from '../types'
+import type { CodeLanguage, CodeTestCase, Stage } from '../types'
+import { CODE_RUBRIC, namesFor, type CodeChallenge, type GroupedTest } from './code'
 import { createRng, deriveSeed, round2, type Rng } from '../random'
 
 export type LedgerRecord = {
@@ -95,8 +96,6 @@ function malformed(rng: Rng, id: string): LedgerRecord {
   ])
 }
 
-type GroupedTest = CodeTestCase & { group: 'core' | 'edge' }
-
 function caseFor(
   id: string,
   group: GroupedTest['group'],
@@ -179,15 +178,7 @@ export function ledgerHiddenTests(seed: number, stage: 'main' | 'followup'): Gro
   return tests
 }
 
-const NAMES: Record<CodeLanguage, string> = {
-  javascript: 'summarizeLedger',
-  typescript: 'summarizeLedger',
-  python: 'summarize_ledger',
-}
-
-export function ledgerFunctionName(language: CodeLanguage): string {
-  return NAMES[language]
-}
+export const ledgerFunctionName = namesFor('summarizeLedger', 'summarize_ledger')
 
 export function ledgerStarter(language: CodeLanguage): string {
   if (language === 'python') {
@@ -228,13 +219,13 @@ export function ledgerInstructions(seed: number, stage: Stage, language: CodeLan
   const fn = ledgerFunctionName(language)
   if (stage === 'main') {
     return [
-      `Write ${fn}(records). Each record has an id, an account, a type and an amount. Return an object keyed by account, where each value is { balance, count }.`,
+      `Write ${fn}(records). Each record has an id, an account, a type and an amount. Return ${language === 'python' ? 'a dict' : 'an object'} keyed by account, where each value is { balance, count }.`,
       'Account names: ignore surrounding spaces and letter case, and use the lowercase name as the key.',
       'Type: "credit" adds the amount, "debit" subtracts it. Ignore case and surrounding spaces; skip any other type.',
       'Amount: a positive number, or a string of digits with an optional decimal part such as "12.50". Skip records whose amount is missing, zero, negative or not a number.',
       `Fees: a debit of more than ${feeThreshold} costs an extra ${fee}, subtracted from the same account. A debit of exactly ${feeThreshold} has no fee.`,
       'count is the number of records that were used for that account. Round each balance to 2 decimal places. Leave out accounts with no usable records.',
-      'Do not use export, imports or network access. Visible examples help you check the format; the score comes from hidden tests.',
+      'Use only the standard library, with no network access. Visible examples help you check the format; the score comes from hidden tests.',
     ]
   }
   if (stage === 'followup') {
@@ -298,50 +289,16 @@ export const LEDGER_EXPLAIN_QUESTIONS = [
   'How would your function behave with ten million records, and what would you change first?',
 ]
 
-/** Initial coding rubric (not yet a validated standard): see docs/assessments.md. */
-export const CODE_RUBRIC: Rubric = {
-  id: 'code-core',
+export const LEDGER: CodeChallenge = {
+  id: 'ledger-summary',
   version: 1,
-  passThreshold: 0.7,
-  criteria: [
-    {
-      id: 'correctness',
-      label: 'Functional correctness',
-      weight: 40,
-      source: 'tests:main:core',
-      description: 'Hidden tests on ordinary ledgers.',
-    },
-    {
-      id: 'quality',
-      label: 'Code quality and maintainability',
-      weight: 20,
-      source: 'ai:quality',
-      description: 'Readable structure, clear names, no needless complexity.',
-    },
-    {
-      id: 'edge-cases',
-      label: 'Error handling and edge cases',
-      weight: 15,
-      source: 'tests:main:edge',
-      description: 'Hidden tests on malformed records, boundaries and empty input.',
-    },
-    {
-      id: 'follow-up',
-      label: 'Live modification',
-      weight: 15,
-      source: 'tests:followup',
-      description: 'Hidden tests after the duplicate-id requirement.',
-    },
-    {
-      id: 'explanation',
-      label: 'Explanation and reasoning',
-      weight: 10,
-      source: 'ai:explanation',
-      description: 'Answers match the submitted code and show understanding.',
-    },
-  ],
-  gates: [
-    { criterionId: 'correctness', minimum: 0.7 },
-    { criterionId: 'follow-up', minimum: 0.5 },
-  ],
+  title: 'Ledger summary',
+  functionName: ledgerFunctionName,
+  starter: ledgerStarter,
+  instructions: ledgerInstructions,
+  visibleTests: ledgerVisibleTests,
+  hiddenTests: ledgerHiddenTests,
+  explainQuestions: LEDGER_EXPLAIN_QUESTIONS,
 }
+
+export { CODE_RUBRIC }

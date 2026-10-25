@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getAssessment } from '@/lib/assessments/catalog'
 import { assessmentDeps, handle, requireReviewer } from '@/lib/assessments/http'
+import { judge0Health } from '@/lib/assessments/runners/judge0'
+import { devPythonEnabled } from '@/lib/assessments/runners/pyodide-dev'
+import { dailyLimit, usedToday } from '@/lib/assessments/budget'
 import type { AttemptRecord } from '@/lib/assessments/store'
 
 export const dynamic = 'force-dynamic'
@@ -12,12 +15,14 @@ export async function GET() {
     await requireReviewer()
     const { store } = assessmentDeps()
     const since = new Date(Date.now() - 30 * 86_400_000)
-    const [pending, failed, evaluating, appeals, costs] = await Promise.all([
+    const [pending, failed, evaluating, appeals, costs, runner, runsToday] = await Promise.all([
       store.listAttemptsByStatus('PENDING_REVIEW'),
       store.listAttemptsByStatus('FAILED_SYSTEM'),
       store.listAttemptsByStatus('EVALUATING'),
       store.listAppeals({ status: 'OPEN' }),
       store.costSummary(since),
+      judge0Health(),
+      usedToday(),
     ])
     const userIds = [...new Set([...pending, ...failed, ...evaluating].map((a) => a.userId))]
     const users = await prisma.user.findMany({
@@ -38,6 +43,12 @@ export async function GET() {
       (a) => a.submittedAt && Date.now() - a.submittedAt.getTime() > 5 * 60_000
     )
     return NextResponse.json({
+      // Is code execution up, which languages it will use, and today's spend against the cap.
+      runner: {
+        ...runner,
+        devPython: devPythonEnabled(),
+        usage: { today: runsToday, limit: dailyLimit() },
+      },
       // What grading costs, so spending can be watched per completed assessment.
       costs: {
         windowDays: 30,

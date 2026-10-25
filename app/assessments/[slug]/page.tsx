@@ -267,7 +267,11 @@ export default function AssessmentDetailPage() {
                       </p>
                     )}
                     <Link
-                      href={`/assessments/practice/${entry.slug}`}
+                      href={
+                        entry.practiceNeedsAccount && !catalog.signedIn
+                          ? `/auth/login?next=${encodeURIComponent(`/assessments/practice/${entry.slug}`)}`
+                          : `/assessments/practice/${entry.slug}`
+                      }
                       className="button-base button-secondary w-full"
                     >
                       Practice round
@@ -275,6 +279,8 @@ export default function AssessmentDetailPage() {
                     <p className="text-xs leading-relaxed text-ink-faint">
                       Practice uses a different task each time, checks only the automatic parts, and
                       saves nothing.
+                      {entry.practiceNeedsAccount &&
+                        ' Code runs on a separate, metered server, so practice needs an account.'}
                     </p>
                   </div>
                 </>

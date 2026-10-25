@@ -111,6 +111,7 @@
     "prettier": "^3.1.0",
     "prettier-plugin-tailwindcss": "^0.5.7",
     "prisma": "^5.22.0",
+    "pyodide": "314.0.7",
     "tailwindcss": "^3.3.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"

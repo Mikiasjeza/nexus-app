@@ -148,6 +148,8 @@ export interface PublicBrief {
   starter?: string
   /** SQL: the previous stage's queries, by task id. */
   starterQueries?: Record<string, string>
+  /** Code: where it runs, e.g. "Python (3.11.2)". */
+  runtime?: string
   /** Code: the function the candidate must write. */
   functionName?: string
   visibleTests?: { id: string; description: string; args: unknown[]; expected: unknown }[]

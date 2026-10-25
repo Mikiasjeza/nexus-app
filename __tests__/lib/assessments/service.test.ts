@@ -22,8 +22,8 @@ import {
 import type { AiGrade, GradingInput } from '@/lib/assessments/ai-grader'
 import { steeringFlags, verifiedQuotes } from '@/lib/assessments/ai-grader'
 import { decide, scoreCriteria } from '@/lib/assessments/grading'
-import { CODE_RUBRIC } from '@/lib/assessments/challenges/ledger'
-import { delayEmail, ledgerSolutionJs } from '@/test-utils/assessment-fixtures'
+import { CODE_RUBRIC } from '@/lib/assessments/challenges/code'
+import { delayEmail, solutionJs } from '@/test-utils/assessment-fixtures'
 
 jest.setTimeout(30_000)
 
@@ -57,10 +57,12 @@ async function completeJavaScript(deps: Deps, advance: (m: number) => void, main
   advance(10)
   const seed = attempt.seed
   attempt = await submitStage(deps, attempt, 'main', {
-    code: mainCode ?? ledgerSolutionJs(seed, false),
+    code: mainCode ?? solutionJs(attempt.challengeId, seed, false),
   })
   advance(5)
-  attempt = await submitStage(deps, attempt, 'followup', { code: ledgerSolutionJs(seed, true) })
+  attempt = await submitStage(deps, attempt, 'followup', {
+    code: solutionJs(attempt.challengeId, seed, true),
+  })
   advance(5)
   return submitStage(deps, attempt, 'explain', {
     answers: ['It skips bad amounts.', 'I added a seen set.', 'Stream the records.'],
@@ -136,10 +138,10 @@ describe('attempt lifecycle', () => {
     await recordEvents(deps, attempt, [{ type: 'paste', chars: 900 }, { type: 'nonsense' }])
     advance(10)
     attempt = await submitStage(deps, attempt, 'main', {
-      code: ledgerSolutionJs(attempt.seed, false),
+      code: solutionJs(attempt.challengeId, attempt.seed, false),
     })
     attempt = await submitStage(deps, attempt, 'followup', {
-      code: ledgerSolutionJs(attempt.seed, true),
+      code: solutionJs(attempt.challengeId, attempt.seed, true),
     })
     attempt = await submitStage(deps, attempt, 'explain', { answers: ['a', 'b', 'c'] })
     expect(attempt.status).toBe('PENDING_REVIEW')
@@ -160,6 +162,20 @@ describe('attempt lifecycle', () => {
     await expect(submitStage(deps, attempt, 'main', { code: 'again' })).rejects.toThrow(
       AssessmentError
     )
+  })
+
+  it('a retake draws a challenge the candidate has not had', async () => {
+    const { deps, advance } = setup(stubGrader(4))
+    const first = await completeJavaScript(deps, advance, 'function nothing() {}')
+    expect(first.result).toBe('NOT_PASSED')
+    advance(25 * 60)
+    const second = await createAttempt(deps, {
+      userId: 'u1',
+      slug: 'javascript',
+      mode: 'independent',
+    })
+    expect(second.challengeId).not.toBe(first.challengeId)
+    expect(second.challengeVersion).toBe(1)
   })
 
   it('returns the open attempt instead of starting a second one', async () => {

@@ -8,6 +8,7 @@ import Modal from '@/components/UI/Modal'
 import type { IntegrityEvent, PracticeRun, PublicBrief, StageWork } from '@/lib/api/assessments'
 import type { AssessmentMode, Stage } from '@/lib/assessments/types'
 import type { EditorLanguage } from './CodeEditor'
+import { formatValue } from '@/lib/assessments/format'
 
 const CodeEditor = dynamic(() => import('./CodeEditor'), {
   ssr: false,
@@ -59,7 +60,10 @@ function startingWork(brief: PublicBrief, saved: StageWork | null): StageWork {
 
 const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length
 
-const pretty = (value: unknown) => JSON.stringify(value, null, 2)
+/** "Python · Log triage" for coding challenges; the brief's own title otherwise. */
+export function briefTitle(brief: PublicBrief): string {
+  return brief.workspace === 'code' ? `${brief.skillName} · ${brief.title}` : brief.title
+}
 
 export default function Workspace({
   title,
@@ -254,6 +258,9 @@ export default function Workspace({
                 </li>
               ))}
             </ol>
+            {brief.runtime && brief.stage !== 'explain' && (
+              <p className="mt-5 text-sm text-ink-faint">Runs on {brief.runtime}.</p>
+            )}
             {!adapter.practice && mode === 'independent' && brief.stage !== 'explain' && (
               <p className="mt-5 text-sm text-ink-faint">
                 Independent mode: your own work only. Pastes and tab switches are recorded.
@@ -293,11 +300,11 @@ export default function Workspace({
                       </summary>
                       <p className="mt-3 text-xs text-ink-faint">Input</p>
                       <pre className="mt-1 max-h-48 overflow-auto rounded-lg bg-raised p-3 text-xs text-ink-muted">
-                        {pretty(test.args[0])}
+                        {formatValue(test.args[0], brief.language)}
                       </pre>
                       <p className="mt-3 text-xs text-ink-faint">Returns</p>
                       <pre className="mt-1 max-h-48 overflow-auto rounded-lg bg-raised p-3 text-xs text-ink-muted">
-                        {pretty(test.expected)}
+                        {formatValue(test.expected, brief.language)}
                       </pre>
                     </details>
                   </li>
@@ -351,7 +358,13 @@ export default function Workspace({
                   </span>
                 )}
               </div>
-              {codeRun && <CodeRunOutput report={codeRun} tests={brief.visibleTests ?? []} />}
+              {codeRun && (
+                <CodeRunOutput
+                  report={codeRun}
+                  tests={brief.visibleTests ?? []}
+                  language={brief.language}
+                />
+              )}
             </>
           ) : brief.workspace === 'sql' ? (
             <div className="space-y-10">
@@ -497,9 +510,11 @@ function Countdown({
 function CodeRunOutput({
   report,
   tests,
+  language,
 }: {
   report: Extract<PracticeRun, { kind: 'code' }>['report']
   tests: NonNullable<PublicBrief['visibleTests']>
+  language?: string
 }) {
   return (
     <div className="space-y-4">
@@ -528,7 +543,7 @@ function CodeRunOutput({
                     <div>
                       <p className="text-xs text-ink-faint">Expected</p>
                       <pre className="mt-1 max-h-48 overflow-auto rounded-lg bg-ground p-3 text-xs text-ink-muted">
-                        {pretty(test?.expected)}
+                        {formatValue(test?.expected, language)}
                       </pre>
                     </div>
                     <div>
@@ -536,7 +551,7 @@ function CodeRunOutput({
                         {outcome.error ? 'Error' : 'Your code returned'}
                       </p>
                       <pre className="mt-1 max-h-48 overflow-auto rounded-lg bg-ground p-3 text-xs text-ink-muted">
-                        {outcome.error ?? pretty(outcome.actual)}
+                        {outcome.error ?? formatValue(outcome.actual, language)}
                       </pre>
                     </div>
                   </div>

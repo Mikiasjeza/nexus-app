@@ -1,10 +1,11 @@
 /**
  * The challenge engine: what each workspace shows per stage, what a practice
  * run returns, and how a finished attempt is checked deterministically.
- * Everything here runs on the server from the attempt's stored seed.
+ * Everything here runs on the server from the attempt's stored challenge and
+ * seed (its `Ctx`).
  */
 
-import type { AssessmentDefinition } from './catalog'
+import { challengeVersion, type AssessmentDefinition } from './catalog'
 import type {
   AssessmentMode,
   CodeLanguage,
@@ -14,14 +15,8 @@ import type {
   Stage,
   StageWork,
 } from './types'
-import {
-  LEDGER_EXPLAIN_QUESTIONS,
-  ledgerFunctionName,
-  ledgerHiddenTests,
-  ledgerInstructions,
-  ledgerStarter,
-  ledgerVisibleTests,
-} from './challenges/ledger'
+import { codeChallenge } from './challenges'
+import type { CodeChallenge } from './challenges/code'
 import {
   SALES_EXPLAIN_QUESTIONS,
   SALES_TABLES,
@@ -39,17 +34,29 @@ import {
   formatDate,
 } from './challenges/client-email'
 import { runInQuickJS, stripTypes, type GuestCall, type GuestRun } from './runners/quickjs'
-import { judge0RunsJavaScript, runInJudge0 } from './runners/judge0'
+import { javascriptRuntime, pythonRuntime, runInJudge0 } from './runners/judge0'
+import { DEV_PYTHON_RUNTIME, devPythonEnabled, runInPyodide } from './runners/pyodide-dev'
 import { runSqlBatch, type SqlResult } from './runners/sqlite'
+import { BUDGET_MESSAGE, takeRunnerBudget, type RunnerPurpose } from './budget'
 import { sameRows, sameValue } from './compare'
 import { shareOf } from './grading'
 import type { GradingInput } from './ai-grader'
+
+/** What identifies an attempt's content: the assessment, its challenge and its seed. */
+export interface Ctx {
+  def: AssessmentDefinition
+  challengeId: string
+  seed: number
+}
 
 /** Size limits for saved work, enforced on every save and submit. */
 export const WORK_LIMITS = { code: 50_000, query: 5_000, text: 10_000, answer: 4_000, answers: 5 }
 
 const SAMPLE_ROWS = 8
 const RUN_ROWS = 50
+
+const codeOf = (ctx: Ctx): CodeChallenge => codeChallenge(ctx.challengeId)
+const languageOf = (ctx: Ctx) => ctx.def.language as CodeLanguage
 
 /** Trim saved work to the fields and sizes this workspace accepts. */
 export function cleanWork(def: AssessmentDefinition, stage: Stage, raw: unknown): StageWork {
@@ -74,17 +81,82 @@ export function cleanWork(def: AssessmentDefinition, stage: Stage, raw: unknown)
   return { text: str(input.text, WORK_LIMITS.text) }
 }
 
-export function explainQuestions(def: AssessmentDefinition): string[] {
-  if (def.workspace === 'code') return LEDGER_EXPLAIN_QUESTIONS
-  if (def.workspace === 'sql') return SALES_EXPLAIN_QUESTIONS
+export function explainQuestions(ctx: Ctx): string[] {
+  if (ctx.def.workspace === 'code') return codeOf(ctx).explainQuestions
+  if (ctx.def.workspace === 'sql') return SALES_EXPLAIN_QUESTIONS
   return EMAIL_EXPLAIN_QUESTIONS
 }
 
-function instructionsFor(def: AssessmentDefinition, seed: number, stage: Stage): string[] {
-  if (def.workspace === 'code') return ledgerInstructions(seed, stage, def.language as CodeLanguage)
-  if (def.workspace === 'sql') return salesInstructions(stage)
-  return emailInstructions(seed, stage)
+function instructionsFor(ctx: Ctx, stage: Stage): string[] {
+  if (ctx.def.workspace === 'code')
+    return codeOf(ctx).instructions(ctx.seed, stage, languageOf(ctx))
+  if (ctx.def.workspace === 'sql') return salesInstructions(stage)
+  return emailInstructions(ctx.seed, stage)
 }
+
+// ─── Where code runs ──────────────────────────────────────────────────────
+
+export type RunnerKind = 'judge0-python' | 'judge0-javascript' | 'pyodide' | 'quickjs'
+
+/**
+ * Python runs on Judge0 (or Pyodide in local development). JavaScript and
+ * TypeScript run on Judge0 when it offers Node.js 18+, keeping untrusted code
+ * off the app server; otherwise in the QuickJS WebAssembly sandbox here.
+ */
+export async function runnerFor(
+  def: AssessmentDefinition
+): Promise<{ kind: RunnerKind; label: string }> {
+  if (def.language === 'python') {
+    if (devPythonEnabled()) return { kind: 'pyodide', label: DEV_PYTHON_RUNTIME.name }
+    return { kind: 'judge0-python', label: (await pythonRuntime())?.name ?? 'Python 3' }
+  }
+  const node = await javascriptRuntime()
+  if (node) return { kind: 'judge0-javascript', label: node.name }
+  return { kind: 'quickjs', label: 'JavaScript (QuickJS sandbox)' }
+}
+
+/** Whether runs for this assessment go to the paid, rate-limited external runner. */
+export async function usesExternalRunner(def: AssessmentDefinition): Promise<boolean> {
+  if (def.workspace !== 'code') return false
+  return (await runnerFor(def)).kind.startsWith('judge0')
+}
+
+async function runtimeLabel(def: AssessmentDefinition): Promise<string> {
+  const { label } = await runnerFor(def)
+  return def.language === 'typescript' ? `TypeScript, run as ${label}` : label
+}
+
+async function execute(
+  ctx: Ctx,
+  code: string,
+  calls: GuestCall[],
+  purpose: RunnerPurpose
+): Promise<GuestRun> {
+  const language = languageOf(ctx)
+  const functionName = codeOf(ctx).functionName(language)
+  if (!code.trim()) return { error: 'No code was submitted.', results: [], logs: '' }
+  let source = code
+  if (language === 'typescript') {
+    const stripped = await stripTypes(code)
+    if (stripped.error) return { error: stripped.error, results: [], logs: '' }
+    source = stripped.code!
+  }
+  const runner = await runnerFor(ctx.def)
+  if (runner.kind === 'quickjs') return runInQuickJS({ code: source, functionName, calls })
+  if (runner.kind === 'pyodide') return runInPyodide({ code: source, functionName, calls })
+  if (!(await takeRunnerBudget(purpose))) {
+    // Out of allowance is never the candidate's fault: grading retries later.
+    return { error: BUDGET_MESSAGE, systemError: purpose === 'grade', results: [], logs: '' }
+  }
+  return runInJudge0({
+    language: runner.kind === 'judge0-python' ? 'python' : 'javascript',
+    code: source,
+    functionName,
+    calls,
+  })
+}
+
+// ─── Briefs ───────────────────────────────────────────────────────────────
 
 /** First rows of each table, for the schema panel. */
 async function sampleRows(setup: string): Promise<Record<string, unknown[][]>> {
@@ -100,35 +172,37 @@ async function sampleRows(setup: string): Promise<Record<string, unknown[][]>> {
  * the stage before (the follow-up starts from it; the explain stage shows it).
  */
 export async function buildBrief(
-  def: AssessmentDefinition,
-  seed: number,
+  ctx: Ctx,
   stage: Stage,
   previous: StageWork | undefined
 ): Promise<PublicBrief> {
+  const { def, seed } = ctx
   const brief: PublicBrief = {
-    challengeId: def.challengeId,
-    challengeVersion: def.challengeVersion,
-    title: def.title,
+    challengeId: ctx.challengeId,
+    challengeVersion: challengeVersion(ctx.challengeId),
+    title: def.workspace === 'code' ? codeOf(ctx).title : def.title,
     skillName: def.skillName,
     workspace: def.workspace,
     language: def.language,
     level: def.level,
     stage,
-    instructions: instructionsFor(def, seed, stage),
+    instructions: instructionsFor(ctx, stage),
   }
+  if (def.workspace === 'code') brief.runtime = await runtimeLabel(def)
   if (stage === 'explain') {
-    brief.explainQuestions = explainQuestions(def)
+    brief.explainQuestions = explainQuestions(ctx)
     brief.starter = previous?.code ?? previous?.text
     brief.starterQueries = previous?.queries
     return brief
   }
 
   if (def.workspace === 'code') {
-    const language = def.language as CodeLanguage
-    brief.functionName = ledgerFunctionName(language)
+    const challenge = codeOf(ctx)
+    const language = languageOf(ctx)
+    brief.functionName = challenge.functionName(language)
     brief.starter =
-      stage === 'main' ? ledgerStarter(language) : previous?.code || ledgerStarter(language)
-    brief.visibleTests = ledgerVisibleTests(seed, stage)
+      stage === 'main' ? challenge.starter(language) : previous?.code || challenge.starter(language)
+    brief.visibleTests = challenge.visibleTests(seed, stage)
   } else if (def.workspace === 'sql') {
     const setup = salesDataset(seed, stage === 'main' ? 'visible' : 'changed')
     brief.sql = {
@@ -159,32 +233,7 @@ export async function buildBrief(
   return brief
 }
 
-/**
- * Run candidate code for the challenge's language. Python always runs on
- * Judge0. JavaScript and TypeScript run there too when it is set up for
- * them, keeping untrusted code off the app server; otherwise they run in the
- * QuickJS WebAssembly sandbox in this process.
- */
-async function execute(
-  def: AssessmentDefinition,
-  code: string,
-  calls: GuestCall[]
-): Promise<GuestRun> {
-  const language = def.language as CodeLanguage
-  const functionName = ledgerFunctionName(language)
-  if (!code.trim()) return { error: 'No code was submitted.', results: [], logs: '' }
-  if (language === 'python') return runInJudge0({ language: 'python', code, functionName, calls })
-  let source = code
-  if (language === 'typescript') {
-    const stripped = await stripTypes(code)
-    if (stripped.error) return { error: stripped.error, results: [], logs: '' }
-    source = stripped.code!
-  }
-  if (judge0RunsJavaScript()) {
-    return runInJudge0({ language: 'javascript', code: source, functionName, calls })
-  }
-  return runInQuickJS({ code: source, functionName, calls })
-}
+// ─── Practice runs ────────────────────────────────────────────────────────
 
 export type PracticeRun =
   | { kind: 'code'; report: RunReport }
@@ -192,18 +241,18 @@ export type PracticeRun =
 
 /** A practice run on visible material only. Never touches hidden tests. */
 export async function practiceRun(
-  def: AssessmentDefinition,
-  seed: number,
+  ctx: Ctx,
   stage: 'main' | 'followup',
   work: StageWork
 ): Promise<PracticeRun> {
   const started = Date.now()
-  if (def.workspace === 'code') {
-    const tests = ledgerVisibleTests(seed, stage)
+  if (ctx.def.workspace === 'code') {
+    const tests = codeOf(ctx).visibleTests(ctx.seed, stage)
     const run = await execute(
-      def,
+      ctx,
       work.code ?? '',
-      tests.map((t) => ({ id: t.id, args: t.args }))
+      tests.map((t) => ({ id: t.id, args: t.args })),
+      'run'
     )
     const outcomes = run.error
       ? []
@@ -227,7 +276,7 @@ export async function practiceRun(
       },
     }
   }
-  const setup = salesDataset(seed, stage === 'main' ? 'visible' : 'changed')
+  const setup = salesDataset(ctx.seed, stage === 'main' ? 'visible' : 'changed')
   const jobs = Object.entries(work.queries ?? {})
     .filter(([, query]) => query.trim())
     .map(([id, query]) => ({ id, query }))
@@ -237,6 +286,8 @@ export async function practiceRun(
   }))
   return { kind: 'sql', results, durationMs: Date.now() - started }
 }
+
+// ─── Deterministic grading ────────────────────────────────────────────────
 
 export interface DeterministicResult {
   /** Keyed by rubric source, e.g. `tests:main:core`. */
@@ -252,19 +303,26 @@ export interface DeterministicResult {
 
 type Submissions = Partial<Record<Stage, StageWork>>
 
-async function evaluateCode(def: AssessmentDefinition, seed: number, work: Submissions) {
-  const mainTests = ledgerHiddenTests(seed, 'main')
-  const followTests = ledgerHiddenTests(seed, 'followup')
-  const visible = ledgerVisibleTests(seed, 'main')
+async function evaluateCode(ctx: Ctx, work: Submissions) {
+  const challenge = codeOf(ctx)
+  const mainTests = challenge.hiddenTests(ctx.seed, 'main')
+  const followTests = challenge.hiddenTests(ctx.seed, 'followup')
+  const visible = challenge.visibleTests(ctx.seed, 'main')
   const [mainRun, followRun] = await Promise.all([
-    execute(def, work.main?.code ?? '', [
-      ...mainTests.map((t) => ({ id: t.id, args: t.args })),
-      ...visible.map((t) => ({ id: t.id, args: t.args })),
-    ]),
     execute(
-      def,
+      ctx,
+      work.main?.code ?? '',
+      [
+        ...mainTests.map((t) => ({ id: t.id, args: t.args })),
+        ...visible.map((t) => ({ id: t.id, args: t.args })),
+      ],
+      'grade'
+    ),
+    execute(
+      ctx,
       work.followup?.code ?? '',
-      followTests.map((t) => ({ id: t.id, args: t.args }))
+      followTests.map((t) => ({ id: t.id, args: t.args })),
+      'grade'
     ),
   ])
   const result: DeterministicResult = { scores: {}, context: [], flags: [], extraWork: [] }
@@ -417,29 +475,28 @@ function evaluateWriting(seed: number, work: Submissions): DeterministicResult {
 }
 
 export async function evaluateDeterministic(
-  def: AssessmentDefinition,
-  seed: number,
+  ctx: Ctx,
   work: Submissions
 ): Promise<DeterministicResult> {
-  if (def.workspace === 'code') return evaluateCode(def, seed, work)
-  if (def.workspace === 'sql') return evaluateSql(seed, work)
-  return evaluateWriting(seed, work)
+  if (ctx.def.workspace === 'code') return evaluateCode(ctx, work)
+  if (ctx.def.workspace === 'sql') return evaluateSql(ctx.seed, work)
+  return evaluateWriting(ctx.seed, work)
 }
 
 /** The AI grader's view of the attempt. */
 export function gradingInput(
-  def: AssessmentDefinition,
-  seed: number,
+  ctx: Ctx,
   mode: AssessmentMode,
   work: Submissions,
   deterministic: DeterministicResult
 ): GradingInput {
-  const questions = explainQuestions(def)
+  const { def } = ctx
+  const questions = explainQuestions(ctx)
   const answers = work.explain?.answers ?? []
   const qa = questions
     .map((q, i) => `Q: ${q}\nA: ${answers[i]?.trim() || '(no answer)'}`)
     .join('\n\n')
-  const brief = [...instructionsFor(def, seed, 'main'), ...instructionsFor(def, seed, 'followup')]
+  const brief = [...instructionsFor(ctx, 'main'), ...instructionsFor(ctx, 'followup')]
 
   const items: { label: string; content: string }[] = []
   if (def.workspace === 'code') {

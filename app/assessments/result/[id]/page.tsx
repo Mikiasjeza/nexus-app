@@ -141,7 +141,10 @@ export default function ResultPage() {
           </div>
           <dl className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm">
             <dt className="text-ink-faint">Assessment</dt>
-            <dd className="text-ink">{result.title}</dd>
+            <dd className="text-ink">
+              {result.title}
+              {result.challengeTitle && ` · ${result.challengeTitle}`}
+            </dd>
             <dt className="text-ink-faint">Mode</dt>
             <dd className="text-ink">
               {result.mode === 'ai_assisted' ? 'AI-assisted' : 'Independent'}

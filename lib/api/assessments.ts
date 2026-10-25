@@ -50,6 +50,8 @@ export interface CatalogEntry {
   stageMinutes: { main: number; followup: number; explain: number }
   modes: AssessmentMode[]
   available: boolean
+  /** Practice code runs on the metered external runner, so it needs an account. */
+  practiceNeedsAccount: boolean
   credentialValidMonths: number
   rubric: {
     id: string

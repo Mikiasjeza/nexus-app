@@ -1,16 +1,18 @@
 /**
- * The skills Nexus can assess today. Each entry ties a skill to one
- * challenge, a workspace and a versioned rubric. Adding a skill means adding
- * a challenge module and an entry here; the attempt lifecycle, grading and
- * credentials are shared.
+ * The skills Nexus can assess today. Each entry ties a skill to a pool of
+ * challenges, a workspace and a versioned rubric; every attempt draws one
+ * challenge from the pool. Adding a skill means adding challenge modules and
+ * an entry here; the attempt lifecycle, grading and credentials are shared.
  */
 
 import type { SkillCategory } from '@/lib/types'
 import type { AssessmentMode, CodeLanguage, Rubric, WorkspaceKind } from './types'
-import { CODE_RUBRIC } from './challenges/ledger'
+import { CODE_RUBRIC } from './challenges/code'
+import { CODE_CHALLENGES } from './challenges'
 import { SQL_RUBRIC } from './challenges/sales'
 import { WRITING_RUBRIC } from './challenges/client-email'
 import { judge0Configured } from './runners/judge0'
+import { devPythonEnabled } from './runners/pyodide-dev'
 
 export interface AssessmentDefinition {
   slug: string
@@ -19,8 +21,8 @@ export interface AssessmentDefinition {
   category: SkillCategory
   workspace: WorkspaceKind
   language?: CodeLanguage | 'sql'
-  challengeId: string
-  challengeVersion: number
+  /** The challenges an attempt can draw; more than one keeps leaks contained. */
+  challengeIds: string[]
   title: string
   /** Plain level name. Nexus never claims "expert" from one assessment. */
   level: string
@@ -32,7 +34,7 @@ export interface AssessmentDefinition {
   rubric: Rubric
   credentialValidMonths: number
   /** A runner that must be configured before the assessment can be taken. */
-  requires?: 'judge0'
+  requires?: 'python-runner'
 }
 
 const CODE_MEASURES = [
@@ -42,19 +44,38 @@ const CODE_MEASURES = [
   'Explaining your own code',
 ]
 
+const CODE_POOL = Object.keys(CODE_CHALLENGES)
+
 export const ASSESSMENTS: AssessmentDefinition[] = [
+  {
+    slug: 'python',
+    skillName: 'Python',
+    category: 'Technical Skills',
+    workspace: 'code',
+    language: 'python',
+    challengeIds: CODE_POOL,
+    title: 'Practical Python',
+    level: 'Working level',
+    summary:
+      'Write a Python function that turns messy real-world data into clean results, then change it when the requirement changes.',
+    measures: CODE_MEASURES,
+    stageMinutes: { main: 25, followup: 10, explain: 10 },
+    modes: ['independent', 'ai_assisted'],
+    rubric: CODE_RUBRIC,
+    credentialValidMonths: 24,
+    requires: 'python-runner',
+  },
   {
     slug: 'javascript',
     skillName: 'JavaScript',
     category: 'Technical Skills',
     workspace: 'code',
     language: 'javascript',
-    challengeId: 'ledger-summary',
-    challengeVersion: 1,
-    title: 'Ledger summary in JavaScript',
+    challengeIds: CODE_POOL,
+    title: 'Practical JavaScript',
     level: 'Working level',
     summary:
-      'Turn messy transaction records into account balances, then adapt your code to a new rule.',
+      'Write a JavaScript function that turns messy real-world data into clean results, then change it when the requirement changes.',
     measures: CODE_MEASURES,
     stageMinutes: { main: 25, followup: 10, explain: 10 },
     modes: ['independent', 'ai_assisted'],
@@ -67,35 +88,16 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     category: 'Technical Skills',
     workspace: 'code',
     language: 'typescript',
-    challengeId: 'ledger-summary',
-    challengeVersion: 1,
-    title: 'Ledger summary in TypeScript',
-    level: 'Working level',
-    summary: 'The ledger challenge with types: model the input safely, then adapt to a new rule.',
-    measures: CODE_MEASURES,
-    stageMinutes: { main: 25, followup: 10, explain: 10 },
-    modes: ['independent', 'ai_assisted'],
-    rubric: CODE_RUBRIC,
-    credentialValidMonths: 24,
-  },
-  {
-    slug: 'python',
-    skillName: 'Python',
-    category: 'Technical Skills',
-    workspace: 'code',
-    language: 'python',
-    challengeId: 'ledger-summary',
-    challengeVersion: 1,
-    title: 'Ledger summary in Python',
+    challengeIds: CODE_POOL,
+    title: 'Practical TypeScript',
     level: 'Working level',
     summary:
-      'Turn messy transaction records into account balances in Python, then adapt to a new rule.',
+      'Model messy input safely with types, turn it into clean results, then change your code when the requirement changes.',
     measures: CODE_MEASURES,
     stageMinutes: { main: 25, followup: 10, explain: 10 },
     modes: ['independent', 'ai_assisted'],
     rubric: CODE_RUBRIC,
     credentialValidMonths: 24,
-    requires: 'judge0',
   },
   {
     slug: 'sql',
@@ -103,8 +105,7 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     category: 'Technical Skills',
     workspace: 'sql',
     language: 'sql',
-    challengeId: 'sales-cleanup',
-    challengeVersion: 1,
+    challengeIds: ['sales-cleanup'],
     title: 'Sales cleanup in SQL',
     level: 'Working level',
     summary:
@@ -125,8 +126,7 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     skillName: 'Business Writing',
     category: 'Communication Skills',
     workspace: 'writing',
-    challengeId: 'project-delay-email',
-    challengeVersion: 1,
+    challengeIds: ['project-delay-email'],
     title: 'Project delay email',
     level: 'Working level',
     summary:
@@ -148,13 +148,32 @@ export function getAssessment(slug: string): AssessmentDefinition | undefined {
   return ASSESSMENTS.find((a) => a.slug === slug)
 }
 
+/** Version of a challenge, recorded on attempts and credentials. */
+export function challengeVersion(challengeId: string): number {
+  return CODE_CHALLENGES[challengeId]?.version ?? 1
+}
+
+/**
+ * The challenge for a new attempt: drawn by seed, avoiding ones this
+ * candidate already had where the pool allows.
+ */
+export function pickChallenge(
+  def: AssessmentDefinition,
+  seed: number,
+  avoid: string[] = []
+): string {
+  const fresh = def.challengeIds.filter((id) => !avoid.includes(id))
+  const pool = fresh.length > 0 ? fresh : def.challengeIds
+  return pool[seed % pool.length]
+}
+
 export function totalMinutes(def: AssessmentDefinition): number {
   return def.stageMinutes.main + def.stageMinutes.followup + def.stageMinutes.explain
 }
 
 /** Whether every runner this assessment needs is switched on. */
 export function isAvailable(def: AssessmentDefinition): boolean {
-  if (def.requires === 'judge0') return judge0Configured()
+  if (def.requires === 'python-runner') return judge0Configured() || devPythonEnabled()
   return true
 }
 

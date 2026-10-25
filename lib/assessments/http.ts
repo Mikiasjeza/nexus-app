@@ -9,6 +9,8 @@ import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 import { dbErrorResponse } from '@/lib/db-error'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { prismaAssessmentStore } from './prisma-store'
+import { getAssessment } from './catalog'
+import { usesExternalRunner } from './engine'
 import { AssessmentError, gradeWithAI, type Deps } from './service'
 import { ConflictError, type AttemptRecord } from './store'
 import { TransitionError } from './state'
@@ -19,11 +21,26 @@ export const GUEST_MESSAGE =
   'Sign in to take an assessment for a credential. Practice rounds work without an account.'
 
 /** The signed-in user's id. Guest sessions never reach the database here. */
-export async function requireUser(): Promise<string> {
-  if (await isGuestRequest()) throw new AssessmentError(GUEST_MESSAGE, 401)
+export async function requireUser(message = GUEST_MESSAGE): Promise<string> {
+  if (await isGuestRequest()) throw new AssessmentError(message, 401)
   const userId = await getSessionUserId()
-  if (!userId) throw new AssessmentError('Sign in to continue.', 401)
+  if (!userId)
+    throw new AssessmentError(message === GUEST_MESSAGE ? 'Sign in to continue.' : message, 401)
   return userId
+}
+
+export const METERED_PRACTICE_MESSAGE =
+  'Sign in to run code in this practice round. It runs on a separate, metered server.'
+
+/**
+ * Practice runs on the external runner cost money per call, so they need an
+ * account and get their own per-user limit on top of the per-address one.
+ */
+export async function guardMeteredPractice(slug: string, maxPerMinute: number): Promise<void> {
+  const def = getAssessment(slug)
+  if (!def || !(await usesExternalRunner(def))) return
+  const userId = await requireUser(METERED_PRACTICE_MESSAGE)
+  limit(`practice-metered:${userId}`, maxPerMinute)
 }
 
 /** The attempt, if it belongs to this user. Anyone else gets a plain 404. */

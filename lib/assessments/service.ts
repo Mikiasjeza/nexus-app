@@ -12,9 +12,20 @@ import {
   isAvailable,
   totalMinutes,
   type AssessmentDefinition,
+  challengeVersion,
+  pickChallenge,
 } from './catalog'
-import { buildBrief, cleanWork, evaluateDeterministic, gradingInput, practiceRun } from './engine'
+import {
+  buildBrief,
+  cleanWork,
+  evaluateDeterministic,
+  gradingInput,
+  practiceRun,
+  usesExternalRunner,
+  type Ctx,
+} from './engine'
 import { gradeWithAI, type AiGrade, type GradingInput } from './ai-grader'
+import { CODE_CHALLENGES } from './challenges'
 import {
   anchorShare,
   decide,
@@ -64,9 +75,22 @@ const clock = (deps: Deps) => (deps.now ? deps.now() : new Date())
 
 export const ACTIVE_STATUSES: AttemptStatus[] = ['CREATED', 'READY', 'IN_PROGRESS']
 const MAX_RUNS = 300
+/** Runs on the external runner cost money, so attempts get fewer of them. */
+const MAX_EXTERNAL_RUNS = 60
 const MAX_EVENTS = 1000
 const LARGE_PASTE_CHARS = 300
 const APPEAL_WINDOW_DAYS = 30
+
+/** An attempt's content: its assessment, the challenge it drew, and its seed. */
+export function attemptCtx(attempt: Pick<AttemptRecord, 'slug' | 'challengeId' | 'seed'>): Ctx {
+  return { def: definition(attempt.slug), challengeId: attempt.challengeId, seed: attempt.seed }
+}
+
+/** A practice round's content, from its seed alone. */
+export function practiceCtx(slug: string, seed: number): Ctx {
+  const def = definition(slug)
+  return { def, challengeId: pickChallenge(def, seed), seed }
+}
 
 function definition(slug: string): AssessmentDefinition {
   const def = getAssessment(slug)
@@ -140,15 +164,22 @@ export async function createAttempt(
   const retake = retakeStatus(attempts, clock(deps))
   if (!retake.allowed) throw new AssessmentError(retake.reason ?? 'Not yet', 429)
   // Content comes from the seed on demand, so an attempt is ready once it exists.
+  // A retake draws a challenge this candidate hasn't had, where the pool allows.
+  const seed = newSeed()
+  const challengeId = pickChallenge(
+    def,
+    seed,
+    attempts.map((a) => a.challengeId)
+  )
   return deps.store.createAttempt({
     userId: input.userId,
     slug: def.slug,
-    challengeId: def.challengeId,
-    challengeVersion: def.challengeVersion,
+    challengeId,
+    challengeVersion: challengeVersion(challengeId),
     rubricId: def.rubric.id,
     rubricVersion: def.rubric.version,
     mode: input.mode,
-    seed: newSeed(),
+    seed,
     status: 'READY',
   })
 }
@@ -271,15 +302,20 @@ export async function recordEvents(
 export async function runAttempt(deps: Deps, attempt: AttemptRecord, raw: unknown) {
   assertWorking(attempt, clock(deps))
   if (attempt.stage === 'explain') throw new AssessmentError('Nothing to run in this step.')
-  if (attempt.runCount >= MAX_RUNS)
-    throw new AssessmentError('Run limit reached for this attempt.', 429)
-  const def = definition(attempt.slug)
-  const work = cleanWork(def, attempt.stage, raw)
+  const ctx = attemptCtx(attempt)
+  const limit = (await usesExternalRunner(ctx.def)) ? MAX_EXTERNAL_RUNS : MAX_RUNS
+  if (attempt.runCount >= limit) {
+    throw new AssessmentError(
+      `You've used all ${limit} runs for this attempt. Your work is saved.`,
+      429
+    )
+  }
+  const work = cleanWork(ctx.def, attempt.stage, raw)
   await deps.store.updateAttempt(attempt.id, 'IN_PROGRESS', {
     runCount: attempt.runCount + 1,
     drafts: { ...attempt.drafts, [attempt.stage]: work },
   })
-  return practiceRun(def, attempt.seed, attempt.stage, work)
+  return practiceRun(ctx, attempt.stage, work)
 }
 
 export async function submitStage(
@@ -370,7 +406,8 @@ export async function evaluateAttempt(deps: Deps, attempt: AttemptRecord): Promi
   let current = await deps.store.updateAttempt(attempt.id, attempt.status, { status: 'EVALUATING' })
   try {
     const work = workOf(current)
-    const deterministic = await evaluateDeterministic(def, current.seed, work)
+    const ctx = attemptCtx(current)
+    const deterministic = await evaluateDeterministic(ctx, work)
     const now = clock(deps)
     if (deterministic.systemError) {
       await deps.store.addEvaluation(current.id, {
@@ -393,7 +430,7 @@ export async function evaluateAttempt(deps: Deps, attempt: AttemptRecord): Promi
     }
 
     const ai: AiGrade = deps.grade
-      ? await deps.grade(gradingInput(def, current.seed, current.mode, work, deterministic))
+      ? await deps.grade(gradingInput(ctx, current.mode, work, deterministic))
       : { judgements: {}, flags: [], unavailable: 'AI grading is off.' }
     const events = await deps.store.listEvents(current.id)
     const integrity = [
@@ -752,8 +789,7 @@ export async function attemptView(deps: Deps, attempt: AttemptRecord): Promise<A
   const brief =
     attempt.status === 'IN_PROGRESS'
       ? await buildBrief(
-          def,
-          attempt.seed,
+          attemptCtx(attempt),
           attempt.stage,
           previousStage ? attempt.submissions[previousStage]?.work : undefined
         )
@@ -791,6 +827,7 @@ export function resultView(
     slug: def.slug,
     skillName: def.skillName,
     title: def.title,
+    challengeTitle: CODE_CHALLENGES[attempt.challengeId]?.title ?? null,
     level: def.level,
     mode: attempt.mode,
     status: attempt.status,
@@ -840,12 +877,13 @@ export async function gradePractice(
   seed: number,
   raw: Partial<Record<Stage, unknown>>
 ) {
-  const def = definition(slug)
+  const ctx = practiceCtx(slug, seed)
+  const { def } = ctx
   if (!isAvailable(def)) throw new AssessmentError('This assessment is not open yet.', 409)
   const work = Object.fromEntries(
     (['main', 'followup', 'explain'] as Stage[]).map((s) => [s, cleanWork(def, s, raw[s] ?? {})])
   ) as Record<Stage, StageWork>
-  const deterministic = await evaluateDeterministic(def, seed, work)
+  const deterministic = await evaluateDeterministic(ctx, work)
   if (deterministic.systemError) throw new AssessmentError(deterministic.systemError, 503)
   const criteria = scoreCriteria(def.rubric, deterministic.scores, {})
   const measured = criteria.filter((c) => c.score !== null)
@@ -872,18 +910,18 @@ export async function gradePractice(
 }
 
 export async function practiceBrief(slug: string, seed: number, stage: Stage, previous: unknown) {
-  const def = definition(slug)
-  if (!isAvailable(def)) throw new AssessmentError('This assessment is not open yet.', 409)
+  const ctx = practiceCtx(slug, seed)
+  if (!isAvailable(ctx.def)) throw new AssessmentError('This assessment is not open yet.', 409)
   const order: Stage[] = ['main', 'followup', 'explain']
   const prevStage = order[order.indexOf(stage) - 1]
-  return buildBrief(def, seed, stage, prevStage ? cleanWork(def, prevStage, previous) : undefined)
+  return buildBrief(ctx, stage, prevStage ? cleanWork(ctx.def, prevStage, previous) : undefined)
 }
 
 export async function practiceRunFor(slug: string, seed: number, stage: Stage, raw: unknown) {
-  const def = definition(slug)
-  if (!isAvailable(def)) throw new AssessmentError('This assessment is not open yet.', 409)
+  const ctx = practiceCtx(slug, seed)
+  if (!isAvailable(ctx.def)) throw new AssessmentError('This assessment is not open yet.', 409)
   if (stage === 'explain') throw new AssessmentError('Nothing to run in this step.')
-  return practiceRun(def, seed, stage, cleanWork(def, stage, raw))
+  return practiceRun(ctx, stage, cleanWork(ctx.def, stage, raw))
 }
 
 export const CATALOG = ASSESSMENTS
