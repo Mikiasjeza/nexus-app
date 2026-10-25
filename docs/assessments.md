@@ -4,29 +4,48 @@ Nexus verifies a skill by watching someone use it: a timed, hands-on task,
 a follow-up that changes the requirement, and short questions about their
 own work. A pass issues a credential anyone can check at `/verify/<id>`.
 
-Everything here runs on the free tiers of the existing stack (Vercel, Neon)
-plus optional free services. Nothing needs a paid plan to work.
+Everything runs on free tiers. Python needs a code runner on its own server:
+the Nexus runner (`infra/runner`) on Oracle Cloud's Always Free tier costs
+nothing; Judge0 (`infra/judge0`) on a small paid server is the alternative.
 
 ## What exists today
 
-| Skill            | Workspace    | Runs on                       | Challenge           |
-| ---------------- | ------------ | ----------------------------- | ------------------- |
-| JavaScript       | Code editor  | QuickJS (WebAssembly), server | Ledger summary      |
-| TypeScript       | Code editor  | Node type stripping + QuickJS | Ledger summary      |
-| Python           | Code editor  | Judge0 (needs setup, below)   | Ledger summary      |
-| SQL              | Query editor | SQLite (sql.js) in a worker   | Sales cleanup       |
-| Business Writing | Text editor  | Deterministic checks + AI     | Project delay email |
+| Skill            | Workspace    | Runs on                               | Challenges                               |
+| ---------------- | ------------ | ------------------------------------- | ---------------------------------------- |
+| Python           | Code editor  | Code runner (`infra/runner`)          | Ledger summary, Log triage, Reorder plan |
+| JavaScript       | Code editor  | Judge0 with Node.js 18+, else QuickJS | Ledger summary, Log triage, Reorder plan |
+| TypeScript       | Code editor  | Types removed, then as JavaScript     | Ledger summary, Log triage, Reorder plan |
+| SQL              | Query editor | SQLite (sql.js) in a worker           | Sales cleanup                            |
+| Business Writing | Text editor  | Deterministic checks + AI             | Project delay email                      |
 
-Without Judge0 configured, Python shows as "Opening soon".
+Without a code runner, Python shows as "Opening soon". Two kits set one up:
+[`infra/runner`](../infra/runner/README.md), the free Nexus runner (ARM or
+x86, fits Oracle's Always Free tier, Python 3.12 and Node.js 22, each run in
+a gVisor sandbox), or [`infra/judge0`](../infra/judge0/README.md), Judge0 CE
+on a paid x86 server. Both answer the same API, so Nexus treats them alike;
+"Judge0" below means either.
 
-**Where code runs.** When Judge0 is configured with
-`JUDGE0_JAVASCRIPT_LANGUAGE_ID`, JavaScript and TypeScript run there too, so
-no candidate code executes on the app server. Without it they run in QuickJS:
-a separate JavaScript engine compiled to WebAssembly, inside the app's
-process but with no access to Node, the filesystem or the network. QuickJS is
-the free fallback; Judge0 is the stronger isolation. SQL always runs in
-sql.js (SQLite in WebAssembly) on a throwaway in-memory database in a worker
-thread; it can only read the challenge's own tables.
+**Challenge pool.** Coding assessments draw one of three challenges per
+attempt (by seed), and a retake draws one the candidate hasn't had. Each
+challenge also varies its rules per attempt (fee threshold, reporting
+threshold, safety and cover days), so a leaked solution covers little.
+
+**Where code runs.** Python always runs on Judge0, on a separate server.
+JavaScript and TypeScript run there too whenever the Judge0 server offers
+Node.js 18 or newer (set `JUDGE0_JAVASCRIPT=off` to opt out); otherwise they
+run in QuickJS, a separate JavaScript engine compiled to WebAssembly, inside
+the app's process but with no access to Node, the filesystem or the network.
+Judge0 is the stronger isolation; QuickJS is the free fallback. Language
+versions come from the server's `/languages` list (newest Python 3, newest
+Node.js 18+) and are shown to candidates as "Runs on …". SQL always runs in
+sql.js on a throwaway in-memory database in a worker thread.
+
+**Local development.** With `ASSESSMENT_DEV_PYTHON=pyodide` (and any
+`NODE_ENV` but production), Python runs in Pyodide (CPython compiled to
+WebAssembly) in a worker thread, so you can try Python without a Judge0
+server. Pyodide is not a security sandbox, so this is refused in production.
+The test suite uses the same runner to prove every Python reference answer
+through the exact harness Judge0 runs.
 
 ## How an attempt works
 
@@ -138,14 +157,17 @@ internal network.
 
 ## Configuration
 
-| Variable                                | What for                                                           |
-| --------------------------------------- | ------------------------------------------------------------------ |
-| `AI_PROVIDER`, `AI_MODEL`, provider key | AI grading of judgement criteria. `groq` + `GROQ_API_KEY` is free. |
-| `ADMIN_EMAILS`                          | Comma-separated reviewer emails.                                   |
-| `JUDGE0_URL` (+ `JUDGE0_AUTH_TOKEN`)    | Self-hosted Judge0 CE for Python.                                  |
-| `JUDGE0_RAPIDAPI_KEY`                   | Or the Judge0 CE plan on RapidAPI.                                 |
-| `JUDGE0_PYTHON_LANGUAGE_ID`             | Defaults to 71 (Python 3 on Judge0 CE).                            |
-| `JUDGE0_JAVASCRIPT_LANGUAGE_ID`         | Optional: run JavaScript/TypeScript on Judge0 too (Node 18+ id).   |
+| Variable                                | What for                                                                |
+| --------------------------------------- | ----------------------------------------------------------------------- |
+| `AI_PROVIDER`, `AI_MODEL`, provider key | AI grading of judgement criteria. `groq` + `GROQ_API_KEY` is free.      |
+| `ADMIN_EMAILS`                          | Comma-separated reviewer emails.                                        |
+| `JUDGE0_URL` + `JUDGE0_AUTH_TOKEN`      | Your code runner (`infra/runner` or `infra/judge0`).                    |
+| `JUDGE0_RAPIDAPI_KEY`                   | Or Judge0 CE on RapidAPI, used when `JUDGE0_URL` is empty.              |
+| `JUDGE0_DAILY_LIMIT`                    | Judge0 calls per UTC day before runs pause (default 1,000).             |
+| `JUDGE0_JAVASCRIPT`                     | `off` keeps JavaScript/TypeScript in QuickJS even when Judge0 has Node. |
+| `JUDGE0_PYTHON_LANGUAGE_ID`             | Pin a Python version by id (normally detected).                         |
+| `JUDGE0_JAVASCRIPT_LANGUAGE_ID`         | Pin a Node.js version by id (normally detected).                        |
+| `ASSESSMENT_DEV_PYTHON`                 | `pyodide` runs Python locally without Judge0. Ignored in production.    |
 
 ### Watching costs
 
@@ -159,34 +181,50 @@ grading has no per-use cost. Spending caps belong at the provider too: set a
 monthly limit on the AI key and, if you use RapidAPI for Judge0, its quota.
 
 Built-in limits that bound cost: 3 attempts per skill per 30 days, one AI
-call per attempt, 300 runs per attempt, per-user and per-IP rate limits on
-runs, saves and practice.
+call per attempt, per-user and per-IP rate limits on runs, saves and
+practice, and for Judge0 specifically:
+
+- a daily cap (`JUDGE0_DAILY_LIMIT`, counted in the `RunnerUsage` table).
+  At the cap, runs pause; final grading has 20% extra headroom, and past
+  that an attempt is marked "not graded yet" (never failed) for a retry;
+- 60 runs per attempt on Judge0 (300 elsewhere);
+- practice runs on Judge0 need an account.
+
+The reviewer console shows the runner's status, the language versions in
+use, and today's Judge0 calls against the cap.
 
 ### Free options
 
 - **AI grading:** Groq's free tier (`AI_PROVIDER=groq`, `GROQ_API_KEY`). Avoid
   free tiers whose terms let the provider train on submitted data (Gemini's
   free tier does), since candidate work is personal data.
-- **Python:** Judge0 CE is open source. Run it on an always-free VM (for
-  example Oracle Cloud's Always Free tier) with Docker, or use the free plan
-  on RapidAPI for low volume.
+- **Python:** the Nexus runner (`infra/runner`) on Oracle Cloud's Always Free
+  Ampere A1 tier (2 OCPUs, 12 GB). Oracle may reclaim free instances that
+  stay idle for a week; the runner holds no data, so recreating it takes
+  about 15 minutes. Judge0 CE can't run there (x86-only images, and the free
+  x86 VM is too small); run it with `infra/judge0` on a small paid VM, or
+  start on RapidAPI's free plan for low volume.
 
 ## Database
 
 Migration `prisma/migrations/20261023120000_add_skill_assessments` adds the
 tables `AssessmentAttempt`, `AttemptEvent`, `AssessmentSubmission`,
-`AssessmentEvaluation`, `Credential`, `AssessmentAppeal` and `AuditLog`. It
-only creates tables. Until it is applied, the catalog and practice rounds
-work and real attempts answer "Assessments are not set up on this server yet."
+`AssessmentEvaluation`, `Credential`, `AssessmentAppeal` and `AuditLog`;
+`20261025120000_add_runner_usage` adds `RunnerUsage`. Both only create
+tables. Until they are applied, the catalog and practice rounds work and real
+attempts answer "Assessments are not set up on this server yet."
 
-## Adding a skill
+## Adding a skill or challenge
 
-1. Write a challenge module in `lib/assessments/challenges/` (instructions per
-   stage, a reference answer, hidden test or check generation from a seed, a
-   rubric).
-2. Teach `engine.ts` its workspace if it is a new kind.
-3. Add a catalog entry in `catalog.ts`.
-4. Add tests that a reference answer passes and a flawed one doesn't.
+- **A coding challenge:** write a module in `lib/assessments/challenges/`
+  that implements `CodeChallenge` (`code.ts`): instructions per stage and
+  language, a trusted reference, visible examples and seeded hidden tests.
+  Register it in `challenges/index.ts`; every coding assessment draws from
+  the pool. Add a candidate-style answer in JavaScript and Python to
+  `test-utils/assessment-fixtures.ts`; the tests then prove it in QuickJS and
+  real CPython automatically.
+- **A new skill:** add a catalog entry in `catalog.ts`, and teach
+  `engine.ts` its workspace if it is a new kind.
 
 ## Before employers rely on it
 
