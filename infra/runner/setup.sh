@@ -5,15 +5,18 @@
 # Caddy in front for HTTPS. Safe to run again; it keeps the existing token.
 #
 # Usage, as root on the server, from the folder holding this script and server.js:
-#   bash setup.sh runner.example.com you@example.com
+#   bash setup.sh runner.example.com [you@example.com]
+# or unattended at first boot through oracle-cloud-init.sh. RUNNER_TOKEN in
+# the environment sets the access token (40+ characters); otherwise one is
+# generated. The email is optional (certificate expiry notices).
 #
-# The domain's DNS A record must already point at this server, and ports 80
-# and 443 must be open in your cloud provider's firewall (on Oracle: the
-# subnet's security list).
+# Ports 80 and 443 must be open in your cloud provider's firewall (on Oracle:
+# the subnet's security list). HTTPS starts as soon as the domain's DNS points
+# at this server; Caddy keeps retrying until it does.
 set -euo pipefail
 
-DOMAIN="${1:?Usage: bash setup.sh <domain> <email for HTTPS certificates>}"
-EMAIL="${2:?Usage: bash setup.sh <domain> <email for HTTPS certificates>}"
+DOMAIN="${1:?Usage: bash setup.sh <domain> [email for HTTPS certificates]}"
+EMAIL="${2:-}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 DIR="/opt/nexus-runner"
 ENV_FILE="/etc/nexus-runner.env"
@@ -22,6 +25,8 @@ NODE_IMAGE="node:22.11.0-slim"
 CADDY_IMAGE="caddy:2.8.4"
 
 say() { printf '\n== %s\n' "$*"; }
+# First boot often has unattended upgrades holding the package lock; wait for it.
+apt_get() { apt-get -o DPkg::Lock::Timeout=900 -q "$@"; }
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "Run this as root (sudo bash setup.sh ...)." >&2
@@ -36,8 +41,8 @@ if ! grep -q 'VERSION_ID="24.04"' /etc/os-release; then
 fi
 
 say "1/6 Packages"
-apt-get update -q
-apt-get install -y -q docker.io nodejs curl gnupg ca-certificates openssl
+apt_get update
+apt_get install -y docker.io nodejs curl gnupg ca-certificates openssl
 systemctl enable --now docker
 NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
 if [ "$NODE_MAJOR" -lt 18 ]; then
@@ -50,8 +55,8 @@ if ! command -v runsc > /dev/null; then
   curl -fsSL https://gvisor.dev/archive.key | gpg --dearmor --yes -o /usr/share/keyrings/gvisor-archive-keyring.gpg
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases release main" \
     > /etc/apt/sources.list.d/gvisor.list
-  apt-get update -q
-  apt-get install -y -q runsc
+  apt_get update
+  apt_get install -y runsc
 fi
 # The package registers itself with Docker; make sure Docker has picked it up.
 runsc install > /dev/null 2>&1 || true
@@ -80,8 +85,12 @@ usermod -aG docker nexus-runner
 mkdir -p "$DIR"
 install -m 0644 "$HERE/server.js" "$DIR/server.js"
 
-TOKEN=""
-if [ -f "$ENV_FILE" ]; then
+TOKEN="${RUNNER_TOKEN:-}"
+if [ -n "$TOKEN" ] && [ "${#TOKEN}" -lt 40 ]; then
+  echo "RUNNER_TOKEN must be at least 40 characters." >&2
+  exit 1
+fi
+if [ -z "$TOKEN" ] && [ -f "$ENV_FILE" ]; then
   TOKEN="$(grep '^RUNNER_TOKEN=' "$ENV_FILE" | cut -d= -f2- || true)"
 fi
 [ -n "$TOKEN" ] || TOKEN="$(openssl rand -hex 32)"
@@ -123,16 +132,15 @@ systemctl enable nexus-runner
 systemctl restart nexus-runner
 
 say "5/6 HTTPS with Caddy"
-cat > "$DIR/Caddyfile" <<CADDY
 {
-	email ${EMAIL}
-}
-
+  if [ -n "$EMAIL" ]; then printf '{\n\temail %s\n}\n\n' "$EMAIL"; fi
+  cat <<CADDY
 ${DOMAIN} {
 	encode gzip
 	reverse_proxy 127.0.0.1:2358
 }
 CADDY
+} > "$DIR/Caddyfile"
 docker rm -f nexus-caddy > /dev/null 2>&1 || true
 docker run -d --name nexus-caddy --restart always --network host \
   -v "$DIR/Caddyfile:/etc/caddy/Caddyfile:ro" \
@@ -148,7 +156,7 @@ if [ -f /etc/iptables/rules.v4 ] && command -v netfilter-persistent > /dev/null;
   done
   netfilter-persistent save > /dev/null
 else
-  apt-get install -y -q ufw
+  apt_get install -y ufw
   ufw allow OpenSSH
   ufw allow 80/tcp
   ufw allow 443/tcp
@@ -179,6 +187,10 @@ else
   echo "Sandboxed run failed: $RESULT" >&2
   exit 1
 fi
+
+# For reading back later over SSH: sudo cat /root/nexus-runner.txt
+umask 077
+printf 'JUDGE0_URL=https://%s\nJUDGE0_AUTH_TOKEN=%s\n' "$DOMAIN" "$TOKEN" > /root/nexus-runner.txt
 
 cat <<DONE
 

@@ -3,10 +3,81 @@
 A small code runner that answers the same API calls as Judge0, so Nexus uses
 it with the same two settings (`JUDGE0_URL`, `JUDGE0_AUTH_TOKEN`). Unlike
 Judge0 it runs on **ARM as well as x86**, which means it fits **Oracle
-Cloud's Always Free Ampere A1** tier: no monthly bill.
+Cloud's Always Free Ampere A1** tier: no monthly bill. Candidates get Python
+3.12 and Node.js 22.
 
-It also gives candidates newer languages than Judge0 CE 1.13.1: Python 3.12
-and Node.js 22 (pinned images, changeable in `/etc/nexus-runner.env`).
+## Set it up for free (about 30 minutes, no command line)
+
+You need: a computer with a browser. Nothing here costs money.
+
+**A. Get a free web address (DuckDNS)**
+
+1. Go to [duckdns.org](https://www.duckdns.org) and sign in (GitHub, Google
+   and others work).
+2. Type a name, e.g. `nexus-runner-yourname`, and click **add domain**. Your
+   address is now `nexus-runner-yourname.duckdns.org`. Leave the tab open.
+
+**B. Prepare the setup script**
+
+3. Open [`oracle-cloud-init.sh`](oracle-cloud-init.sh) and copy all of it
+   into a plain text editor (Notepad, TextEdit).
+4. Near the top, replace `CHANGE-ME.duckdns.org` with your DuckDNS address.
+5. Replace the second `CHANGE-ME` with a long random password: 40 or more
+   letters and digits, no spaces or quotes. A password manager's generator
+   is ideal. Keep it: you'll paste it into Vercel later.
+
+**C. Create the free server (Oracle Cloud)**
+
+6. Sign up at [cloud.oracle.com](https://cloud.oracle.com). Oracle asks for a
+   card to verify who you are; Always Free resources aren't charged.
+7. In the console, open **Compute → Instances → Create instance**:
+   - **Image:** Canonical Ubuntu **24.04**.
+   - **Shape:** Ampere → **VM.Standard.A1.Flex**, 2 OCPUs, 12 GB memory
+     (the console marks it "Always Free-eligible").
+   - **Networking:** keep the defaults, with a public IPv4 address.
+   - **SSH keys:** let Oracle generate a key pair and download it (you won't
+     need it unless something goes wrong).
+   - **Show advanced options → Management → Paste cloud-init script:** paste
+     your edited script.
+   - Click **Create**. If Oracle says it is _out of capacity_, try another
+     availability domain or try again later; free ARM capacity comes and goes.
+8. When the instance is running, copy its **Public IP address**.
+9. On the instance page, open the **subnet → security list → Add ingress
+   rules**, and add two rules with source `0.0.0.0/0`: **TCP port 80** and
+   **TCP port 443**.
+
+**D. Connect the pieces**
+
+10. Back on DuckDNS, paste the public IP into the **current ip** box next to
+    your address and click **update ip**.
+11. Wait about 10 minutes while the server installs itself, then open
+    `https://your-address.duckdns.org/about` in a browser. A page saying
+    _Unauthorized_ means it's working: it only answers with the password.
+12. In Vercel, open the **nexus-app** project → **Settings → Environment
+    Variables**, and add for **Production**:
+    - `JUDGE0_URL` = `https://your-address.duckdns.org`
+    - `JUDGE0_AUTH_TOKEN` = the password from step 5
+13. Redeploy (Deployments → latest → Redeploy).
+14. Open `/admin/reviews` on your site (your email must be in
+    `ADMIN_EMAILS`). The **Code runner** panel should say _Nexus runner 1.0.0
+    connected_ with Python 3.12 and Node.js 22, and Python opens for
+    candidates.
+
+**If step 11 doesn't work after 20 minutes:** check that ports 80 and 443
+are open (step 9) and that DuckDNS shows the right IP (step 10). The server's
+own log is in Oracle: instance → **Console connection → Console history**,
+or over SSH with `sudo tail -100 /var/log/cloud-init-output.log`.
+
+### Oracle's terms to know
+
+- The Always Free Ampere allowance is currently 2 OCPUs and 12 GB in total
+  (Oracle halved it in June 2026). This setup uses all of it.
+- Oracle **may reclaim idle Always Free instances**: one counts as idle when,
+  over 7 days, its CPU, network and memory use all stay under 20%. A quiet
+  runner can meet that. Nexus then shows "not graded yet" for new
+  submissions, never a fail. Recreate the instance with the same script (the
+  runner stores nothing) and update the IP in DuckDNS.
+- If the instance's public IP ever changes, update it in DuckDNS.
 
 ## How it keeps code contained
 
@@ -21,58 +92,30 @@ Every run is a fresh container that is deleted afterwards:
 - Caps: 1 CPU, the memory Nexus asks for (at most 512 MB), 64 processes,
   1 MB files, 10 s of run time, 1 MB of output.
 - Code arrives on standard input and is never written to the server's disk.
-- The runner itself listens on 127.0.0.1 only, behind Caddy (HTTPS) and a
+- The runner itself listens on 127.0.0.1 only, behind Caddy (HTTPS) and the
   secret token, runs as its own user, and reaches nothing but Docker.
 
-## Set up on Oracle Cloud (free)
+## Other ways to install
 
-**Before you start, know Oracle's terms.** The Always Free Ampere A1
-allowance is currently 2 OCPUs and 12 GB of memory (Oracle halved it in June
-2026), plenty for this. Oracle may **reclaim idle Always Free instances**:
-one counts as idle when, over 7 days, its CPU, network and memory use all
-stay under 20% (95th percentile). A quiet runner can meet that. If yours is
-reclaimed, recreate it with the steps below (about 15 minutes) and update
-the two values in Vercel; nothing on it needs backing up. Signing up asks for
-a card to verify identity; Always Free resources aren't charged. Free A1
-capacity is sometimes unavailable in busy regions; trying another
-availability domain or later usually works.
-
-1. In the Oracle Cloud console, create a **Compute instance**: image
-   **Canonical Ubuntu 24.04**, shape **VM.Standard.A1.Flex** with 2 OCPUs
-   and 12 GB (both within Always Free). Add your SSH key.
-2. In the instance's **subnet → security list**, add ingress rules for
-   **TCP 80** and **TCP 443** from `0.0.0.0/0`.
-3. Point a DNS **A record** (e.g. `runner.yourdomain.com`) at the instance's
-   public IP.
-4. Copy this folder (`server.js` and `setup.sh`) to the server and run:
-   ```bash
-   sudo bash setup.sh runner.yourdomain.com you@yourdomain.com
-   ```
-   It installs Docker and gVisor, pulls the language images, starts the
-   runner and Caddy, opens ports 80 and 443 in Oracle's built-in iptables
-   rules, runs a test program in the sandbox, and prints two values.
-5. Add them in Vercel (Project → Settings → Environment Variables →
-   Production) and redeploy:
-   - `JUDGE0_URL` = `https://runner.yourdomain.com`
-   - `JUDGE0_AUTH_TOKEN` = the printed token (keep it secret)
-6. Open `/admin/reviews` in Nexus. The **Code runner** panel should say
-   _Nexus runner 1.0.0 connected_ with Python 3.12 and Node.js 22.
-
-Any other Ubuntu 24.04 VM works the same way, ARM or x86 (a paid one avoids
-Oracle's idle reclaim).
+- **Any Ubuntu 24.04 server (ARM or x86), over SSH:** copy `server.js` and
+  `setup.sh` to it and run `sudo bash setup.sh your.domain [you@email]`. It
+  prints the two Vercel values at the end. A paid VM avoids Oracle's idle
+  reclaim.
+- **Judge0 instead:** `infra/judge0` sets up Judge0 CE on a paid x86 server.
+  Nexus works with either; only the two values change.
 
 ## Looking after it
 
 - Status and logs: `systemctl status nexus-runner`, `journalctl -u nexus-runner -n 100`
 - After editing `/etc/nexus-runner.env`: `sudo systemctl restart nexus-runner`
 - Change language versions: set `RUNNER_PYTHON_IMAGE` / `RUNNER_NODE_IMAGE`,
-  `docker pull` the new image, restart. Nexus picks the new version up
-  within ten minutes.
+  `docker pull` the new image, restart. Nexus picks the new version up within
+  ten minutes.
 - Security updates: `sudo apt install unattended-upgrades`
-- Rotate the token: delete the `RUNNER_TOKEN=` value from
-  `/etc/nexus-runner.env`, run `setup.sh` again, update Vercel.
+- Rotate the token: put a new one in `/etc/nexus-runner.env`, restart the
+  service, and update Vercel.
 
-## Judge0 instead?
+## For developers
 
-`infra/judge0` sets up Judge0 CE, the more established project, on a paid
-x86 server. Nexus works with either; you only change the two values.
+`oracle-cloud-init.sh` is generated from `server.js` and `setup.sh` by
+`node infra/runner/build-cloud-init.js`; a test fails if it is out of date.
