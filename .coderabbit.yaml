@@ -12,7 +12,12 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-    base_branches: ["^main$"]
+    # Also review pull requests that build on another branch (stacked PRs).
+    base_branches: ["^main$", "^redesign/.*", "^feature/.*", "^chore/.*"]
+  # Skip the Bklit chart library: third-party code copied in by the shadcn
+  # registry. It is not ours to review and would push PRs over the file limit.
+  path_filters:
+    - "!components/charts/**"
   path_instructions:
     - path: "app/**/*.{ts,tsx}"
       instructions: |
