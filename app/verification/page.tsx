@@ -182,7 +182,9 @@ export default function VerificationPage() {
   const selectedEvidenceType =
     evidenceTypes.find((type) => type.id === selectedType) ?? evidenceTypes[0]
   const selectedSkill = skills.find((skill) => skill.id === selectedSkillId) ?? null
-  const displayedAnalyses = isGuestPreview ? guestSampleAnalyses : recentAnalyses
+  // Visitors who can't run checks (signed out or guest preview) see samples.
+  const showsSamples = !isLoadingData && (!user || isGuestPreview)
+  const displayedAnalyses = showsSamples ? guestSampleAnalyses : recentAnalyses
   const selectedPillar = selectedSkill ? getSkillPillarDetail(selectedSkill.category) : null
 
   useEffect(() => {
@@ -530,7 +532,7 @@ export default function VerificationPage() {
     value ? value.charAt(0).toUpperCase() + value.slice(1) : ''
 
   // Visitors who can't run a check see a labelled sample of what one returns.
-  const isSampleResult = !analysisResult && !isLoadingData && (!user || isGuestPreview)
+  const isSampleResult = !analysisResult && showsSamples
   const shownResult = analysisResult ?? (isSampleResult ? guestSampleAnalyses[0] : null)
   const claimedLevel = isSampleResult ? shownResult?.skillLevel : selectedSkill?.level
 
@@ -543,7 +545,7 @@ export default function VerificationPage() {
           description="Add work that shows the skill. The AI checks it against the level you claim and tells you why."
         />
 
-        {!isLoadingData && (!user || isGuestPreview) && (
+        {showsSamples && (
           <div className="mb-10 flex flex-wrap items-center justify-between gap-4 border-y border-line py-4">
             <p className="text-sm text-ink-muted">
               {isGuestPreview

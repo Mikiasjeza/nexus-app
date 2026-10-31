@@ -22,8 +22,8 @@ type Variant = {
 }
 
 const VARIANTS: Record<'regular' | 'compact', Variant> = {
-  regular: { stroke: 7, gap: 2.5, left: 22, right: 58, top: 6, bottom: 74, start: 12, end: 72 },
-  compact: { stroke: 9, gap: 4, left: 24, right: 56, top: 8, bottom: 72, start: 12, end: 73 },
+  regular: { stroke: 7, gap: 0.74, left: 22, right: 58, top: 6, bottom: 74, start: 12, end: 72 },
+  compact: { stroke: 9, gap: 1.51, left: 24, right: 56, top: 8, bottom: 72, start: 12, end: 73 },
 }
 
 export const MARK_VIEWBOX = '0 0 80 80'
@@ -33,11 +33,12 @@ export function markGeometry(variant: keyof typeof VARIANTS): {
   segments: MarkSegment[]
 } {
   const v = VARIANTS[variant]
-  const half = v.stroke / 2
-  // Distance from a crossing's centre to the nearest round-capped end that
-  // leaves `gap` of clear space beside the other stroke.
-  const clearance = half * Math.SQRT2 + v.gap + half
-  const along = clearance / Math.SQRT2
+  // A round-capped end leaves `gap` of clear space beside the other stroke
+  // when its centre sits stroke + gap from that stroke's centre line. The
+  // diagonal meets the vertical stems at 45°, so measured along a stem the
+  // cut is √2 times longer.
+  const along = v.stroke + v.gap
+  const clearance = along * Math.SQRT2
 
   const segments: MarkSegment[] = []
   const line = (x1: number, y1: number, x2: number, y2: number) => segments.push({ x1, y1, x2, y2 })
