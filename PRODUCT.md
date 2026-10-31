@@ -34,7 +34,7 @@ Verification is grounded in submitted work, not self-description or tests: the A
 - Next.js 16 App Router, React, Tailwind, Prisma/Postgres (Neon), deployed on Vercel. Stripe billing, Resend email, S3 evidence storage.
 - Skills sit in five pillars (Build/Technical, Create/Creative, Explain/Communication, Lead/Professional, Grow/Learning) and four levels: beginner, intermediate, advanced, expert.
 - AI analysis returns a confidence score (0 to 1, verified at 0.8 or above under the policy rules), an explanation, a suggested level, and up to three improvements. The badge can be withdrawn by a later analysis or by changing a verified skill's claim.
-- Evidence uploads: images, PDF, MP4/WebM, txt/md/json up to 10MB. The AI reads text files in full; other files are judged by name and description.
+- Evidence uploads: images, PDF, MP4/WebM, txt/md/json up to 10MB. The AI reads text files in full. Other files are judged only by name and description, so like a written description they can never verify a skill on their own: code, a text file or a link is required.
 - Undecided: employer pricing does not exist yet.
 
 ## Brand Commitments

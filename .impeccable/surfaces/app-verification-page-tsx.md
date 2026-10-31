@@ -21,7 +21,7 @@ User-pinned: metalab.com's design language, adapted to working app screens and t
 
 THESIS: A working screen set like a studio portfolio index: the evidence and the verdict carry the page, not chrome. Refuses the dark-glass dashboard with glowing orbs, card grids and tracked uppercase pill kickers.
 
-OWN-WORLD: Pure black ground, white ink, warm grey #79767A for secondary text, hairline rules at white 10%, translucent grey pills (white 20%, fully rounded) for every filter, tab and small action. One electric violet reserved for verified state, selection and focus. Thin high-contrast display serif (Noto Serif Display, light) for page titles and headline numbers; Hanken Grotesk for all UI text. No cards with borders and glow; lists are hairline-ruled rows.
+OWN-WORLD: Warm off-black ground #0c0c0b, cream ink #e9e4da, warm greys #a39d92 and #7a746a for secondary text, hairline rules at cream 10%, translucent cream pills (12%, fully rounded) for every filter, tab and small action. One orange #e9762b reserved for verified state, selection and focus. Thin high-contrast display serif (Noto Serif Display, light) for page titles and headline numbers; Hanken Grotesk for all UI text. No cards with borders and glow; lists are hairline-ruled rows.
 
 STORY: The candidate sees each skill's state at a glance, opens one, adds evidence, runs the check, and reads the score, the reasons and what would raise it, then shares the passport.
 
