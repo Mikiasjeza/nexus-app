@@ -344,8 +344,10 @@ export default function HalftoneWord({
         ctx.globalAlpha = 1
         ctx.globalCompositeOperation = 'source-over'
       }
-      // Sleep once everything is home and nothing is pushing.
-      awake = moving || ringAge < 900 || px > -1e4
+      // Sleep once no dot is moving or held off its place and no ring is out.
+      // A resting pointer changes nothing; pointer events wake the loop again.
+      // With reduced motion, dots never move, so this sleeps straight away.
+      awake = moving || ringAge < 900
     }
 
     const loop = (now: number) => {
