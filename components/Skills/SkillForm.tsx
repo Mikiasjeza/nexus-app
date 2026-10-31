@@ -3,7 +3,6 @@
 import { useState, useEffect, useId, useRef } from 'react'
 import { Skill, SkillLevel, SkillCategory } from '@/lib/types'
 import { SKILL_LEVELS, SKILL_CATEGORIES } from '@/lib/utils/constants'
-import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import Link from 'next/link'
 
@@ -89,30 +88,27 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
   }
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xl">
-        <motion.div
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-ground/70 p-4 backdrop-blur-sm">
+        <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
           tabIndex={-1}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="gradient-border-card w-full max-w-2xl max-h-[90vh] overflow-y-auto outline-none"
+          className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-line bg-raised outline-none"
         >
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.08] bg-[rgba(6,8,14,0.9)] px-6 py-4 backdrop-blur-xl">
-            <h2 id={titleId} className="text-2xl font-bold text-white">
-              {skill ? 'Edit Skill' : 'Add New Skill'}
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-raised px-6 py-4">
+            <h2 id={titleId} className="text-xl font-medium">
+              {skill ? 'Edit skill' : 'Add a skill'}
             </h2>
             <button
               type="button"
               onClick={onCancel}
-              className="rounded-lg p-2 text-white/50 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300/70"
+              className="pill size-9 justify-center p-0"
               aria-label="Close skill form"
             >
-              <X className="w-5 h-5" />
+              <X className="size-4" aria-hidden />
             </button>
           </div>
 
@@ -187,7 +183,7 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
                 max="100"
                 value={formData.progress}
                 onChange={(e) => setFormData({ ...formData, progress: parseInt(e.target.value) })}
-                className="w-full accent-cyan-300"
+                className="w-full accent-verified"
               />
             </div>
 
@@ -251,13 +247,13 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
                   {formData.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-sm text-cyan-100"
+                      className="inline-flex items-center gap-1 rounded-full bg-pill px-3 py-1 text-sm text-ink"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="rounded-full p-0.5 text-cyan-100/70 hover:bg-cyan-300/10 hover:text-cyan-50"
+                        className="rounded-full p-0.5 text-ink-faint hover:bg-pill-hover hover:text-ink"
                         aria-label={`Remove ${tag} tag`}
                       >
                         <X className="w-3 h-3" />
@@ -269,10 +265,10 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
             </div>
 
             {/* Verification is set only by the AI check on submitted evidence. */}
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-ink-muted">
               {formData.verified ? (
                 <>
-                  <span className="text-cyan-200">Verified.</span> Changing the name, level or
+                  <span className="text-verified-ink">Verified.</span> Changing the name, level or
                   category removes the badge until the new claim is checked.
                 </>
               ) : (
@@ -280,7 +276,7 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
                   Not verified yet.{' '}
                   <Link
                     href="/verification"
-                    className="text-cyan-200 underline decoration-white/20 underline-offset-2 hover:text-cyan-100"
+                    className="text-ink underline decoration-line-strong underline-offset-2 hover:decoration-ink"
                   >
                     Add evidence
                   </Link>{' '}
@@ -289,7 +285,7 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
               )}
             </p>
 
-            <div className="flex gap-3 pt-4 border-t border-white/[0.08]">
+            <div className="flex gap-3 pt-4 border-t border-line">
               <button
                 type="button"
                 onClick={onCancel}
@@ -302,8 +298,8 @@ export default function SkillForm({ skill, onSave, onCancel }: SkillFormProps) {
               </button>
             </div>
           </form>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
+    </>
   )
 }

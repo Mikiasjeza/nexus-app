@@ -1,126 +1,56 @@
 'use client'
 
-import React, { useState, Fragment } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Target,
-  Plus,
-  Sparkles,
-  CheckCircle,
-  ArrowRight,
-  ArrowLeft,
-  User,
-  Briefcase,
-  GraduationCap,
-  TrendingUp,
-  Code,
-  Palette,
-  MessageSquare,
-} from 'lucide-react'
+import { ArrowRight, ArrowLeft } from 'lucide-react'
 import Button from '@/components/UI/Button'
-import AnimatedCard from '@/components/UI/AnimatedCard'
 import { useToast } from '@/components/UI/ToastProvider'
-import Confetti from '@/components/UI/Confetti'
-import { easing } from '@/lib/utils/animations'
 import {
   normalizeSkillName,
   SKILL_PILLAR_DETAILS,
   SKILL_SUGGESTION_GROUPS,
 } from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
-import type { SkillCategory } from '@/lib/types'
 
 const steps = [
   {
     id: 1,
     title: 'Welcome',
-    description: "Let's set up your Nexus profile",
-    icon: <Sparkles className="w-8 h-8" />,
+    heading: 'Welcome to Nexus',
+    body: 'Your skills sit in five pillars. Add what you can do, attach work that shows it, and the AI checks it against the level you claim.',
   },
   {
     id: 2,
-    title: 'Your Goals',
-    description: 'What are you looking to achieve?',
-    icon: <Target className="w-8 h-8" />,
+    title: 'Goals',
+    heading: 'What are you here for?',
+    body: 'Optional. Pick any that apply; it shapes what your dashboard suggests first.',
   },
   {
     id: 3,
-    title: 'Add Skills',
-    description: 'Add your first skills to get started',
-    icon: <Plus className="w-8 h-8" />,
+    title: 'Skills',
+    heading: 'Add a few skills',
+    body: 'Pick from the suggestions or add your own. You can change these any time.',
   },
   {
     id: 4,
-    title: 'Complete',
-    description: "You're all set!",
-    icon: <CheckCircle className="w-8 h-8" />,
+    title: 'Done',
+    heading: 'You’re set',
+    body: 'Your passport is ready. Next, attach proof to a skill and run your first check.',
   },
 ]
 
 const goals = [
-  {
-    id: 'career',
-    title: 'Career Growth',
-    description: 'Advance in my current field',
-    icon: <TrendingUp className="w-6 h-6" />,
-    color: 'from-blue-500 to-cyan-500',
-  },
-  {
-    id: 'job-search',
-    title: 'Find New Job',
-    description: 'Get matched with opportunities',
-    icon: <Briefcase className="w-6 h-6" />,
-    color: 'from-purple-500 to-pink-500',
-  },
+  { id: 'career', title: 'Grow in my field', description: 'Show progress where I already work.' },
+  { id: 'job-search', title: 'Find a new job', description: 'Get matched with open roles.' },
   {
     id: 'skill-verification',
-    title: 'Verify Skills',
-    description: 'Get AI-verified credentials',
-    icon: <GraduationCap className="w-6 h-6" />,
-    color: 'from-green-500 to-emerald-500',
+    title: 'Verify my skills',
+    description: 'Turn claims into checked proof.',
   },
-  {
-    id: 'learning',
-    title: 'Skill Development',
-    description: 'Track my learning journey',
-    icon: <User className="w-6 h-6" />,
-    color: 'from-orange-500 to-amber-500',
-  },
+  { id: 'learning', title: 'Track my learning', description: 'See new skills take shape.' },
 ]
 
 const MAX_ONBOARDING_SKILLS = 15
-
-const pillarVisuals: Record<
-  SkillCategory,
-  { icon: React.ReactNode; cardClass: string; chipClass: string }
-> = {
-  'Technical Skills': {
-    icon: <Code className="w-5 h-5" />,
-    cardClass: 'border-cyan-400/20 bg-cyan-500/8',
-    chipClass: 'bg-cyan-400/12 text-cyan-100 hover:bg-cyan-400/18',
-  },
-  'Creative Skills': {
-    icon: <Palette className="w-5 h-5" />,
-    cardClass: 'border-fuchsia-400/20 bg-fuchsia-500/8',
-    chipClass: 'bg-fuchsia-400/12 text-fuchsia-100 hover:bg-fuchsia-400/18',
-  },
-  'Communication Skills': {
-    icon: <MessageSquare className="w-5 h-5" />,
-    cardClass: 'border-emerald-400/20 bg-emerald-500/8',
-    chipClass: 'bg-emerald-400/12 text-emerald-100 hover:bg-emerald-400/18',
-  },
-  'Professional Skills': {
-    icon: <Briefcase className="w-5 h-5" />,
-    cardClass: 'border-indigo-400/20 bg-indigo-500/8',
-    chipClass: 'bg-indigo-400/12 text-indigo-100 hover:bg-indigo-400/18',
-  },
-  'Learning & Growth': {
-    icon: <TrendingUp className="w-5 h-5" />,
-    cardClass: 'border-amber-400/20 bg-amber-500/8',
-    chipClass: 'bg-amber-400/12 text-amber-100 hover:bg-amber-400/18',
-  },
-}
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -132,7 +62,6 @@ export default function OnboardingPage() {
   const [customSkillError, setCustomSkillError] = useState<string | null>(null)
   const [completionError, setCompletionError] = useState<string | null>(null)
   const [isCompleting, setIsCompleting] = useState(false)
-  const [showConfetti, setShowConfetti] = useState(false)
 
   const handleGoalToggle = (goalId: string) => {
     setSelectedGoals((prev) =>
@@ -229,14 +158,12 @@ export default function OnboardingPage() {
         )
       }
 
-      setShowConfetti(true)
       addToast({
         type: 'success',
         title: 'Welcome to Nexus!',
-        message: 'Your profile is ready. Opening your dashboard now.',
+        message: 'Your passport is ready.',
       })
 
-      await new Promise((resolve) => window.setTimeout(resolve, 1200))
       router.replace('/dashboard')
     } catch (error) {
       const message =
@@ -256,357 +183,224 @@ export default function OnboardingPage() {
   const isSkippableEmptyStep =
     (currentStep === 2 && selectedGoals.length === 0) ||
     (currentStep === 3 && selectedSkills.length === 0)
+  const step = steps[currentStep - 1]
 
   return (
-    <AppPageShell className="flex min-h-screen items-center justify-center bg-black p-4">
-      <Confetti trigger={showConfetti} />
-
-      <div className="w-full max-w-4xl">
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {steps.map((step, index) => (
-              <Fragment key={step.id}>
-                <div className="flex flex-col items-center flex-1">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors ${
-                      currentStep >= step.id ? 'bg-white text-black' : 'bg-white/10 text-white/45'
-                    }`}
-                  >
-                    {currentStep > step.id ? <CheckCircle className="w-6 h-6" /> : step.icon}
-                  </motion.div>
-                  <span
-                    className={`text-xs font-medium ${
-                      currentStep >= step.id ? 'text-cyan-200' : 'text-white/45'
-                    }`}
-                  >
-                    {step.title}
-                  </span>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-2 ${
-                      currentStep > step.id ? 'bg-cyan-300/80' : 'bg-white/10'
-                    }`}
-                  />
-                )}
-              </Fragment>
-            ))}
+    <AppPageShell>
+      <div className="page-shell max-w-[64rem]">
+        <div className="flex items-center gap-4 text-sm text-ink-faint">
+          <span className="tabular">
+            {currentStep} / {steps.length}
+          </span>
+          <div className="h-px flex-1 bg-line" aria-hidden>
+            <div
+              className="h-px bg-ink transition-[width] duration-200 ease-out"
+              style={{ width: `${(currentStep / steps.length) * 100}%` }}
+            />
           </div>
+          <span>{step.title}</span>
         </div>
 
-        {/* Content */}
-        <AnimatedCard className="gradient-border-card p-8 md:p-12">
-          <AnimatePresence mode="wait">
-            {/* Step 1: Welcome */}
-            {currentStep === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-                className="text-center"
+        <section aria-labelledby="onboarding-step" className="py-12">
+          <h1 id="onboarding-step" className="page-title">
+            {step.heading}
+            <span className="title-rule" aria-hidden />
+          </h1>
+          <p className="mt-6 max-w-[36rem] text-lg leading-relaxed text-ink-muted">{step.body}</p>
+
+          {currentStep === 1 && (
+            <ul className="ruled-list mt-12 border-y border-line">
+              {SKILL_PILLAR_DETAILS.map((pillar) => (
+                <li
+                  key={pillar.category}
+                  className="grid grid-cols-[6rem_minmax(0,1fr)] gap-6 py-5"
+                >
+                  <span className="font-medium">{pillar.shortLabel}</span>
+                  <span className="text-ink-muted">{pillar.summary}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {currentStep === 2 && (
+            <div className="mt-12 grid gap-2 sm:grid-cols-2" role="group" aria-label="Goals">
+              {goals.map((goal) => {
+                const selected = selectedGoals.includes(goal.id)
+                return (
+                  <button
+                    key={goal.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => handleGoalToggle(goal.id)}
+                    className={`rounded-2xl border p-6 text-left transition-colors duration-150 ${
+                      selected
+                        ? 'border-verified bg-verified-wash'
+                        : 'border-line hover:border-line-strong'
+                    }`}
+                  >
+                    <span className="block font-display text-[1.75rem] font-light leading-tight">
+                      {goal.title}
+                    </span>
+                    <span className="mt-2 block text-sm text-ink-muted">{goal.description}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="mt-12">
+              <form
+                className="flex flex-col gap-2 sm:flex-row"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  handleCustomSkillAdd()
+                }}
               >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="w-10 h-10 text-white" />
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-4">Welcome to Nexus</h2>
-                <p className="text-white/60 mb-8 max-w-2xl mx-auto">
-                  Build your profile around five skill pillars so Nexus can understand what you
-                  build, create, explain, lead, and improve over time.
+                <label className="flex-1">
+                  <span className="sr-only">Add your own skill</span>
+                  <input
+                    type="text"
+                    value={customSkill}
+                    onChange={(event) => {
+                      setCustomSkill(event.target.value)
+                      if (customSkillError) setCustomSkillError(null)
+                    }}
+                    className="metalab-input"
+                    placeholder="Add your own, like Salesforce, C++ or recruiting"
+                    aria-describedby={customSkillError ? 'custom-skill-error' : undefined}
+                  />
+                </label>
+                <Button type="submit" variant="secondary">
+                  Add
+                </Button>
+              </form>
+              {customSkillError && (
+                <p id="custom-skill-error" className="mt-2 text-sm text-critical">
+                  {customSkillError}
                 </p>
-                <div className="grid md:grid-cols-3 gap-4 mb-8">
-                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
-                    <CheckCircle className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Pillar-based verification</p>
-                  </div>
-                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
-                    <CheckCircle className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Proof that feels credible</p>
-                  </div>
-                  <div className="p-4 rounded-xl border border-white/10 bg-white/5">
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-white">Better matches and guidance</p>
-                  </div>
-                </div>
-                <div className="grid gap-3 md:grid-cols-5">
-                  {SKILL_PILLAR_DETAILS.map((pillar) => (
-                    <div
-                      key={pillar.category}
-                      className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-4 text-left"
-                    >
-                      <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                        {pillar.shortLabel}
-                      </div>
-                      <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+              )}
 
-            {/* Step 2: Goals */}
-            {currentStep === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-              >
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
-                    <Target className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">What are your goals?</h2>
-                  <p className="text-white/60">Optional. Select any that apply, or skip.</p>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {goals.map((goal) => (
-                    <motion.button
-                      key={goal.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleGoalToggle(goal.id)}
-                      className={`p-6 rounded-xl border-2 transition-all text-left ${
-                        selectedGoals.includes(goal.id)
-                          ? 'border-cyan-300/70 bg-white/10'
-                          : 'border-white/10 hover:border-cyan-300/40'
-                      }`}
-                    >
-                      <div
-                        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${goal.color} flex items-center justify-center text-white mb-4`}
-                      >
-                        {goal.icon}
-                      </div>
-                      <h3 className="font-semibold text-white mb-1">{goal.title}</h3>
-                      <p className="text-sm text-white/60">{goal.description}</p>
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 3: Skills */}
-            {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-              >
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
-                    <Plus className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">Add Your Skills</h2>
-                  <p className="text-white/60">
-                    Choose from the five pillars below or add your own custom skills.
+              {selectedSkills.length > 0 && (
+                <div className="mt-6">
+                  <p className="text-sm text-ink-faint">
+                    Selected {selectedSkills.length} of {MAX_ONBOARDING_SKILLS}. Tap one to remove
+                    it.
                   </p>
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {selectedSkills.map((skill) => (
+                      <li key={skill}>
+                        <button
+                          type="button"
+                          className="pill"
+                          data-active="true"
+                          onClick={() => handleSkillToggle(skill)}
+                          aria-label={`Remove ${skill}`}
+                        >
+                          {skill} ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="max-w-3xl mx-auto">
-                  <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                    <div className="flex flex-col gap-3 md:flex-row">
-                      <input
-                        type="text"
-                        value={customSkill}
-                        onChange={(event) => {
-                          setCustomSkill(event.target.value)
-                          if (customSkillError) {
-                            setCustomSkillError(null)
-                          }
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter') {
-                            event.preventDefault()
-                            handleCustomSkillAdd()
-                          }
-                        }}
-                        className="min-h-[48px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none transition focus:border-cyan-300/60"
-                        placeholder="Add your own skill, like Salesforce, C++, or Recruiting"
-                      />
-                      <Button type="button" onClick={handleCustomSkillAdd}>
-                        Add Skill
-                      </Button>
-                    </div>
-                    {customSkillError && (
-                      <p className="mt-3 text-sm text-rose-300">{customSkillError}</p>
-                    )}
-                  </div>
+              )}
 
-                  {selectedSkills.length > 0 && (
-                    <div className="mb-6">
-                      <div className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-white/45">
-                        Selected skills
-                      </div>
-                      <div className="flex flex-wrap gap-3">
-                        {selectedSkills.map((skill) => (
+              <ul className="ruled-list mt-10 border-y border-line">
+                {SKILL_SUGGESTION_GROUPS.map((group) => (
+                  <li
+                    key={group.id}
+                    className="grid gap-4 py-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-8"
+                  >
+                    <div>
+                      <p className="font-medium">{group.label}</p>
+                      <p className="mt-1 text-sm text-ink-muted">{group.description}</p>
+                    </div>
+                    <div
+                      className="flex flex-wrap content-start gap-2"
+                      role="group"
+                      aria-label={group.label}
+                    >
+                      {group.skills.map((skill) => {
+                        const isSelected = selectedSkills.some(
+                          (selected) => selected.toLowerCase() === skill.toLowerCase()
+                        )
+                        return (
                           <button
                             key={skill}
                             type="button"
+                            aria-pressed={isSelected}
                             onClick={() => handleSkillToggle(skill)}
-                            className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-white transition hover:border-cyan-200 hover:bg-cyan-300/15"
+                            className="pill"
                           >
-                            {skill} x
+                            {skill}
                           </button>
-                        ))}
-                      </div>
+                        )
+                      })}
                     </div>
-                  )}
-
-                  <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                    {SKILL_PILLAR_DETAILS.map((pillar) => {
-                      const visual = pillarVisuals[pillar.category]
-                      return (
-                        <div
-                          key={pillar.category}
-                          className={`rounded-2xl border px-4 py-4 ${visual.cardClass}`}
-                        >
-                          <div className="mb-3 inline-flex rounded-xl border border-white/10 bg-black/20 p-2 text-white">
-                            {visual.icon}
-                          </div>
-                          <div className="text-sm font-semibold text-white">{pillar.category}</div>
-                          <p className="mt-2 text-sm text-white/65">{pillar.summary}</p>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="space-y-5">
-                    {SKILL_SUGGESTION_GROUPS.map((group) => (
-                      <div
-                        key={group.id}
-                        className={`rounded-3xl border p-5 ${pillarVisuals[group.label as SkillCategory].cardClass}`}
-                      >
-                        <div className="mb-2 flex items-center gap-3 text-white">
-                          <div className="rounded-xl border border-white/10 bg-black/20 p-2">
-                            {pillarVisuals[group.label as SkillCategory].icon}
-                          </div>
-                          <div className="text-sm font-medium uppercase tracking-[0.2em] text-white/60">
-                            {group.label}
-                          </div>
-                        </div>
-                        <p className="mb-4 max-w-2xl text-sm text-white/65">{group.description}</p>
-                        <div className="mb-3 text-xs font-medium uppercase tracking-[0.24em] text-white/40">
-                          Suggested skills
-                        </div>
-                        <div className="flex flex-wrap gap-3">
-                          {group.skills.map((skill) => {
-                            const isSelected = selectedSkills.some(
-                              (selectedSkill) => selectedSkill.toLowerCase() === skill.toLowerCase()
-                            )
-
-                            return (
-                              <motion.button
-                                key={skill}
-                                type="button"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleSkillToggle(skill)}
-                                className={`px-4 py-2 rounded-full font-medium transition-all ${
-                                  isSelected
-                                    ? 'bg-white text-black'
-                                    : pillarVisuals[group.label as SkillCategory].chipClass
-                                }`}
-                              >
-                                {skill}
-                              </motion.button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-center text-sm text-white/45 mt-6">
-                  Selected: {selectedSkills.length} of {MAX_ONBOARDING_SKILLS} skills
-                </p>
-              </motion.div>
-            )}
-
-            {/* Step 4: Complete */}
-            {currentStep === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: easing.primary }}
-                className="text-center"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                  className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-6"
-                >
-                  <CheckCircle className="w-10 h-10 text-white" />
-                </motion.div>
-                <h2 className="text-3xl font-bold text-white mb-4">You&apos;re All Set</h2>
-                <p className="text-white/60 mb-8 max-w-2xl mx-auto">
-                  Your Nexus profile is ready. Start building proof across the five pillars, verify
-                  your strongest skills, and unlock better career guidance.
-                </p>
-                {completionError && (
-                  <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                    {completionError}
-                  </div>
-                )}
-                <div className="grid md:grid-cols-3 gap-4 mb-8">
-                  <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium">Profile Created</p>
-                  </AnimatedCard>
-                  <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium">
-                      {selectedSkills.length} {selectedSkills.length === 1 ? 'skill' : 'skills'} to
-                      add
-                    </p>
-                  </AnimatedCard>
-                  <AnimatedCard className="p-4">
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium">Ready to Verify</p>
-                  </AnimatedCard>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-8 border-t border-white/10">
-            <Button
-              variant="outline"
-              leftIcon={<ArrowLeft className="w-5 h-5" />}
-              onClick={handleBack}
-              disabled={currentStep === 1 || isCompleting}
-            >
-              Back
-            </Button>
-            <div className="text-sm text-white/45">
-              Step {currentStep} of {steps.length}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <Button
-              rightIcon={
-                currentStep === steps.length ? undefined : <ArrowRight className="w-5 h-5" />
-              }
-              onClick={handleNext}
-              isLoading={isCompleting}
-              disabled={isCompleting}
-            >
-              {currentStep === steps.length
-                ? 'Get Started'
-                : isSkippableEmptyStep
-                  ? 'Skip for now'
-                  : 'Next'}
-            </Button>
-          </div>
-        </AnimatedCard>
+          )}
+
+          {currentStep === 4 && (
+            <div className="mt-12">
+              {completionError && (
+                <p role="alert" className="mb-6 text-sm text-critical">
+                  {completionError}
+                </p>
+              )}
+              <ul className="ruled-list border-y border-line">
+                <li className="flex justify-between gap-4 py-4">
+                  <span className="text-ink-muted">Goals</span>
+                  <span>
+                    {selectedGoals.length
+                      ? goals
+                          .filter((goal) => selectedGoals.includes(goal.id))
+                          .map((goal) => goal.title)
+                          .join(', ')
+                      : 'None yet'}
+                  </span>
+                </li>
+                <li className="flex justify-between gap-4 py-4">
+                  <span className="text-ink-muted">Skills to add</span>
+                  <span>{selectedSkills.length || 'None yet'}</span>
+                </li>
+                <li className="flex justify-between gap-4 py-4">
+                  <span className="text-ink-muted">Next</span>
+                  <span>Attach proof and run your first check</span>
+                </li>
+              </ul>
+            </div>
+          )}
+        </section>
+
+        <div className="flex items-center justify-between gap-4 border-t border-line pt-6">
+          <Button
+            variant="ghost"
+            leftIcon={<ArrowLeft className="size-4" aria-hidden />}
+            onClick={handleBack}
+            disabled={currentStep === 1 || isCompleting}
+          >
+            Back
+          </Button>
+          <Button
+            rightIcon={
+              currentStep === steps.length ? undefined : (
+                <ArrowRight className="size-4" aria-hidden />
+              )
+            }
+            onClick={handleNext}
+            isLoading={isCompleting}
+            disabled={isCompleting}
+          >
+            {currentStep === steps.length
+              ? 'Go to my dashboard'
+              : isSkippableEmptyStep
+                ? 'Skip for now'
+                : 'Next'}
+          </Button>
+        </div>
       </div>
     </AppPageShell>
   )

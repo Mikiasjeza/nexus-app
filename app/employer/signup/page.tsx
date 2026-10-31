@@ -6,7 +6,6 @@ import { Building2 } from 'lucide-react'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import AuthShell from '@/components/Layout/AuthShell'
 
 export default function EmployerSignupPage() {
@@ -55,17 +54,8 @@ export default function EmployerSignupPage() {
 
   return (
     <AuthShell>
-      <div className="hero-kicker mb-6">Employer workspace</div>
-      <div className="mb-10 text-center">
-        <motion.div
-          initial={{ scale: 0.96, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.35 }}
-          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/15 to-cyan-500/10"
-        >
-          <Building2 className="h-8 w-8 text-cyan-200/90" />
-        </motion.div>
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+      <div className="mb-10">
+        <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">
           Register as employer
         </h1>
         <p className="text-sm leading-relaxed metalab-muted md:text-base">
@@ -85,7 +75,7 @@ export default function EmployerSignupPage() {
             Company name
           </label>
           <div className="relative">
-            <Building2 className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
+            <Building2 className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
             <input
               id="employer-company"
               type="text"
@@ -115,7 +105,7 @@ export default function EmployerSignupPage() {
         </Button>
       </form>
 
-      <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+      <div className="mt-8 border-t border-line pt-6">
         <p className="text-sm metalab-muted">
           Looking for a role?{' '}
           <Link href="/marketplace" className="metalab-link">

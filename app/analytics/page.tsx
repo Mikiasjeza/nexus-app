@@ -1,61 +1,35 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import dynamic from 'next/dynamic'
+import Link from 'next/link'
+import { format } from 'date-fns'
+import { Download } from 'lucide-react'
 import { useSkills } from '@/lib/hooks/useSkills'
-import { motion } from 'framer-motion'
 import Loader from '@/components/UI/Loader'
-import { TrendingUp, Download, Calendar, BarChart3, PieChart } from 'lucide-react'
 import Button from '@/components/UI/Button'
-import { easing } from '@/lib/utils/animations'
-import { authApi } from '@/lib/api'
+import { authApi, dashboardApi } from '@/lib/api'
+import type { DashboardSummary } from '@/lib/dashboard/summary'
 import type { User } from '@/lib/types'
-import { CATEGORY_COLORS } from '@/lib/utils/constants'
-import { normalizeSkillCategory, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
+import { LEVEL_LABELS, SKILL_LEVELS } from '@/lib/utils/constants'
+import {
+  getSkillPillarDetail,
+  normalizeSkillCategory,
+  SKILL_PILLAR_DETAILS,
+} from '@/lib/skills-taxonomy'
 import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
+import SectionHeading from '@/components/Layout/SectionHeading'
+import VerifiedBars from '@/components/Analytics/VerifiedBars'
+import GapAnalysis from '@/components/Analytics/GapAnalysis'
+import VerifiedGrowth from '@/components/Dashboard/VerifiedGrowth'
 
-// Lazy load heavy chart components
-const ProgressChart = dynamic(() => import('@/components/Analytics/ProgressChart'), {
-  loading: () => (
-    <div className="h-64 flex items-center justify-center">
-      <Loader />
-    </div>
-  ),
-  ssr: false,
-})
-
-const SkillHeatmap = dynamic(() => import('@/components/Analytics/SkillHeatmap'), {
-  loading: () => (
-    <div className="h-64 flex items-center justify-center">
-      <Loader />
-    </div>
-  ),
-  ssr: false,
-})
-
-const TimelineView = dynamic(() => import('@/components/Analytics/TimelineView'), {
-  loading: () => (
-    <div className="h-64 flex items-center justify-center">
-      <Loader />
-    </div>
-  ),
-  ssr: false,
-})
-
-const GapAnalysis = dynamic(() => import('@/components/Analytics/GapAnalysis'), {
-  loading: () => (
-    <div className="h-64 flex items-center justify-center">
-      <Loader />
-    </div>
-  ),
-  ssr: false,
-})
-
+/** Where the passport is strong, where it's thin, and what to prove next. All from real data. */
 export default function AnalyticsPage() {
   const { addToast } = useToast()
   const { skills, loading } = useSkills()
   const [user, setUser] = useState<User | null>(null)
+  const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [exporting, setExporting] = useState(false)
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv')
   const isGuestPreview = user?.id === 'guest-user'
@@ -65,76 +39,70 @@ export default function AnalyticsPage() {
       .getCurrentUser()
       .then(setUser)
       .catch(() => setUser(null))
+    dashboardApi
+      .getSummary()
+      .then(setSummary)
+      .catch(() => setSummary(null))
   }, [])
 
-  const analyticsSummary = useMemo(() => {
-    const pillarCounts = SKILL_PILLAR_DETAILS.map((pillar) => ({
-      ...pillar,
-      count: skills.filter((skill) => normalizeSkillCategory(skill.category) === pillar.category)
-        .length,
-      color: CATEGORY_COLORS[pillar.category],
-    }))
-    const strongestPillar = [...pillarCounts].sort((a, b) => b.count - a.count)[0]
-    const weakestPillar = [...pillarCounts].sort((a, b) => a.count - b.count)[0]
-    const averageProgress =
-      skills.length > 0
-        ? Math.round(skills.reduce((sum, s) => sum + s.progress, 0) / skills.length)
-        : 0
-    const verifiedCoverage =
-      skills.length > 0
-        ? Math.round((skills.filter((skill) => skill.verified).length / skills.length) * 100)
-        : 0
-    const updatedThisMonth = skills.filter((s) => {
-      const updateDate = new Date(s.updatedAt)
-      const monthAgo = new Date()
-      monthAgo.setMonth(monthAgo.getMonth() - 1)
-      return updateDate > monthAgo
-    }).length
-    const topProofOpportunity = [...skills]
-      .filter((skill) => !skill.verified)
-      .sort((a, b) => b.progress - a.progress)[0]
-
-    const total = skills.length
-    const pillarSpread = pillarCounts.filter((pillar) => pillar.count > 0).length
-    const topPillarConcentration =
-      total > 0 && strongestPillar ? Math.round((strongestPillar.count / total) * 100) : 0
-    const verifiedByPillar = SKILL_PILLAR_DETAILS.map((pillar) => {
+  const analytics = useMemo(() => {
+    const byPillar = SKILL_PILLAR_DETAILS.map((pillar) => {
       const inPillar = skills.filter(
         (skill) => normalizeSkillCategory(skill.category) === pillar.category
       )
-      const verified = inPillar.filter((skill) => skill.verified).length
       return {
+        label: pillar.shortLabel,
         category: pillar.category,
-        shortLabel: pillar.shortLabel,
-        verified,
-        total: inPillar.length,
-        rate: inPillar.length ? Math.round((verified / inPillar.length) * 100) : 0,
+        claimed: inPillar.length,
+        verified: inPillar.filter((skill) => skill.verified).length,
       }
     })
-    const lowestVerifiedPillar = [...verifiedByPillar].sort((a, b) => a.rate - b.rate)[0]
+    const byLevel = SKILL_LEVELS.map((level) => {
+      const atLevel = skills.filter((skill) => skill.level === level)
+      return {
+        label: LEVEL_LABELS[level],
+        claimed: atLevel.length,
+        verified: atLevel.filter((skill) => skill.verified).length,
+      }
+    })
+    const verified = skills.filter((skill) => skill.verified).length
+    const coverage = skills.length ? Math.round((verified / skills.length) * 100) : 0
+    const activePillars = byPillar.filter((pillar) => pillar.claimed > 0)
+    const strongest = [...byPillar].sort((a, b) => b.claimed - a.claimed)[0]
+    const emptyPillar = byPillar.find((pillar) => pillar.claimed === 0)
+    const leastVerified = [...activePillars].sort(
+      (a, b) => a.verified / a.claimed - b.verified / b.claimed
+    )[0]
+    const monthAgo = new Date()
+    monthAgo.setMonth(monthAgo.getMonth() - 1)
+    const updatedThisMonth = skills.filter((s) => new Date(s.updatedAt) > monthAgo).length
+    const nextToProve = [...skills]
+      .filter((skill) => !skill.verified)
+      .sort((a, b) => b.progress - a.progress)[0]
+    const concentration =
+      skills.length && strongest ? Math.round((strongest.claimed / skills.length) * 100) : 0
 
-    const insightLead =
+    const lead =
       skills.length === 0
-        ? 'Add a few skills to unlock pillar-level analytics and export.'
-        : topPillarConcentration >= 70
-          ? `Most of your visible skills sit in ${strongestPillar?.shortLabel ?? 'one pillar'}—great depth, and worth a deliberate pass in other pillars so the passport reads balanced.`
-          : pillarSpread >= 4
-            ? `You span ${pillarSpread} pillars with a relatively even footprint—strong for roles that need breadth plus proof.`
-            : `You are active across ${pillarSpread} ${pillarSpread === 1 ? 'pillar' : 'pillars'}; expanding into adjacent pillars makes your story easier for recruiters to scan.`
+        ? 'Add a few skills to see how your passport breaks down by pillar and level.'
+        : concentration >= 70
+          ? `Most of your skills sit in ${strongest.label}. That’s real depth; one verified skill in another pillar would make the passport read broader.`
+          : activePillars.length >= 4
+            ? `You span ${activePillars.length} pillars fairly evenly, which suits roles that want breadth backed by proof.`
+            : `You’re active in ${activePillars.length} ${activePillars.length === 1 ? 'pillar' : 'pillars'}. Adding an adjacent one makes your story easier for employers to scan.`
 
     return {
-      pillarCounts,
-      strongestPillar,
-      weakestPillar,
-      averageProgress,
-      verifiedCoverage,
+      byPillar,
+      byLevel,
+      verified,
+      coverage,
+      activePillars,
+      strongest,
+      emptyPillar,
+      leastVerified,
       updatedThisMonth,
-      topProofOpportunity,
-      verifiedByPillar,
-      lowestVerifiedPillar,
-      pillarSpread,
-      topPillarConcentration,
-      insightLead,
+      nextToProve,
+      lead,
     }
   }, [skills])
 
@@ -156,7 +124,7 @@ export default function AnalyticsPage() {
       addToast({
         type: 'success',
         title: 'Analytics exported',
-        message: `Your ${exportFormat.toUpperCase()} analytics export is ready.`,
+        message: `Your ${exportFormat.toUpperCase()} export is ready.`,
       })
     } catch {
       addToast({
@@ -171,310 +139,193 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader />
-      </div>
+      <AppPageShell>
+        <div className="page-shell">
+          <Loader />
+        </div>
+      </AppPageShell>
     )
   }
 
+  const focus = [
+    {
+      label: 'Strongest pillar',
+      value: analytics.strongest?.claimed ? analytics.strongest.label : 'None yet',
+      note: analytics.strongest?.claimed
+        ? `${analytics.strongest.claimed} ${analytics.strongest.claimed === 1 ? 'skill' : 'skills'}`
+        : 'Add a skill to start',
+    },
+    {
+      label: 'Next to prove',
+      value: analytics.nextToProve?.name ?? 'Nothing waiting',
+      note: analytics.nextToProve
+        ? 'Your most developed skill without a verified check'
+        : 'Every skill you claim is verified',
+    },
+    {
+      label: 'Least verified pillar',
+      value: analytics.leastVerified?.label ?? '—',
+      note: analytics.leastVerified
+        ? `${analytics.leastVerified.verified} of ${analytics.leastVerified.claimed} verified`
+        : 'No pillars in use yet',
+    },
+    {
+      label: 'Empty pillar',
+      value: analytics.emptyPillar?.label ?? 'None',
+      note: analytics.emptyPillar
+        ? getSkillPillarDetail(analytics.emptyPillar.category).summary
+        : 'You have skills in all five pillars',
+    },
+  ]
+
+  const timeline = [...skills].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+
   return (
-    <AppPageShell className="min-h-screen bg-black">
+    <AppPageShell>
       <div className="page-shell">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: easing.primary }}
-          className="mb-16"
-        >
-          <div className="hero-panel p-8 md:p-10">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              <div className="flex-1">
-                <div className="hero-kicker mb-5">Growth Intelligence</div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight leading-[1.1]">
-                  Analytics
-                </h1>
-                <p className="text-lg text-white/68 max-w-xl">
-                  See how credibility compounds across your profile, where momentum is building, and
-                  what needs proof next.
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
+        {isGuestPreview && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
+            <p className="text-sm text-ink-muted">
+              You are viewing sample analytics. Exporting needs an account.
+            </p>
+            <Link href="/auth/register" className="pill" data-active="true">
+              Create account
+            </Link>
+          </div>
+        )}
+
+        <PageHeader
+          title="Analytics"
+          rule
+          description={analytics.lead}
+          actions={
+            <>
+              <label>
+                <span className="sr-only">Export format</span>
                 <select
                   value={exportFormat}
                   onChange={(event) => setExportFormat(event.target.value as 'csv' | 'json')}
-                  className="min-h-[40px] rounded-xl border border-white/10 bg-black/40 px-3 text-sm text-white"
+                  className="metalab-input !min-h-11 w-auto"
                 >
                   <option value="csv">CSV</option>
                   <option value="json">JSON</option>
                 </select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  leftIcon={<Download className="w-4 h-4" />}
-                  onClick={handleExport}
-                  disabled={exporting || isGuestPreview}
-                  isLoading={exporting}
-                >
-                  Export {exportFormat.toUpperCase()}
-                </Button>
-              </div>
-            </div>
-            {isGuestPreview && (
-              <div className="mt-6 border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm text-white">
-                You are browsing a guest preview. Sign in or create an account to export analytics.
-              </div>
-            )}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mt-6">
-              {[
-                { label: 'Average progress', value: `${analyticsSummary.averageProgress}%` },
-                { label: 'Verified skills', value: `${skills.filter((s) => s.verified).length}` },
-                {
-                  label: 'Active pillars',
-                  value: `${new Set(skills.map((s) => normalizeSkillCategory(s.category))).size}`,
-                },
-              ].map((item) => (
-                <div key={item.label} className="insight-card p-4">
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                    {item.label}
-                  </div>
-                  <div className="mt-2 text-3xl font-semibold text-white">{item.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+              </label>
+              <Button
+                variant="secondary"
+                leftIcon={<Download className="size-4" aria-hidden />}
+                onClick={handleExport}
+                disabled={exporting || isGuestPreview}
+                isLoading={exporting}
+              >
+                Export
+              </Button>
+            </>
+          }
+        />
 
-        <div className="gradient-border-card p-8 mb-12">
-          <div className="text-xs uppercase tracking-[0.22em] text-white/45 mb-3">
-            Signal narrative
-          </div>
-          <p className="text-lg text-white/85 leading-relaxed max-w-4xl">
-            {analyticsSummary.insightLead}
-          </p>
-          {skills.length > 0 && (
-            <div className="mt-8 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
-                <h3 className="text-sm font-semibold text-white">Pillar distribution</h3>
-                <span className="text-xs text-white/50">
-                  {analyticsSummary.pillarSpread} of {SKILL_PILLAR_DETAILS.length} pillars in use ·{' '}
-                  {analyticsSummary.lowestVerifiedPillar?.total
-                    ? `lowest verification in ${analyticsSummary.lowestVerifiedPillar.shortLabel} (${analyticsSummary.lowestVerifiedPillar.rate}%)`
-                    : 'add skills to see verification by pillar'}
-                </span>
-              </div>
-              <div className="space-y-3">
-                {analyticsSummary.pillarCounts.map((pillar) => {
-                  const pct = Math.round((pillar.count / Math.max(1, skills.length)) * 100)
-                  return (
-                    <div key={pillar.category}>
-                      <div className="flex justify-between text-xs text-white/60 mb-1">
-                        <span className="font-medium text-white/80">{pillar.shortLabel}</span>
-                        <span className="tabular-nums">
-                          {pillar.count} skills · {pct}%
-                        </span>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{
-                            width: `${pct}%`,
-                            backgroundColor: pillar.color,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+        <dl className="grid grid-cols-2 border-y border-line md:grid-cols-4">
           {[
+            { label: 'Skills claimed', value: skills.length },
+            { label: 'Verified', value: `${analytics.coverage}%` },
             {
-              icon: TrendingUp,
-              value: skills.length > 0 ? analyticsSummary.averageProgress : 0,
-              label: 'Average Progress',
-              suffix: '%',
+              label: 'Pillars in use',
+              value: `${analytics.activePillars.length}/${SKILL_PILLAR_DETAILS.length}`,
             },
-            {
-              icon: BarChart3,
-              value: skills.filter((s) => s.verified).length,
-              label: 'Verified Skills',
-            },
-            {
-              icon: PieChart,
-              value: new Set(skills.map((s) => normalizeSkillCategory(s.category))).size,
-              label: 'Pillars represented',
-            },
-            {
-              icon: Calendar,
-              value: skills.filter((s) => {
-                const updateDate = new Date(s.updatedAt)
-                const monthAgo = new Date()
-                monthAgo.setMonth(monthAgo.getMonth() - 1)
-                return updateDate > monthAgo
-              }).length,
-              label: 'Updated This Month',
-            },
-          ].map((stat) => {
-            const Icon = stat.icon
-            return (
-              <div key={stat.label}>
-                <div className="gradient-border-card p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 border border-white/10 bg-white/5">
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                  </div>
-                  <div className="text-4xl font-bold text-white mb-2 tracking-tight tabular-nums">
-                    {stat.value}
-                    {stat.suffix || ''}
-                  </div>
-                  <div className="text-xs text-white/60 uppercase tracking-wider font-medium">
-                    {stat.label}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+            { label: 'Updated this month', value: analytics.updatedThisMonth },
+          ].map((stat, i) => (
+            <div
+              key={stat.label}
+              className={`py-8 ${i % 2 === 1 ? 'pl-6' : ''} ${i > 1 ? 'border-t border-line md:border-t-0' : ''} ${i > 0 ? 'md:border-l md:border-line md:pl-8' : ''}`}
+            >
+              <dt className="text-sm text-ink-faint">{stat.label}</dt>
+              <dd className="display-number mt-3 text-[clamp(2.5rem,4vw,3.5rem)] leading-none">
+                {stat.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="grid gap-12 py-12 lg:grid-cols-3 lg:gap-10">
+          <section aria-labelledby="pillar-heading">
+            <SectionHeading id="pillar-heading" note="Verified out of claimed">
+              By pillar
+            </SectionHeading>
+            <VerifiedBars groups={analytics.byPillar} />
+          </section>
+          <section aria-labelledby="level-heading">
+            <SectionHeading id="level-heading" note="Verified out of claimed">
+              By level
+            </SectionHeading>
+            <VerifiedBars groups={analytics.byLevel} />
+          </section>
+          <section aria-labelledby="growth-heading">
+            <SectionHeading id="growth-heading" note="Last 12 weeks">
+              Verified skills
+            </SectionHeading>
+            {summary ? (
+              <VerifiedGrowth points={summary.verifiedOverTime} />
+            ) : (
+              <div className="mt-6 aspect-[2/1] rounded-lg bg-raised" aria-hidden />
+            )}
+          </section>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 mb-20">
-          <div className="gradient-border-card p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Insight Summary</h2>
-              <p className="text-white/60">
-                A quick read on where your proof is strongest and what deserves attention next.
-              </p>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                  Strongest pillar
-                </div>
-                <div className="mt-2 text-xl font-semibold text-white">
-                  {analyticsSummary.strongestPillar?.category ?? 'None yet'}
-                </div>
-                <div className="mt-2 text-sm text-white/60">
-                  {analyticsSummary.strongestPillar?.count ?? 0} skills represented
-                </div>
+        <section aria-labelledby="focus-heading" className="border-t border-line py-12">
+          <SectionHeading id="focus-heading">Where to focus</SectionHeading>
+          <dl className="mt-6 grid gap-x-10 md:grid-cols-2">
+            {focus.map((item) => (
+              <div key={item.label} className="border-t border-line py-5">
+                <dt className="text-sm text-ink-faint">{item.label}</dt>
+                <dd className="mt-1 font-display text-3xl font-light">{item.value}</dd>
+                <dd className="mt-1 text-sm text-ink-muted">{item.note}</dd>
               </div>
-              <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                  Needs more proof
-                </div>
-                <div className="mt-2 text-xl font-semibold text-white">
-                  {analyticsSummary.topProofOpportunity?.name ?? 'No obvious gap'}
-                </div>
-                <div className="mt-2 text-sm text-white/60">
-                  {analyticsSummary.topProofOpportunity
-                    ? `${analyticsSummary.topProofOpportunity.progress}% progress and still unverified`
-                    : 'Your strongest visible skills already have proof attached.'}
-                </div>
-              </div>
-              <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                  Verified coverage
-                </div>
-                <div className="mt-2 text-xl font-semibold text-white">
-                  {analyticsSummary.verifiedCoverage}%
-                </div>
-                <div className="mt-2 text-sm text-white/60">
-                  How much of your visible skill set is backed by verified signals.
-                </div>
-              </div>
-              <div className="insight-card p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                  Underrepresented pillar
-                </div>
-                <div className="mt-2 text-xl font-semibold text-white">
-                  {analyticsSummary.weakestPillar?.category ?? 'Learning & Growth'}
-                </div>
-                <div className="mt-2 text-sm text-white/60">
-                  {analyticsSummary.weakestPillar?.count === 0
-                    ? 'No skills in this pillar yet—add one to round out your passport.'
-                    : analyticsSummary.lowestVerifiedPillar &&
-                        analyticsSummary.lowestVerifiedPillar.total > 0
-                      ? `Lowest pillar verification is ${analyticsSummary.lowestVerifiedPillar.shortLabel} at ${analyticsSummary.lowestVerifiedPillar.rate}%—prioritize proof there.`
-                      : 'Add stronger proof here to make your profile feel more balanced.'}
-                </div>
-              </div>
-            </div>
-          </div>
+            ))}
+          </dl>
+        </section>
 
-          <div className="gradient-border-card p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Pillar Recommendations</h2>
-              <p className="text-white/60">
-                Three focused actions that would improve the quality of your passport fastest.
-              </p>
-            </div>
-            <div className="space-y-4">
-              {[
-                analyticsSummary.topProofOpportunity
-                  ? `Add evidence for ${analyticsSummary.topProofOpportunity.name} to convert existing progress into proof recruiters can trust.`
-                  : 'Keep adding proof to your strongest skills so your passport stays current.',
-                analyticsSummary.weakestPillar
-                  ? `Strengthen ${analyticsSummary.weakestPillar.category.toLowerCase()} with at least one concrete example or artifact.`
-                  : 'Balance your profile by expanding into more than one pillar.',
-                analyticsSummary.updatedThisMonth > 0
-                  ? `You updated ${analyticsSummary.updatedThisMonth} skills recently. Capture that momentum with a new verification run or share update.`
-                  : 'Refresh one stale skill this month so your profile shows visible momentum.',
-              ].map((line) => (
-                <div
-                  key={line}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/72"
-                >
-                  {line}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Analytics sections - increased spacing for hierarchy */}
-        <div className="space-y-20">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, ease: easing.primary }}
-          >
-            <ProgressChart skills={skills} />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.1, ease: easing.primary }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-          >
-            <SkillHeatmap skills={skills} type="category" />
-            <SkillHeatmap skills={skills} type="level" />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.2, ease: easing.primary }}
-          >
-            <TimelineView skills={skills} />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8, delay: 0.3, ease: easing.primary }}
-          >
+        <section aria-labelledby="gap-heading" className="border-t border-line py-12">
+          <SectionHeading id="gap-heading" note="Against a target role">
+            Gap analysis
+          </SectionHeading>
+          <div className="mt-6">
             <GapAnalysis />
-          </motion.div>
-        </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="timeline-heading" className="border-t border-line pt-12">
+          <SectionHeading id="timeline-heading" note="Newest first">
+            Timeline
+          </SectionHeading>
+          {timeline.length === 0 ? (
+            <p className="mt-6 text-ink-muted">Skills appear here as you add them.</p>
+          ) : (
+            <ol className="ruled-list mt-6 border-y border-line">
+              {timeline.map((skill) => (
+                <li
+                  key={skill.id}
+                  className="grid grid-cols-[7rem_minmax(0,1fr)_auto] items-baseline gap-4 py-4 md:grid-cols-[8rem_minmax(0,1fr)_10rem_10rem]"
+                >
+                  <time dateTime={skill.createdAt} className="tabular text-sm text-ink-faint">
+                    {format(new Date(skill.createdAt), 'MMM d, yyyy')}
+                  </time>
+                  <span className="truncate">{skill.name}</span>
+                  <span className="hidden text-sm text-ink-muted md:block">
+                    {getSkillPillarDetail(normalizeSkillCategory(skill.category)).shortLabel} ·{' '}
+                    {LEVEL_LABELS[skill.level]}
+                  </span>
+                  <span
+                    className={`text-right text-sm ${skill.verified ? 'text-verified' : 'text-ink-faint'}`}
+                  >
+                    {skill.verified ? 'Verified' : 'Not verified yet'}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
       </div>
     </AppPageShell>
   )

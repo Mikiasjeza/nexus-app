@@ -6,12 +6,16 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { guestJobList, GUEST_READ_ONLY } from '@/lib/mock/employer'
+import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
+    if (await isGuestRequest()) {
+      return NextResponse.json({ jobs: guestJobList(new URL(request.url).searchParams) })
+    }
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || ''
     const companyId = searchParams.get('companyId') || ''
@@ -70,6 +74,9 @@ const createSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    if (await isGuestRequest()) {
+      return NextResponse.json(GUEST_READ_ONLY, { status: 403 })
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
