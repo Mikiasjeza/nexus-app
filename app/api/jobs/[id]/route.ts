@@ -6,7 +6,8 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { GUEST_READ_ONLY } from '@/lib/mock/employer'
+import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,6 +23,9 @@ const patchSchema = z.object({
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    if (await isGuestRequest()) {
+      return NextResponse.json(GUEST_READ_ONLY, { status: 403 })
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -77,6 +81,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    if (await isGuestRequest()) {
+      return NextResponse.json(GUEST_READ_ONLY, { status: 403 })
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })

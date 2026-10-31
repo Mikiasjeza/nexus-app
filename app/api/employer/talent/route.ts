@@ -6,7 +6,8 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { guestTalentSearch } from '@/lib/mock/employer'
+import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import {
   computeJobRequirementCoverage,
@@ -20,6 +21,10 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
+    if (await isGuestRequest()) {
+      const params = new URL(request.url).searchParams
+      return NextResponse.json({ candidates: guestTalentSearch(params), targetJob: null })
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })

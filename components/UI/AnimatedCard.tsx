@@ -1,17 +1,17 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { ReactNode } from 'react'
-import { easing } from '@/lib/utils/animations'
 import { cn } from '@/lib/utils/cn'
 
 interface AnimatedCardProps {
   children?: ReactNode
   className?: string
+  /** Hover brightens the hairline; nothing lifts or glows. */
   hover?: boolean
   onClick?: () => void
 }
 
+/** A raised panel. Kept under its old name for existing call sites. */
 export default function AnimatedCard({
   children,
   className = '',
@@ -19,25 +19,16 @@ export default function AnimatedCard({
   onClick,
 }: AnimatedCardProps) {
   return (
-    <motion.div
-      initial={false}
-      whileHover={
-        hover
-          ? {
-              y: -3,
-              transition: { duration: 0.25, ease: easing.primary },
-            }
-          : undefined
-      }
+    <div
       className={cn(
-        'gradient-border-card transition-micro',
-        hover && 'hover:shadow-[0_28px_80px_rgba(0,0,0,0.42)]',
+        'rounded-2xl border border-line bg-raised transition-colors duration-150',
+        hover && 'hover:border-line-strong',
         onClick && 'cursor-pointer',
         className
       )}
       onClick={onClick}
     >
       {children || null}
-    </motion.div>
+    </div>
   )
 }

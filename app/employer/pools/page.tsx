@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Users, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
+import { formatDistanceToNowStrict } from 'date-fns'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
-import { easing } from '@/lib/utils/animations'
 import Link from 'next/link'
-import { SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
-import { CATEGORY_COLORS } from '@/lib/utils/constants'
+import Loader from '@/components/UI/Loader'
+import Modal from '@/components/UI/Modal'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
 
 interface Pool {
   id: string
@@ -24,6 +24,7 @@ export default function EmployerPoolsPage() {
   const [loading, setLoading] = useState(true)
   const [newName, setNewName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const loadPools = () => {
     fetch('/api/employer/pools', { credentials: 'include' })
@@ -53,11 +54,11 @@ export default function EmployerPoolsPage() {
       if (!res.ok) throw new Error(data.error || 'Failed')
       setPools((prev) => [data, ...prev])
       setNewName('')
-      addToast({ type: 'success', title: 'Pool created', message: data.name })
+      addToast({ type: 'success', title: 'Shortlist created', message: data.name })
     } catch (err) {
       addToast({
         type: 'error',
-        title: 'Failed',
+        title: 'Could not create',
         message: err instanceof Error ? err.message : 'Please try again.',
       })
     } finally {
@@ -66,103 +67,121 @@ export default function EmployerPoolsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this talent pool?')) return
+    setDeletingId(null)
     try {
       const res = await fetch(`/api/employer/pools/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       })
-      if (!res.ok) throw new Error('Failed')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Failed to delete')
       setPools((prev) => prev.filter((p) => p.id !== id))
-      addToast({ type: 'success', title: 'Pool deleted' })
-    } catch {
-      addToast({ type: 'error', title: 'Failed to delete' })
+      addToast({ type: 'success', title: 'Shortlist deleted' })
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Could not delete',
+        message: err instanceof Error ? err.message : 'Please try again.',
+      })
     }
   }
 
+  const deleting = pools.find((pool) => pool.id === deletingId)
+
   return (
-    <AppPageShell className="min-h-screen bg-black py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
+    <AppPageShell>
+      <div className="page-shell">
+        <PageHeader
+          title="Shortlists"
+          rule
+          description="Keep the people worth a second look, grouped however your team hires."
+        />
+
+        <form
+          onSubmit={handleCreate}
+          className="flex flex-col gap-2 border-t border-line pt-6 sm:flex-row"
         >
-          <div className="hero-panel p-8 md:p-10">
-            <h1 className="text-4xl font-bold text-white mb-2">Talent Pools</h1>
-            <p className="text-lg text-white/60 mb-8 max-w-3xl">
-              Organize candidates by the pillars your team hires for most often, then revisit the
-              strongest profiles without losing context.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 mb-8">
-              {SKILL_PILLAR_DETAILS.map((pillar) => (
-                <div
-                  key={pillar.category}
-                  className="insight-card p-4"
-                  style={{ borderColor: `${CATEGORY_COLORS[pillar.category]}30` }}
-                >
-                  <div className="text-xs uppercase tracking-[0.22em] text-white/45">
-                    {pillar.shortLabel}
-                  </div>
-                  <div className="mt-2 text-sm font-semibold text-white">{pillar.category}</div>
-                </div>
-              ))}
-            </div>
-
-            <form onSubmit={handleCreate} className="flex gap-4 mb-0">
-              <input
-                type="text"
-                placeholder="New pool name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="flex-1 px-4 py-3 border border-white/10 bg-black/40 text-white"
-              />
-              <Button type="submit" disabled={creating || !newName.trim()}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create
-              </Button>
-            </form>
-          </div>
-        </motion.div>
+          <label className="flex-1">
+            <span className="sr-only">New shortlist name</span>
+            <input
+              type="text"
+              placeholder="New shortlist, e.g. Frontend, spring hires"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="metalab-input"
+            />
+          </label>
+          <Button
+            type="submit"
+            disabled={creating || !newName.trim()}
+            isLoading={creating}
+            leftIcon={<Plus className="size-4" aria-hidden />}
+          >
+            Create
+          </Button>
+        </form>
 
         {loading ? (
-          <div className="text-white/40">Loading...</div>
+          <Loader />
         ) : pools.length === 0 ? (
-          <div className="gradient-border-card p-12 text-center">
-            <Users className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <h3 className="text-xl font-medium text-white mb-2">No talent pools yet</h3>
-            <p className="text-white/60 mb-4">
-              Create a pool to save candidates from your talent search
+          <div className="mt-6 border-y border-line py-12">
+            <p className="font-display text-3xl font-light">No shortlists yet</p>
+            <p className="mt-3 max-w-md text-ink-muted">
+              Create one above, then add people to it from a talent search.
             </p>
-            <Link href="/employer/talent">
-              <Button>Search Talent</Button>
+            <Link
+              href="/employer/talent"
+              className="button-base button-secondary mt-6 min-h-11 px-5"
+            >
+              Find talent
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            {pools.map((pool, index) => (
-              <motion.div
-                key={pool.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="gradient-border-card p-6 flex items-center justify-between"
-              >
-                <Link href={`/employer/pools/${pool.id}`} className="flex-1">
-                  <h3 className="text-xl font-semibold text-white">{pool.name}</h3>
-                  <p className="text-white/60 text-sm mt-1">
-                    {pool.candidateCount} candidate{pool.candidateCount !== 1 ? 's' : ''}
-                  </p>
+          <ul className="ruled-list mt-6 border-y border-line">
+            {pools.map((pool) => (
+              <li key={pool.id} className="flex items-center justify-between gap-6 py-6">
+                <Link href={`/employer/pools/${pool.id}`} className="group min-w-0 flex-1">
+                  <span className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight group-hover:text-ink">
+                    {pool.name}
+                  </span>
+                  <span className="mt-1 block text-sm text-ink-faint">
+                    {pool.candidateCount} {pool.candidateCount === 1 ? 'person' : 'people'} ·
+                    created{' '}
+                    {formatDistanceToNowStrict(new Date(pool.createdAt), { addSuffix: true })}
+                  </span>
                 </Link>
-                <Button variant="outline" size="sm" onClick={() => handleDelete(pool.id)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </motion.div>
+                <button
+                  type="button"
+                  onClick={() => setDeletingId(pool.id)}
+                  className="pill size-9 justify-center p-0 hover:!bg-critical/15 hover:text-critical"
+                  aria-label={`Delete ${pool.name}`}
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
+
+        <Modal
+          isOpen={!!deletingId}
+          onClose={() => setDeletingId(null)}
+          title="Delete shortlist"
+          size="sm"
+        >
+          <p className="leading-relaxed text-ink-muted">
+            Delete <span className="text-ink">{deleting?.name ?? 'this shortlist'}</span>? The
+            people in it stay on Nexus; only the list goes.
+          </p>
+          <div className="mt-6 flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setDeletingId(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={() => deletingId && handleDelete(deletingId)}>
+              Delete
+            </Button>
+          </div>
+        </Modal>
       </div>
     </AppPageShell>
   )

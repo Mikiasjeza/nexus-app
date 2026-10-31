@@ -7,7 +7,8 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { guestPoolDetail, GUEST_READ_ONLY } from '@/lib/mock/employer'
+import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +17,12 @@ const EMPLOYER_VISIBLE = { publicProfile: true, discoverableByEmployers: true } 
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    if (await isGuestRequest()) {
+      const pool = guestPoolDetail((await params).id)
+      return pool
+        ? NextResponse.json(pool)
+        : NextResponse.json({ error: 'Pool not found' }, { status: 404 })
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -76,6 +83,9 @@ const patchSchema = z.object({
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    if (await isGuestRequest()) {
+      return NextResponse.json(GUEST_READ_ONLY, { status: 403 })
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -142,6 +152,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    if (await isGuestRequest()) {
+      return NextResponse.json(GUEST_READ_ONLY, { status: 403 })
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })

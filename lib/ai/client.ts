@@ -24,7 +24,8 @@ export type { EvidenceInput } from './verification'
 
 type Provider = 'gemini' | 'openai' | 'anthropic'
 
-const DEFAULT_PROVIDER = env.ai.provider as Provider
+// Groq speaks the OpenAI API, so it runs through the OpenAI client below.
+const DEFAULT_PROVIDER = (env.ai.provider === 'groq' ? 'openai' : env.ai.provider) as Provider
 const DEFAULT_MODEL = env.ai.model
 
 export interface AIAnalysisResult extends VerificationResult {
@@ -96,6 +97,13 @@ class AIClient {
       })
     }
 
+    if (env.ai.provider === 'groq' && env.ai.groqKey) {
+      this.openai = new OpenAI({
+        apiKey: env.ai.groqKey,
+        baseURL: 'https://api.groq.com/openai/v1',
+      })
+    }
+
     if (env.ai.anthropicKey) {
       this.anthropic = new Anthropic({
         apiKey: env.ai.anthropicKey,
@@ -104,7 +112,9 @@ class AIClient {
 
     if (!this.gemini && !this.openai && !this.anthropic) {
       console.warn('⚠️  No AI API keys configured. AI features will not work.')
-      console.warn('   Set GEMINI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY in .env')
+      console.warn(
+        '   Set GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY or GROQ_API_KEY in .env'
+      )
     }
   }
 
@@ -229,6 +239,88 @@ class AIClient {
       outputTokens: response.usage.output_tokens,
       model: response.model,
     }
+  }
+
+  /** Whether the configured provider has its key, without throwing. */
+  isConfigured(): boolean {
+    try {
+      assertAIEnv()
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * One JSON-only completion with the configured provider, for callers that
+   * validate the reply themselves (e.g. the assessment grader). Throws on
+   * provider errors, refusals and cut-off replies; never returns partial text.
+   */
+  async completeJson(system: string, prompt: string, maxTokens = 2500): Promise<RawReply> {
+    assertAIEnv()
+    if (DEFAULT_PROVIDER === 'gemini' && this.gemini) {
+      const response = await this.gemini.models.generateContent({
+        model: DEFAULT_MODEL,
+        contents: prompt,
+        config: {
+          systemInstruction: system,
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+          maxOutputTokens: maxTokens,
+        },
+      })
+      if (!response.text) throw new Error('No response from Gemini')
+      return {
+        text: response.text,
+        inputTokens: response.usageMetadata?.promptTokenCount ?? 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount ?? 0,
+        model: DEFAULT_MODEL,
+      }
+    }
+    if (DEFAULT_PROVIDER === 'openai' && this.openai) {
+      const response = await this.openai.chat.completions.create({
+        model: DEFAULT_MODEL,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+        max_tokens: maxTokens,
+      })
+      const choice = response.choices[0]
+      if (choice?.finish_reason === 'length') throw new Error('The AI reply was cut off')
+      const text = choice?.message?.content
+      if (!text) throw new Error('No response from the AI provider')
+      return {
+        text,
+        inputTokens: response.usage?.prompt_tokens ?? 0,
+        outputTokens: response.usage?.completion_tokens ?? 0,
+        model: DEFAULT_MODEL,
+      }
+    }
+    if (DEFAULT_PROVIDER === 'anthropic' && this.anthropic) {
+      const response = await this.anthropic.messages.create({
+        model: DEFAULT_MODEL,
+        max_tokens: Math.max(maxTokens, 4000),
+        system,
+        messages: [{ role: 'user', content: prompt }],
+      })
+      if (response.stop_reason === 'refusal') throw new Error('The AI declined to grade this')
+      if (response.stop_reason === 'max_tokens') throw new Error('The AI reply was cut off')
+      const text = response.content
+        .filter((block) => block.type === 'text')
+        .map((block) => (block as { text: string }).text)
+        .join('')
+      if (!text) throw new Error('No response from Anthropic')
+      return {
+        text,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+        model: response.model,
+      }
+    }
+    throw new Error(`AI provider ${DEFAULT_PROVIDER} not configured or unavailable`)
   }
 
   async matchJobsForUser(

@@ -1,6 +1,6 @@
 'use client'
 
-import { InputHTMLAttributes, forwardRef } from 'react'
+import { InputHTMLAttributes, forwardRef, useId } from 'react'
 import { LucideIcon } from 'lucide-react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -22,58 +22,60 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       rightIcon: RightIcon,
       fullWidth = true,
       className = '',
+      id,
       ...props
     },
     ref
   ) => {
+    const generatedId = useId()
+    const inputId = id ?? generatedId
+    const noteId = `${inputId}-note`
+
     return (
       <div className={fullWidth ? 'w-full' : ''}>
         {label && (
-          <label className="block text-sm font-medium mb-2">
+          <label htmlFor={inputId} className="metalab-label">
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="ml-1 text-ink-faint">*</span>}
           </label>
         )}
 
         <div className="relative">
           {LeftIcon && (
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <LeftIcon className="w-5 h-5" />
-            </div>
+            <LeftIcon
+              className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+              aria-hidden
+            />
           )}
 
           <input
             ref={ref}
-            className={`
-              w-full
-              px-4 py-3
-              ${LeftIcon ? 'pl-12' : ''}
-              ${RightIcon ? 'pr-12' : ''}
-              bg-white dark:bg-black
-              border
-              ${error ? 'border-black/40 dark:border-white/40' : 'border-black/10 dark:border-white/10'}
-              text-black dark:text-white
-              placeholder:text-black/40 dark:placeholder:text-white/40
-              focus:border-black dark:focus:border-white
-              focus:outline-none
-              transition-colors
-              ${className}
-            `}
+            id={inputId}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error || helperText ? noteId : undefined}
+            className={`metalab-input ${LeftIcon ? 'pl-10' : ''} ${RightIcon ? 'pr-10' : ''} ${
+              error ? '!border-critical/60' : ''
+            } ${className}`}
             {...props}
           />
 
           {RightIcon && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <RightIcon className="w-5 h-5" />
-            </div>
+            <RightIcon
+              className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+              aria-hidden
+            />
           )}
         </div>
 
-        {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
-
-        {helperText && !error && (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{helperText}</p>
-        )}
+        {error ? (
+          <p id={noteId} className="mt-2 text-sm text-critical">
+            {error}
+          </p>
+        ) : helperText ? (
+          <p id={noteId} className="mt-2 text-sm text-ink-faint">
+            {helperText}
+          </p>
+        ) : null}
       </div>
     )
   }

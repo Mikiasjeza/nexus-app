@@ -24,6 +24,10 @@ const PUBLIC_PATHS = [
   '/auth/forgot-password',
   '/auth/reset-password',
   '/share/', // Public shareable profiles
+  '/assessments', // Catalog, details and practice rounds (attempts are below)
+  '/verify', // Public credential checks
+  '/api/verify/',
+  '/api/assessments', // Each route checks its own auth and answers 401 as JSON
   '/api/health',
   '/api/version',
   '/api/contact',
@@ -38,8 +42,12 @@ const PUBLIC_PATHS = [
 /** Auth routes - redirect to dashboard if already logged in */
 const AUTH_ROUTES = ['/auth/login', '/auth/register']
 
+/** Inside a public prefix but still for signed-in people only. */
+const PROTECTED_PATHS = ['/assessments/attempt/', '/assessments/result/']
+
 function isPublicPath(pathname: string): boolean {
   if (pathname === '/') return true
+  if (PROTECTED_PATHS.some((p) => pathname.startsWith(p))) return false
   return PUBLIC_PATHS.some((p) => p !== '/' && (pathname === p || pathname.startsWith(p)))
 }
 
