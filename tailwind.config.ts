@@ -10,7 +10,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Premium primary palette with subtle gradients
+        // Nexus world (see .impeccable/surfaces): warm off-black ground, cream ink,
+        // warm grey secondary text, hairlines, translucent pills, and one
+        // orange reserved for verified state, selection and focus.
+        ground: '#0c0c0b',
+        raised: '#151412',
+        ink: {
+          DEFAULT: '#e9e4da',
+          muted: '#a39d92',
+          faint: '#7a746a',
+        },
+        line: 'rgba(233, 228, 218, 0.1)',
+        pill: {
+          DEFAULT: 'rgba(233, 228, 218, 0.12)',
+          hover: 'rgba(233, 228, 218, 0.2)',
+        },
+        verified: {
+          DEFAULT: '#e9762b',
+          ink: '#f3a066',
+          wash: 'rgba(233, 118, 43, 0.14)',
+        },
+        caution: '#d9c46b',
+        critical: '#ff6b6b',
+        // Utilities the Bklit charts (components/charts) use for axis labels,
+        // tooltips and ring centres. Values live in globals.css.
+        foreground: '#e9e4da',
+        muted: '#161512',
+        chart: {
+          label: 'var(--chart-label)',
+          positive: 'var(--chart-positive)',
+          negative: 'var(--chart-negative)',
+          'tooltip-background': 'var(--chart-tooltip-background)',
+          'tooltip-foreground': 'var(--chart-tooltip-foreground)',
+          'tooltip-muted': 'var(--chart-tooltip-muted)',
+        },
+        // Legacy palettes, still referenced by pages not yet redesigned.
         primary: {
           50: '#f0f4ff',
           100: '#e0e9ff',
@@ -47,17 +81,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: [
-          'var(--font-inter)',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'sans-serif',
-        ],
-        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'Times New Roman', 'serif'],
       },
       fontSize: {
+        // Page titles and headline numbers, set in the thin display serif.
+        title: ['clamp(2.75rem, 5vw, 5.5rem)', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
+        score: ['clamp(4.5rem, 8vw, 7.5rem)', { lineHeight: '0.95', letterSpacing: '-0.03em' }],
         'display-2xl': [
           '4.5rem',
           { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' },
