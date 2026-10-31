@@ -58,6 +58,15 @@ export default function MonthCalendar({
     month.getFullYear() === today.getFullYear() && month.getMonth() === today.getMonth()
   const activeDays = counts.size
   const monthLabel = month.toLocaleString(undefined, { month: 'long', year: 'numeric' })
+  const monthName = month.toLocaleString(undefined, { month: 'long' })
+  // Leading blanks then the days, cut into weeks: a grid's cells live in rows.
+  const cells: (number | null)[] = [
+    ...Array.from({ length: leadingBlanks }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ]
+  const weeks = Array.from({ length: Math.ceil(cells.length / 7) }, (_, w) =>
+    cells.slice(w * 7, w * 7 + 7)
+  )
   const plural = (n: number) => `${n} ${unit}${n === 1 ? '' : 's'}`
 
   return (
@@ -96,47 +105,50 @@ export default function MonthCalendar({
           )}
         </div>
 
-        <div className="mt-4 grid grid-cols-7 gap-2" role="grid" aria-label={monthLabel}>
-          {DAY_NAMES.map((name) => (
-            <div
-              key={name}
-              role="columnheader"
-              className="flex h-8 items-center justify-center text-[0.6875rem] font-medium text-ink-faint"
-            >
-              {name}
+        <div className="mt-4 space-y-2" role="grid" aria-label={monthLabel}>
+          <div role="row" className="grid grid-cols-7 gap-2">
+            {DAY_NAMES.map((name) => (
+              <div
+                key={name}
+                role="columnheader"
+                className="flex h-8 items-center justify-center text-[0.6875rem] font-medium text-ink-faint"
+              >
+                {name}
+              </div>
+            ))}
+          </div>
+          {weeks.map((week, w) => (
+            <div key={w} role="row" className="grid grid-cols-7 gap-2">
+              {week.map((day, i) => {
+                if (day === null) return <div key={`blank-${i}`} aria-hidden />
+                const count = counts.get(day) ?? 0
+                const isToday = isCurrentMonth && day === today.getDate()
+                const isFuture = isCurrentMonth && day > today.getDate()
+                const fill = dayFill(count)
+                return (
+                  <div
+                    key={day}
+                    role="gridcell"
+                    title={count ? plural(count) : undefined}
+                    aria-label={`${monthName} ${day}: ${count ? plural(count) : 'nothing'}`}
+                    className={`tabular flex aspect-square min-h-8 items-center justify-center rounded-xl text-sm font-medium ${
+                      // Cream reads on the deeper tiles, dark on full orange.
+                      fill
+                        ? count >= 3
+                          ? 'text-ground'
+                          : 'text-ink'
+                        : isFuture
+                          ? 'text-ink-faint/50'
+                          : 'text-ink-faint'
+                    } ${isToday ? 'ring-1 ring-inset ring-ink' : ''}`}
+                    style={fill ? { background: fill } : undefined}
+                  >
+                    {day}
+                  </div>
+                )
+              })}
             </div>
           ))}
-          {Array.from({ length: leadingBlanks }, (_, i) => (
-            <div key={`blank-${i}`} aria-hidden />
-          ))}
-          {Array.from({ length: daysInMonth }, (_, i) => {
-            const day = i + 1
-            const count = counts.get(day) ?? 0
-            const isToday = isCurrentMonth && day === today.getDate()
-            const isFuture = isCurrentMonth && day > today.getDate()
-            const fill = dayFill(count)
-            return (
-              <div
-                key={day}
-                role="gridcell"
-                title={count ? plural(count) : undefined}
-                aria-label={`${monthLabel.split(' ')[0]} ${day}: ${count ? plural(count) : 'nothing'}`}
-                className={`tabular flex aspect-square min-h-8 items-center justify-center rounded-xl text-sm font-medium ${
-                  // Cream reads on the deeper tiles, dark on full orange.
-                  fill
-                    ? count >= 3
-                      ? 'text-ground'
-                      : 'text-ink'
-                    : isFuture
-                      ? 'text-ink-faint/50'
-                      : 'text-ink-faint'
-                } ${isToday ? 'ring-1 ring-inset ring-ink' : ''}`}
-                style={fill ? { background: fill } : undefined}
-              >
-                {day}
-              </div>
-            )
-          })}
         </div>
       </div>
     </div>
