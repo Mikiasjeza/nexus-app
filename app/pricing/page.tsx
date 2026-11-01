@@ -1,18 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Check,
-  ChevronDown,
-  Sparkles,
-  Users,
-  Building2,
-  Zap,
-  Shield,
-  Lock,
-  ArrowRight,
-} from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/components/UI/Button'
 import { PLAN_INFO, formatPlanPrice } from '@/lib/plans'
@@ -20,6 +9,7 @@ import { authApi, billingApi } from '@/lib/api'
 import { useToast } from '@/components/UI/ToastProvider'
 import type { User } from '@/lib/types'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
 import { cn } from '@/lib/utils/cn'
 
 // Prices, features and limits come from lib/plans.ts, the same source Stripe
@@ -29,37 +19,31 @@ const plans = [
     ...PLAN_INFO.free,
     displayPrice: formatPlanPrice(PLAN_INFO.free.price),
     period: 'forever',
-    icon: Sparkles,
   },
   {
     ...PLAN_INFO.pro,
     displayPrice: formatPlanPrice(PLAN_INFO.pro.price),
     period: 'month',
-    icon: Zap,
   },
   {
     ...PLAN_INFO.enterprise,
     displayPrice: 'Custom',
     period: '',
-    icon: Building2,
   },
 ]
 
 const features = [
   {
-    icon: Shield,
     title: 'Evidence-based verification',
     description: 'AI reviews the evidence you submit and explains its score.',
   },
   {
-    icon: Lock,
     title: 'Private by default',
     description: 'Nothing is public, or visible to employers, until you turn it on.',
   },
   {
-    icon: Users,
-    title: 'Career Matching',
-    description: 'AI matches your skills with relevant opportunities',
+    title: 'Job matching',
+    description: 'The AI ranks open roles against your skills and explains each match.',
   },
 ]
 
@@ -86,12 +70,11 @@ export default function PricingPage() {
   const { addToast } = useToast()
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
   const isSignedIn = !!user && user.id !== 'guest-user'
 
   const linkButtonClass = (variant: 'primary' | 'outline' = 'primary') =>
     cn(
-      'button-base min-h-[48px] w-full rounded-lg px-5 text-base',
+      'button-base min-h-12 w-full px-5 text-base',
       variant === 'primary' ? 'button-primary' : 'button-secondary'
     )
 
@@ -119,245 +102,127 @@ export default function PricingPage() {
   }
 
   return (
-    <AppPageShell className="min-h-screen bg-black">
+    <AppPageShell>
       <div className="page-shell">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mb-16"
-        >
-          <div className="hero-panel p-8 text-center md:p-10">
-            <div className="hero-kicker mx-auto mb-6 inline-flex">Flexible pricing</div>
-            <h1 className="mx-auto mb-4 max-w-[12ch] text-4xl font-semibold tracking-tight text-white md:mb-6 md:max-w-none md:text-6xl">
-              Choose your{' '}
-              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-rose-300 bg-clip-text text-transparent">
-                plan
-              </span>
-            </h1>
-            <p className="text-base md:text-lg text-white/68 max-w-[42ch] md:max-w-3xl mx-auto">
-              Start with the free plan, prove your capabilities, and upgrade when you are ready for
-              paid verification and billing features.
-            </p>
-            <div className="mt-6 text-sm text-white/58">
-              {isSignedIn
-                ? 'You are signed in. Paid upgrades go straight to secure Stripe checkout.'
-                : 'Create an account first, then upgrade when you are ready to start billing.'}
-            </div>
-          </div>
-        </motion.div>
+        <PageHeader
+          title="Pricing"
+          rule
+          description={
+            isSignedIn
+              ? 'Start free and upgrade when you need more AI checks. Upgrades go straight to Stripe checkout.'
+              : 'Start free and upgrade when you need more AI checks. Create an account first; paying is optional.'
+          }
+        />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="grid sm:grid-cols-3 gap-3 mb-10"
-        >
-          {['Solo builders', 'Growing professionals', 'Hiring teams'].map((item) => (
-            <div key={item} className="insight-card px-4 py-3 text-sm text-white/72 text-center">
-              {item}
-            </div>
-          ))}
-        </motion.div>
+        <div className="grid border-y border-line md:grid-cols-3">
+          {plans.map((plan, i) => (
+            <section
+              key={plan.id}
+              aria-labelledby={`plan-${plan.id}`}
+              className={`flex flex-col py-10 md:px-8 ${i > 0 ? 'border-t border-line md:border-l md:border-t-0' : 'md:pl-0'} ${i === plans.length - 1 ? 'md:pr-0' : ''}`}
+            >
+              <h2 id={`plan-${plan.id}`} className="text-base font-medium">
+                {plan.name}
+              </h2>
+              <p className="mt-6 flex items-baseline gap-2">
+                <span className="display-number text-[clamp(3rem,5vw,4.5rem)] leading-none">
+                  {plan.displayPrice}
+                </span>
+                {plan.period && (
+                  <span className="text-ink-faint">
+                    {plan.period === 'forever' ? 'forever' : `/ ${plan.period}`}
+                  </span>
+                )}
+              </p>
+              <p className="mt-4 text-ink-muted">{plan.description}</p>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-16">
-          {plans.map((plan, index) => {
-            const Icon = plan.icon
-            return (
-              <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="relative"
-              >
-                <div className="gradient-border-card p-8 h-full">
-                  <div className="w-16 h-16 border border-white/10 bg-white/5 flex items-center justify-center mb-6">
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold text-white">{plan.displayPrice}</span>
-                    {plan.period && (
-                      <span className="text-white/60">
-                        {' '}
-                        {plan.period === 'forever' ? 'forever' : `/ ${plan.period}`}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-white/60 mb-6">{plan.description}</p>
+              <ul className="mt-8 flex-1 space-y-2.5">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex gap-3 text-sm">
+                    <Check className="mt-0.5 size-4 shrink-0 text-verified" aria-hidden />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
 
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-white/75">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {plan.id === 'free' ? (
-                    <Link href="/auth/register" className={linkButtonClass('outline')}>
-                      Get started free
-                      <ArrowRight className="w-5 h-5" />
+              <div className="mt-10">
+                {plan.id === 'free' ? (
+                  <Link href="/auth/register" className={linkButtonClass('outline')}>
+                    Start free
+                  </Link>
+                ) : plan.id === 'enterprise' ? (
+                  <>
+                    <Link href="/contact" className={linkButtonClass('outline')}>
+                      Talk to us
                     </Link>
-                  ) : plan.id === 'enterprise' ? (
-                    <div className="space-y-3">
-                      <Link href="/contact" className={linkButtonClass('outline')}>
-                        Contact Sales
-                        <ArrowRight className="w-5 h-5" />
+                    <p className="mt-3 text-sm text-ink-faint">Set up through a conversation.</p>
+                  </>
+                ) : (
+                  <>
+                    {isSignedIn ? (
+                      <Button
+                        fullWidth
+                        size="lg"
+                        onClick={() => handleCheckout('professional')}
+                        isLoading={loadingPlan === 'professional'}
+                        disabled={loadingPlan !== null}
+                      >
+                        Subscribe to {plan.name}
+                      </Button>
+                    ) : (
+                      <Link href="/auth/register" className={linkButtonClass('primary')}>
+                        Create an account first
                       </Link>
-                      <p className="text-xs text-white/45 text-center">
-                        Enterprise setup is handled with a custom conversation.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {isSignedIn ? (
-                        <Button
-                          variant="outline"
-                          fullWidth
-                          size="lg"
-                          rightIcon={<ArrowRight className="w-5 h-5" />}
-                          onClick={() => handleCheckout('professional')}
-                          isLoading={loadingPlan === 'professional'}
-                          disabled={loadingPlan !== null}
-                        >
-                          Subscribe to {plan.name}
-                        </Button>
-                      ) : (
-                        <Link href="/auth/register" className={linkButtonClass('outline')}>
-                          Create Account First
-                          <ArrowRight className="w-5 h-5" />
-                        </Link>
-                      )}
-                      <p className="text-xs leading-relaxed text-white/50">
-                        {plan.displayPrice}/month plus applicable tax, billed when you subscribe and
-                        renewing monthly until you cancel. Cancel any time in Settings.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )
-          })}
+                    )}
+                    <p className="mt-3 text-sm leading-relaxed text-ink-faint">
+                      {plan.displayPrice}/month plus applicable tax, billed when you subscribe and
+                      renewing monthly until you cancel. Cancel any time in Settings.
+                    </p>
+                  </>
+                )}
+              </div>
+            </section>
+          ))}
         </div>
 
-        {/* Features Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mb-16"
-        >
-          <h2 className="text-3xl font-bold text-white text-center mb-12">All Plans Include</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <div key={index} className="gradient-border-card p-6 text-center">
-                  <div className="w-12 h-12 border border-white/10 bg-white/5 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-medium text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-white/60">{feature.description}</p>
-                </div>
-              )
-            })}
-          </div>
-        </motion.div>
-
-        {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center"
-        >
-          <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
-          <div className="max-w-3xl mx-auto space-y-2">
-            {faqs.map((item, i) => (
-              <div key={i} className="gradient-border-card overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="flex w-full items-center justify-between p-6 text-left"
-                >
-                  <h3 className="font-medium text-white">{item.q}</h3>
-                  <ChevronDown
-                    className={`w-4 h-4 text-white/40 flex-shrink-0 ml-4 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                <AnimatePresence initial={false}>
-                  {openFaq === i && (
-                    <motion.div
-                      key="content"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.22, ease: 'easeOut' }}
-                      className="overflow-hidden"
-                    >
-                      <p className="px-6 pb-6 text-white/55 text-sm leading-relaxed">{item.a}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+        <section aria-labelledby="included-heading" className="py-16">
+          <h2 id="included-heading" className="text-base font-medium">
+            Every plan includes
+          </h2>
+          <dl className="mt-8 grid gap-x-10 md:grid-cols-3">
+            {features.map((feature) => (
+              <div key={feature.title} className="border-t border-line py-6">
+                <dt className="font-medium">{feature.title}</dt>
+                <dd className="mt-2 leading-relaxed text-ink-muted">{feature.description}</dd>
               </div>
             ))}
-          </div>
-        </motion.div>
+          </dl>
+        </section>
 
-        {/* CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mt-16 text-center"
+        <section
+          aria-labelledby="faq-heading"
+          className="grid gap-8 border-t border-line py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10"
         >
-          <div className="gradient-border-card p-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Ready to get started?</h2>
-            <p className="text-white/60 mb-8">
-              Start on the free plan today and upgrade only if you need more AI verifications.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {isSignedIn ? (
-                <Button
-                  size="lg"
-                  rightIcon={<ArrowRight className="w-5 h-5" />}
-                  onClick={() => handleCheckout('professional')}
-                  isLoading={loadingPlan === 'professional'}
-                  disabled={loadingPlan !== null}
-                >
-                  Upgrade to Professional
-                </Button>
-              ) : (
-                <Link
-                  href="/auth/register"
-                  className="button-base button-primary min-h-[48px] rounded-lg px-5 text-base"
-                >
-                  Create Your Account
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              )}
-              <Link
-                href="/contact"
-                className="button-base button-secondary min-h-[48px] rounded-lg px-5 text-base"
-              >
-                Contact Sales
-              </Link>
-            </div>
+          <h2 id="faq-heading" className="text-base font-medium">
+            Questions
+          </h2>
+          <div className="ruled-list border-y border-line">
+            {faqs.map((item) => (
+              <details key={item.q} className="group py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <ChevronDown
+                    className="size-4 shrink-0 text-ink-faint transition-transform duration-150 group-open:rotate-180"
+                    aria-hidden
+                  />
+                </summary>
+                <p className="mt-3 max-w-[40rem] text-sm leading-relaxed text-ink-muted">
+                  {item.a}
+                </p>
+              </details>
+            ))}
           </div>
-        </motion.div>
+        </section>
       </div>
     </AppPageShell>
   )

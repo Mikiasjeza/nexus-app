@@ -20,7 +20,10 @@ const config: Config = {
           muted: '#a39d92',
           faint: '#7a746a',
         },
-        line: 'rgba(233, 228, 218, 0.1)',
+        line: {
+          DEFAULT: 'rgba(233, 228, 218, 0.1)',
+          strong: 'rgba(233, 228, 218, 0.18)',
+        },
         pill: {
           DEFAULT: 'rgba(233, 228, 218, 0.12)',
           hover: 'rgba(233, 228, 218, 0.2)',

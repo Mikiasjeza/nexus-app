@@ -1,6 +1,6 @@
 'use client'
 
-import { SelectHTMLAttributes, forwardRef } from 'react'
+import { SelectHTMLAttributes, forwardRef, useId } from 'react'
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
@@ -11,31 +11,26 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, helperText, options, fullWidth = true, className = '', ...props }, ref) => {
+  ({ label, error, helperText, options, fullWidth = true, className = '', id, ...props }, ref) => {
+    const generatedId = useId()
+    const selectId = id ?? generatedId
+    const noteId = `${selectId}-note`
+
     return (
       <div className={fullWidth ? 'w-full' : ''}>
         {label && (
-          <label className="block text-sm font-medium mb-2">
+          <label htmlFor={selectId} className="metalab-label">
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="ml-1 text-ink-faint">*</span>}
           </label>
         )}
 
         <select
           ref={ref}
-          className={`
-            w-full
-            px-4 py-3
-            rounded-xl
-            glass-card
-            border
-            ${error ? 'border-red-500' : 'border-white/10'}
-            focus:border-primary-500
-            focus:outline-none
-            transition-colors
-            bg-white dark:bg-gray-900
-            ${className}
-          `}
+          id={selectId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error || helperText ? noteId : undefined}
+          className={`metalab-input ${error ? '!border-critical/60' : ''} ${className}`}
           {...props}
         >
           {options.map((option) => (
@@ -45,11 +40,15 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ))}
         </select>
 
-        {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
-
-        {helperText && !error && (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{helperText}</p>
-        )}
+        {error ? (
+          <p id={noteId} className="mt-2 text-sm text-critical">
+            {error}
+          </p>
+        ) : helperText ? (
+          <p id={noteId} className="mt-2 text-sm text-ink-faint">
+            {helperText}
+          </p>
+        ) : null}
       </div>
     )
   }

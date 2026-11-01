@@ -69,13 +69,19 @@ export const env = {
     // Per-provider default; OpenAI has none, so AI_MODEL must be set for it.
     model:
       process.env.AI_MODEL ||
-      ({ gemini: 'gemini-2.5-flash', anthropic: 'claude-opus-5-5' } as Record<string, string>)[
-        process.env.AI_PROVIDER || 'gemini'
-      ] ||
+      (
+        {
+          gemini: 'gemini-2.5-flash',
+          anthropic: 'claude-opus-5-5',
+          groq: 'llama-3.3-70b-versatile',
+        } as Record<string, string>
+      )[process.env.AI_PROVIDER || 'gemini'] ||
       '',
     geminiKey: process.env.GEMINI_API_KEY || '',
     openAiKey: process.env.OPENAI_API_KEY || '',
     anthropicKey: process.env.ANTHROPIC_API_KEY || '',
+    // Groq: OpenAI-compatible API with a free (rate-limited) tier.
+    groqKey: process.env.GROQ_API_KEY || '',
   },
 }
 
@@ -152,6 +158,10 @@ export function assertAIEnv(): void {
   }
   if (env.ai.provider === 'anthropic') {
     getRequired('ANTHROPIC_API_KEY')
+    return
+  }
+  if (env.ai.provider === 'groq') {
+    getRequired('GROQ_API_KEY')
     return
   }
   throw new Error(`Unsupported AI_PROVIDER: ${env.ai.provider}`)

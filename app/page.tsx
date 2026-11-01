@@ -1,765 +1,279 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import {
-  ArrowRight,
-  Brain,
-  Shield,
-  BarChart3,
-  CheckCircle2,
-  Zap,
-  Network,
-  Lock,
-  ChevronRight,
-} from 'lucide-react'
-import { easing } from '@/lib/utils/animations'
+import { ArrowRight } from 'lucide-react'
 import { useUser } from '@/lib/hooks/useUser'
-import {
-  DEMO_SKILL_NODES,
-  DEMO_SKILL_CONNECTIONS,
-  type SkillNode,
-} from '@/components/UI/SkillBrain'
-import {
-  useState,
-  useCallback,
-  useRef,
-  type MouseEvent,
-  type ReactNode,
-  type CSSProperties,
-} from 'react'
+import { SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
 
-const SkillBrain = dynamic(
-  () => import('@/components/UI/SkillBrain').then((m) => ({ default: m.SkillBrain })),
-  { ssr: false, loading: () => <div className="w-full h-full" /> }
-)
-
-const CATEGORY_COLORS: Record<string, string> = {
-  build: '#22d3ee',
-  create: '#a78bfa',
-  explain: '#34d399',
-  lead: '#fbbf24',
-  grow: '#f472b6',
-}
-
-const TICKER = [
-  'AI Skill Validation',
-  'Neural Passport',
-  'Evidence-Backed',
-  'Career-Ready',
-  'Tamper-Proof',
-  'Live Graph',
-  'Multimodal AI',
-  'Verified Credentials',
+/** The four things a candidate comes to Nexus for, in the order they meet them. */
+const PROMISES = [
+  {
+    title: 'See what’s verified',
+    body: 'Every skill shows whether the AI verified it, how confident it was, and when it last checked.',
+  },
+  {
+    title: 'Know the next step',
+    body: 'When a check falls short, it says what proof is missing, so the next thing to do is never a guess.',
+  },
+  {
+    title: 'Trust the result',
+    body: 'Each verdict comes with its reasons in plain language. Code links are checked for authorship too.',
+  },
+  {
+    title: 'Share your proof',
+    body: 'One link. Employers see your verified skills first, with the work behind each one.',
+  },
 ]
 
-function TiltCard({
-  children,
-  className,
-  strength = 8,
-  style,
-}: {
-  children: ReactNode
-  className?: string
-  strength?: number
-  style?: CSSProperties
-}) {
-  const ref = useRef<HTMLDivElement>(null)
+const PROOF_KINDS = [
+  {
+    name: 'Code',
+    detail: 'Repositories and snippets, read for depth, correctness and whose commits they are.',
+  },
+  { name: 'Video', detail: 'Demos and talks, judged on what you actually show and explain.' },
+  {
+    name: 'Documents',
+    detail: 'Case studies, writing and plans, read for structure and outcomes.',
+  },
+  { name: 'Audio', detail: 'Recordings of you speaking, teaching or presenting.' },
+  { name: 'Projects', detail: 'Live work with your part in it described in your own words.' },
+]
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent<HTMLDivElement>) => {
-      const el = ref.current
-      if (!el) return
-      const r = el.getBoundingClientRect()
-      const x = (e.clientX - r.left) / r.width - 0.5
-      const y = (e.clientY - r.top) / r.height - 0.5
-      el.style.transform = `perspective(1000px) rotateX(${-y * strength}deg) rotateY(${x * strength}deg)`
-      el.style.transition = 'transform 0.08s linear'
-    },
-    [strength]
-  )
-
-  const handleMouseLeave = useCallback(() => {
-    const el = ref.current
-    if (!el) return
-    el.style.transition = 'transform 0.6s cubic-bezier(0.16,1,0.3,1)'
-    el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)'
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className={className}
-      style={{ willChange: 'transform', ...style }}
-    >
-      {children}
-    </div>
-  )
-}
-
-const FEATURES = [
-  {
-    icon: Brain,
-    title: 'AI skill validation',
-    desc: 'Evidence analyzed for depth, consistency, and real-world confidence across code, video, and project outputs.',
-    color: '#22d3ee',
-    accent: 'rgba(34,211,238,0.08)',
-    border: 'rgba(34,211,238,0.15)',
-  },
-  {
-    icon: Lock,
-    title: 'Tamper-resistant records',
-    desc: 'Passport history with traceable updates, evidence links, and AI confidence scores.',
-    color: '#a78bfa',
-    accent: 'rgba(167,139,250,0.08)',
-    border: 'rgba(167,139,250,0.15)',
-  },
-  {
-    icon: BarChart3,
-    title: 'Progress over time',
-    desc: 'Growth trends by pillar, level, and verification signal quality. Gap analysis included.',
-    color: '#34d399',
-    accent: 'rgba(52,211,153,0.08)',
-    border: 'rgba(52,211,153,0.15)',
-  },
-  {
-    icon: Network,
-    title: 'Neural skill graph',
-    desc: 'Skills connect and reinforce each other. Your graph evolves as you prove new capabilities.',
-    color: '#fbbf24',
-    accent: 'rgba(251,191,36,0.08)',
-    border: 'rgba(251,191,36,0.15)',
-  },
-  {
-    icon: Shield,
-    title: 'Verifiable credentials',
-    desc: 'Employers validate in seconds. No more guessing — proof is baked in.',
-    color: '#f472b6',
-    accent: 'rgba(244,114,182,0.08)',
-    border: 'rgba(244,114,182,0.15)',
-  },
+// Product facts only; never usage numbers or ratings we can't back up.
+const FACTS = [
+  { value: '0', label: 'Ad trackers' },
+  { value: 'Private', label: 'Until you share it' },
+  { value: '1 click', label: 'To export your data' },
+  { value: '5', label: 'Skill pillars' },
 ]
 
 export default function HomePage() {
   const { user } = useUser()
-  const [activeSkill, setActiveSkill] = useState<SkillNode | null>(null)
-
-  const ctaHref = user ? '/dashboard' : '/auth/register'
-
-  const handleSkillClick = useCallback((skill: SkillNode) => {
-    setActiveSkill((prev) => (prev?.id === skill.id ? null : skill))
-  }, [])
+  const startHref = user ? '/dashboard' : '/auth/register'
 
   return (
-    <div className="min-h-screen" style={{ background: '#09090b' }}>
-      {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="relative flex min-h-screen items-center overflow-hidden pt-16">
-        {/* Conic gradient mesh */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[900px] w-[900px] rounded-full opacity-[0.07] blur-[160px]"
-            style={{
-              background:
-                'conic-gradient(from 200deg at 50% 50%, #22d3ee, #a78bfa, #f472b6, #22d3ee)',
-            }}
-          />
-          <div
-            className="absolute -top-40 -left-20 h-[500px] w-[500px] rounded-full opacity-[0.04] blur-[100px]"
-            style={{ background: 'radial-gradient(circle, #22d3ee, transparent 70%)' }}
-          />
-        </div>
-
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-12">
-          <div className="grid min-h-[calc(100vh-4rem)] grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.15fr]">
-            {/* Left */}
-            <div className="flex flex-col justify-center py-16 lg:py-0">
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: easing.primary }}
-                className="mb-8 inline-flex items-center gap-2 self-start rounded-full border border-white/[0.1] bg-white/[0.04] px-4 py-1.5"
-              >
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                <span className="text-[11px] font-medium tracking-[0.18em] uppercase text-white/50">
-                  Skill verification · Live
-                </span>
-              </motion.div>
-
-              <motion.h1
-                className="mb-6 font-black leading-[0.96] tracking-[-0.04em] text-white"
-                style={{ fontSize: 'clamp(3.5rem, 9vw, 7rem)' }}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.08, ease: easing.primary }}
-              >
-                Your skills.
-                <br />
-                <span
-                  className="bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage:
-                      'linear-gradient(135deg, #22d3ee 0%, #a78bfa 50%, #f472b6 100%)',
-                  }}
-                >
-                  Verified.
-                </span>
-              </motion.h1>
-
-              <motion.p
-                className="mb-10 max-w-md text-lg leading-relaxed text-white/45"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.25, ease: easing.primary }}
-              >
-                An AI-powered neural passport — not what you claim, but what you can prove.
-              </motion.p>
-
-              <motion.div
-                className="flex flex-wrap items-center gap-4"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4, ease: easing.primary }}
-              >
-                <Link
-                  href={ctaHref}
-                  className="group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.03]"
-                  style={{
-                    background:
-                      'linear-gradient(135deg, rgba(34,211,238,0.9), rgba(139,92,246,0.9))',
-                    boxShadow: '0 0 32px rgba(34,211,238,0.18)',
-                  }}
-                >
-                  Build your passport
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-
-                <Link
-                  href="/how-it-works"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] px-7 py-3.5 text-sm font-medium text-white/55 transition-all duration-200 hover:border-white/[0.2] hover:text-white/90"
-                >
-                  How it works
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </Link>
-              </motion.div>
-
-              {/* Stats divide pattern */}
-              <motion.div
-                className="mt-14 grid grid-cols-3 divide-x divide-white/[0.07] border-t border-white/[0.07] pt-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.6, ease: easing.primary }}
-              >
-                {[
-                  { value: '17', label: 'Skills mapped' },
-                  { value: '28', label: 'Connections' },
-                  { value: '5', label: 'Skill pillars' },
-                ].map((stat) => (
-                  <div key={stat.label} className="pl-6 first:pl-0">
-                    <div className="text-3xl font-black tracking-tight text-white">
-                      {stat.value}
-                    </div>
-                    <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            </div>
-
-            {/* Right — 3D SkillBrain */}
-            <motion.div
-              className="relative"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.15, ease: easing.primary }}
-            >
-              <div style={{ perspective: '1400px', width: '100%' }}>
-                <motion.div
-                  className="relative w-full overflow-hidden rounded-3xl border border-white/[0.07] bg-white/[0.02]"
-                  initial={{ rotateX: 6, rotateY: -8 }}
-                  whileHover={{ rotateX: 0, rotateY: 0 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    boxShadow: '0 50px 150px rgba(0,0,0,0.7)',
-                    height: '560px',
-                  }}
-                >
-                  <div className="absolute inset-0">
-                    <SkillBrain
-                      nodes={DEMO_SKILL_NODES}
-                      connections={DEMO_SKILL_CONNECTIONS}
-                      onNodeClick={handleSkillClick}
-                      className="h-full w-full"
-                    />
-                  </div>
-
-                  {activeSkill && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute bottom-4 left-4 right-4"
-                    >
-                      <div className="rounded-xl border border-white/[0.1] bg-[rgba(9,9,11,0.88)] px-4 py-2.5 backdrop-blur-md">
-                        <p className="text-[12px] font-medium text-white/75">{activeSkill.label}</p>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {!activeSkill && (
-                    <div className="absolute bottom-4 right-4">
-                      <span className="text-[10px] tracking-[0.18em] uppercase text-white/20">
-                        Hover to explore
-                      </span>
-                    </div>
-                  )}
-                </motion.div>
-              </div>
-
-              {/* Pillar legend */}
-              <div className="mt-4 flex flex-wrap gap-4 px-1">
-                {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
-                  <div key={cat} className="flex items-center gap-1.5">
-                    <div className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
-                    <span className="text-[10px] uppercase tracking-[0.15em] text-white/30">
-                      {cat}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── MARQUEE TICKER ───────────────────────────────────── */}
-      <div
-        className="overflow-hidden select-none"
-        style={{
-          borderTop: '1px solid rgba(255,255,255,0.05)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          padding: '16px 0',
-        }}
-      >
-        <div className="marquee-track flex items-center gap-0">
-          {[...TICKER, ...TICKER].map((item, i) => (
-            <span key={i} className="flex items-center shrink-0">
-              <span className="px-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
-                {item}
-              </span>
-              <span className="text-white/10 shrink-0">·</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ── FEATURES BENTO ───────────────────────────────────── */}
-      <section
-        className="relative py-28 md:py-36"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        <div className="mx-auto max-w-6xl px-6 lg:px-12">
-          <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, ease: easing.primary }}
-          >
-            <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
-                01
-              </span>
-              <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
-                Capabilities
-              </span>
-            </div>
-            <h2
-              className="font-black tracking-[-0.03em] text-white"
-              style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
-            >
-              Built for serious
-              <br />
-              career growth
-            </h2>
-          </motion.div>
-
-          {/* Bento grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ gridAutoRows: '280px' }}>
-            {/* Large card */}
-            {(() => {
-              const HeroIcon = FEATURES[0].icon
-              return (
-                <motion.div
-                  className="md:col-span-2 md:row-span-2"
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.55, ease: easing.primary }}
-                >
-                  <TiltCard
-                    strength={4}
-                    className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 flex flex-col justify-between overflow-hidden relative"
-                  >
-                    {/* Ambient color blob */}
-                    <div
-                      className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-[0.12] blur-[80px]"
-                      style={{ background: FEATURES[0].color }}
-                    />
-
-                    <div>
-                      <div
-                        className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl"
-                        style={{
-                          background: FEATURES[0].accent,
-                          border: `1px solid ${FEATURES[0].border}`,
-                        }}
-                      >
-                        <HeroIcon className="h-6 w-6" style={{ color: FEATURES[0].color }} />
-                      </div>
-                      <h3 className="mb-3 text-2xl font-bold text-white">{FEATURES[0].title}</h3>
-                      <p className="max-w-sm text-base leading-relaxed text-white/45">
-                        {FEATURES[0].desc}
-                      </p>
-                    </div>
-
-                    {/* Mini progress bar */}
-                    <div className="space-y-3">
-                      {[
-                        { label: 'Code analysis', pct: 94 },
-                        { label: 'Video evidence', pct: 88 },
-                        { label: 'Project output', pct: 91 },
-                      ].map((bar) => (
-                        <div key={bar.label}>
-                          <div className="mb-1 flex justify-between">
-                            <span className="text-[11px] text-white/35">{bar.label}</span>
-                            <span className="text-[11px] text-white/35">{bar.pct}%</span>
-                          </div>
-                          <div className="h-px w-full bg-white/[0.06]">
-                            <div
-                              className="h-px rounded-full"
-                              style={{ width: `${bar.pct}%`, background: FEATURES[0].color }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </TiltCard>
-                </motion.div>
-              )
-            })()}
-
-            {/* Small cards */}
-            {FEATURES.slice(1).map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: (i + 1) * 0.07, ease: easing.primary }}
-              >
-                <TiltCard
-                  strength={10}
-                  className="h-full rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 flex flex-col justify-between overflow-hidden relative"
-                >
-                  <div
-                    className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-[0.12] blur-[60px]"
-                    style={{ background: f.color }}
-                  />
-                  <div
-                    className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl"
-                    style={{ background: f.accent, border: `1px solid ${f.border}` }}
-                  >
-                    <f.icon className="h-5 w-5" style={{ color: f.color }} />
-                  </div>
-                  <div>
-                    <h3 className="mb-2 text-base font-semibold text-white">{f.title}</h3>
-                    <p className="text-sm leading-relaxed text-white/40">{f.desc}</p>
-                  </div>
-                </TiltCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ─────────────────────────────────────── */}
-      <section
-        className="relative py-28 md:py-36"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        <div className="mx-auto max-w-5xl px-6 lg:px-12">
-          <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, ease: easing.primary }}
-          >
-            <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
-                02
-              </span>
-              <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
-                Process
-              </span>
-            </div>
-            <h2
-              className="font-black tracking-[-0.03em] text-white"
-              style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
-            >
-              Three steps
-              <br />
-              to verified
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {[
-              {
-                step: '01',
-                title: 'Map your skills',
-                desc: 'Add skills across the five pillars: build, create, explain, lead, grow.',
-                color: '#22d3ee',
-                icon: Network,
-                accent: 'rgba(34,211,238,0.08)',
-                border: 'rgba(34,211,238,0.15)',
-              },
-              {
-                step: '02',
-                title: 'Attach evidence',
-                desc: 'Code repos, videos, certificates, projects. AI analyzes and scores each one.',
-                color: '#a78bfa',
-                icon: Zap,
-                accent: 'rgba(167,139,250,0.08)',
-                border: 'rgba(167,139,250,0.15)',
-              },
-              {
-                step: '03',
-                title: 'Passport grows',
-                desc: 'Your neural graph updates. Share a verified, live profile with anyone.',
-                color: '#f472b6',
-                icon: Shield,
-                accent: 'rgba(244,114,182,0.08)',
-                border: 'rgba(244,114,182,0.15)',
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease: easing.primary }}
-              >
-                <TiltCard
-                  strength={8}
-                  className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-7 h-full"
-                >
-                  <div
-                    className="pointer-events-none absolute -top-12 -right-12 h-48 w-48 rounded-full opacity-[0.1] blur-[70px]"
-                    style={{ background: item.color }}
-                  />
-                  <div
-                    className="mb-6 text-[56px] font-black leading-none tracking-[-0.04em]"
-                    style={{ color: `${item.color}0a`, WebkitTextStroke: `1px ${item.color}20` }}
-                  >
-                    {item.step}
-                  </div>
-                  <div
-                    className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl"
-                    style={{ background: item.accent, border: `1px solid ${item.border}` }}
-                  >
-                    <item.icon className="h-5 w-5" style={{ color: item.color }} />
-                  </div>
-                  <h3 className="mb-2 text-lg font-bold text-white">{item.title}</h3>
-                  <p className="text-sm leading-relaxed text-white/45">{item.desc}</p>
-                </TiltCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── STATS ────────────────────────────────────────────── */}
-      <div
-        style={{
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-        }}
-      >
-        <div className="mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 divide-x divide-y md:grid-cols-4 md:divide-y-0 divide-white/[0.06]">
-            {[
-              // Product facts only; never show usage numbers or ratings we can't back up.
-              { value: '0', label: 'Ad trackers' },
-              { value: 'Private', label: 'Until you share' },
-              { value: '1-click', label: 'Data export' },
-              { value: '24/7', label: 'Passport access' },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                className="px-8 py-12"
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.07 }}
-              >
-                <p className="text-5xl font-black tracking-tight text-white">{stat.value}</p>
-                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/30">
-                  {stat.label}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── COMPARISON ───────────────────────────────────────── */}
-      <section className="py-28 md:py-36" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="mx-auto max-w-4xl px-6 lg:px-12">
-          <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="mb-4 flex items-center gap-4">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
-                03
-              </span>
-              <div className="h-px w-10 bg-white/[0.08]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
-                Signal comparison
-              </span>
-            </div>
-            <h2
-              className="font-black tracking-[-0.03em] text-white"
-              style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)' }}
-            >
-              Why it feels
-              <br />
-              different
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <motion.div
-              className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8"
-              initial={{ opacity: 0, x: -16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/25">
-                Traditional profile
-              </p>
-              <ul className="space-y-4">
-                {[
-                  'Static bullet points with no confidence signal',
-                  'Self-reported skills with zero verification',
-                  'One-size-fits-all presentation',
-                ].map((line) => (
-                  <li key={line} className="flex items-start gap-3 text-sm text-white/35">
-                    <span className="mt-2.5 h-px w-3 flex-shrink-0 bg-white/20" />
-                    {line}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            <motion.div
-              className="rounded-2xl border border-white/[0.12] bg-white/[0.04] p-8"
-              initial={{ opacity: 0, x: 16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.08 }}
-            >
-              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/45">
-                Nexus passport
-              </p>
-              <ul className="space-y-4">
-                {[
-                  'Evidence-backed skills with AI confidence scores',
-                  'Continuous updates from real project proof',
-                  'Portable, shareable neural graph for any context',
-                ].map((line) => (
-                  <li key={line} className="flex items-start gap-3 text-sm text-white/75">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" />
-                    {line}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FINAL CTA ────────────────────────────────────────── */}
-      <section
-        className="relative overflow-hidden py-44 md:py-56"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        <div
-          className="pointer-events-none absolute inset-0 flex items-center justify-center"
-          aria-hidden
-        >
-          <div
-            className="h-[600px] w-[600px] rounded-full opacity-[0.07] blur-[120px]"
-            style={{
-              background:
-                'conic-gradient(from 0deg at 50% 50%, #22d3ee, #a78bfa, #f472b6, #22d3ee)',
-            }}
-          />
-        </div>
-
-        <div className="relative mx-auto max-w-2xl px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.6, ease: easing.primary }}
-          >
-            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/25">
-              Get started
-            </p>
-            <h2
-              className="mb-6 font-black tracking-[-0.04em] text-white"
-              style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}
-            >
-              Start mapping your{' '}
-              <span
-                className="bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(135deg, #22d3ee, #a78bfa)' }}
-              >
-                neural graph
-              </span>
-            </h2>
-            <p className="mb-10 text-lg text-white/40">
-              Every skill node you add becomes part of a living, verifiable record that employers
-              can trust.
-            </p>
-
-            <Link
-              href={ctaHref}
-              className="group inline-flex items-center gap-3 rounded-full px-9 py-4 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.04]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(34,211,238,0.85), rgba(139,92,246,0.85))',
-                boxShadow: '0 0 48px rgba(34,211,238,0.14)',
-              }}
-            >
-              Initialize your passport
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+    <div className="page-shell !pt-0">
+      {/* Hero: the claim, and a real-looking check result beside it. */}
+      <section className="grid min-h-[calc(100vh-5rem)] items-center gap-16 py-16 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <div>
+          <h1 className="font-display font-extralight leading-[0.98] tracking-[-0.03em] text-[clamp(3.5rem,9vw,8.5rem)]">
+            Prove what
+            <br />
+            you can do.
+          </h1>
+          <p className="mt-8 max-w-[34rem] text-lg leading-relaxed text-ink-muted">
+            Add the skills you have and attach real work. An AI checks whether the work backs up the
+            level you claim, and what passes becomes a passport you can send to any employer.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-2">
+            <Link href={startHref} className="button-base button-primary min-h-12 px-6 text-base">
+              {user ? 'Go to your dashboard' : 'Start your passport'}
+              <ArrowRight className="size-4" aria-hidden />
             </Link>
-          </motion.div>
+            <Link
+              href="/how-it-works"
+              className="button-base button-secondary min-h-12 px-6 text-base"
+            >
+              How it works
+            </Link>
+          </div>
+        </div>
+
+        <SampleCheck />
+      </section>
+
+      {/* What you get, as an index. */}
+      <section aria-labelledby="promises-heading" className="border-t border-line py-24">
+        <h2
+          id="promises-heading"
+          className="page-title max-w-[16ch] !text-[clamp(2.25rem,4.5vw,4rem)]"
+        >
+          Built around the proof, not the profile.
+        </h2>
+        <ol className="ruled-list mt-14 border-y border-line">
+          {PROMISES.map((promise, i) => (
+            <li
+              key={promise.title}
+              className="grid gap-3 py-8 md:grid-cols-[4rem_minmax(0,1fr)_minmax(0,1fr)] md:items-baseline md:gap-8"
+            >
+              <span className="display-number text-2xl text-ink-faint">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <h3 className="font-display text-[clamp(1.75rem,3vw,2.75rem)] font-light leading-tight">
+                {promise.title}
+              </h3>
+              <p className="max-w-[30rem] leading-relaxed text-ink-muted">{promise.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Pillars and kinds of proof, side by side. */}
+      <section
+        aria-labelledby="pillars-heading"
+        className="grid gap-16 border-t border-line py-24 lg:grid-cols-2"
+      >
+        <div>
+          <h2 id="pillars-heading" className="text-base font-medium">
+            Five pillars
+          </h2>
+          <p className="mt-2 max-w-[28rem] text-ink-muted">
+            Every skill sits in one, and each pillar is checked for what matters in it.
+          </p>
+          <ul className="ruled-list mt-8 border-y border-line">
+            {SKILL_PILLAR_DETAILS.map((pillar) => (
+              <li key={pillar.category} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-6 py-5">
+                <span className="font-medium">{pillar.shortLabel}</span>
+                <span className="text-ink-muted">{pillar.summary}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2 className="text-base font-medium">Kinds of proof</h2>
+          <p className="mt-2 max-w-[28rem] text-ink-muted">
+            Attach whatever shows the skill best. Files are scanned before anything reads them.
+          </p>
+          <ul className="ruled-list mt-8 border-y border-line">
+            {PROOF_KINDS.map((kind) => (
+              <li key={kind.name} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-6 py-5">
+                <span className="font-medium">{kind.name}</span>
+                <span className="text-ink-muted">{kind.detail}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
+
+      {/* A CV against a passport. */}
+      <section aria-labelledby="compare-heading" className="border-t border-line py-24">
+        <h2
+          id="compare-heading"
+          className="page-title max-w-[18ch] !text-[clamp(2.25rem,4.5vw,4rem)]"
+        >
+          A CV says it. A passport shows it.
+        </h2>
+        <div className="mt-14 grid gap-12 md:grid-cols-2">
+          <ComparisonList
+            title="A CV or profile"
+            items={[
+              'Skills you typed in, with nothing behind them',
+              'The same page whether the claim is true or not',
+              'Employers left to guess, or to test you from scratch',
+            ]}
+          />
+          <ComparisonList
+            title="A Nexus passport"
+            highlight
+            items={[
+              'Skills checked against real work you attached',
+              'A confidence score and the reasons for every verdict',
+              'One link that shows verified skills first',
+            ]}
+          />
+        </div>
+      </section>
+
+      <section aria-label="Product facts" className="border-y border-line">
+        <dl className="grid grid-cols-2 md:grid-cols-4">
+          {FACTS.map((fact, i) => (
+            <div
+              key={fact.label}
+              className={`py-10 ${i % 2 === 1 ? 'pl-6 md:pl-8' : ''} ${i > 1 ? 'border-t border-line md:border-t-0' : ''} ${i > 0 ? 'md:border-l md:border-line md:pl-8' : ''}`}
+            >
+              <dt className="sr-only">{fact.label}</dt>
+              <dd className="display-number text-[clamp(2.5rem,4vw,3.5rem)] leading-none">
+                {fact.value}
+              </dd>
+              <dd className="mt-3 text-sm text-ink-faint">{fact.label}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="py-28 md:py-40">
+        <h2 className="page-title !text-[clamp(2.75rem,7vw,6rem)]">
+          Start with one skill
+          <span className="title-rule" aria-hidden />
+        </h2>
+        <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <Link href={startHref} className="button-base button-primary min-h-12 px-6 text-base">
+            {user ? 'Go to your dashboard' : 'Start your passport'}
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
+          <Link
+            href="/employer/dashboard"
+            className="text-ink-muted transition-colors hover:text-ink"
+          >
+            Hiring? Nexus for employers →
+          </Link>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+/** A check result the way the Verification page shows it, labelled as a sample. */
+function SampleCheck() {
+  return (
+    <figure className="rounded-[1.5rem] border border-line p-2">
+      <div className="rounded-2xl border border-line bg-raised p-6 shadow-[inset_0_2px_1.5px_rgba(233,228,218,0.08)]">
+        <figcaption className="flex items-center justify-between text-sm text-ink-faint">
+          <span>Sample check</span>
+          <span>React · Advanced</span>
+        </figcaption>
+        <p className="mt-8 flex items-baseline gap-3">
+          <span className="display-number text-score leading-none">86%</span>
+          <span className="text-verified">Verified</span>
+        </p>
+        <p className="mt-6 text-[0.9375rem] leading-relaxed text-ink-muted">
+          The repository shows component design, state management and tests across 40 commits, all
+          authored by this account. That supports an Advanced claim.
+        </p>
+        <ul className="ruled-list mt-6 border-t border-line text-sm">
+          <li className="flex justify-between gap-4 py-3">
+            <span className="text-ink-faint">Evidence</span>
+            <span>GitHub repository</span>
+          </li>
+          <li className="flex justify-between gap-4 py-3">
+            <span className="text-ink-faint">Authorship</span>
+            <span>Commits match the account</span>
+          </li>
+          <li className="flex justify-between gap-4 py-3">
+            <span className="text-ink-faint">Next step</span>
+            <span>Add a deployed project for Expert</span>
+          </li>
+        </ul>
+      </div>
+    </figure>
+  )
+}
+
+function ComparisonList({
+  title,
+  items,
+  highlight = false,
+}: {
+  title: string
+  items: string[]
+  highlight?: boolean
+}) {
+  return (
+    <div>
+      <h3 className={`text-base font-medium ${highlight ? 'text-ink' : 'text-ink-faint'}`}>
+        {title}
+      </h3>
+      <ul className="ruled-list mt-6 border-y border-line">
+        {items.map((item) => (
+          <li key={item} className={`flex gap-3 py-4 ${highlight ? 'text-ink' : 'text-ink-faint'}`}>
+            <span
+              aria-hidden
+              className={`mt-2 size-1.5 shrink-0 rounded-full ${highlight ? 'bg-verified' : 'bg-ink-faint'}`}
+            />
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

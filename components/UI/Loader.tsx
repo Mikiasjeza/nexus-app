@@ -1,30 +1,18 @@
 'use client'
 
-import { motion } from 'framer-motion'
-
+/** Three quiet dots, pulsing in turn. */
 export default function Loader() {
   return (
-    <div className="flex items-center justify-center p-8">
-      <motion.div className="flex space-x-2" initial="hidden" animate="visible">
+    <div className="flex items-center justify-center p-8" role="status" aria-label="Loading">
+      <div className="flex gap-1.5">
         {[0, 1, 2].map((i) => (
-          <motion.div
+          <span
             key={i}
-            className="w-3 h-3 bg-primary-500 rounded-full"
-            variants={{
-              hidden: { opacity: 0, y: 0 },
-              visible: {
-                opacity: 1,
-                y: [0, -10, 0],
-                transition: {
-                  duration: 0.6,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                },
-              },
-            }}
+            className="size-1.5 animate-pulse rounded-full bg-ink-muted motion-reduce:animate-none"
+            style={{ animationDelay: `${i * 160}ms`, animationDuration: '960ms' }}
           />
         ))}
-      </motion.div>
+      </div>
     </div>
   )
 }

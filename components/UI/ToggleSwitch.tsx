@@ -1,7 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
-
 interface ToggleSwitchProps {
   checked: boolean
   onChange: (checked: boolean) => void
@@ -16,32 +14,33 @@ export default function ToggleSwitch({
   disabled = false,
 }: ToggleSwitchProps) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer group">
-      <div className="relative">
+    <label
+      className={`inline-flex items-center gap-3 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+    >
+      <span className="relative inline-flex">
         <input
           type="checkbox"
+          role="switch"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
-          className="sr-only"
+          aria-label={label ? undefined : 'Toggle'}
+          className="peer sr-only"
         />
-        <div
-          className={`w-11 h-6 rounded-full transition-colors duration-200 ${
-            checked ? 'bg-primary-500' : 'bg-dark-300'
-          } ${disabled ? 'opacity-50' : ''}`}
-        >
-          <motion.div
-            className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md"
-            animate={{
-              x: checked ? 20 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          />
-        </div>
-      </div>
-      {label && (
-        <span className={`text-sm font-medium ${disabled ? 'opacity-50' : ''}`}>{label}</span>
-      )}
+        <span
+          aria-hidden
+          className={`h-6 w-10 rounded-full transition-colors duration-150 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-verified ${
+            checked ? 'bg-verified' : 'bg-pill'
+          }`}
+        />
+        <span
+          aria-hidden
+          className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-ink transition-transform duration-150 ease-out ${
+            checked ? 'translate-x-4' : 'translate-x-0'
+          }`}
+        />
+      </span>
+      {label && <span className="text-sm">{label}</span>}
     </label>
   )
 }

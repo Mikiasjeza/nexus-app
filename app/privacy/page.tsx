@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       current="/privacy"
       summary={
         <>
-          <p className="mb-2 font-medium text-white">The short version</p>
+          <p className="mb-2 font-medium text-ink">The short version</p>
           <List>
             <li>
               We collect only what we need to run your skill passport: your account, the skills and
@@ -36,69 +36,69 @@ export default function PrivacyPage() {
     >
       <Section title="1. Who we are">
         <p>
-          {LEGAL.LEGAL_ENTITY} (&quot;Nexus&quot;, &quot;we&quot;, &quot;us&quot;) operates this
-          service and is the controller of your personal data.
+          {LEGAL.LEGAL_ENTITY} (“Nexus”, “we”, “us”) operates this service and is the controller of
+          your personal data.
           {LEGAL.POSTAL_ADDRESS ? ` Our address is ${LEGAL.POSTAL_ADDRESS}.` : ''} Questions or
           requests: <Mail to={LEGAL.contact.privacy} />.
         </p>
       </Section>
 
       <Section title="2. What we collect">
-        <p className="font-medium text-white/85">Information you give us</p>
+        <p className="font-medium text-ink">Information you give us</p>
         <List>
           <li>
-            <strong className="text-white/85">Account:</strong> name, email address and password.
+            <strong className="text-ink">Account:</strong> name, email address and password.
             Passwords are stored only as a one-way bcrypt hash.
           </li>
           <li>
-            <strong className="text-white/85">Optional profile details:</strong> bio, avatar and
-            custom profile link, only if you add them.
+            <strong className="text-ink">Optional profile details:</strong> bio, avatar and custom
+            profile link, only if you add them.
           </li>
           <li>
-            <strong className="text-white/85">Skills and evidence:</strong> skill names, levels,
-            notes, links, code snippets and files you choose to submit, plus a change history so you
-            can see how a skill evolved.
+            <strong className="text-ink">Skills and evidence:</strong> skill names, levels, notes,
+            links, code snippets and files you choose to submit, plus a change history so you can
+            see how a skill evolved.
           </li>
           <li>
-            <strong className="text-white/85">Onboarding answers (optional):</strong> the goals and
+            <strong className="text-ink">Onboarding answers (optional):</strong> the goals and
             starter skills you pick during setup.
           </li>
           <li>
-            <strong className="text-white/85">AI career assistant:</strong> the messages you type
-            into the chat.
+            <strong className="text-ink">AI career assistant:</strong> the messages you type into
+            the chat.
           </li>
           <li>
-            <strong className="text-white/85">Messages:</strong> anything you send us by email or
-            through the contact form. Contact-form messages are forwarded to our support inbox and
-            not stored in our database.
+            <strong className="text-ink">Messages:</strong> anything you send us by email or through
+            the contact form. Contact-form messages are forwarded to our support inbox and not
+            stored in our database.
           </li>
           <li>
-            <strong className="text-white/85">Employer accounts:</strong> if you sign up as an
-            employer, your company name, website, logo and description, your role, the job listings
-            you post and the talent pools you create.
+            <strong className="text-ink">Employer accounts:</strong> if you sign up as an employer,
+            your company name, website, logo and description, your role, the job listings you post
+            and the talent pools you create.
           </li>
         </List>
-        <p className="font-medium text-white/85">Information created when you use Nexus</p>
+        <p className="font-medium text-ink">Information created when you use Nexus</p>
         <List>
           <li>
-            <strong className="text-white/85">AI verification results:</strong> the confidence
-            score, explanation and suggestions returned for your evidence, plus token usage so we
-            can enforce plan limits.
+            <strong className="text-ink">AI verification results:</strong> the confidence score,
+            explanation and suggestions returned for your evidence, plus token usage so we can
+            enforce plan limits.
           </li>
           <li>
-            <strong className="text-white/85">Activity log:</strong> in-product events such as
-            &quot;skill added&quot; shown on your dashboard.
+            <strong className="text-ink">Activity log:</strong> in-product events such as “skill
+            added” shown on your dashboard.
           </li>
           <li>
-            <strong className="text-white/85">Billing status:</strong> your plan, subscription
-            status and Stripe customer ID. We never receive or store card numbers.
+            <strong className="text-ink">Billing status:</strong> your plan, subscription status and
+            Stripe customer ID. We never receive or store card numbers.
           </li>
           <li>
-            <strong className="text-white/85">Sign-in session:</strong> a random session token
-            stored in an HTTP-only cookie.
+            <strong className="text-ink">Sign-in session:</strong> a random session token stored in
+            an HTTP-only cookie.
           </li>
         </List>
-        <p className="font-medium text-white/85">If you choose &quot;Continue with GitHub&quot;</p>
+        <p className="font-medium text-ink">If you choose “Continue with GitHub”</p>
         <List>
           <li>
             Your GitHub user ID, username, display name, avatar and email. We request read-only
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
             access token. You can revoke Nexus&apos;s access at any time in your GitHub settings.
           </li>
         </List>
-        <p className="font-medium text-white/85">Technical data</p>
+        <p className="font-medium text-ink">Technical data</p>
         <List>
           <li>
             Your IP address is used briefly in memory to rate-limit sign-in and other sensitive
@@ -119,11 +119,11 @@ export default function PrivacyPage() {
             address, cookies or account details.
           </li>
           <li>
-            Only if you allow &quot;Diagnostics&quot; in cookie settings: a short replay of the
-            moments before an error, with all text, form inputs and images hidden.
+            Only if you allow “Diagnostics” in cookie settings: a short replay of the moments before
+            an error, with all text, form inputs and images hidden.
           </li>
         </List>
-        <p className="font-medium text-white/85">What we deliberately don&apos;t collect</p>
+        <p className="font-medium text-ink">What we deliberately don&apos;t collect</p>
         <List>
           <li>
             No advertising or cross-site tracking cookies, tracking pixels or device fingerprinting.
@@ -137,13 +137,13 @@ export default function PrivacyPage() {
 
       <Section title="3. How we use it, and our legal basis">
         <TableWrap>
-          <thead className="bg-white/[0.03] text-white/80">
+          <thead className="bg-raised text-ink">
             <tr>
               <th className="p-3 font-medium">Purpose</th>
               <th className="p-3 font-medium">Legal basis (GDPR)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/10">
+          <tbody className="divide-y divide-line">
             <tr>
               <td className="p-3">Create and run your account and skill passport</td>
               <td className="p-3">Performance of our contract with you</td>
@@ -192,11 +192,11 @@ export default function PrivacyPage() {
         </p>
         <List>
           <li>
-            <strong className="text-white/85">Verification:</strong> the skill name, claimed level
-            and the evidence content you submitted.
+            <strong className="text-ink">Verification:</strong> the skill name, claimed level and
+            the evidence content you submitted.
           </li>
           <li>
-            <strong className="text-white/85">Career assistant and job matching:</strong> your skill
+            <strong className="text-ink">Career assistant and job matching:</strong> your skill
             names, levels and verification status, the message you typed, and public job listings.
           </li>
         </List>
@@ -215,15 +215,15 @@ export default function PrivacyPage() {
 
       <Section title="5. Who we share data with">
         <p>
-          We don&apos;t sell or rent personal data, and we don&apos;t &quot;share&quot; it for
-          cross-context behavioral advertising (as those terms are defined under California law). We
-          share data only with the service providers below, who process it on our behalf. Apart from
-          our error monitor (Sentry), we call them from our servers and none of them load scripts on
-          Nexus pages. Sentry&apos;s browser reporting goes through our own domain. (Stripe&apos;s
+          We don&apos;t sell or rent personal data, and we don&apos;t “share” it for cross-context
+          behavioral advertising (as those terms are defined under California law). We share data
+          only with the service providers below, who process it on our behalf. Apart from our error
+          monitor (Sentry), we call them from our servers and none of them load scripts on Nexus
+          pages. Sentry&apos;s browser reporting goes through our own domain. (Stripe&apos;s
           checkout and billing pages are hosted by Stripe under its own privacy policy.)
         </p>
         <TableWrap>
-          <thead className="bg-white/[0.03] text-white/80">
+          <thead className="bg-raised text-ink">
             <tr>
               <th className="p-3 font-medium">Provider</th>
               <th className="p-3 font-medium">Purpose</th>
@@ -231,16 +231,16 @@ export default function PrivacyPage() {
               <th className="p-3 font-medium">When</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/10 align-top">
+          <tbody className="divide-y divide-line align-top">
             {SUBPROCESSORS.map((p) => (
               <tr key={p.name}>
-                <td className="p-3 text-white/85">
+                <td className="p-3 text-ink">
                   {p.policyUrl ? (
                     <a
                       href={p.policyUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline decoration-white/20 underline-offset-2 hover:text-white"
+                      className="underline decoration-line-strong underline-offset-2 hover:text-ink"
                     >
                       {p.name}
                     </a>
@@ -256,19 +256,18 @@ export default function PrivacyPage() {
           </tbody>
         </TableWrap>
         <p>
-          <strong className="text-white/85">Public profile:</strong> if you turn on public sharing,
+          <strong className="text-ink">Public profile:</strong> if you turn on public sharing,
           anyone with your link can see your name, bio, avatar and the skills you marked public.
           Your email is never shown. Turn sharing off in Settings at any time.
         </p>
         <p>
-          <strong className="text-white/85">Employers:</strong> employers on Nexus can search for
-          candidates only if you turn on <em>both</em> your public profile and &quot;Discoverable by
-          employers&quot; in Settings. They see the same information as your public profile (name,
-          bio, avatar, public skills and verification status), never your email or private skills,
-          and they can save you to a shortlist (&quot;talent pool&quot;). If you switch either
-          setting off or delete your account, you disappear from search and from every shortlist
-          straight away. Employers must use what they see only for recruiting, as required by our
-          Terms.
+          <strong className="text-ink">Employers:</strong> employers on Nexus can search for
+          candidates only if you turn on <em>both</em> your public profile and “Discoverable by
+          employers” in Settings. They see the same information as your public profile (name, bio,
+          avatar, public skills and verification status), never your email or private skills, and
+          they can save you to a shortlist (“talent pool”). If you switch either setting off or
+          delete your account, you disappear from search and from every shortlist straight away.
+          Employers must use what they see only for recruiting, as required by our Terms.
         </p>
         <p>
           We may also disclose data if required by law, or to protect the rights and safety of our
@@ -286,31 +285,29 @@ export default function PrivacyPage() {
       <Section title="7. How long we keep it">
         <List>
           <li>
-            <strong className="text-white/85">
-              Account, skills, evidence, AI results, activity:
-            </strong>{' '}
+            <strong className="text-ink">Account, skills, evidence, AI results, activity:</strong>{' '}
             until you delete them or your account.
           </li>
           <li>
-            <strong className="text-white/85">Company, job listings and talent pools:</strong> until
+            <strong className="text-ink">Company, job listings and talent pools:</strong> until
             deleted, or until the last member of the company deletes their account.
           </li>
           <li>
-            <strong className="text-white/85">Error reports (Sentry):</strong> up to 90 days.
+            <strong className="text-ink">Error reports (Sentry):</strong> up to 90 days.
           </li>
           <li>
-            <strong className="text-white/85">Sign-in sessions:</strong> expire after 7 days.
+            <strong className="text-ink">Sign-in sessions:</strong> expire after 7 days.
           </li>
           <li>
-            <strong className="text-white/85">Password reset tokens:</strong> expire after use or
-            within a short time.
+            <strong className="text-ink">Password reset tokens:</strong> expire after use or within
+            a short time.
           </li>
           <li>
-            <strong className="text-white/85">Billing records:</strong> kept by Stripe for as long
-            as tax and accounting law requires.
+            <strong className="text-ink">Billing records:</strong> kept by Stripe for as long as tax
+            and accounting law requires.
           </li>
           <li>
-            <strong className="text-white/85">Backups:</strong> deleted data may remain in encrypted
+            <strong className="text-ink">Backups:</strong> deleted data may remain in encrypted
             backups for up to 30 days before being overwritten.
           </li>
         </List>
@@ -320,32 +317,31 @@ export default function PrivacyPage() {
         <p>Wherever you live, you can:</p>
         <List>
           <li>
-            <strong className="text-white/85">Access and export:</strong> Settings → Privacy &amp;
-            data → <em>Download my data</em> gives you a machine-readable copy.
+            <strong className="text-ink">Access and export:</strong> Settings → Privacy &amp; data →{' '}
+            <em>Download my data</em> gives you a machine-readable copy.
           </li>
           <li>
-            <strong className="text-white/85">Correct:</strong> edit your profile and skills at any
-            time.
+            <strong className="text-ink">Correct:</strong> edit your profile and skills at any time.
           </li>
           <li>
-            <strong className="text-white/85">Delete:</strong> Settings → <em>Delete account</em>{' '}
+            <strong className="text-ink">Delete:</strong> Settings → <em>Delete account</em>{' '}
             permanently removes your account and content. It takes effect immediately and cancels
             any active subscription.
           </li>
           <li>
-            <strong className="text-white/85">Withdraw consent:</strong> change cookie choices any
-            time via{' '}
+            <strong className="text-ink">Withdraw consent:</strong> change cookie choices any time
+            via{' '}
             <Link
               href="/cookies"
-              className="underline decoration-white/20 underline-offset-2 hover:text-white"
+              className="underline decoration-line-strong underline-offset-2 hover:text-ink"
             >
               Cookie settings
             </Link>
             .
           </li>
           <li>
-            <strong className="text-white/85">Object or restrict</strong> processing based on
-            legitimate interests.
+            <strong className="text-ink">Object or restrict</strong> processing based on legitimate
+            interests.
           </li>
         </List>
         <p>

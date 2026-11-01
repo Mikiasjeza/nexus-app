@@ -1,7 +1,6 @@
 'use client'
 
 import { ReactNode, forwardRef } from 'react'
-import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils/cn'
 
 interface BadgeProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'> {
@@ -9,61 +8,42 @@ interface BadgeProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'childr
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  /** Kept for older call sites; badges no longer animate in. */
   animated?: boolean
 }
 
+// Small pills. Orange only means verified/success; everything else stays neutral.
 const variants = {
-  default:
-    'bg-white dark:bg-black border border-black/10 dark:border-white/10 text-black dark:text-white',
-  primary: 'bg-black dark:bg-white text-white dark:text-black',
-  success:
-    'bg-white dark:bg-black border border-black/10 dark:border-white/10 text-black dark:text-white',
-  warning:
-    'bg-white dark:bg-black border border-black/10 dark:border-white/10 text-black dark:text-white',
-  danger: 'bg-black dark:bg-white text-white dark:text-black',
-  info: 'bg-white dark:bg-black border border-black/10 dark:border-white/10 text-black dark:text-white',
+  default: 'bg-pill text-ink',
+  primary: 'bg-ink text-ground',
+  success: 'bg-verified-wash text-verified-ink',
+  warning: 'bg-caution/15 text-caution',
+  danger: 'bg-critical/15 text-critical',
+  info: 'bg-pill text-ink-muted',
 }
 
 const sizes = {
-  sm: 'px-2 py-0.5 text-[11px]',
-  md: 'px-3 py-1 text-xs',
-  lg: 'px-4 py-1.5 text-sm',
+  sm: 'h-5 px-2 text-[0.6875rem]',
+  md: 'h-6 px-2.5 text-xs',
+  lg: 'h-7 px-3 text-sm',
 }
 
 const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
-  (
-    { children, variant = 'default', size = 'md', className = '', animated = false, ...props },
-    ref
-  ) => {
-    const content = (
-      <span
-        ref={ref}
-        {...props}
-        className={cn(
-          'inline-flex items-center font-medium rounded-md tracking-[0.01em]',
-          variants[variant],
-          sizes[size],
-          className
-        )}
-      >
-        {children}
-      </span>
-    )
-
-    if (animated) {
-      return (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        >
-          {content}
-        </motion.div>
-      )
-    }
-
-    return content
-  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ({ children, variant = 'default', size = 'md', className = '', animated, ...props }, ref) => (
+    <span
+      ref={ref}
+      {...props}
+      className={cn(
+        'inline-flex items-center whitespace-nowrap rounded-full font-medium',
+        variants[variant],
+        sizes[size],
+        className
+      )}
+    >
+      {children}
+    </span>
+  )
 )
 
 Badge.displayName = 'Badge'

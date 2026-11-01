@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Building2, Briefcase, MapPin, DollarSign, ExternalLink, Globe } from 'lucide-react'
-import Button from '@/components/UI/Button'
-import Badge from '@/components/UI/Badge'
-import { easing } from '@/lib/utils/animations'
 import { getSkillPillarForName } from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
+import PageHeader from '@/components/Layout/PageHeader'
+import Loader from '@/components/UI/Loader'
 
 interface Job {
   id: string
@@ -30,6 +28,7 @@ interface Company {
   description?: string
 }
 
+/** Public company profile: who they are and the roles they have open. */
 export default function CompanyPage() {
   const params = useParams()
   const slug = params.slug as string
@@ -53,149 +52,125 @@ export default function CompanyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-black/40 dark:text-white/40">Loading...</div>
-      </div>
+      <AppPageShell>
+        <div className="page-shell">
+          <Loader />
+        </div>
+      </AppPageShell>
     )
   }
 
   if (!company) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Building2 className="w-16 h-16 mx-auto mb-4 text-black/40 dark:text-white/40" />
-          <h2 className="text-xl font-medium text-black dark:text-white mb-2">Company not found</h2>
-          <a href="/marketplace" className="text-primary-600 dark:text-primary-400">
-            Browse jobs
-          </a>
+      <AppPageShell>
+        <div className="page-shell">
+          <PageHeader
+            title="Company not found"
+            rule
+            description="This company page doesn’t exist, or it has been removed."
+            actions={
+              <Link href="/marketplace" className="button-base button-secondary min-h-11 px-5">
+                Browse roles
+              </Link>
+            }
+          />
         </div>
-      </div>
+      </AppPageShell>
     )
   }
 
+  const hiringPillars = Array.from(
+    new Set(
+      jobs.flatMap((job) => job.skills.map((skill) => getSkillPillarForName(skill).shortLabel))
+    )
+  )
+
   return (
-    <AppPageShell className="min-h-screen bg-black py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: easing.primary }}
-          className="mb-12"
-        >
-          <div className="hero-panel p-8 md:p-10">
-            <div className="flex items-start gap-6">
-              <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
-                {company.logo ? (
-                  <Image
-                    src={company.logo}
-                    alt={`${company.name} logo`}
-                    width={80}
-                    height={80}
-                    unoptimized
-                    className="w-20 h-20 rounded-2xl object-cover"
-                  />
-                ) : (
-                  <Building2 className="w-10 h-10 text-white/40" />
-                )}
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-white mb-2">{company.name}</h1>
-                <p className="text-white/60 max-w-2xl mb-4">
-                  Explore open roles and the skill pillars this team is hiring for most often.
-                </p>
-                {company.description && (
-                  <p className="text-white/60 max-w-2xl mb-4">{company.description}</p>
-                )}
-                {company.website && (
+    <AppPageShell>
+      <div className="page-shell">
+        <div className="flex items-start gap-6">
+          {company.logo && (
+            <Image
+              src={company.logo}
+              alt=""
+              width={64}
+              height={64}
+              unoptimized
+              className="mt-8 size-16 shrink-0 rounded-2xl object-cover"
+            />
+          )}
+          <div className="min-w-0 flex-1">
+            <PageHeader
+              title={company.name}
+              rule
+              description={
+                company.description ||
+                (hiringPillars.length
+                  ? `Hiring for ${hiringPillars.join(', ')}.`
+                  : 'No open roles at the moment.')
+              }
+              actions={
+                company.website ? (
                   <a
                     href={company.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-cyan-200 hover:underline"
+                    className="button-base button-secondary min-h-11 px-5"
                   >
-                    <Globe className="w-4 h-4" />
-                    {company.website}
+                    Website ↗
                   </a>
-                )}
-              </div>
-            </div>
+                ) : undefined
+              }
+            />
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <h2 className="text-2xl font-bold text-white mb-6">Open Roles</h2>
+        <section aria-labelledby="roles-heading" className="border-t border-line pt-10">
+          <h2 id="roles-heading" className="text-base font-medium">
+            Open roles <span className="text-ink-faint">{jobs.length}</span>
+          </h2>
           {jobs.length === 0 ? (
-            <div className="gradient-border-card p-12 text-center">
-              <Briefcase className="w-16 h-16 mx-auto mb-4 text-white/40" />
-              <p className="text-white/60">No open positions at the moment</p>
-            </div>
+            <p className="mt-6 border-y border-line py-12 text-ink-muted">
+              No open roles right now. Check back later.
+            </p>
           ) : (
-            <div className="space-y-6">
-              {jobs.map((job, index) => (
-                <motion.div
+            <ul className="ruled-list mt-6 border-y border-line">
+              {jobs.map((job) => (
+                <li
                   key={job.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="gradient-border-card p-6"
+                  className="grid gap-4 py-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] lg:items-center"
                 >
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-white mb-2">{job.title}</h3>
-                      <div className="flex flex-wrap gap-4 text-white/60 text-sm mb-3">
-                        {job.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-4 h-4" />
-                            {job.location}
-                          </span>
-                        )}
-                        {job.salary && (
-                          <span className="flex items-center gap-1">
-                            <DollarSign className="w-4 h-4" />
-                            {job.salary}
-                          </span>
-                        )}
-                        <Badge variant="default" size="sm">
-                          {job.type}
-                        </Badge>
-                      </div>
-                      {job.description && (
-                        <p className="text-white/60 text-sm mb-4 line-clamp-2">{job.description}</p>
-                      )}
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {Array.from(
-                          new Set(job.skills.map((skill) => getSkillPillarForName(skill).category))
-                        ).map((pillar) => (
-                          <Badge key={pillar} variant="default" size="sm">
-                            {pillar}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {job.skills.slice(0, 6).map((s) => (
-                          <Badge key={s} variant="default" size="sm">
-                            {s}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="shrink-0">
-                      <a href={`/marketplace?job=${job.id}`}>
-                        <Button variant="primary" rightIcon={<ExternalLink className="w-4 h-4" />}>
-                          View & Apply
-                        </Button>
-                      </a>
-                    </div>
+                  <div>
+                    <h3 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight">
+                      {job.title}
+                    </h3>
+                    <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
+                      {job.location && <span>{job.location}</span>}
+                      <span>{job.type.replace('-', ' ')}</span>
+                      {job.salary && <span>{job.salary}</span>}
+                    </p>
                   </div>
-                </motion.div>
+                  <div className="text-sm">
+                    {job.description && (
+                      <p className="line-clamp-2 leading-relaxed text-ink-muted">
+                        {job.description}
+                      </p>
+                    )}
+                    {job.skills.length > 0 && (
+                      <p className="mt-1 text-ink-faint">{job.skills.slice(0, 6).join(', ')}</p>
+                    )}
+                  </div>
+                  <Link
+                    href="/marketplace"
+                    className="button-base button-primary min-h-9 px-4 text-sm lg:justify-self-end"
+                  >
+                    View and apply
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
-        </motion.div>
+        </section>
       </div>
     </AppPageShell>
   )

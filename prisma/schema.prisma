@@ -10,32 +10,35 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @default(cuid())
-  email              String   @unique
-  name               String
-  passwordHash       String   // Hashed password (bcrypt)
-  avatar             String?
-  bio                String?
-  publicProfile      Boolean  @default(false)
-  shareableId        String   @unique @default(cuid())
-  customSlug         String?  @unique
-  emailVerified      Boolean  @default(false)
-  emailToken         String?  // For email verification
-  resetToken         String?  // For password reset
-  resetExpires       DateTime?
-  onboardingComplete    Boolean  @default(false)
-  discoverableByEmployers Boolean @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                      String    @id @default(cuid())
+  email                   String    @unique
+  name                    String
+  passwordHash            String // Hashed password (bcrypt)
+  avatar                  String?
+  bio                     String?
+  publicProfile           Boolean   @default(false)
+  shareableId             String    @unique @default(cuid())
+  customSlug              String?   @unique
+  emailVerified           Boolean   @default(false)
+  emailToken              String? // For email verification
+  resetToken              String? // For password reset
+  resetExpires            DateTime?
+  onboardingComplete      Boolean   @default(false)
+  discoverableByEmployers Boolean   @default(false)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   // Relations
-  skills           Skill[]
-  companyMembers   CompanyMember[]
-  sessions         Session[]
-  aiAnalyses       AIAnalysis[]
-  activities       Activity[]
-  subscriptions    Subscription[]
-  oauthConnections OAuthConnection[]
+  skills            Skill[]
+  companyMembers    CompanyMember[]
+  sessions          Session[]
+  aiAnalyses        AIAnalysis[]
+  activities        Activity[]
+  subscriptions     Subscription[]
+  oauthConnections  OAuthConnection[]
+  AssessmentAttempt AssessmentAttempt[]
+  Credential        Credential[]
+  AssessmentAppeal  AssessmentAppeal[]
 
   @@index([email])
   @@index([shareableId])
@@ -59,8 +62,8 @@ model Skill {
   id          String   @id @default(cuid())
   userId      String
   name        String
-  level       String   // 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  category    String   // SkillCategory enum
+  level       String // 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  category    String // SkillCategory enum
   progress    Int      @default(0) // 0-100
   notes       String?
   description String?
@@ -73,10 +76,10 @@ model Skill {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  evidence    Evidence[]
-  history     SkillHistory[]
-  aiAnalyses  AIAnalysis[]
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  evidence   Evidence[]
+  history    SkillHistory[]
+  aiAnalyses AIAnalysis[]
 
   @@index([userId])
   @@index([visibility])
@@ -87,14 +90,14 @@ model Skill {
 model Evidence {
   id          String   @id @default(cuid())
   skillId     String
-  type        String   // 'video' | 'code' | 'portfolio' | 'certificate' | 'project' | 'file'
+  type        String // 'video' | 'code' | 'portfolio' | 'certificate' | 'project' | 'file'
   url         String?
-  fileUrl     String?  // S3/Cloudinary URL
+  fileUrl     String? // S3/Cloudinary URL
   fileName    String?
-  fileSize    Int?     // bytes
+  fileSize    Int? // bytes
   mimeType    String?
   description String?
-  metadata    Json?    // Additional metadata (e.g., GitHub repo info)
+  metadata    Json? // Additional metadata (e.g., GitHub repo info)
   createdAt   DateTime @default(now())
 
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
@@ -108,7 +111,7 @@ model SkillHistory {
   skillId   String
   userId    String?
   timestamp DateTime @default(now())
-  changes   Json     // Array of { field, oldValue, newValue }
+  changes   Json // Array of { field, oldValue, newValue }
 
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
@@ -120,18 +123,18 @@ model AIAnalysis {
   id              String   @id @default(cuid())
   skillId         String
   userId          String
-  evidenceId      String?  // Optional: specific evidence analyzed
-  model           String   // 'gpt-4', 'claude-3', etc.
-  confidenceScore Float    // 0-1
-  explanation     String   // Why this score
-  suggestedLevel  String?  // AI-suggested skill level
+  evidenceId      String? // Optional: specific evidence analyzed
+  model           String // 'gpt-4', 'claude-3', etc.
+  confidenceScore Float // 0-1
+  explanation     String // Why this score
+  suggestedLevel  String? // AI-suggested skill level
   improvements    String[] @default([]) // Suggested improvements
   tokensUsed      Int?
-  cost            Float?   // Cost in USD
+  cost            Float? // Cost in USD
   createdAt       DateTime @default(now())
 
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([skillId])
   @@index([userId])
@@ -141,11 +144,11 @@ model AIAnalysis {
 model Activity {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // 'skill_added' | 'skill_updated' | 'skill_deleted' | 'level_up' | 'evidence_added'
+  type      String // 'skill_added' | 'skill_updated' | 'skill_deleted' | 'level_up' | 'evidence_added'
   skillId   String?
   skillName String?
   message   String
-  metadata  Json?    // Additional context
+  metadata  Json? // Additional context
   timestamp DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -156,16 +159,16 @@ model Activity {
 }
 
 model Subscription {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  stripeCustomerId String?  @unique
-  stripeSubscriptionId String? @unique
-  plan              String   // 'free' | 'pro' | 'enterprise'
-  status            String   // 'active' | 'canceled' | 'past_due' | 'trialing'
-  currentPeriodEnd  DateTime?
-  cancelAtPeriodEnd Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  plan                 String // 'free' | 'pro' | 'enterprise'
+  status               String // 'active' | 'canceled' | 'past_due' | 'trialing'
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -175,16 +178,16 @@ model Subscription {
 }
 
 model StripeWebhookEvent {
-  id          String   @id @default(cuid())
-  eventId     String   @unique
+  id          String    @id @default(cuid())
+  eventId     String    @unique
   eventType   String
-  livemode    Boolean  @default(false)
-  status      String   @default("processing") // 'processing' | 'processed' | 'failed'
-  attempts    Int      @default(1)
+  livemode    Boolean   @default(false)
+  status      String    @default("processing") // 'processing' | 'processed' | 'failed'
+  attempts    Int       @default(1)
   processedAt DateTime?
   lastError   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([status])
   @@index([eventType])
@@ -212,10 +215,10 @@ model CompanyMember {
   id        String   @id @default(cuid())
   userId    String
   companyId String
-  role      String   // 'owner' | 'admin' | 'recruiter' | 'viewer'
+  role      String // 'owner' | 'admin' | 'recruiter' | 'viewer'
   createdAt DateTime @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([userId, companyId])
@@ -230,7 +233,7 @@ model JobListing {
   description String?
   skills      String[] // Required skills
   location    String?
-  type        String   // full-time, part-time, contract, internship
+  type        String // full-time, part-time, contract, internship
   status      String   @default("active")
   salary      String?
   createdAt   DateTime @default(now())
@@ -256,19 +259,172 @@ model TalentPool {
 }
 
 model OAuthConnection {
-  id           String   @id @default(cuid())
-  userId       String
-  provider     String   // 'github' | 'google' | 'linkedin'
-  providerId   String   // External provider's user ID
+  id         String    @id @default(cuid())
+  userId     String
+  provider   String // 'github' | 'google' | 'linkedin'
+  providerId String // External provider's user ID
   // No provider tokens are stored: they're used once at sign-in and discarded.
-  expiresAt    DateTime?
-  metadata     Json?    // Provider-specific data (e.g., GitHub username, repos)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  expiresAt  DateTime?
+  metadata   Json? // Provider-specific data (e.g., GitHub username, repos)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
   @@index([userId])
   @@index([provider, providerId])
+}
+
+// ─── Skill assessments (see docs/assessments.md) ──────────────────────────
+
+model AssessmentAttempt {
+  id               String    @id @default(cuid())
+  userId           String
+  assessmentSlug   String // catalog slug, e.g. 'javascript'
+  challengeId      String
+  challengeVersion Int
+  rubricId         String
+  rubricVersion    Int
+  mode             String // 'independent' | 'ai_assisted'
+  seed             Int // server-side; generates this attempt's data and hidden tests
+  status           String    @default("CREATED") // see lib/assessments/state.ts
+  stage            String    @default("main") // 'main' | 'followup' | 'explain'
+  drafts           Json      @default("{}") // autosaved work per stage
+  runCount         Int       @default(0)
+  result           String? // 'PASSED' | 'NOT_PASSED' | 'INCONCLUSIVE' | 'PENDING_REVIEW'
+  score            Int? // 0-100
+  startedAt        DateTime?
+  deadlineAt       DateTime?
+  submittedAt      DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events      AttemptEvent[]
+  submissions AssessmentSubmission[]
+  evaluations AssessmentEvaluation[]
+  credential  Credential?
+  appeals     AssessmentAppeal[]
+
+  @@index([userId, assessmentSlug])
+  @@index([status])
+}
+
+/// Append-only log of what happened during an attempt (saves, runs, pastes, focus changes).
+model AttemptEvent {
+  id        String   @id @default(cuid())
+  attemptId String
+  type      String
+  stage     String
+  data      Json?
+  at        DateTime @default(now())
+
+  attempt AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId, at])
+}
+
+/// One locked submission per stage; never updated after insert.
+model AssessmentSubmission {
+  id          String   @id @default(cuid())
+  attemptId   String
+  stage       String
+  payload     Json
+  contentHash String // sha-256 of the payload
+  submittedAt DateTime @default(now())
+
+  attempt AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, stage])
+}
+
+/// Every scoring pass (system or reviewer); the newest is current.
+model AssessmentEvaluation {
+  id            String   @id @default(cuid())
+  attemptId     String
+  rubricId      String
+  rubricVersion Int
+  criteria      Json
+  score         Int?
+  result        String
+  feedback      Json
+  integrity     Json
+  model         String?
+  inputTokens   Int?
+  outputTokens  Int?
+  aiCostUsd     Float? // estimated cost of the AI grading call
+  evaluatedBy   String // 'system' or the reviewer's email
+  createdAt     DateTime @default(now())
+
+  attempt AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId, createdAt])
+}
+
+model Credential {
+  id               String    @id // public id, e.g. NX-7K2M-9QXD-4FTA
+  userId           String
+  attemptId        String    @unique
+  assessmentSlug   String
+  skillName        String
+  level            String
+  mode             String
+  identityLevel    String    @default("A_SELF_ASSERTED")
+  score            Int
+  rubricId         String
+  rubricVersion    Int
+  challengeId      String
+  challengeVersion Int
+  status           String    @default("ACTIVE") // 'ACTIVE' | 'REVOKED' | 'SUPERSEDED' (expiry is read from expiresAt)
+  issuedAt         DateTime  @default(now())
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  revokedReason    String?
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempt AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([assessmentSlug])
+}
+
+model AssessmentAppeal {
+  id         String    @id @default(cuid())
+  attemptId  String
+  userId     String
+  reason     String
+  status     String    @default("OPEN") // 'OPEN' | 'UPHELD' | 'REJECTED'
+  resolution String?
+  resolvedBy String?
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  attempt AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
+  @@index([status])
+}
+
+/// Who did what to assessment records: reviews, appeals, revocations.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      String // user id, reviewer email or 'system'
+  action     String
+  targetType String
+  targetId   String
+  data       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}
+
+/// Calls to the external code runner per UTC day, for the daily spending cap.
+model RunnerUsage {
+  day       String   @id // YYYY-MM-DD, UTC
+  calls     Int      @default(0)
+  updatedAt DateTime @updatedAt
 }

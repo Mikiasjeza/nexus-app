@@ -8,6 +8,7 @@ import type { DashboardSummary } from '@/lib/dashboard/summary'
 import type { User } from '@/lib/types'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
+import SectionHeading from '@/components/Layout/SectionHeading'
 import Button from '@/components/UI/Button'
 import ActivityCalendar from '@/components/Dashboard/ActivityCalendar'
 import PillarRings from '@/components/Dashboard/PillarRings'
@@ -152,25 +153,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </AppPageShell>
-  )
-}
-
-function SectionHeading({
-  id,
-  note,
-  children,
-}: {
-  id: string
-  note?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-4">
-      <h2 id={id} className="text-base font-medium">
-        {children}
-      </h2>
-      {note && <span className="text-sm text-ink-faint">{note}</span>}
-    </div>
   )
 }
 

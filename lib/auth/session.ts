@@ -5,6 +5,7 @@
 
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/db'
+import { env } from '@/lib/config/env'
 
 const COOKIE_NAME = 'nexus_session'
 const GUEST_PREVIEW_COOKIE_NAME = 'nexus_guest_preview'
@@ -93,3 +94,8 @@ export async function clearGuestPreviewCookie(): Promise<void> {
 }
 
 export { COOKIE_NAME, GUEST_PREVIEW_COOKIE_NAME, SESSION_MAX_AGE_DAYS }
+
+/** True in guest mode or a guest preview session: serve read-only sample data. */
+export async function isGuestRequest(): Promise<boolean> {
+  return env.isGuestMode || (await hasGuestPreviewSession())
+}

@@ -5,6 +5,8 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { isGuestRequest } from '@/lib/auth/session'
+import { GUEST_COMPANY } from '@/lib/mock/employer'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +15,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
     const { slug } = await params
     if (!slug) {
       return NextResponse.json({ error: 'Slug required' }, { status: 400 })
+    }
+
+    if (slug === GUEST_COMPANY.slug && (await isGuestRequest())) {
+      const { id, name, description } = GUEST_COMPANY
+      return NextResponse.json({ company: { id, name, slug, description } })
     }
 
     const company = await prisma.company.findUnique({
