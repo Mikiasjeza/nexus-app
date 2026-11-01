@@ -1,7 +1,6 @@
 'use client'
 
-import React, { ButtonHTMLAttributes, ReactNode } from 'react'
-import { motion, MotionProps } from 'framer-motion'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Loader } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -26,55 +25,51 @@ const variants = {
 }
 
 const sizes = {
-  sm: 'min-h-[42px] px-3.5 text-sm',
-  md: 'min-h-[44px] px-4 text-sm',
-  lg: 'min-h-[48px] px-5 text-base',
+  sm: 'min-h-9 px-4 text-sm',
+  md: 'min-h-11 px-5 text-[0.9375rem]',
+  lg: 'min-h-12 px-6 text-base',
 }
 
+/** Pill button. Presses scale slightly; nothing lifts, glows or bounces. */
 export default function Button({
   variant = 'primary',
   size = 'md',
   isLoading = false,
-  loading = false, // Alias for isLoading
+  loading = false,
   leftIcon,
   rightIcon,
   fullWidth = false,
   children,
   className,
   disabled,
+  type = 'button',
   ...props
 }: ButtonProps) {
-  const isDisabled = disabled || isLoading || loading
-
-  const buttonProps: MotionProps & React.ButtonHTMLAttributes<HTMLButtonElement> = {
-    whileHover: isDisabled ? undefined : { scale: 1.01, y: -1 },
-    whileTap: isDisabled ? undefined : { scale: 0.98 },
-    disabled: isDisabled,
-    className: cn(
-      variants[variant],
-      sizes[size],
-      fullWidth && 'w-full',
-      'button-base',
-      'disabled:opacity-40',
-      'disabled:cursor-not-allowed',
-      'flex items-center justify-center gap-2',
-      className
-    ),
-    type: props.type ?? 'button',
-    ...props,
-  }
+  const busy = isLoading || loading
+  const isDisabled = disabled || busy
 
   return (
-    <motion.button {...buttonProps}>
-      {isLoading ? (
-        <Loader className="w-5 h-5 animate-spin" />
-      ) : (
-        <>
-          {leftIcon && <span className="flex items-center justify-center">{leftIcon}</span>}
-          {children}
-          {rightIcon && <span className="flex items-center justify-center">{rightIcon}</span>}
-        </>
+    <button
+      type={type}
+      disabled={isDisabled}
+      aria-busy={busy || undefined}
+      className={cn(
+        'button-base',
+        variants[variant],
+        sizes[size],
+        fullWidth && 'w-full',
+        'disabled:cursor-not-allowed disabled:opacity-40',
+        className
       )}
-    </motion.button>
+      {...props}
+    >
+      {busy ? (
+        <Loader className="h-4 w-4 animate-spin" aria-hidden />
+      ) : (
+        leftIcon && <span className="flex items-center justify-center">{leftIcon}</span>
+      )}
+      {children}
+      {!busy && rightIcon && <span className="flex items-center justify-center">{rightIcon}</span>}
+    </button>
   )
 }

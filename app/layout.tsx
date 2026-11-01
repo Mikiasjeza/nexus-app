@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Hanken_Grotesk, Noto_Serif_Display } from 'next/font/google'
 import * as Sentry from '@sentry/nextjs'
 import { getMetadataBase, getAppUrl } from '@/lib/config/env'
 import './globals.css'
@@ -16,6 +17,21 @@ const Footer = dynamic(() => import('@/components/Layout/Footer'), {
 })
 const PageTransition = dynamic(() => import('@/components/PageTransition'), {
   ssr: true,
+})
+
+// UI text. Variable, so in-between weights such as 350 are available.
+const sans = Hanken_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+})
+
+// Thin high-contrast display serif for page titles and headline numbers.
+const display = Noto_Serif_Display({
+  subsets: ['latin'],
+  weight: ['200', '300'],
+  variable: '--font-display',
+  display: 'swap',
 })
 
 function getSafeMetadataBase(): URL {
@@ -105,17 +121,12 @@ export function generateMetadata(): Metadata {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark smooth-scroll">
-      <body className="bg-black text-white min-h-screen flex flex-col transition-colors duration-500">
-        <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
-          <div className="ambient-orb ambient-orb-cyan" />
-          <div className="ambient-orb ambient-orb-violet" />
-          <div className="ambient-grid" />
-        </div>
+    <html lang="en" className={`dark ${sans.variable} ${display.variable}`}>
+      <body className="flex min-h-screen flex-col bg-ground font-sans text-ink">
         <ErrorBoundary>
           <ToastProvider>
             <Header />
-            <main className="flex-1 w-full pt-16">
+            <main className="w-full flex-1 pt-20">
               <OnboardingGuard>
                 <PageTransition>{children}</PageTransition>
               </OnboardingGuard>
@@ -127,9 +138,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: 'hsl(var(--card))',
-                  color: 'hsl(var(--card-foreground))',
-                  border: '1px solid hsl(var(--border))',
+                  background: '#1d1b18',
+                  color: '#e9e4da',
+                  borderRadius: '9999px',
+                  fontSize: '14px',
                 },
               }}
             />

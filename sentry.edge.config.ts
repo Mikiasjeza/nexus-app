@@ -9,6 +9,10 @@ import { sentryPrivacyOptions } from '@/lib/sentry-scrub'
 Sentry.init({
   dsn: 'https://7a3e35930c4c317e018006f3fc868dbb@o4511005851910144.ingest.us.sentry.io/4511005858660352',
 
+  // Report from the live site only. Local dev errors show in the terminal and
+  // browser overlay; sending them too would email alerts for work in progress.
+  enabled: process.env.NODE_ENV === 'production',
+
   // 100% in dev, 10% in production. Adjust based on traffic volume.
   tracesSampleRate: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
 

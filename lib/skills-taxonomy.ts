@@ -330,6 +330,12 @@ export function inferSkillCategory(skill: string): SkillCategory {
 
 export function normalizeSkillCategory(category: string): SkillCategory {
   const normalized = canonicalizeSkillName(category)
+  // Current names first: "Technical Skills" contains none of the inference
+  // keywords, so without this it would fall through to Learning & Growth.
+  const current = SKILL_PILLAR_DETAILS.find(
+    (pillar) => canonicalizeSkillName(pillar.category) === normalized
+  )
+  if (current) return current.category
   return LEGACY_CATEGORY_MAP[normalized] ?? inferSkillCategory(category)
 }
 

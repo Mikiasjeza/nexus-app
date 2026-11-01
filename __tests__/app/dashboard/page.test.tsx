@@ -10,21 +10,17 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-jest.mock('@/lib/hooks/useSkills', () => ({
-  useSkills: () => ({
-    skills: [],
-    loading: false,
-  }),
-}))
+// The charts pull in ESM-only packages Jest doesn't transform; this test is about auth.
+jest.mock('@/components/Dashboard/ActivityCalendar', () => () => null)
+jest.mock('@/components/Dashboard/PillarRings', () => () => null)
+jest.mock('@/components/Dashboard/VerifiedGrowth', () => () => null)
 
 jest.mock('@/lib/api', () => ({
   authApi: {
     getCurrentUser: jest.fn().mockResolvedValue(null),
   },
-  skillsApi: {
-    getStats: jest.fn().mockRejectedValue(new Error('Not authenticated')),
-    getActivities: jest.fn().mockResolvedValue([]),
-    getInsights: jest.fn().mockResolvedValue([]),
+  dashboardApi: {
+    getSummary: jest.fn().mockRejectedValue(new Error('Not authenticated')),
   },
 }))
 

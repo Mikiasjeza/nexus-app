@@ -12,6 +12,10 @@ import { CONSENT_CHANGED_EVENT, hasConsent, type ConsentChoices } from '@/lib/co
 Sentry.init({
   dsn: 'https://7a3e35930c4c317e018006f3fc868dbb@o4511005851910144.ingest.us.sentry.io/4511005858660352',
 
+  // Report from the live site only. Local dev errors show in the terminal and
+  // browser overlay; sending them too would email alerts for work in progress.
+  enabled: process.env.NODE_ENV === 'production',
+
   ...sentryPrivacyOptions,
 
   // Only add tracing headers to our own API, never to third parties.

@@ -71,6 +71,26 @@ describe('decideVerification', () => {
     expect(decision.confidenceScore).toBeLessThanOrEqual(0.6)
   })
 
+  it('never verifies from an image, PDF or video the AI only sees by name', () => {
+    const decision = decideVerification(strong, 'advanced', [
+      {
+        type: 'file',
+        content:
+          'Uploaded file "portfolio.png" (image/png).\nA React dashboard I built for a bank.',
+        metadata: { fileName: 'portfolio.png', mimeType: 'image/png' },
+      },
+    ])
+    expect(decision.verified).toBe(false)
+    expect(decision.confidenceScore).toBeLessThanOrEqual(0.6)
+  })
+
+  it('still verifies from a text file read in full, which arrives as code', () => {
+    const decision = decideVerification(strong, 'advanced', [
+      { type: 'code', content: 'export function App() {}', metadata: { fileName: 'app.md' } },
+    ])
+    expect(decision.verified).toBe(true)
+  })
+
   it('does not verify when the evidence supports a lower level than claimed', () => {
     const decision = decideVerification({ ...strong, suggestedLevel: 'beginner' }, 'expert', code)
     expect(decision.verified).toBe(false)

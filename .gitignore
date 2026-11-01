@@ -42,3 +42,11 @@ My Videos/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Impeccable design tool: scratch state (the surface briefs are committed)
+.impeccable/questions/
+.impeccable/decision/
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/build/
+.impeccable/config.local.json
