@@ -58,7 +58,11 @@ export default function GapAnalysis() {
           <button
             key={r.id}
             type="button"
-            onClick={() => setRole(r.id)}
+            onClick={() => {
+              // A result belongs to the role it was run for; don't show it under another.
+              if (r.id !== role) setResult(null)
+              setRole(r.id)
+            }}
             aria-pressed={role === r.id}
             className="pill"
           >

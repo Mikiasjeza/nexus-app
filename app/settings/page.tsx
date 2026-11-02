@@ -304,6 +304,7 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <ToggleSwitch
+                  ariaLabel="Public profile"
                   checked={formData.publicProfile}
                   onChange={(checked: boolean) =>
                     setFormData({ ...formData, publicProfile: checked })
@@ -320,6 +321,7 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <ToggleSwitch
+                  ariaLabel="Discoverable by employers"
                   checked={formData.discoverableByEmployers}
                   onChange={(checked: boolean) =>
                     setFormData({ ...formData, discoverableByEmployers: checked })
@@ -341,13 +343,21 @@ export default function SettingsPage() {
                     />
                     <Button
                       variant="secondary"
-                      onClick={() => {
-                        navigator.clipboard.writeText(shareLink)
-                        addToast({
-                          type: 'success',
-                          title: 'Link copied',
-                          message: 'Your passport link is on the clipboard.',
-                        })
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(shareLink)
+                          addToast({
+                            type: 'success',
+                            title: 'Link copied',
+                            message: 'Your passport link is on the clipboard.',
+                          })
+                        } catch {
+                          addToast({
+                            type: 'error',
+                            title: 'Could not copy',
+                            message: 'Select the link above and copy it yourself.',
+                          })
+                        }
                       }}
                     >
                       Copy
@@ -360,21 +370,39 @@ export default function SettingsPage() {
 
           <SettingsSection title="Sign-in" description="Your password and connected accounts.">
             <div className="flex flex-wrap gap-2">
-              <Link
-                href="/auth/forgot-password"
-                aria-disabled={isGuestPreview || undefined}
-                className={`button-base button-secondary min-h-11 px-5 ${isGuestPreview ? 'pointer-events-none opacity-40' : ''}`}
-              >
-                Change password
-              </Link>
-              {/* Full navigation (not <Link>): the OAuth flow leaves the app. */}
-              <a
-                href="/api/auth/github/authorize"
-                aria-disabled={isGuestPreview || undefined}
-                className={`button-base button-secondary min-h-11 px-5 ${isGuestPreview ? 'pointer-events-none opacity-40' : ''}`}
-              >
-                Connect GitHub
-              </a>
+              {isGuestPreview ? (
+                // Plain text for guests: a disabled-looking link still opens from the keyboard.
+                <>
+                  <span
+                    aria-disabled="true"
+                    className="button-base button-secondary min-h-11 px-5 opacity-40"
+                  >
+                    Change password
+                  </span>
+                  <span
+                    aria-disabled="true"
+                    className="button-base button-secondary min-h-11 px-5 opacity-40"
+                  >
+                    Connect GitHub
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="button-base button-secondary min-h-11 px-5"
+                  >
+                    Change password
+                  </Link>
+                  {/* Full navigation (not <Link>): the OAuth flow leaves the app. */}
+                  <a
+                    href="/api/auth/github/authorize"
+                    className="button-base button-secondary min-h-11 px-5"
+                  >
+                    Connect GitHub
+                  </a>
+                </>
+              )}
             </div>
             <p className="mt-3 text-sm text-ink-faint">
               GitHub sign-in reads only your public profile and verified email.

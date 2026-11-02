@@ -118,12 +118,20 @@ export default function SharePage() {
                 variant="secondary"
                 leftIcon={<Share2 className="size-4" aria-hidden />}
                 onClick={async () => {
-                  await navigator.clipboard.writeText(window.location.href)
-                  addToast({
-                    type: 'success',
-                    title: 'Link copied',
-                    message: 'Share this passport anywhere.',
-                  })
+                  try {
+                    await navigator.clipboard.writeText(window.location.href)
+                    addToast({
+                      type: 'success',
+                      title: 'Link copied',
+                      message: 'Share this passport anywhere.',
+                    })
+                  } catch {
+                    addToast({
+                      type: 'error',
+                      title: 'Could not copy',
+                      message: 'Copy the address from your browser bar instead.',
+                    })
+                  }
                 }}
               >
                 Copy link

@@ -4,6 +4,13 @@
  * database. Shapes match the real API responses.
  */
 
+import {
+  jobPillars,
+  matchesTalentTerms,
+  parseTalentTerms,
+  rankTalent,
+} from '@/lib/employer/talent-ranking'
+
 const DAY_MS = 86_400_000
 const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS).toISOString()
 
@@ -132,36 +139,35 @@ export const GUEST_READ_ONLY = {
   error: 'Guest preview is read-only. Create an account to make changes.',
 }
 
-/** Talent search over the sample candidates, scored like the real route: query coverage, then verified share. */
+/**
+ * Talent search over the sample candidates, answered like the real route:
+ * the same filter (a skill at the level that a term or pillar term names),
+ * the same ranking, and a sample role's requirements when `jobId` names one.
+ */
 export function guestTalentSearch(params: URLSearchParams) {
-  const terms = (params.get('skills') || '')
-    .split(',')
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean)
+  const skillNames = parseTalentTerms(params.get('skills') || '')
   const level = params.get('level') || ''
+  const job = GUEST_JOBS.find((j) => j.id === params.get('jobId'))
 
-  return GUEST_CANDIDATES.filter((c) => !level || c.skills.some((s) => s.level === level))
-    .map((candidate) => {
-      const names = candidate.skills.map((s) => s.name.toLowerCase())
-      const matched = terms.filter((term) =>
-        names.some((n) => n.includes(term) || term.includes(n))
-      )
-      const verifiedShare =
-        candidate.skills.filter((s) => s.verified).length / Math.max(1, candidate.skills.length)
-      const matchScore = terms.length
-        ? Math.round((matched.length / terms.length) * 90 + verifiedShare * 10)
-        : Math.round(45 + verifiedShare * 45)
-      return {
-        ...candidate,
-        matchedPillars: [],
-        matchedVerifiedSignals: candidate.skills.filter(
-          (s) => s.verified && matched.some((m) => s.name.toLowerCase().includes(m))
-        ).length,
-        matchScore,
-      }
-    })
-    .filter((c) => !terms.length || c.matchScore > 10)
-    .sort((a, b) => b.matchScore - a.matchScore)
+  const pool = GUEST_CANDIDATES.filter((candidate) => {
+    const atLevel = candidate.skills.filter((s) => !level || s.level === level)
+    return atLevel.length > 0 && matchesTalentTerms(atLevel, skillNames)
+  })
+  const ranked = rankTalent(pool, {
+    skillNames,
+    hasTargetJob: Boolean(job),
+    targetJobSkills: job?.skills ?? [],
+  })
+
+  return {
+    candidates: ranked.map(({ matchScore, ...candidate }) => ({
+      ...candidate,
+      matchScore: Math.round(matchScore),
+    })),
+    targetJob: job
+      ? { id: job.id, title: job.title, skills: job.skills, pillars: jobPillars(job.skills) }
+      : null,
+  }
 }
 
 export function guestPoolList() {

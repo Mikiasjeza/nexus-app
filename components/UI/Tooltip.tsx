@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 
 interface TooltipProps {
   children: ReactNode
@@ -23,16 +23,26 @@ export default function Tooltip({
   delay = 200,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false)
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  // One pending timer at a time: a click fires both mouseenter and focus, and a
+  // second timer left running would reopen the tooltip after hide.
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearTimer = () => {
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = null
+  }
 
   const show = () => {
-    setTimeoutId(setTimeout(() => setIsVisible(true), delay))
+    clearTimer()
+    timer.current = setTimeout(() => setIsVisible(true), delay)
   }
 
   const hide = () => {
-    if (timeoutId) clearTimeout(timeoutId)
+    clearTimer()
     setIsVisible(false)
   }
+
+  useEffect(() => clearTimer, [])
 
   return (
     <div

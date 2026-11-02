@@ -90,7 +90,12 @@ export default function CookieConsent() {
                             Sign-in, security and remembering this choice. Always on.
                           </p>
                         </div>
-                        <ToggleSwitch checked disabled onChange={() => {}} />
+                        <ToggleSwitch
+                          ariaLabel="Essential cookies"
+                          checked
+                          disabled
+                          onChange={() => {}}
+                        />
                       </div>
                       <div className="flex items-start justify-between gap-4 rounded-xl border border-line p-3">
                         <div>
@@ -102,6 +107,7 @@ export default function CookieConsent() {
                           </p>
                         </div>
                         <ToggleSwitch
+                          ariaLabel="Diagnostics"
                           checked={choices.analytics}
                           onChange={(analytics) => setChoices({ ...choices, analytics })}
                         />

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Download } from 'lucide-react'
@@ -27,23 +27,29 @@ import VerifiedGrowth from '@/components/Dashboard/VerifiedGrowth'
 /** Where the passport is strong, where it's thin, and what to prove next. All from real data. */
 export default function AnalyticsPage() {
   const { addToast } = useToast()
-  const { skills, loading } = useSkills()
+  const { skills, loading, error: skillsError, refetch: refetchSkills } = useSkills()
   const [user, setUser] = useState<User | null>(null)
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
+  const [summaryFailed, setSummaryFailed] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv')
   const isGuestPreview = user?.id === 'guest-user'
+
+  const loadSummary = useCallback(() => {
+    setSummaryFailed(false)
+    dashboardApi
+      .getSummary()
+      .then(setSummary)
+      .catch(() => setSummaryFailed(true))
+  }, [])
 
   useEffect(() => {
     authApi
       .getCurrentUser()
       .then(setUser)
       .catch(() => setUser(null))
-    dashboardApi
-      .getSummary()
-      .then(setSummary)
-      .catch(() => setSummary(null))
-  }, [])
+    loadSummary()
+  }, [loadSummary])
 
   const analytics = useMemo(() => {
     const byPillar = SKILL_PILLAR_DETAILS.map((pillar) => {
@@ -142,6 +148,22 @@ export default function AnalyticsPage() {
       <AppPageShell>
         <div className="page-shell">
           <Loader />
+        </div>
+      </AppPageShell>
+    )
+  }
+
+  // Without skills every figure below would read as an empty passport.
+  if (skillsError) {
+    return (
+      <AppPageShell>
+        <div className="page-shell">
+          <PageHeader
+            title="Analytics"
+            rule
+            description={`We couldn't load your skills. ${skillsError}`}
+            actions={<Button onClick={refetchSkills}>Try again</Button>}
+          />
         </div>
       </AppPageShell>
     )
@@ -267,6 +289,15 @@ export default function AnalyticsPage() {
             </SectionHeading>
             {summary ? (
               <VerifiedGrowth points={summary.verifiedOverTime} />
+            ) : summaryFailed ? (
+              <div className="mt-6 flex aspect-[2/1] flex-col items-start justify-center gap-3 rounded-lg bg-raised p-6">
+                <p className="text-sm text-ink-muted">
+                  We couldn&apos;t load your verified history.
+                </p>
+                <button type="button" onClick={loadSummary} className="pill">
+                  Try again
+                </button>
+              </div>
             ) : (
               <div className="mt-6 aspect-[2/1] rounded-lg bg-raised" aria-hidden />
             )}
