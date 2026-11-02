@@ -28,6 +28,7 @@ function isMarketing(pathname: string): boolean {
 const marketingNav = [
   { href: '/about', label: 'About' },
   { href: '/how-it-works', label: 'How it works' },
+  { href: '/assessments', label: 'Assessments' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/contact', label: 'Contact' },
 ]
@@ -35,6 +36,7 @@ const marketingNav = [
 const appNav = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/skills', label: 'Skills' },
+  { href: '/assessments', label: 'Assessments' },
   { href: '/verification', label: 'Verification' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/marketplace', label: 'Marketplace' },
