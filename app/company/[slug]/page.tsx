@@ -164,7 +164,7 @@ export default function CompanyPage() {
                     href="/marketplace"
                     className="button-base button-primary min-h-9 px-4 text-sm lg:justify-self-end"
                   >
-                    View and apply
+                    See your match
                   </Link>
                 </li>
               ))}

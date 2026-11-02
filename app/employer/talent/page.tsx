@@ -69,9 +69,11 @@ export default function EmployerTalentPage() {
   const [levelFilter, setLevelFilter] = useState('')
   const [selectedJobId, setSelectedJobId] = useState('')
   const [selectedJobTitle, setSelectedJobTitle] = useState('')
+  const [searchError, setSearchError] = useState<string | null>(null)
 
   const search = (overrides: { jobId?: string } = {}) => {
     setLoading(true)
+    setSearchError(null)
     const params = new URLSearchParams()
     const jobId = overrides.jobId ?? selectedJobId
     if (skillsQuery.trim()) params.set('skills', skillsQuery.trim())
@@ -79,12 +81,20 @@ export default function EmployerTalentPage() {
     if (jobId) params.set('jobId', jobId)
     params.set('limit', '20')
     fetch(`/api/employer/talent?${params}`, { credentials: 'include' })
-      .then((r) => r.json())
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}))
+        if (!r.ok) throw new Error(typeof data.error === 'string' ? data.error : 'Search failed')
+        return data
+      })
       .then((data) => {
-        if (data.candidates) setCandidates(data.candidates)
+        setCandidates(data.candidates ?? [])
         setSelectedJobTitle(data.targetJob?.title ?? '')
       })
-      .catch(() => setCandidates([]))
+      .catch((e) => {
+        // Don't leave the last results standing under filters they don't match.
+        setCandidates([])
+        setSearchError(e instanceof Error ? e.message : 'Search failed')
+      })
       .finally(() => setLoading(false))
   }
 
@@ -246,11 +256,21 @@ export default function EmployerTalentPage() {
         <p className="mt-4 text-sm text-ink-faint">
           {loading
             ? 'Searching'
-            : `${candidates.length} ${candidates.length === 1 ? 'person' : 'people'} · ${verifiedInView} verified skills in view`}
+            : searchError
+              ? 'Search failed'
+              : `${candidates.length} ${candidates.length === 1 ? 'person' : 'people'} · ${verifiedInView} verified skills in view`}
           {jobPillars.length > 0 && ` · role needs ${jobPillars.join(', ')}`}
         </p>
 
-        {!loading && candidates.length === 0 ? (
+        {!loading && searchError ? (
+          <div className="mt-6 border-y border-line py-12" role="alert">
+            <p className="font-display text-3xl font-light">The search didn&apos;t run</p>
+            <p className="mt-3 max-w-md text-ink-muted">{searchError}</p>
+            <Button className="mt-6" variant="secondary" onClick={() => search()}>
+              Try again
+            </Button>
+          </div>
+        ) : !loading && candidates.length === 0 ? (
           <div className="mt-6 border-y border-line py-12">
             <p className="font-display text-3xl font-light">No one matches yet</p>
             <p className="mt-3 max-w-md text-ink-muted">

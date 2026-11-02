@@ -9,9 +9,10 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getSessionUserId } from '@/lib/auth/session'
+import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
+import { guestSkills } from '@/lib/mock/guest'
 
 export const dynamic = 'force-dynamic'
 
@@ -69,14 +70,17 @@ function skillMatches(userSkill: string, targetSkill: string): boolean {
 
 export async function POST(request: Request) {
   try {
-    const userId = await getSessionUserId()
-    if (!userId) {
+    const guest = await isGuestRequest()
+    const userId = guest ? null : await getSessionUserId()
+    if (!guest && !userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const rl = rateLimit(`gap:${userId}`, { maxRequests: 20, windowMs: 60000 })
-    if (!rl.allowed) {
-      return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
+    if (userId) {
+      const rl = rateLimit(`gap:${userId}`, { maxRequests: 20, windowMs: 60000 })
+      if (!rl.allowed) {
+        return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
+      }
     }
 
     const body = await request.json().catch(() => ({}))
@@ -97,10 +101,13 @@ export async function POST(request: Request) {
       )
     }
 
-    const userSkills = await prisma.skill.findMany({
-      where: { userId },
-      select: { name: true, level: true, progress: true, category: true },
-    })
+    // Guest previews compare the sample passport, like the rest of the preview.
+    const userSkills: { name: string; level: string; progress: number }[] = userId
+      ? await prisma.skill.findMany({
+          where: { userId },
+          select: { name: true, level: true, progress: true, category: true },
+        })
+      : guestSkills
 
     const matched: { target: string; userSkill: string; level: string; progress: number }[] = []
     const missing: { target: string; recommendation: string }[] = []

@@ -1,16 +1,18 @@
 'use client'
 
-interface ToggleSwitchProps {
+// A switch needs a name a screen reader can announce: either a visible
+// `label`, or `ariaLabel` naming the row it sits in.
+type ToggleSwitchProps = {
   checked: boolean
   onChange: (checked: boolean) => void
-  label?: string
   disabled?: boolean
-}
+} & ({ label: string; ariaLabel?: never } | { label?: never; ariaLabel: string })
 
 export default function ToggleSwitch({
   checked,
   onChange,
   label,
+  ariaLabel,
   disabled = false,
 }: ToggleSwitchProps) {
   return (
@@ -24,7 +26,7 @@ export default function ToggleSwitch({
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
-          aria-label={label ? undefined : 'Toggle'}
+          aria-label={label ? undefined : ariaLabel}
           className="peer sr-only"
         />
         <span

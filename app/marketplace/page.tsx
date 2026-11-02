@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Search, ExternalLink, Send, RefreshCw } from 'lucide-react'
+import { Search, Send, RefreshCw } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
@@ -540,17 +540,14 @@ export default function MarketplacePage() {
                       <span className="text-sm text-ink-faint">match</span>
                     </p>
                     <div className="flex flex-wrap gap-2 lg:justify-end">
-                      <Button
-                        size="sm"
-                        rightIcon={<ExternalLink className="size-3.5" aria-hidden />}
-                        onClick={() => {
-                          if (isGuestPreview || !user) {
-                            promptSignIn()
-                          }
-                        }}
+                      {/* There is no apply flow yet, so point at the company rather than
+                          a button that does nothing. */}
+                      <Link
+                        href={`/company/${job.company.slug}`}
+                        className="button-base button-primary min-h-9 px-4 text-sm"
                       >
-                        Apply
-                      </Button>
+                        View company
+                      </Link>
                       <Button
                         size="sm"
                         variant="secondary"
