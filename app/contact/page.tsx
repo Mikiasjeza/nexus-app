@@ -6,6 +6,7 @@ import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
+import { LEGAL } from '@/lib/legal'
 
 export default function ContactPage() {
   const { addToast } = useToast()
@@ -70,24 +71,13 @@ export default function ContactPage() {
         <div className="grid gap-12 border-t border-line pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10">
           <dl className="space-y-6">
             <div>
-              <dt className="text-sm text-ink-faint">General</dt>
+              <dt className="text-sm text-ink-faint">Email</dt>
               <dd className="mt-1">
                 <a
-                  href="mailto:hello@nexus.ai"
+                  href={`mailto:${LEGAL.contact.support}`}
                   className="text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink"
                 >
-                  hello@nexus.ai
-                </a>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-ink-faint">Support</dt>
-              <dd className="mt-1">
-                <a
-                  href="mailto:support@nexus.ai"
-                  className="text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink"
-                >
-                  support@nexus.ai
+                  {LEGAL.contact.support}
                 </a>
               </dd>
             </div>

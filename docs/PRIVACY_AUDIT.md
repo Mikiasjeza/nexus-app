@@ -51,12 +51,13 @@ Production CSP: `connect-src 'self'`, so browser code can only talk to our origi
 
 ## 5. Owner to-dos
 
-- [ ] **Run the migration** (`npm run db:migrate:deploy`) after deploying this code. It irreversibly deletes the stored AI raw responses and GitHub tokens. Deploy the code first; the old code still writes those columns.
+- [x] **Run the migration** (`npm run db:migrate:deploy`) after deploying this code. It irreversibly deletes the stored AI raw responses and GitHub tokens. Deploy the code first; the old code still writes those columns. Done on the live database on 2 Nov 2026.
 - [ ] Confirm Stripe Price amounts = `lib/plans.ts` (Pro $9.99/mo).
 - [ ] Enable cancellation in the Stripe Customer Portal.
-- [ ] Use paid tiers for the AI providers (esp. Gemini), as the Privacy Policy states.
+- [ ] AI providers: the Privacy Policy says none may train on our API data. Groq (live since Nov 2026) is covered by its terms; also turn on Zero Data Retention in Groq's Data Controls. If you switch to Gemini, use its paid tier.
 - [ ] Sentry project settings: enable "Prevent storing of IP addresses" and set data retention ≤ 90 days (policy says up to 90).
-- [ ] Fill in `LEGAL_ENTITY`, `POSTAL_ADDRESS`, `GOVERNING_LAW` and the DB host in `lib/legal.ts`; create the privacy@/legal@/support@ mailboxes; legal review.
+- [x] Fill in `LEGAL_ENTITY`, `GOVERNING_LAW`, the contact email and the DB host in `lib/legal.ts` (Nov 2026: the owner's name, Delaware, the owner's Gmail, Neon).
+- [ ] Switch `LEGAL_ENTITY` and the contact addresses once a company and its own email domain exist; add `POSTAL_ADDRESS`; legal review.
 - [ ] Back-up retention ≤ 30 days (policy promise).
 - [ ] Free-plan skill limit is now `-1` (it was never enforced). Enforce in `POST /api/skills` before lowering it.
 - [x] `types/lucide-react.d.ts` was missing 4 icons (`BadgeCheck`, `Network`, `ChevronRight`, `LogOut`), which failed `next build`. Added. This file shadows lucide's real types, so add any new icon there too.
