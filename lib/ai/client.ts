@@ -28,6 +28,18 @@ type Provider = 'gemini' | 'openai' | 'anthropic'
 const DEFAULT_PROVIDER = (env.ai.provider === 'groq' ? 'openai' : env.ai.provider) as Provider
 const DEFAULT_MODEL = env.ai.model
 
+// GPT-OSS (Groq's current models) reasons before it answers, and that reasoning
+// counts against max_tokens. Keep it brief and leave room for it, or the JSON
+// reply gets cut off.
+const GPT_OSS = env.ai.provider === 'groq' && DEFAULT_MODEL.startsWith('openai/gpt-oss')
+
+/** Reply length for an OpenAI-API call, with reasoning settings for GPT-OSS. */
+function replyLimit(maxTokens: number) {
+  return GPT_OSS
+    ? { max_tokens: maxTokens + 1000, reasoning_effort: 'low' as const }
+    : { max_tokens: maxTokens }
+}
+
 export interface AIAnalysisResult extends VerificationResult {
   tokensUsed: number
   cost: number
@@ -192,7 +204,7 @@ class AIClient {
       ],
       response_format: { type: 'json_object' },
       temperature: 0.2,
-      max_tokens: 2000,
+      ...replyLimit(2000),
     })
     const text = response.choices[0]?.message?.content
     if (!text) throw new Error('No response from OpenAI')
@@ -286,7 +298,7 @@ class AIClient {
         ],
         response_format: { type: 'json_object' },
         temperature: 0.1,
-        max_tokens: maxTokens,
+        ...replyLimit(maxTokens),
       })
       const choice = response.choices[0]
       if (choice?.finish_reason === 'length') throw new Error('The AI reply was cut off')
@@ -396,7 +408,7 @@ Rules:
         ],
         response_format: { type: 'json_object' },
         temperature: 0.4,
-        max_tokens: 1200,
+        ...replyLimit(1200),
       })
 
       const content = response.choices[0]?.message?.content
@@ -635,7 +647,7 @@ Rules:
         ],
         response_format: { type: 'json_object' },
         temperature: 0.6,
-        max_tokens: 700,
+        ...replyLimit(700),
       })
 
       const content = response.choices[0]?.message?.content
