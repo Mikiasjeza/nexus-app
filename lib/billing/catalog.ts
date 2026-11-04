@@ -3,8 +3,9 @@
  *
  * A plan is purchasable only when all of these hold:
  * 1. lib/plans.ts marks it 'available' (its features exist and are honest);
- * 2. Stripe is configured, and a live key is used only once someone has
- *    approved live billing (BILLING_LIVE_APPROVED=true);
+ * 2. Stripe is configured; the production site never sells in test mode
+ *    (test cards would hand out real access); and a live key is used only
+ *    once someone has approved live billing (BILLING_LIVE_APPROVED=true);
  * 3. its price id is set for this environment;
  * 4. that Stripe price is active, monthly, in USD and costs exactly what the
  *    pricing page says. A mismatch blocks checkout and is reported, rather
@@ -43,6 +44,7 @@ export function liveBillingApproved(): boolean {
 export type PurchaseBlock =
   | 'not_for_sale'
   | 'stripe_not_configured'
+  | 'test_mode_in_production'
   | 'live_mode_not_approved'
   | 'price_not_configured'
   | 'price_mismatch'
@@ -57,6 +59,7 @@ export interface Purchasability {
 export const PURCHASE_BLOCK_MESSAGES: Record<PurchaseBlock, string> = {
   not_for_sale: "This plan isn't on sale yet.",
   stripe_not_configured: "Payments aren't set up yet. Please try again soon.",
+  test_mode_in_production: "Payments aren't switched on yet. Please try again soon.",
   live_mode_not_approved: "Payments aren't switched on yet. Please try again soon.",
   price_not_configured: "This plan's price isn't set up yet. Please try again soon.",
   price_mismatch: 'Payments for this plan are paused while we fix a pricing problem.',
@@ -114,6 +117,9 @@ export async function purchasability(plan: SubscriptionPlan): Promise<Purchasabi
   if (plan === 'free' || PLAN_INFO[plan].availability !== 'available') return block('not_for_sale')
   const mode = stripeMode()
   if (!mode) return block('stripe_not_configured')
+  if (mode === 'test' && process.env.VERCEL_ENV === 'production') {
+    return block('test_mode_in_production')
+  }
   if (mode === 'live' && !liveBillingApproved()) return block('live_mode_not_approved')
   const priceId = priceIdFor(plan)
   if (!priceId) return block('price_not_configured')

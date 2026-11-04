@@ -30,6 +30,7 @@ const ENV_KEYS = [
   'STRIPE_CAREER_PLUS_PRICE_ID',
   'STRIPE_BUSINESS_PRICE_ID',
   'BILLING_LIVE_APPROVED',
+  'VERCEL_ENV',
 ]
 const saved = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]))
 
@@ -41,6 +42,7 @@ beforeEach(() => {
   delete process.env.STRIPE_CAREER_PLUS_PRICE_ID
   delete process.env.STRIPE_BUSINESS_PRICE_ID
   delete process.env.BILLING_LIVE_APPROVED
+  delete process.env.VERCEL_ENV
 })
 
 afterAll(() => {
@@ -72,6 +74,14 @@ describe('purchasability', () => {
   it('needs Stripe to be configured', async () => {
     delete process.env.STRIPE_SECRET_KEY
     expect((await purchasability('pro')).block).toBe('stripe_not_configured')
+  })
+
+  it('never sells in test mode on the production site, only on previews', async () => {
+    mockRetrievePrice.mockResolvedValue(proPrice())
+    process.env.VERCEL_ENV = 'production'
+    expect((await purchasability('pro')).block).toBe('test_mode_in_production')
+    process.env.VERCEL_ENV = 'preview'
+    expect((await purchasability('pro')).purchasable).toBe(true)
   })
 
   it('refuses live billing until someone approves it', async () => {

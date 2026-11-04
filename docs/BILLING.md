@@ -109,8 +109,9 @@ Pricing page ──POST /api/stripe/checkout──▶ Stripe Checkout ──▶ 
 - `lib/plans.ts`: the plan catalogue, client-safe. Prices, limits, features,
   availability, entitlements.
 - `lib/billing/catalog.ts`: whether a plan can be bought: on sale, Stripe
-  configured, live mode approved, price id set, and the Stripe price matching
-  the catalogue (amount, USD, monthly, active).
+  configured, never test mode on the production site (test cards would hand
+  out real access), live mode approved, price id set, and the Stripe price
+  matching the catalogue (amount, USD, monthly, active).
 - `lib/billing/status.ts`: Stripe statuses, the past-due grace period and the
   effective plan.
 - `lib/billing/usage.ts`: the allowance in the database (conditional increment
@@ -182,6 +183,8 @@ can't be viewed again after saving; **Config** values can.
    signing secret.
 5. In Vercel, add to the **Preview** environment: `STRIPE_SECRET_KEY` (test
    key), `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID`. Redeploy the preview.
+   Test mode only sells on previews: the production site refuses test keys
+   (`VERCEL_ENV=production`), so nobody can get real access with a test card.
 6. Test with Stripe's test cards: `4242 4242 4242 4242` (succeeds),
    `4000 0025 0000 3155` (asks for 3-D Secure), `4000 0000 0000 0341`
    (attaches, then fails on renewal: use it with Stripe's test clocks to
