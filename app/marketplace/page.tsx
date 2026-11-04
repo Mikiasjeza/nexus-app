@@ -7,6 +7,7 @@ import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
 import { useSkills } from '@/lib/hooks/useSkills'
 import { aiApi, authApi } from '@/lib/api'
+import { ApiError } from '@/lib/api/fetcher'
 import { skillsLooselyMatch, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxonomy'
 import type { AIJobMatchItem } from '@/lib/api/ai'
 import type { SkillCategory, User } from '@/lib/types'
@@ -39,6 +40,8 @@ export default function MarketplacePage() {
   const router = useRouter()
   const { skills } = useSkills()
   const [user, setUser] = useState<User | null>(null)
+  // The AI coach and match explanations are a paid feature; Free sees an upgrade note instead.
+  const [coachLocked, setCoachLocked] = useState(false)
   const [jobs, setJobs] = useState<ApiJob[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -109,7 +112,8 @@ export default function MarketplacePage() {
       })
       .catch((error) => {
         if (!isActive) return
-        console.error('AI job matches load error:', error)
+        if (error instanceof ApiError && error.status === 402) setCoachLocked(true)
+        else console.error('AI job matches load error:', error)
         setAiSummary('')
         setAiMatches([])
       })
@@ -218,6 +222,7 @@ export default function MarketplacePage() {
         },
       ])
     } catch (error) {
+      if (error instanceof ApiError && error.status === 402) setCoachLocked(true)
       setChatMessages((prev) => [
         ...prev,
         {
@@ -379,6 +384,14 @@ export default function MarketplacePage() {
             <p className="mt-1 text-sm text-ink-muted">
               Advice based on your pillars, missing proof and the roles you’re closest to.
             </p>
+            {coachLocked && (
+              <p className="mt-4 rounded-lg bg-raised px-4 py-3 text-sm text-ink-muted">
+                The AI career coach and AI job matching are part of Pro.{' '}
+                <Link href="/pricing" className="metalab-link">
+                  See Pro
+                </Link>
+              </p>
+            )}
 
             <div
               className="mt-6 max-h-[22rem] space-y-3 overflow-y-auto pr-1"

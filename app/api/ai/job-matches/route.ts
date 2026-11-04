@@ -7,6 +7,7 @@ import { guestSkills } from '@/lib/mock/guest'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
 import { skillsLooselyMatch } from '@/lib/skills-taxonomy'
+import { canAccessCareerInsights, upgradeRequiredBody } from '@/lib/billing/entitlements'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +18,14 @@ export async function GET() {
 
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    // Career insights are a paid feature; the guest preview shows them on sample data.
+    if (!guestMode) {
+      const access = await canAccessCareerInsights(userId)
+      if (!access.allowed) {
+        return NextResponse.json(upgradeRequiredBody(access), { status: 402 })
+      }
     }
 
     const rl = rateLimit(`ai-job-matches:${userId}`, { maxRequests: 8, windowMs: 60000 })

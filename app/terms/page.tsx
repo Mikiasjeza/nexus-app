@@ -160,9 +160,25 @@ export default function TermsPage() {
             </strong>
           </li>
           <li>
+            <strong className="text-ink">Monthly allowances:</strong> each plan includes a number of
+            formal assessments per calendar month, resetting on the 1st (UTC). An assessment counts
+            when you start its timer and is given back if our system fails to grade it. Unused
+            assessments don&apos;t roll over.
+          </li>
+          <li>
+            <strong className="text-ink">Promotional prices</strong> (such as a founding-member
+            price) apply for the period stated at checkout, after which the regular price shown
+            there applies until you cancel. Each promotion can be used once per person.
+          </li>
+          <li>
             <strong className="text-ink">Cancel any time</strong> in Settings → Billing → Manage
             billing. Cancellation stops future renewals; you keep paid features until the end of the
             current billing period. We don&apos;t ask you to call or email to cancel.
+          </li>
+          <li>
+            <strong className="text-ink">Credentials you&apos;ve earned are yours:</strong> they
+            stay valid until they expire and can still be verified whether or not you subscribe.
+            Ending a paid plan only switches off its paid features.
           </li>
           <li>
             <strong className="text-ink">Refunds:</strong> payments are non-refundable except where

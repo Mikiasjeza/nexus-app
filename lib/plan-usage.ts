@@ -1,40 +1,35 @@
 /**
  * Server-side plan lookups and quota checks. lib/plans.ts stays client-safe;
- * anything that reads the database lives here.
+ * anything that reads the database lives here or in lib/billing.
  */
 
 import { prisma } from '@/lib/db'
 import { PLAN_INFO, type SubscriptionPlan } from '@/lib/plans'
+import { effectivePlan } from '@/lib/billing/status'
+import { usageWindow } from '@/lib/billing/period'
 
 /** The plan whose limits apply right now. A lapsed paid plan falls back to free. */
-export async function getEffectivePlan(userId: string): Promise<SubscriptionPlan> {
+export async function getEffectivePlan(
+  userId: string,
+  now: Date = new Date()
+): Promise<SubscriptionPlan> {
   const subscription = await prisma.subscription.findUnique({
     where: { userId },
-    select: { plan: true, status: true },
+    select: { plan: true, status: true, currentPeriodStart: true },
   })
-  const plan = subscription?.plan as SubscriptionPlan | undefined
-  if (!plan || !(plan in PLAN_INFO)) return 'free'
-  if (!['active', 'trialing'].includes(subscription!.status)) return 'free'
-  return plan
+  return effectivePlan(subscription, now)
 }
 
 export type QuotaCheck =
   | { allowed: true; plan: SubscriptionPlan }
   | { allowed: false; plan: SubscriptionPlan; limit: number; used: number }
 
-function startOfMonth(): Date {
-  const date = new Date()
-  date.setDate(1)
-  date.setHours(0, 0, 0, 0)
-  return date
-}
-
 export async function checkAiAnalysisQuota(userId: string): Promise<QuotaCheck> {
   const plan = await getEffectivePlan(userId)
   const limit = PLAN_INFO[plan].limits.aiAnalyses
   if (limit < 0) return { allowed: true, plan }
   const used = await prisma.aIAnalysis.count({
-    where: { userId, createdAt: { gte: startOfMonth() } },
+    where: { userId, createdAt: { gte: usageWindow().start } },
   })
   return used < limit ? { allowed: true, plan } : { allowed: false, plan, limit, used }
 }

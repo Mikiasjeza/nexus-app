@@ -1,34 +1,23 @@
 import { NextResponse } from 'next/server'
-import * as Sentry from '@sentry/nextjs'
-import { getSessionUserId } from '@/lib/auth/session'
+import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 import { stripeService } from '@/lib/integrations/stripe'
+import { appBaseUrl, billingErrorResponse } from '@/lib/billing/http'
 
 export const dynamic = 'force-dynamic'
 
+/** Stripe's billing portal: payment details, invoices and cancellation. */
 export async function POST(request: Request) {
   try {
+    if (await isGuestRequest()) {
+      return NextResponse.json({ error: 'Billing is off in the guest preview.' }, { status: 401 })
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
-
-    const requestOrigin = new URL(request.url).origin
-    const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL || requestOrigin}/settings`
-    const url = await stripeService.createBillingPortalSession(userId, returnUrl)
+    const url = await stripeService.createBillingPortalSession(userId, appBaseUrl(request))
     return NextResponse.json({ url })
   } catch (e) {
-    const message = e instanceof Error ? e.message : 'Unknown error'
-    Sentry.logger.error('Stripe billing portal failed', {
-      route: 'api/stripe/portal',
-      gateway: 'stripe',
-      errorMessage: message,
-    })
-    return NextResponse.json(
-      {
-        error: 'Billing portal failed',
-        message,
-      },
-      { status: 400 }
-    )
+    return billingErrorResponse('api/stripe/portal', e)
   }
 }

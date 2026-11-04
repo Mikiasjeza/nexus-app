@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { User } from '@/lib/types'
-import { authApi, billingApi } from '@/lib/api'
+import { authApi } from '@/lib/api'
 import ToggleSwitch from '@/components/UI/ToggleSwitch'
 import { Save, Download } from 'lucide-react'
 import Link from 'next/link'
@@ -12,23 +12,17 @@ import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
+import BillingPanel from '@/components/Billing/BillingPanel'
 
 export default function SettingsPage() {
   const { addToast } = useToast()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [billingLoading, setBillingLoading] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [deleting, setDeleting] = useState(false)
-  const [subscription, setSubscription] = useState<{
-    plan: 'free' | 'pro' | 'enterprise'
-    status: 'active' | 'trialing' | 'past_due' | 'canceled'
-    currentPeriodEnd: string | null
-    cancelAtPeriodEnd: boolean
-  } | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -51,10 +45,6 @@ export default function SettingsPage() {
             publicProfile: currentUser.publicProfile,
             discoverableByEmployers: currentUser.discoverableByEmployers ?? false,
           })
-        }
-        // Guests have no billing; asking returns 401, which would bounce them to sign-in.
-        if (currentUser && currentUser.id !== 'guest-user') {
-          setSubscription(await billingApi.getSubscription().catch(() => null))
         }
       } catch (error) {
         console.error('Failed to load user:', error)
@@ -154,30 +144,6 @@ export default function SettingsPage() {
         message: error instanceof Error ? error.message : 'Please try again.',
       })
       setDeleting(false)
-    }
-  }
-
-  const openBillingPortal = async () => {
-    if (isGuestPreview) {
-      addToast({
-        type: 'info',
-        title: 'Guest preview mode',
-        message: 'Billing is disabled in guest preview mode.',
-      })
-      return
-    }
-    setBillingLoading(true)
-    try {
-      const { url } = await billingApi.createPortalSession()
-      window.location.href = url
-    } catch (error) {
-      addToast({
-        type: 'error',
-        title: 'Billing portal unavailable',
-        message: error instanceof Error ? error.message : 'Please try again later.',
-      })
-    } finally {
-      setBillingLoading(false)
     }
   }
 
@@ -513,34 +479,12 @@ export default function SettingsPage() {
             </ul>
           </SettingsSection>
 
-          <SettingsSection title="Billing" description="Your plan and payment details.">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-medium capitalize">
-                  {subscription?.plan ?? 'free'}{' '}
-                  <span className="font-normal text-ink-faint">
-                    · {subscription?.status ?? 'active'}
-                  </span>
-                </p>
-                {subscription?.currentPeriodEnd && (
-                  <p className="mt-1 text-sm text-ink-muted">
-                    {subscription.cancelAtPeriodEnd ? 'Access ends' : 'Renews'}{' '}
-                    {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                  </p>
-                )}
-                <p className="mt-1 text-sm text-ink-faint">
-                  Change plan, update payment details or cancel any time.
-                </p>
-              </div>
-              <Button
-                variant="secondary"
-                onClick={openBillingPortal}
-                isLoading={billingLoading}
-                disabled={billingLoading || isGuestPreview}
-              >
-                Manage billing
-              </Button>
-            </div>
+          <SettingsSection
+            id="billing"
+            title="Billing"
+            description="Your plan, this month's assessments and payment details."
+          >
+            <BillingPanel disabled={isGuestPreview} />
           </SettingsSection>
         </div>
       </div>

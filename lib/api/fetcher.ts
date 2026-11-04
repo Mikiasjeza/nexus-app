@@ -22,6 +22,27 @@ function redirectToLoginIfNeeded() {
   browserLocation.assign(`/auth/login?next=${next}`)
 }
 
+/** A failed API call: the server's message, plus its status and body for callers that branch on them. */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly data: Record<string, unknown> = {}
+  ) {
+    super(message)
+  }
+
+  /** The server says a paid plan is needed (or this month's allowance is used up). */
+  get upgradeTo(): string | null {
+    const value = this.data.upgradeTo
+    return typeof value === 'string' ? value : null
+  }
+
+  get code(): string | null {
+    return typeof this.data.code === 'string' ? this.data.code : null
+  }
+}
+
 export async function fetchApi<T>(path: string, options: RequestInit = {}): Promise<T> {
   // Multipart bodies need the browser to set Content-Type (with its boundary).
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
@@ -44,7 +65,7 @@ export async function fetchApi<T>(path: string, options: RequestInit = {}): Prom
     if (res.status === 401) {
       redirectToLoginIfNeeded()
     }
-    throw new Error(message)
+    throw new ApiError(message, res.status, data as Record<string, unknown>)
   }
 
   if (res.status === 204) return undefined as T

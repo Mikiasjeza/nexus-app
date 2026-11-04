@@ -13,6 +13,7 @@ import { ACTIVE_STATUSES, effectiveStatus, retakeStatus } from '@/lib/assessment
 import { usesExternalRunner } from '@/lib/assessments/engine'
 import { assessmentDeps, handle } from '@/lib/assessments/http'
 import type { AttemptRecord, CredentialRecord } from '@/lib/assessments/store'
+import { getAllowanceSummary, type AllowanceSummary } from '@/lib/billing/usage'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +27,7 @@ export async function GET() {
     let attempts: AttemptRecord[] = []
     let credentials: CredentialRecord[] = []
     let personalError: string | null = null
+    let allowance: AllowanceSummary | null = null
     if (userId) {
       try {
         const { store } = assessmentDeps()
@@ -38,12 +40,17 @@ export async function GET() {
         console.error('Assessment history unavailable:', error)
         personalError = 'Your assessment history is unavailable right now.'
       }
+      allowance = await getAllowanceSummary(userId).catch((error) => {
+        console.error('Assessment allowance unavailable:', error)
+        return null
+      })
     }
 
     return NextResponse.json({
       signedIn: Boolean(userId),
       guest,
       personalError,
+      allowance,
       rules: ASSESSMENT_RULES,
       retakePolicy: RETAKE_POLICY,
       modes: Object.fromEntries(

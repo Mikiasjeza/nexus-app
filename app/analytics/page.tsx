@@ -22,6 +22,7 @@ import PageHeader from '@/components/Layout/PageHeader'
 import SectionHeading from '@/components/Layout/SectionHeading'
 import VerifiedBars from '@/components/Analytics/VerifiedBars'
 import GapAnalysis from '@/components/Analytics/GapAnalysis'
+import AssessmentGrowth from '@/components/Analytics/AssessmentGrowth'
 import VerifiedGrowth from '@/components/Dashboard/VerifiedGrowth'
 
 /** Where the passport is strong, where it's thin, and what to prove next. All from real data. */
@@ -317,6 +318,12 @@ export default function AnalyticsPage() {
           </dl>
         </section>
 
+        <section aria-labelledby="assessment-growth-heading" className="border-t border-line py-12">
+          <SectionHeading id="assessment-growth-heading" note="Formal assessment scores">
+            Skill growth
+          </SectionHeading>
+          {user && <AssessmentGrowth guest={isGuestPreview} />}
+        </section>
         <section aria-labelledby="gap-heading" className="border-t border-line py-12">
           <SectionHeading id="gap-heading" note="Against a target role">
             Gap analysis

@@ -7,11 +7,15 @@ import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
-import { assessmentsApi, type Catalog, type CatalogEntry } from '@/lib/api/assessments'
+import { ApiError, assessmentsApi, type Catalog, type CatalogEntry } from '@/lib/api/assessments'
 import type { AssessmentMode } from '@/lib/assessments/types'
+import { PLAN_INFO, isPlan } from '@/lib/plans'
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+
+const formatDay = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' })
 
 export default function AssessmentDetailPage() {
   const slug = String(useParams().slug ?? '')
@@ -20,7 +24,10 @@ export default function AssessmentDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [mode, setMode] = useState<AssessmentMode>('independent')
   const [starting, setStarting] = useState(false)
-  const [startError, setStartError] = useState<string | null>(null)
+  const [startError, setStartError] = useState<{
+    message: string
+    upgradeTo: string | null
+  } | null>(null)
 
   useEffect(() => {
     assessmentsApi
@@ -38,7 +45,10 @@ export default function AssessmentDetailPage() {
       const attempt = await assessmentsApi.create(slug, mode)
       router.push(`/assessments/attempt/${attempt.id}`)
     } catch (e) {
-      setStartError(e instanceof Error ? e.message : 'Could not start')
+      setStartError({
+        message: e instanceof Error ? e.message : 'Could not start',
+        upgradeTo: e instanceof ApiError ? e.upgradeTo : null,
+      })
       setStarting(false)
     }
   }
@@ -69,6 +79,8 @@ export default function AssessmentDetailPage() {
   }
 
   const mine = entry.personal
+  const allowance = catalog.allowance
+  const outOfAssessments = Boolean(allowance && allowance.remaining <= 0)
   const steps = [
     {
       label: 'The task',
@@ -248,10 +260,32 @@ export default function AssessmentDetailPage() {
                           {mine.retake.nextAt &&
                             ` You can start again on ${formatDate(mine.retake.nextAt)}.`}
                         </p>
+                      ) : outOfAssessments && allowance ? (
+                        <div className="space-y-3">
+                          <p className="text-sm leading-relaxed text-caution">
+                            You’ve used all {allowance.limit} of this month’s formal assessments.
+                            They reset on {formatDay(allowance.resetsAt)}.
+                          </p>
+                          {allowance.upgradeTo && (
+                            <Link href="/pricing" className="button-base button-primary w-full">
+                              Get {PLAN_INFO[allowance.upgradeTo].limits.formalAssessments} a month
+                              with {PLAN_INFO[allowance.upgradeTo].name}
+                            </Link>
+                          )}
+                        </div>
                       ) : (
-                        <Button fullWidth onClick={start} isLoading={starting}>
-                          Start assessment
-                        </Button>
+                        <>
+                          <Button fullWidth onClick={start} isLoading={starting}>
+                            Start assessment
+                          </Button>
+                          {allowance && (
+                            <p className="text-xs leading-relaxed text-ink-faint">
+                              {allowance.remaining} of {allowance.limit} formal{' '}
+                              {allowance.limit === 1 ? 'assessment' : 'assessments'} left this
+                              month. Starting the timer uses one; reading the brief doesn’t.
+                            </p>
+                          )}
+                        </>
                       )
                     ) : (
                       <Link
@@ -262,9 +296,14 @@ export default function AssessmentDetailPage() {
                       </Link>
                     )}
                     {startError && (
-                      <p role="alert" className="text-sm text-[#ffc9c9]">
-                        {startError}
-                      </p>
+                      <div role="alert" className="space-y-2 text-sm text-[#ffc9c9]">
+                        <p>{startError.message}</p>
+                        {startError.upgradeTo && isPlan(startError.upgradeTo) && (
+                          <Link href="/pricing" className="metalab-link">
+                            See {PLAN_INFO[startError.upgradeTo].name}
+                          </Link>
+                        )}
+                      </div>
                     )}
                     <Link
                       href={
@@ -277,8 +316,8 @@ export default function AssessmentDetailPage() {
                       Practice round
                     </Link>
                     <p className="text-xs leading-relaxed text-ink-faint">
-                      Practice uses a different task each time, checks only the automatic parts, and
-                      saves nothing.
+                      Practice never uses your monthly assessments. It checks only the automatic
+                      parts and saves nothing; Pro practises every challenge for this skill.
                       {entry.practiceNeedsAccount &&
                         ' Code runs on a separate, metered server, so practice needs an account.'}
                     </p>

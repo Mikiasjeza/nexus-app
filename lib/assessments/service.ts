@@ -54,24 +54,30 @@ import type {
   CredentialRecord,
   StoredEvaluation,
 } from './store'
+import type { AllowanceGate } from './allowance'
+import { AssessmentError } from './errors'
 
-export class AssessmentError extends Error {
-  constructor(
-    message: string,
-    public readonly status = 400
-  ) {
-    super(message)
-  }
-}
+export { AssessmentError }
 
 export interface Deps {
   store: AssessmentStore
   /** AI grading; tests pass a stub. Omit to leave judgement criteria for a reviewer. */
   grade?: (input: GradingInput) => Promise<AiGrade>
+  /** The monthly assessment allowance (lib/assessments/allowance.ts). Omit for no limit. */
+  allowance?: AllowanceGate
   now?: () => Date
 }
 
 const clock = (deps: Deps) => (deps.now ? deps.now() : new Date())
+
+/** Giving an assessment back must never break grading; a failure is logged instead. */
+async function giveBack(deps: Deps, attemptId: string, reason: string) {
+  try {
+    await deps.allowance?.release(attemptId, reason)
+  } catch (error) {
+    console.error('Allowance release failed:', error)
+  }
+}
 
 export const ACTIVE_STATUSES: AttemptStatus[] = ['CREATED', 'READY', 'IN_PROGRESS']
 const MAX_RUNS = 300
@@ -86,10 +92,20 @@ export function attemptCtx(attempt: Pick<AttemptRecord, 'slug' | 'challengeId' |
   return { def: definition(attempt.slug), challengeId: attempt.challengeId, seed: attempt.seed }
 }
 
-/** A practice round's content, from its seed alone. */
-export function practiceCtx(slug: string, seed: number): Ctx {
+/**
+ * A practice round's content, from its seed alone. Free practice always uses
+ * each skill's first challenge (its parameters still vary by seed); paid
+ * plans practise every challenge in the pool.
+ */
+export function practiceCtx(slug: string, seed: number, allChallenges = true): Ctx {
   const def = definition(slug)
-  return { def, challengeId: pickChallenge(def, seed), seed }
+  const challengeId = allChallenges ? pickChallenge(def, seed) : def.challengeIds[0]
+  return { def, challengeId, seed }
+}
+
+export interface PracticeOptions {
+  /** Whether this person's plan includes every practice challenge. */
+  allChallenges: boolean
 }
 
 function definition(slug: string): AssessmentDefinition {
@@ -163,6 +179,8 @@ export async function createAttempt(
   if (open) return open
   const retake = retakeStatus(attempts, clock(deps))
   if (!retake.allowed) throw new AssessmentError(retake.reason ?? 'Not yet', 429)
+  // Say so before anyone prepares; the allowance is only used when the timer starts.
+  await deps.allowance?.check(input.userId)
   // Content comes from the seed on demand, so an attempt is ready once it exists.
   // A retake draws a challenge this candidate hasn't had, where the pool allows.
   const seed = newSeed()
@@ -189,11 +207,20 @@ export async function beginAttempt(deps: Deps, attempt: AttemptRecord): Promise<
   assertTransition(attempt.status, 'IN_PROGRESS')
   const def = definition(attempt.slug)
   const now = clock(deps)
-  return deps.store.updateAttempt(attempt.id, attempt.status, {
-    status: 'IN_PROGRESS',
-    startedAt: now,
-    deadlineAt: new Date(now.getTime() + totalMinutes(def) * 60_000),
-  })
+  // Starting the timer is what uses an assessment from this month's allowance.
+  const consumed = (await deps.allowance?.consume(attempt.userId, attempt.id)) ?? false
+  try {
+    return await deps.store.updateAttempt(attempt.id, attempt.status, {
+      status: 'IN_PROGRESS',
+      startedAt: now,
+      deadlineAt: new Date(now.getTime() + totalMinutes(def) * 60_000),
+    })
+  } catch (error) {
+    // Another request won the race or the attempt moved on: this start didn't happen.
+    // Only give back what this call took; the winner's use must stand.
+    if (consumed) await giveBack(deps, attempt.id, 'start_failed')
+    throw error
+  }
 }
 
 export async function cancelAttempt(deps: Deps, attempt: AttemptRecord): Promise<AttemptRecord> {
@@ -423,10 +450,12 @@ export async function evaluateAttempt(deps: Deps, attempt: AttemptRecord): Promi
         evaluatedAt: now.toISOString(),
         evaluatedBy: 'system',
       })
-      return deps.store.updateAttempt(current.id, 'EVALUATING', {
+      const failed = await deps.store.updateAttempt(current.id, 'EVALUATING', {
         status: 'FAILED_SYSTEM',
         result: 'INCONCLUSIVE',
       })
+      await giveBack(deps, current.id, 'system_failure')
+      return failed
     }
 
     const ai: AiGrade = deps.grade
@@ -482,10 +511,12 @@ export async function evaluateAttempt(deps: Deps, attempt: AttemptRecord): Promi
     console.error('Assessment evaluation failed:', error)
     const latest = await deps.store.getAttempt(attempt.id)
     if (latest?.status === 'EVALUATING') {
-      return deps.store.updateAttempt(attempt.id, 'EVALUATING', {
+      const failed = await deps.store.updateAttempt(attempt.id, 'EVALUATING', {
         status: 'FAILED_SYSTEM',
         result: 'INCONCLUSIVE',
       })
+      await giveBack(deps, attempt.id, 'system_failure')
+      return failed
     }
     throw error
   }
@@ -813,15 +844,26 @@ export async function attemptView(deps: Deps, attempt: AttemptRecord): Promise<A
   }
 }
 
+/**
+ * How much of a result someone sees. Everyone gets the outcome, the score,
+ * each criterion's score and the summary feedback ('basic'); paid plans also
+ * get the written reason and the quoted evidence behind each score ('full').
+ * Results never decide whether a credential is valid, so this only ever
+ * hides explanation, not standing.
+ */
+export type ResultDetail = 'basic' | 'full'
+
 /** What the candidate sees about their result. Integrity detail stays with reviewers. */
 export function resultView(
   attempt: AttemptRecord,
   evaluation: EvaluationRecord | null,
   credential: CredentialRecord | null,
   appeals: AppealRecord[],
-  now: Date
+  now: Date,
+  { detail }: { detail: ResultDetail }
 ) {
   const def = definition(attempt.slug)
+  const full = detail === 'full'
   return {
     id: attempt.id,
     slug: def.slug,
@@ -842,10 +884,13 @@ export function resultView(
         label: c.label,
         weight: c.weight,
         score: c.score,
-        evidence: c.evidence,
-        notes: c.notes,
+        evidence: full ? c.evidence : [],
+        notes: full ? c.notes : undefined,
         assessedBy: c.assessedBy,
       })) ?? [],
+    /** True when reasons and evidence exist but this plan doesn't include them. */
+    detailLocked:
+      !full && (evaluation?.criteria ?? []).some((c) => c.evidence.length > 0 || Boolean(c.notes)),
     feedback: evaluation?.feedback ?? [],
     underReview: attempt.status === 'PENDING_REVIEW',
     credential: credential
@@ -875,9 +920,10 @@ export type ResultView = ReturnType<typeof resultView>
 export async function gradePractice(
   slug: string,
   seed: number,
-  raw: Partial<Record<Stage, unknown>>
+  raw: Partial<Record<Stage, unknown>>,
+  { allChallenges }: PracticeOptions
 ) {
-  const ctx = practiceCtx(slug, seed)
+  const ctx = practiceCtx(slug, seed, allChallenges)
   const { def } = ctx
   if (!isAvailable(def)) throw new AssessmentError('This assessment is not open yet.', 409)
   const work = Object.fromEntries(
@@ -909,16 +955,28 @@ export async function gradePractice(
   }
 }
 
-export async function practiceBrief(slug: string, seed: number, stage: Stage, previous: unknown) {
-  const ctx = practiceCtx(slug, seed)
+export async function practiceBrief(
+  slug: string,
+  seed: number,
+  stage: Stage,
+  previous: unknown,
+  { allChallenges }: PracticeOptions
+) {
+  const ctx = practiceCtx(slug, seed, allChallenges)
   if (!isAvailable(ctx.def)) throw new AssessmentError('This assessment is not open yet.', 409)
   const order: Stage[] = ['main', 'followup', 'explain']
   const prevStage = order[order.indexOf(stage) - 1]
   return buildBrief(ctx, stage, prevStage ? cleanWork(ctx.def, prevStage, previous) : undefined)
 }
 
-export async function practiceRunFor(slug: string, seed: number, stage: Stage, raw: unknown) {
-  const ctx = practiceCtx(slug, seed)
+export async function practiceRunFor(
+  slug: string,
+  seed: number,
+  stage: Stage,
+  raw: unknown,
+  { allChallenges }: PracticeOptions
+) {
+  const ctx = practiceCtx(slug, seed, allChallenges)
   if (!isAvailable(ctx.def)) throw new AssessmentError('This assessment is not open yet.', 409)
   if (stage === 'explain') throw new AssessmentError('Nothing to run in this step.')
   return practiceRun(ctx, stage, cleanWork(ctx.def, stage, raw))

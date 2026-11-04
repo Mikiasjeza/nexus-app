@@ -7,13 +7,21 @@ import type { PracticeRun } from '@/lib/assessments/engine'
 import type { AttemptView, ResultView, gradePractice } from '@/lib/assessments/service'
 import type { PublicCredential } from '@/lib/assessments/verify'
 import type { AssessmentMode, PublicBrief, Stage, StageWork } from '@/lib/assessments/types'
+import type { AllowanceSummary } from '@/lib/billing/usage'
+import type { SubscriptionPlan } from '@/lib/plans'
 
 export class ApiError extends Error {
   constructor(
     message: string,
-    public readonly status: number
+    public readonly status: number,
+    public readonly data: Record<string, unknown> = {}
   ) {
     super(message)
+  }
+
+  /** The plan that would allow this, when the server says the plan or allowance is the problem. */
+  get upgradeTo(): string | null {
+    return typeof this.data.upgradeTo === 'string' ? this.data.upgradeTo : null
   }
 }
 
@@ -27,7 +35,8 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!res.ok) {
     throw new ApiError(
       (data as { error?: string }).error || res.statusText || 'Request failed',
-      res.status
+      res.status,
+      data as Record<string, unknown>
     )
   }
   return data as T
@@ -71,11 +80,19 @@ export interface Catalog {
   signedIn: boolean
   guest: boolean
   personalError: string | null
+  /** This month's formal assessments, for signed-in visitors. */
+  allowance: AllowanceSummary | null
   rules: string[]
   retakePolicy: { cooldownHours: number; maxAttempts: number; windowDays: number }
   modes: Record<AssessmentMode, { label: string; description: string }>
   assessments: CatalogEntry[]
 }
+
+/** The result page: the view plus what this person's plan adds to it. */
+export type ResultPage = ResultView & { plan: SubscriptionPlan; reportAvailable: boolean }
+
+/** The printable report (a paid feature): the full view plus who it is for. */
+export type ResultReport = ResultView & { candidateName: string; generatedAt: string }
 
 export type PracticeResult = Awaited<ReturnType<typeof gradePractice>>
 
@@ -110,7 +127,8 @@ export const assessmentsApi = {
     post<AttemptView>(`/api/assessments/attempts/${id}/submit`, { stage, work }),
   timeout: (id: string) => post<AttemptView>(`/api/assessments/attempts/${id}/timeout`),
   cancel: (id: string) => post<{ status: string }>(`/api/assessments/attempts/${id}/cancel`),
-  result: (id: string) => call<ResultView>(`/api/assessments/attempts/${id}/result`),
+  result: (id: string) => call<ResultPage>(`/api/assessments/attempts/${id}/result`),
+  report: (id: string) => call<ResultReport>(`/api/assessments/attempts/${id}/report`),
   appeal: (id: string, reason: string) =>
     post<{ id: string; status: string }>(`/api/assessments/attempts/${id}/appeal`, { reason }),
 

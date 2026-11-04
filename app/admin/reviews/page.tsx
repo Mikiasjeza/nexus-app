@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
@@ -164,6 +165,11 @@ export default function ReviewsPage() {
           title="Reviews"
           rule
           description="Attempts waiting for a person, gradings that failed, and appeals. Automatic scores can’t be changed here."
+          actions={
+            <Link href="/admin/billing" className="button-base button-secondary min-h-11 px-5">
+              Billing
+            </Link>
+          }
         />
         <RunnerPanel runner={queue.runner} />
 

@@ -8,6 +8,7 @@ import PageHeader from '@/components/Layout/PageHeader'
 import SectionHeading from '@/components/Layout/SectionHeading'
 import Loader from '@/components/UI/Loader'
 import { assessmentsApi, type Catalog, type CatalogEntry } from '@/lib/api/assessments'
+import { PLAN_INFO } from '@/lib/plans'
 
 function statusOf(
   entry: CatalogEntry
@@ -92,6 +93,27 @@ export default function AssessmentsPage() {
             )}
             {catalog.personalError && (
               <p className="mb-8 text-sm text-caution">{catalog.personalError}</p>
+            )}
+            {catalog.allowance && (
+              <p className="mb-8 border-b border-line pb-4 text-sm text-ink-muted">
+                <span className="text-ink">
+                  {catalog.allowance.remaining} of {catalog.allowance.limit}
+                </span>{' '}
+                formal {catalog.allowance.limit === 1 ? 'assessment' : 'assessments'} left this
+                month, resetting on{' '}
+                {new Date(catalog.allowance.resetsAt).toLocaleDateString(undefined, {
+                  dateStyle: 'medium',
+                })}
+                . Practice rounds never count.
+                {catalog.allowance.remaining === 0 && catalog.allowance.upgradeTo && (
+                  <>
+                    {' '}
+                    <Link href="/pricing" className="metalab-link">
+                      Get more with {PLAN_INFO[catalog.allowance.upgradeTo].name}
+                    </Link>
+                  </>
+                )}
+              </p>
             )}
 
             <div className="space-y-14">
