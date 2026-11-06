@@ -60,6 +60,12 @@ export default function PrivacyPage() {
             see how a skill evolved.
           </li>
           <li>
+            <strong className="text-ink">Skill assessments:</strong> the work you submit (code,
+            queries or writing) and your answers to the follow-up questions. While an assessment is
+            open we also record when you paste or copy text and when you leave the page, to help
+            check that the work is your own.
+          </li>
+          <li>
             <strong className="text-ink">Onboarding answers (optional):</strong> the goals and
             starter skills you pick during setup.
           </li>
@@ -84,6 +90,12 @@ export default function PrivacyPage() {
             <strong className="text-ink">AI verification results:</strong> the confidence score,
             explanation and suggestions returned for your evidence, plus token usage so we can
             enforce plan limits.
+          </li>
+          <li>
+            <strong className="text-ink">Assessment results and credentials:</strong> your scores
+            and, if you pass, a credential. Anyone with a credential&apos;s link can check it. It
+            shows your name, the skill and level, your score, how the assessment was taken and its
+            dates, and links to your profile if your profile is public.
           </li>
           <li>
             <strong className="text-ink">Activity log:</strong> in-product events such as “skill
@@ -187,8 +199,8 @@ export default function PrivacyPage() {
 
       <Section title="4. AI processing">
         <p>
-          We use one AI provider at a time (Google Gemini, OpenAI or Anthropic). Depending on the
-          feature you use, we send it:
+          We use one AI provider at a time: currently Groq, otherwise Google Gemini, OpenAI or
+          Anthropic. Depending on the feature you use, we send it:
         </p>
         <List>
           <li>
@@ -196,15 +208,21 @@ export default function PrivacyPage() {
             the evidence content you submitted.
           </li>
           <li>
+            <strong className="text-ink">Skill assessments:</strong> the task, the work you
+            submitted and your answers to its questions, so it can score the parts that need
+            judgement.
+          </li>
+          <li>
             <strong className="text-ink">Career assistant and job matching:</strong> your skill
             names, levels and verification status, the message you typed, and public job listings.
           </li>
         </List>
         <p>
-          We never send your name or email. We use the providers&apos; paid API tiers, under which
-          they do not use our API data to train their models. We store only the results we show you
-          (score, explanation, suggestions, matches) and token usage, not the provider&apos;s full
-          raw response.
+          We never send your name or email. We only use API terms under which the provider may not
+          train its models on our API data. Groq does not store request content by default, apart
+          from logs it may keep for up to 30 days to fix errors or investigate abuse. We store only
+          the results we show you (score, explanation, suggestions, matches) and token usage, not
+          the provider&apos;s full raw response.
         </p>
         <p>
           AI results are informational and can be wrong. No legal or similarly significant decision
@@ -287,6 +305,10 @@ export default function PrivacyPage() {
           <li>
             <strong className="text-ink">Account, skills, evidence, AI results, activity:</strong>{' '}
             until you delete them or your account.
+          </li>
+          <li>
+            <strong className="text-ink">Assessments and credentials:</strong> until you delete your
+            account. A credential stops being valid 24 months after it is issued.
           </li>
           <li>
             <strong className="text-ink">Company, job listings and talent pools:</strong> until
