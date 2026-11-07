@@ -83,6 +83,10 @@ export default function PrivacyPage() {
             your company name, website, logo and description, your role, the job listings you post
             and the talent pools you create.
           </li>
+          <li>
+            <strong className="text-ink">Waitlists:</strong> if you ask to hear when a plan opens,
+            which plan, and a company name if you give one.
+          </li>
         </List>
         <p className="font-medium text-ink">Information created when you use Nexus</p>
         <List>
@@ -102,8 +106,14 @@ export default function PrivacyPage() {
             added” shown on your dashboard.
           </li>
           <li>
-            <strong className="text-ink">Billing status:</strong> your plan, subscription status and
-            Stripe customer ID. We never receive or store card numbers.
+            <strong className="text-ink">Billing status:</strong> your plan, subscription status,
+            billing dates and Stripe customer ID, and whether you have used a promotional price (so
+            each offer is used only once). We never receive or store card numbers.
+          </li>
+          <li>
+            <strong className="text-ink">Plan usage:</strong> how many formal assessments and
+            practice rounds you use each month, so your plan&apos;s limits can be applied and shown
+            to you.
           </li>
           <li>
             <strong className="text-ink">Sign-in session:</strong> a random session token stored in
@@ -309,6 +319,10 @@ export default function PrivacyPage() {
           <li>
             <strong className="text-ink">Assessments and credentials:</strong> until you delete your
             account. A credential stops being valid 24 months after it is issued.
+          </li>
+          <li>
+            <strong className="text-ink">Plan usage, promotion records and waitlists:</strong> until
+            you delete your account.
           </li>
           <li>
             <strong className="text-ink">Company, job listings and talent pools:</strong> until

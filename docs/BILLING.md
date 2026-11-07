@@ -242,7 +242,5 @@ cancellation in the portal, and the webhook against a deployed preview.
 - Pro "Skill Passport customization" is listed as coming soon.
 - Moving from founding Pro to another plan keeps the Stripe coupon; decide
   whether plan changes should drop it before Career+ opens.
-- The privacy policy should mention waitlist entries and monthly usage records
-  (after the pending legal-pages update merges, to avoid a conflict).
 - The "detailed PDF report" is a print-ready page saved through the browser's
   print dialog, not a generated PDF file.
