@@ -8,7 +8,7 @@ import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
 import CriteriaList from '@/components/Assessments/CriteriaList'
-import { ApiError, assessmentsApi, type ResultView } from '@/lib/api/assessments'
+import { ApiError, assessmentsApi, type ResultPage } from '@/lib/api/assessments'
 
 const HEADLINES: Record<string, { title: string; description: string }> = {
   PASSED: {
@@ -40,7 +40,7 @@ const formatDate = (iso: string) =>
 
 export default function ResultPage() {
   const id = String(useParams().id ?? '')
-  const [result, setResult] = useState<ResultView | null>(null)
+  const [result, setResult] = useState<ResultPage | null>(null)
   const [error, setError] = useState<{ message: string; status?: number } | null>(null)
   const [appealOpen, setAppealOpen] = useState(false)
   const [reason, setReason] = useState('')
@@ -208,6 +208,25 @@ export default function ResultPage() {
             <div className="mt-4">
               <CriteriaList criteria={result.criteria} pendingLabel="Waiting for a reviewer" />
             </div>
+            {result.detailLocked && (
+              <div className="mt-6 flex flex-col gap-3 rounded-lg bg-raised p-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm leading-relaxed text-ink-muted">
+                  Pro shows the reason behind each score and the lines of your work it was based on.
+                  Your scores and your credential are the same on every plan.
+                </p>
+                <Link href="/pricing" className="button-base button-secondary shrink-0 px-5">
+                  See Pro
+                </Link>
+              </div>
+            )}
+            {result.reportAvailable && result.completedAt && (
+              <p className="mt-6 text-sm">
+                <Link href={`/assessments/report/${result.id}`} className="metalab-link">
+                  Open the detailed report
+                </Link>{' '}
+                <span className="text-ink-faint">(print it or save it as a PDF)</span>
+              </p>
+            )}
           </section>
         )}
 

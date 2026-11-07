@@ -18,10 +18,9 @@ import { getSessionUserId, clearSessionCookie } from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { dbErrorResponse } from '@/lib/db-error'
 import { storageService } from '@/lib/storage/upload'
+import { isLiveStatus } from '@/lib/billing/status'
 
 export const dynamic = 'force-dynamic'
-
-const LIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due']
 
 export async function DELETE(request: Request) {
   try {
@@ -47,10 +46,8 @@ export async function DELETE(request: Request) {
       where: { userId },
       select: { stripeSubscriptionId: true, status: true },
     })
-    if (
-      subscription?.stripeSubscriptionId &&
-      LIVE_SUBSCRIPTION_STATUSES.includes(subscription.status)
-    ) {
+    // Any subscription that could still bill is cancelled first, so a deleted user is never charged.
+    if (subscription?.stripeSubscriptionId && isLiveStatus(subscription.status)) {
       try {
         const { stripe } = await import('@/lib/integrations/stripe')
         await stripe.subscriptions.cancel(subscription.stripeSubscriptionId)

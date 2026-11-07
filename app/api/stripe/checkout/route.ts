@@ -1,20 +1,35 @@
+/**
+ * POST /api/stripe/checkout
+ * Body: { planId: 'pro' | 'career_plus', promotion?: boolean }
+ *
+ * Starts Stripe Checkout for an individual plan. The price comes from the
+ * server's catalog, never from the request, and nothing is charged here:
+ * the visitor confirms and pays on Stripe's page.
+ */
+
 import { NextResponse } from 'next/server'
-import * as Sentry from '@sentry/nextjs'
 import { z } from 'zod'
-import { getSessionUserId } from '@/lib/auth/session'
-import { stripeService, SubscriptionPlan } from '@/lib/integrations/stripe'
+import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
+import { stripeService } from '@/lib/integrations/stripe'
+import { appBaseUrl, billingErrorResponse } from '@/lib/billing/http'
+import { normalizePlan } from '@/lib/plans'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
 export const dynamic = 'force-dynamic'
 
 const bodySchema = z.object({
-  planId: z
-    .enum(['pro', 'enterprise', 'professional'])
-    .transform((v) => (v === 'professional' ? 'pro' : v)),
+  planId: z.enum(['pro', 'career_plus', 'professional']),
+  promotion: z.boolean().optional(),
 })
 
 export async function POST(request: Request) {
   try {
+    if (await isGuestRequest()) {
+      return NextResponse.json(
+        { error: 'Create an account to subscribe.', code: 'guest' },
+        { status: 401 }
+      )
+    }
     const userId = await getSessionUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -30,41 +45,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const body = await request.json()
-    const { planId } = bodySchema.parse(body)
-
-    const requestOrigin = new URL(request.url).origin
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || requestOrigin
-    const url = await stripeService.createCheckoutSession(
+    const body = bodySchema.parse(await request.json().catch(() => ({})))
+    const { url, promotionApplied } = await stripeService.createCheckoutSession({
       userId,
-      planId as SubscriptionPlan,
-      `${baseUrl}/settings?billing=success`,
-      `${baseUrl}/pricing?billing=cancelled`
-    )
-
-    if (!url) {
-      Sentry.logger.error('Stripe checkout session URL missing', {
-        route: 'api/stripe/checkout',
-        gateway: 'stripe',
-        planId,
-      })
-      return NextResponse.json({ error: 'Unable to create checkout session' }, { status: 500 })
-    }
-
-    return NextResponse.json({ url })
-  } catch (e) {
-    const message = e instanceof Error ? e.message : 'Unknown error'
-    Sentry.logger.error('Stripe checkout failed', {
-      route: 'api/stripe/checkout',
-      gateway: 'stripe',
-      errorMessage: message,
+      plan: normalizePlan(body.planId),
+      usePromotion: body.promotion === true,
+      baseUrl: appBaseUrl(request),
     })
-    return NextResponse.json(
-      {
-        error: 'Checkout failed',
-        message,
-      },
-      { status: 400 }
-    )
+    return NextResponse.json({ url, promotionApplied })
+  } catch (e) {
+    return billingErrorResponse('api/stripe/checkout', e)
   }
 }

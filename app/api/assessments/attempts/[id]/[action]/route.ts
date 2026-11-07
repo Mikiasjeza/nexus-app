@@ -21,6 +21,13 @@ import {
   requireUser,
 } from '@/lib/assessments/http'
 import { STAGES, type Stage } from '@/lib/assessments/types'
+import { prisma } from '@/lib/db'
+import { hasEntitlement } from '@/lib/plans'
+import {
+  canAccessAdvancedFeedback,
+  canExportDetailedReport,
+  upgradeRequiredBody,
+} from '@/lib/billing/entitlements'
 
 export const dynamic = 'force-dynamic'
 // Submitting the last step grades the attempt: sandboxed runs plus one AI call.
@@ -93,12 +100,26 @@ export async function POST(request: Request, { params }: Params) {
   })
 }
 
-/** The result page's data: scores, feedback, credential and appeals. */
+/**
+ * 'result': the result page's data. Everyone sees scores and summary
+ * feedback; the reasons and evidence behind each score depend on the plan.
+ * 'report': the full printable report, a paid feature.
+ */
 export async function GET(_request: Request, { params }: Params) {
   return handle('Attempt result', async () => {
     const userId = await requireUser()
     const { id, action } = await params
-    if (action !== 'result') throw new AssessmentError('Not found', 404)
+    if (action !== 'result' && action !== 'report') throw new AssessmentError('Not found', 404)
+
+    const access =
+      action === 'report'
+        ? await canExportDetailedReport(userId)
+        : await canAccessAdvancedFeedback(userId)
+    if (action === 'report' && !access.allowed) {
+      const { error, ...details } = upgradeRequiredBody(access)
+      throw new AssessmentError(error, 402, details)
+    }
+
     const deps = assessmentDeps()
     const attempt = await settleIfExpired(deps, await ownedAttempt(deps, id, userId))
     const [evaluation, credential, appeals] = await Promise.all([
@@ -106,6 +127,22 @@ export async function GET(_request: Request, { params }: Params) {
       deps.store.credentialForAttempt(attempt.id),
       deps.store.listAppeals({ attemptId: attempt.id }),
     ])
-    return NextResponse.json(resultView(attempt, evaluation, credential, appeals, new Date()))
+    const now = new Date()
+    const view = resultView(attempt, evaluation, credential, appeals, now, {
+      detail: access.allowed ? 'full' : 'basic',
+    })
+    if (action === 'result') {
+      return NextResponse.json({
+        ...view,
+        plan: access.plan,
+        reportAvailable: hasEntitlement(access.plan, 'detailed_reports'),
+      })
+    }
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+    return NextResponse.json({
+      ...view,
+      candidateName: user?.name ?? '',
+      generatedAt: now.toISOString(),
+    })
   })
 }

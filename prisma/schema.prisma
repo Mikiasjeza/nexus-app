@@ -39,6 +39,9 @@ model User {
   AssessmentAttempt AssessmentAttempt[]
   Credential        Credential[]
   AssessmentAppeal  AssessmentAppeal[]
+  usagePeriods      UsagePeriod[]
+  promotions        PromotionRedemption[]
+  waitlistEntries   WaitlistEntry[]
 
   @@index([email])
   @@index([shareableId])
@@ -158,23 +161,128 @@ model Activity {
   @@index([type])
 }
 
+/// A person's or an organization's plan. Exactly one of userId and companyId is set
+/// (a CHECK constraint in the migration enforces it). Stripe is the source of truth;
+/// webhooks and checkout confirmation copy its state here (lib/billing/sync.ts).
 model Subscription {
   id                   String    @id @default(cuid())
-  userId               String    @unique
+  userId               String?   @unique
+  companyId            String?   @unique
   stripeCustomerId     String?   @unique
   stripeSubscriptionId String?   @unique
-  plan                 String // 'free' | 'pro' | 'enterprise'
-  status               String // 'active' | 'canceled' | 'past_due' | 'trialing'
+  stripePriceId        String?
+  plan                 String // 'free' | 'pro' | 'career_plus' | 'business'
+  status               String // Stripe's status: 'active' | 'trialing' | 'past_due' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'canceled' | 'paused'
+  currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean   @default(false)
+  canceledAt           DateTime?
+  promotionId          String? // promotion whose price applies to this subscription
+  discountEndsAt       DateTime? // when the promotional price ends
+  firstPaidAt          DateTime? // first time this account held a paid plan
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([stripeCustomerId])
   @@index([status])
+}
+
+/// One row per account per calendar month (UTC): the allowance that applied and what was used.
+model UsagePeriod {
+  id             String   @id @default(cuid())
+  userId         String?
+  companyId      String?
+  periodStart    DateTime // first day of the month, 00:00 UTC
+  periodEnd      DateTime // first day of the next month
+  plan           String // plan whose limit applied when this row was last updated
+  formalLimit    Int
+  formalStarted  Int      @default(0) // formal assessments started (never decreases)
+  formalUsed     Int      @default(0) // counted against the allowance (system failures are given back)
+  practiceRounds Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user    User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  events  UsageEvent[]
+
+  @@unique([userId, periodStart])
+  @@unique([companyId, periodStart])
+  @@index([periodStart])
+}
+
+/// Allowance ledger: one row per assessment attempt, so a retried start never counts twice.
+model UsageEvent {
+  id            String    @id @default(cuid())
+  usagePeriodId String
+  userId        String?
+  companyId     String?
+  kind          String // 'formal_assessment' | 'sponsored_assessment'
+  attemptId     String    @unique
+  status        String    @default("consumed") // 'consumed' | 'released'
+  reason        String? // why it was given back
+  createdAt     DateTime  @default(now())
+  releasedAt    DateTime?
+
+  usagePeriod UsagePeriod @relation(fields: [usagePeriodId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+/// Early-adopter pricing, controlled by admins. Eligibility is decided on the server at checkout.
+model Promotion {
+  id             String    @id @default(cuid())
+  code           String    @unique // e.g. 'founding-pro'
+  name           String
+  planId         String // the plan it discounts
+  priceCents     Int // promotional monthly price
+  durationMonths Int // months the promotional price lasts
+  maxRedemptions Int? // null = no cap
+  startsAt       DateTime?
+  endsAt         DateTime? // admin-controlled end date; null = no end date
+  active         Boolean   @default(false)
+  stripeCouponId String? // the Stripe coupon that applies it, once created
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  redemptions PromotionRedemption[]
+}
+
+/// One per promotion per person, so a promotion can't be applied twice.
+model PromotionRedemption {
+  id                   String    @id @default(cuid())
+  promotionId          String
+  userId               String
+  status               String    @default("pending") // 'pending' | 'redeemed' | 'expired'
+  checkoutSessionId    String?   @unique
+  stripeSubscriptionId String?
+  expiresAt            DateTime? // a pending reservation lapses with its checkout session
+  createdAt            DateTime  @default(now())
+  redeemedAt           DateTime?
+
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([promotionId, userId])
+  @@index([promotionId, status])
+}
+
+/// People who asked to hear when a plan that isn't on sale yet opens.
+model WaitlistEntry {
+  id          String   @id @default(cuid())
+  plan        String // 'career_plus' | 'business'
+  userId      String
+  companyName String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([plan, userId])
+  @@index([plan])
 }
 
 model StripeWebhookEvent {
@@ -204,9 +312,11 @@ model Company {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members     CompanyMember[]
-  jobListings JobListing[]
-  talentPools TalentPool[]
+  members       CompanyMember[]
+  jobListings   JobListing[]
+  talentPools   TalentPool[]
+  subscriptions Subscription[]
+  usagePeriods  UsagePeriod[]
 
   @@index([slug])
 }

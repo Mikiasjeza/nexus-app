@@ -582,6 +582,44 @@
     animation: page-enter 160ms var(--ease-out);
   }
 
+  /* Pricing cards rise in one after another; --rise-index sets the stagger. */
+  @keyframes plan-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+  .plan-rise {
+    animation: plan-rise 360ms var(--ease-out) both;
+    animation-delay: calc(var(--rise-index, 0) * 60ms);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .plan-rise {
+      animation: none;
+    }
+  }
+
+  /* Printable pages (the assessment report): dark ink on white paper, no controls. */
+  @media print {
+    body:has(.print-report) {
+      background: #fff !important;
+    }
+    .print-report,
+    .print-report * {
+      color: #1a1a1a !important;
+      background: transparent !important;
+      border-color: #d4d4d4 !important;
+    }
+    .no-print,
+    body:has(.print-report) header,
+    body:has(.print-report) footer {
+      display: none !important;
+    }
+    body:has(.print-report) main {
+      padding-top: 0 !important;
+    }
+  }
+
   /* Decorative loops from the old look are switched off. */
   .cursor-mesh-slow-spin,
   .ai-signal-orbit,

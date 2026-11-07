@@ -14,8 +14,13 @@ import { usesExternalRunner } from './engine'
 import { AssessmentError, gradeWithAI, type Deps } from './service'
 import { ConflictError, type AttemptRecord } from './store'
 import { TransitionError } from './state'
+import { prismaAllowance } from '@/lib/billing/usage'
 
-export const assessmentDeps = (): Deps => ({ store: prismaAssessmentStore, grade: gradeWithAI })
+export const assessmentDeps = (): Deps => ({
+  store: prismaAssessmentStore,
+  grade: gradeWithAI,
+  allowance: prismaAllowance,
+})
 
 export const GUEST_MESSAGE =
   'Sign in to take an assessment for a credential. Practice rounds work without an account.'
@@ -96,7 +101,7 @@ export async function handle(label: string, fn: () => Promise<Response>): Promis
     return await fn()
   } catch (error) {
     if (error instanceof AssessmentError) {
-      return NextResponse.json({ error: error.message }, { status: error.status })
+      return NextResponse.json({ ...error.details, error: error.message }, { status: error.status })
     }
     if (error instanceof ConflictError || error instanceof TransitionError) {
       return NextResponse.json({ error: error.message }, { status: 409 })

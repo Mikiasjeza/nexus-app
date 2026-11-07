@@ -64,7 +64,6 @@ export const env = {
     secretKey: process.env.STRIPE_SECRET_KEY || '',
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     proPriceId: process.env.STRIPE_PRO_PRICE_ID || '',
-    enterprisePriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || '',
   },
   ai: {
     provider: process.env.AI_PROVIDER || 'gemini',
@@ -124,9 +123,6 @@ export function getLaunchReadinessIssues(): string[] {
   if (!process.env.STRIPE_PRO_PRICE_ID) {
     issues.push('STRIPE_PRO_PRICE_ID is missing')
   }
-  if (!process.env.STRIPE_ENTERPRISE_PRICE_ID) {
-    issues.push('STRIPE_ENTERPRISE_PRICE_ID is missing')
-  }
 
   return issues
 }
@@ -140,8 +136,6 @@ export function assertProductionEnv(): void {
 
 export function assertStripeEnv(): void {
   getRequired('STRIPE_SECRET_KEY')
-  getRequired('STRIPE_PRO_PRICE_ID')
-  getRequired('STRIPE_ENTERPRISE_PRICE_ID')
 }
 
 export function assertStripeWebhookEnv(): void {

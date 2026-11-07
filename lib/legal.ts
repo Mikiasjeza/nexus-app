@@ -13,7 +13,7 @@ export const LEGAL = {
   LEGAL_ENTITY: 'Mikias Jeza', // the owner, until a company is registered
   POSTAL_ADDRESS: '', // shown on legal pages when set
   GOVERNING_LAW: 'the State of Delaware, United States',
-  effectiveDate: 'November 3, 2026',
+  effectiveDate: 'November 7, 2026',
   contact: {
     privacy: 'mikiasjeza@gmail.com',
     legal: 'mikiasjeza@gmail.com',
