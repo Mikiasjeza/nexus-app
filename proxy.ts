@@ -34,6 +34,8 @@ const PUBLIC_PATHS = [
   '/api/guest-mode',
   '/api/auth/', // Login, register, etc. handle own auth
   '/api/stripe/webhook', // Stripe webhooks (verified by signature)
+  '/api/billing/plans', // Pricing page data; signed-in details only with a session
+  '/api/cron/', // Vercel Cron, authorized by CRON_SECRET in the route
   '/api/share/', // Public share API
   '/api/jobs', // Public job listings for marketplace
   '/api/company/', // Public company profiles
@@ -43,7 +45,7 @@ const PUBLIC_PATHS = [
 const AUTH_ROUTES = ['/auth/login', '/auth/register']
 
 /** Inside a public prefix but still for signed-in people only. */
-const PROTECTED_PATHS = ['/assessments/attempt/', '/assessments/result/']
+const PROTECTED_PATHS = ['/assessments/attempt/', '/assessments/result/', '/assessments/report/']
 
 function isPublicPath(pathname: string): boolean {
   if (pathname === '/') return true
