@@ -3,20 +3,21 @@
  * third-party disclosure list. Update this file (not the pages) when a
  * vendor, contact address, or policy date changes.
  *
- * TODO before launch: replace LEGAL_ENTITY, POSTAL_ADDRESS and GOVERNING_LAW
- * with your registered company details, and have counsel review the policies.
+ * TODO: switch LEGAL_ENTITY to the company name once one is registered, add
+ * POSTAL_ADDRESS when there is one to publish, and have counsel review the
+ * policies.
  */
 
 export const LEGAL = {
   productName: 'Nexus',
-  LEGAL_ENTITY: 'Nexus', // e.g. "Nexus Labs, Inc."
+  LEGAL_ENTITY: 'Mikias Jeza', // the owner, until a company is registered
   POSTAL_ADDRESS: '', // shown on legal pages when set
   GOVERNING_LAW: 'the State of Delaware, United States',
-  effectiveDate: 'October 6, 2026',
+  effectiveDate: 'November 3, 2026',
   contact: {
-    privacy: 'privacy@nexus.ai',
-    legal: 'legal@nexus.ai',
-    support: 'support@nexus.ai',
+    privacy: 'mikiasjeza@gmail.com',
+    legal: 'mikiasjeza@gmail.com',
+    support: 'mikiasjeza@gmail.com',
   },
 } as const
 
@@ -94,16 +95,23 @@ export const SUBPROCESSORS: Subprocessor[] = [
     policyUrl: 'https://vercel.com/legal/privacy-policy',
   },
   {
-    name: 'Database host (PostgreSQL)',
-    purpose: 'Stores your account, skills and evidence records',
+    name: 'Neon (PostgreSQL)',
+    purpose: 'Database hosting: stores your account, skills, evidence and assessment records',
     data: 'All account data listed in this policy',
     when: 'While your account exists',
-    policyUrl: '',
+    policyUrl: 'https://neon.com/privacy-policy',
+  },
+  {
+    name: 'Groq',
+    purpose: 'AI verification, assessment grading, career chat and job matching',
+    data: 'Evidence and assessment work you submit, your skill names/levels, chat messages you type and public job listings — never your name or email',
+    when: 'Only when you use an AI feature or take an assessment',
+    policyUrl: 'https://console.groq.com/docs/your-data',
   },
   {
     name: 'Google (Gemini API)',
-    purpose: 'AI verification, career chat and job matching',
-    data: 'Evidence you submit, your skill names/levels, chat messages you type and public job listings — never your name or email',
+    purpose: 'Alternative AI provider for the same features (we use one provider at a time)',
+    data: 'Same as above',
     when: 'Only when you use an AI feature',
     policyUrl: 'https://ai.google.dev/gemini-api/terms',
   },

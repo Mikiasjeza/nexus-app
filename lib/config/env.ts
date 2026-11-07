@@ -1,3 +1,5 @@
+import { LEGAL } from '@/lib/legal'
+
 type EnvMode = 'development' | 'test' | 'production'
 
 const mode = (process.env.NODE_ENV || 'development') as EnvMode
@@ -85,7 +87,7 @@ export const env = {
 }
 
 export function getSupportInbox(): string {
-  return (process.env.CONTACT_EMAIL || process.env.EMAIL_FROM || 'support@nexus.ai').trim()
+  return (process.env.CONTACT_EMAIL || LEGAL.contact.support).trim()
 }
 
 export function getLaunchReadinessIssues(): string[] {
