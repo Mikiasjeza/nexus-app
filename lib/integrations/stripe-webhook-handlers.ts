@@ -35,9 +35,23 @@ export async function handleSubscriptionChanged(subscription: Stripe.Subscriptio
   await syncStripeSubscription(subscription.id)
 }
 
+/**
+ * The subscription an invoice belongs to. Webhook endpoints on Stripe API
+ * versions from 2025-03-31 send it under parent.subscription_details instead
+ * of at the top level, so both places are read.
+ */
+export function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const parent = (
+    invoice as unknown as {
+      parent?: { subscription_details?: { subscription?: string | { id: string } | null } | null }
+    }
+  ).parent
+  return idOf(invoice.subscription) ?? idOf(parent?.subscription_details?.subscription)
+}
+
 /** Paid invoices move the billing period on; Stripe also says so in subscription events. */
 export async function handleInvoiceEvent(invoice: Stripe.Invoice): Promise<void> {
-  const subscriptionId = idOf(invoice.subscription)
+  const subscriptionId = invoiceSubscriptionId(invoice)
   if (subscriptionId) await syncStripeSubscription(subscriptionId)
 }
 
@@ -47,7 +61,7 @@ export async function handleInvoiceEvent(invoice: Stripe.Invoice): Promise<void>
  * and the billing page asks the subscriber to update their card.
  */
 export async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-  const subscriptionId = idOf(invoice.subscription)
+  const subscriptionId = invoiceSubscriptionId(invoice)
   if (!subscriptionId) return
   Sentry.logger.warn('Stripe invoice payment failed', {
     subscriptionId,
