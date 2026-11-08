@@ -42,6 +42,7 @@ import {
   parseNumber,
 } from '@/lib/assessments/challenges/text'
 import { runSqlBatch } from '@/lib/assessments/runners/sqlite'
+import { setupScript } from '@/lib/assessments/challenges/sql'
 import { sameRows } from '@/lib/assessments/compare'
 import { practiceRunFor } from '@/lib/assessments/service'
 import type { StageWork } from '@/lib/assessments/types'
@@ -184,7 +185,7 @@ describe('customer retention (SQL)', () => {
     }
     for (const seed of SEEDS.slice(0, 12)) {
       for (const variant of ['visible', 'changed'] as const) {
-        const setup = challenge.dataset(seed, variant)
+        const setup = setupScript(challenge, seed, variant)
         const results = await runSqlBatch(setup, [
           ...challenge.tasks.map((t) => ({ id: `ref:${t.id}`, query: t.reference })),
           ...Object.entries(careless).map(([name, c]) => ({ id: name, query: c.query })),

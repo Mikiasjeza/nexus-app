@@ -1,12 +1,12 @@
 /**
- * Code execution through Judge0, an open-source sandbox built for untrusted
- * code: each run gets an isolated box with CPU, memory, process and network
- * limits, on a separate server from the app.
+ * Code execution through Judge0's API, answered by the Nexus runner
+ * (infra/runner) or Judge0 itself: each run gets an isolated box with CPU,
+ * memory, process and network limits, on a separate server from the app.
  *
- * Python always runs here. JavaScript and TypeScript run here too whenever
- * the server offers Node.js 18 or newer (set JUDGE0_JAVASCRIPT=off to keep
- * them in the in-process QuickJS sandbox instead). Language ids are read from
- * the server's /languages list, newest first, unless pinned with
+ * In production every candidate program runs here: Python and SQL (through
+ * Python's sqlite3) on the server's Python 3, JavaScript and TypeScript on
+ * its Node.js 18 or newer. Language ids are read from the server's
+ * /languages list, newest first, unless pinned with
  * JUDGE0_PYTHON_LANGUAGE_ID / JUDGE0_JAVASCRIPT_LANGUAGE_ID.
  *
  * Self-host Judge0 CE (infra/judge0) and set JUDGE0_URL and
@@ -16,6 +16,7 @@
  */
 
 import { asScript, type GuestCall, type GuestRun } from './quickjs'
+import { localSandboxesAllowed } from './local'
 
 const MARKER = '<<NEXUS-RESULTS>>'
 const REQUEST_TIMEOUT_MS = 20_000
@@ -142,9 +143,9 @@ export function judge0Languages(refresh = false): Promise<DetectedLanguages> {
   return value
 }
 
-/** Node.js on Judge0 for JavaScript and TypeScript, or null to use QuickJS. */
+/** Node.js 18+ on the runner for JavaScript and TypeScript, or null when it has none. */
 export async function javascriptRuntime(): Promise<RuntimeInfo | null> {
-  if (!judge0Configured() || process.env.JUDGE0_JAVASCRIPT === 'off') return null
+  if (!judge0Configured()) return null
   return (await judge0Languages()).javascript
 }
 
@@ -278,26 +279,25 @@ function busyOrBroken(status: number): string {
   return 'The code runner is unavailable right now.'
 }
 
-export async function runInJudge0(options: {
-  language?: Judge0Language
-  code: string
-  functionName: string
-  calls: GuestCall[]
-}): Promise<GuestRun> {
-  const language = options.language ?? 'python'
-  const failed = (error: string, detail?: string): GuestRun => {
+/** What a finished program printed, or why the runner couldn't run it (never the code's fault). */
+export type ProgramOutcome =
+  | { stdout: string; stderr: string; status: { id: number; description: string } }
+  | { failure: string }
+
+/** Sends one whole program to the runner and waits for it to finish. */
+export async function submitProgram(
+  language: Judge0Language,
+  program: string,
+  memoryKb = 128_000
+): Promise<ProgramOutcome> {
+  const failed = (failure: string, detail?: string): ProgramOutcome => {
     if (detail) console.error(`Judge0 ${language} run failed: ${detail}`)
-    return { error, systemError: true, results: [], logs: '' }
+    return { failure }
   }
   if (!judge0Configured()) return failed('The code runner is not switched on yet.')
 
   const runtime = language === 'javascript' ? await javascriptRuntime() : await pythonRuntime()
   if (!runtime) return failed('The code runner is unavailable right now.', 'no matching language')
-
-  const program =
-    language === 'javascript'
-      ? javascriptProgram(options.code, options.functionName, options.calls)
-      : pythonProgram(options.code, options.functionName, options.calls)
 
   let submission: Submission
   try {
@@ -310,8 +310,7 @@ export async function runInJudge0(options: {
           language_id: runtime.id,
           cpu_time_limit: 3,
           wall_time_limit: 6,
-          // Node reserves more address space than CPython at start-up.
-          memory_limit: language === 'javascript' ? 256_000 : 128_000,
+          memory_limit: memoryKb,
           enable_network: false,
         }),
       }
@@ -338,16 +337,48 @@ export async function runInJudge0(options: {
   if (status.id === 13 || status.id === 14) {
     return failed('The code runner failed.', `${status.description}: ${decode(submission.message)}`)
   }
+  return {
+    stdout: decode(submission.stdout),
+    stderr: decode(submission.stderr) || decode(submission.compile_output),
+    status,
+  }
+}
 
-  const stdout = decode(submission.stdout)
-  const stderr = decode(submission.stderr) || decode(submission.compile_output)
-  const fallback =
-    stderr.trim().split('\n').slice(-3).join(' ') ||
-    (status.id === 3 ? 'The code produced no result.' : status.description)
-  return parseProgramOutput(stdout, status.id === 5 ? 'Time limit exceeded.' : fallback)
+/** The candidate's error for a program that ran but printed no result line. */
+export function failureText(outcome: Extract<ProgramOutcome, { stdout: string }>): string {
+  if (outcome.status.id === 5) return 'Time limit exceeded.'
+  return (
+    outcome.stderr.trim().split('\n').slice(-3).join(' ') ||
+    (outcome.status.id === 3 ? 'The code produced no result.' : outcome.status.description)
+  )
+}
+
+export async function runInJudge0(options: {
+  language?: Judge0Language
+  code: string
+  functionName: string
+  calls: GuestCall[]
+}): Promise<GuestRun> {
+  const language = options.language ?? 'python'
+  const program =
+    language === 'javascript'
+      ? javascriptProgram(options.code, options.functionName, options.calls)
+      : pythonProgram(options.code, options.functionName, options.calls)
+  // Node reserves more address space than CPython at start-up.
+  const outcome = await submitProgram(
+    language,
+    program,
+    language === 'javascript' ? 256_000 : 128_000
+  )
+  if ('failure' in outcome)
+    return { error: outcome.failure, systemError: true, results: [], logs: '' }
+  return parseProgramOutput(outcome.stdout, failureText(outcome))
 }
 
 // ─── Health ───────────────────────────────────────────────────────────────
+
+/** Where a language runs: the code runner, the local sandboxes (development only), or nowhere yet. */
+export type RunsOn = 'runner' | 'local' | 'unavailable'
 
 export interface Judge0Health {
   configured: boolean
@@ -356,11 +387,14 @@ export interface Judge0Health {
   version: string | null
   python: RuntimeInfo | null
   javascript: RuntimeInfo | null
-  javascriptRunsOn: 'judge0' | 'quickjs'
+  javascriptRunsOn: RunsOn
+  sqlRunsOn: RunsOn
   error: string | null
 }
 
-/** For the reviewer console: is the runner up, and which languages will be used. */
+const fallbackPlace = (): RunsOn => (localSandboxesAllowed() ? 'local' : 'unavailable')
+
+/** For the reviewer console: is the runner up, and where each language will run. */
 export async function judge0Health(): Promise<Judge0Health> {
   if (!judge0Configured()) {
     return {
@@ -370,7 +404,8 @@ export async function judge0Health(): Promise<Judge0Health> {
       version: null,
       python: null,
       javascript: null,
-      javascriptRunsOn: 'quickjs',
+      javascriptRunsOn: fallbackPlace(),
+      sqlRunsOn: fallbackPlace(),
       error: null,
     }
   }
@@ -388,7 +423,6 @@ export async function judge0Health(): Promise<Judge0Health> {
     error = e instanceof Error ? e.message : 'unreachable'
   }
   const languages = await judge0Languages(true)
-  const off = process.env.JUDGE0_JAVASCRIPT === 'off'
   return {
     configured: true,
     provider,
@@ -396,7 +430,9 @@ export async function judge0Health(): Promise<Judge0Health> {
     version,
     python: languages.python,
     javascript: languages.javascript,
-    javascriptRunsOn: languages.javascript && !off ? 'judge0' : 'quickjs',
+    javascriptRunsOn: languages.javascript ? 'runner' : fallbackPlace(),
+    // SQL runs through Python's sqlite3 on the runner.
+    sqlRunsOn: languages.python ? 'runner' : fallbackPlace(),
     error: error ?? languages.error ?? null,
   }
 }

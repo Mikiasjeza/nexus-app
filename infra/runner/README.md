@@ -60,8 +60,9 @@ You need: a computer with a browser. Nothing here costs money.
 13. Redeploy (Deployments → latest → Redeploy).
 14. Open `/admin/reviews` on your site (your email must be in
     `ADMIN_EMAILS`). The **Code runner** panel should say _Nexus runner 1.0.0
-    connected_ with Python 3.12 and Node.js 22, and Python opens for
-    candidates.
+    connected_ with Python 3.12 and Node.js 22, and Python, JavaScript,
+    TypeScript and SQL open for candidates. Until then they show as
+    "Opening soon": candidate code never runs on the app server itself.
 
 **If step 11 doesn't work after 20 minutes:** check that ports 80 and 443
 are open (step 9) and that DuckDNS shows the right IP (step 10). The server's

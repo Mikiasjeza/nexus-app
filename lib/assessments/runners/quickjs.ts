@@ -1,5 +1,7 @@
 /**
- * Runs candidate JavaScript inside QuickJS compiled to WebAssembly.
+ * Local development and tests only: runs JavaScript inside QuickJS compiled
+ * to WebAssembly. In production JavaScript and TypeScript run on the code
+ * runner, and this refuses to run.
  *
  * The guest has no access to Node: no process, require, filesystem, network
  * or timers. Memory, stack and CPU time are capped per run, and every test
@@ -14,6 +16,7 @@ import {
   type QuickJSSyncVariant,
   type QuickJSWASMModule,
 } from 'quickjs-emscripten'
+import { LOCAL_ONLY_MESSAGE, localSandboxesAllowed } from './local'
 
 const MEMORY_LIMIT = 64 * 1024 * 1024
 const STACK_LIMIT = 1024 * 1024
@@ -85,6 +88,9 @@ export async function runInQuickJS(options: {
   timeoutMsPerCall?: number
 }): Promise<GuestRun> {
   const { code, functionName, calls, timeoutMsPerCall = 1000 } = options
+  if (!localSandboxesAllowed()) {
+    return { error: LOCAL_ONLY_MESSAGE, systemError: true, results: [], logs: '' }
+  }
   let QuickJS: QuickJSWASMModule
   try {
     QuickJS = await quickjs()

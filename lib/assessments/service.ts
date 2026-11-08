@@ -175,7 +175,7 @@ export async function createAttempt(
   input: { userId: string; slug: string; mode: AssessmentMode }
 ): Promise<AttemptRecord> {
   const def = definition(input.slug)
-  if (!isAvailable(def)) throw new AssessmentError('This assessment is not open yet.', 409)
+  if (!(await isAvailable(def))) throw new AssessmentError('This assessment is not open yet.', 409)
   if (!def.modes.includes(input.mode)) throw new AssessmentError('That mode is not offered here.')
   const attempts = await deps.store.listAttempts(input.userId, def.slug)
   const open = attempts.find((a) => ACTIVE_STATUSES.includes(a.status))
@@ -930,7 +930,7 @@ export async function gradePractice(
 ) {
   const ctx = practiceCtx(slug, seed, allChallenges)
   const { def } = ctx
-  if (!isAvailable(def)) throw new AssessmentError('This assessment is not open yet.', 409)
+  if (!(await isAvailable(def))) throw new AssessmentError('This assessment is not open yet.', 409)
   const work = Object.fromEntries(
     (['main', 'followup', 'explain'] as Stage[]).map((s) => [s, cleanWork(ctx, s, raw[s] ?? {})])
   ) as Record<Stage, StageWork>
@@ -968,7 +968,8 @@ export async function practiceBrief(
   { allChallenges }: PracticeOptions
 ) {
   const ctx = practiceCtx(slug, seed, allChallenges)
-  if (!isAvailable(ctx.def)) throw new AssessmentError('This assessment is not open yet.', 409)
+  if (!(await isAvailable(ctx.def)))
+    throw new AssessmentError('This assessment is not open yet.', 409)
   const order: Stage[] = ['main', 'followup', 'explain']
   const prevStage = order[order.indexOf(stage) - 1]
   return buildBrief(ctx, stage, prevStage ? cleanWork(ctx, prevStage, previous) : undefined)
@@ -982,7 +983,8 @@ export async function practiceRunFor(
   { allChallenges }: PracticeOptions
 ) {
   const ctx = practiceCtx(slug, seed, allChallenges)
-  if (!isAvailable(ctx.def)) throw new AssessmentError('This assessment is not open yet.', 409)
+  if (!(await isAvailable(ctx.def)))
+    throw new AssessmentError('This assessment is not open yet.', 409)
   if (stage === 'explain') throw new AssessmentError('Nothing to run in this step.')
   if (!canRun(ctx.def)) throw new AssessmentError('Nothing to run in this task.')
   return practiceRun(ctx, stage, cleanWork(ctx, stage, raw))

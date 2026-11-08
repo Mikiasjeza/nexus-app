@@ -10,14 +10,19 @@ import type { Rubric, SqlTable, SqlTask, Stage } from '../types'
 
 export type SqlTaskDef = SqlTask & { reference: string; stage: 'main' | 'followup' }
 
+export type SqlCell = string | number | null
+
+/** A dataset's rows by table, in insertion order, matching the challenge's columns. */
+export type SqlRows = Record<string, SqlCell[][]>
+
 export interface SqlChallenge {
   id: string
   version: number
   /** Short name shown in the workspace, e.g. "Sales cleanup". */
   title: string
   tables: SqlTable[]
-  /** The dataset as a setup script. `changed` is the newer export for the follow-up. */
-  dataset: (seed: number, variant: 'visible' | 'changed') => string
+  /** The dataset for a seed. `changed` is the newer export for the follow-up. */
+  rows: (seed: number, variant: 'visible' | 'changed') => SqlRows
   tasks: SqlTaskDef[]
   instructions: (stage: Stage) => string[]
   explainQuestions: string[]
@@ -31,6 +36,28 @@ export function tasksFor(challenge: SqlChallenge, stage: Stage): SqlTask[] {
 }
 
 export const sqlString = (value: string) => `'${value.replace(/'/g, "''")}'`
+
+const sqlValue = (cell: SqlCell) =>
+  cell === null ? 'NULL' : typeof cell === 'number' ? String(cell) : sqlString(cell)
+
+/** The dataset as a setup script: each table created, then filled. */
+export function setupScript(
+  challenge: SqlChallenge,
+  seed: number,
+  variant: 'visible' | 'changed'
+): string {
+  const rows = challenge.rows(seed, variant)
+  return challenge.tables
+    .map((table) => {
+      const columns = table.columns.map((c) => `${c.name} ${c.type}`).join(', ')
+      const create = `CREATE TABLE ${table.name} (${columns});`
+      const values = (rows[table.name] ?? []).map((row) => `(${row.map(sqlValue).join(', ')})`)
+      return values.length
+        ? `${create}\nINSERT INTO ${table.name} VALUES\n${values.join(',\n')};`
+        : create
+    })
+    .join('\n')
+}
 
 /** Shared by every SQL challenge. Initial weights; see docs/assessments.md. */
 export const SQL_RUBRIC: Rubric = {

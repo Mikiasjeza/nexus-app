@@ -19,6 +19,9 @@ type QueueRow = {
 }
 type Runtime = { id: number; name: string } | null
 
+/** The code runner, the local sandboxes (development only), or nowhere yet. */
+type RunsOn = 'runner' | 'local' | 'unavailable'
+
 type Queue = {
   runner: {
     configured: boolean
@@ -27,7 +30,8 @@ type Queue = {
     version: string | null
     python: Runtime
     javascript: Runtime
-    javascriptRunsOn: 'judge0' | 'quickjs'
+    javascriptRunsOn: RunsOn
+    sqlRunsOn: RunsOn
     error: string | null
     devPython: boolean
     usage: { today: number; limit: number }
@@ -501,7 +505,10 @@ function RunnerPanel({ runner }: { runner: Queue['runner'] }) {
   const status = !runner.configured
     ? runner.devPython
       ? { text: 'Local development: Python runs in Pyodide', tone: 'text-caution' }
-      : { text: 'No code runner is set up: Python is closed', tone: 'text-caution' }
+      : {
+          text: 'No code runner is set up: Python, JavaScript, TypeScript and SQL are closed',
+          tone: 'text-caution',
+        }
     : runner.reachable
       ? {
           text: `${runner.version ?? 'Code runner'} connected`,
@@ -517,7 +524,7 @@ function RunnerPanel({ runner }: { runner: Queue['runner'] }) {
         </h2>
         <span className={`text-sm ${status.tone}`}>{status.text}</span>
       </div>
-      <dl className="mt-5 grid gap-x-10 gap-y-4 text-sm sm:grid-cols-3">
+      <dl className="mt-5 grid gap-x-10 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <dt className="text-ink-faint">Python</dt>
           <dd className="mt-1 text-ink">
@@ -527,9 +534,21 @@ function RunnerPanel({ runner }: { runner: Queue['runner'] }) {
         <div>
           <dt className="text-ink-faint">JavaScript and TypeScript</dt>
           <dd className="mt-1 text-ink">
-            {runner.javascriptRunsOn === 'judge0'
+            {runner.javascriptRunsOn === 'runner'
               ? `${runner.javascript?.name} on the code runner`
-              : 'QuickJS sandbox in the app'}
+              : runner.javascriptRunsOn === 'local'
+                ? 'QuickJS (local development only)'
+                : 'Not available: needs the code runner'}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-ink-faint">SQL</dt>
+          <dd className="mt-1 text-ink">
+            {runner.sqlRunsOn === 'runner'
+              ? `SQLite on the code runner (${runner.python?.name})`
+              : runner.sqlRunsOn === 'local'
+                ? 'sql.js (local development only)'
+                : 'Not available: needs the code runner'}
           </dd>
         </div>
         <div>

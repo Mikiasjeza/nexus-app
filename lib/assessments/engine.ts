@@ -17,13 +17,15 @@ import type {
 } from './types'
 import { codeChallenge, sqlChallenge, writingChallenge } from './challenges'
 import type { CodeChallenge } from './challenges/code'
-import { tasksFor, type SqlChallenge, type SqlTaskDef } from './challenges/sql'
+import { setupScript, tasksFor, type SqlChallenge, type SqlTaskDef } from './challenges/sql'
 import { fieldIds, type WritingChallenge } from './challenges/writing'
 import { describeSheet, inBounds, isLocked, MAX_CELL_LENGTH } from '@/lib/sheets/sheet'
 import { runInQuickJS, stripTypes, type GuestCall, type GuestRun } from './runners/quickjs'
 import { javascriptRuntime, pythonRuntime, runInJudge0 } from './runners/judge0'
 import { DEV_PYTHON_RUNTIME, devPythonEnabled, runInPyodide } from './runners/pyodide-dev'
-import { runSqlBatch, type SqlResult } from './runners/sqlite'
+import type { SqlResult } from './runners/sqlite'
+import { runSql, sqlRunner } from './runners/sql-runner'
+import { localSandboxesAllowed } from './runners/local'
 import { BUDGET_MESSAGE, takeRunnerBudget, type RunnerPurpose } from './budget'
 import { sameRows, sameValue } from './compare'
 import { shareOf } from './grading'
@@ -117,12 +119,13 @@ function instructionsFor(ctx: Ctx, stage: Stage): string[] {
 
 // ─── Where code runs ──────────────────────────────────────────────────────
 
-export type RunnerKind = 'judge0-python' | 'judge0-javascript' | 'pyodide' | 'quickjs'
+export type RunnerKind = 'judge0-python' | 'judge0-javascript' | 'pyodide' | 'quickjs' | 'none'
 
 /**
- * Python runs on Judge0 (or Pyodide in local development). JavaScript and
- * TypeScript run on Judge0 when it offers Node.js 18+, keeping untrusted code
- * off the app server; otherwise in the QuickJS WebAssembly sandbox here.
+ * Candidate code runs on the code runner, a separate server: Python there
+ * (or Pyodide in local development), JavaScript and TypeScript on its
+ * Node.js 18+. The in-process QuickJS sandbox is a stand-in for local
+ * development and tests only; in production, with no runner, nothing runs.
  */
 export async function runnerFor(
   def: AssessmentDefinition
@@ -133,17 +136,21 @@ export async function runnerFor(
   }
   const node = await javascriptRuntime()
   if (node) return { kind: 'judge0-javascript', label: node.name }
-  return { kind: 'quickjs', label: 'JavaScript (QuickJS sandbox)' }
+  if (localSandboxesAllowed())
+    return { kind: 'quickjs', label: 'JavaScript (QuickJS, local development)' }
+  return { kind: 'none', label: 'The code runner is not set up yet.' }
 }
 
-/** Whether runs for this assessment go to the paid, rate-limited external runner. */
+/** Whether runs for this assessment go to the rate-limited external runner. */
 export async function usesExternalRunner(def: AssessmentDefinition): Promise<boolean> {
+  if (def.workspace === 'sql') return (await sqlRunner()).kind === 'runner'
   if (def.workspace !== 'code') return false
   return (await runnerFor(def)).kind.startsWith('judge0')
 }
 
 async function runtimeLabel(def: AssessmentDefinition): Promise<string> {
-  const { label } = await runnerFor(def)
+  const { kind, label } = await runnerFor(def)
+  if (kind === 'none') return label
   return def.language === 'typescript' ? `TypeScript, run as ${label}` : label
 }
 
@@ -163,6 +170,9 @@ async function execute(
     source = stripped.code!
   }
   const runner = await runnerFor(ctx.def)
+  // Never the candidate's fault: grading retries once the runner is set up.
+  if (runner.kind === 'none')
+    return { error: runner.label, systemError: true, results: [], logs: '' }
   if (runner.kind === 'quickjs') return runInQuickJS({ code: source, functionName, calls })
   if (runner.kind === 'pyodide') return runInPyodide({ code: source, functionName, calls })
   if (!(await takeRunnerBudget(purpose))) {
@@ -179,19 +189,16 @@ async function execute(
 
 // ─── Briefs ───────────────────────────────────────────────────────────────
 
-/** First rows of each table, for the schema panel. */
-async function sampleRows(
+/** First rows of each table, for the schema panel: read from the data, nothing runs. */
+function sampleRows(
   challenge: SqlChallenge,
-  setup: string
-): Promise<Record<string, unknown[][]>> {
-  const results = await runSqlBatch(
-    setup,
-    challenge.tables.map((t) => ({
-      id: t.name,
-      query: `SELECT * FROM ${t.name} LIMIT ${SAMPLE_ROWS}`,
-    }))
+  seed: number,
+  variant: 'visible' | 'changed'
+): Record<string, unknown[][]> {
+  const rows = challenge.rows(seed, variant)
+  return Object.fromEntries(
+    challenge.tables.map((t) => [t.name, (rows[t.name] ?? []).slice(0, SAMPLE_ROWS)])
   )
-  return Object.fromEntries(results.map((r) => [r.id, r.rows ?? []]))
 }
 
 /**
@@ -246,10 +253,9 @@ export async function buildBrief(
     brief.visibleTests = code.visibleTests(seed, stage)
   } else if (def.workspace === 'sql') {
     const sql = sqlOf(ctx)
-    const setup = sql.dataset(seed, stage === 'main' ? 'visible' : 'changed')
     brief.sql = {
       tables: sql.tables,
-      sample: await sampleRows(sql, setup),
+      sample: sampleRows(sql, seed, stage === 'main' ? 'visible' : 'changed'),
       tasks: tasksFor(sql, stage),
     }
     brief.starterQueries = stage === 'main' ? {} : (previous?.queries ?? {})
@@ -315,15 +321,18 @@ export async function practiceRun(
       },
     }
   }
-  const setup = sqlOf(ctx).dataset(ctx.seed, stage === 'main' ? 'visible' : 'changed')
+  const setup = setupScript(sqlOf(ctx), ctx.seed, stage === 'main' ? 'visible' : 'changed')
   const jobs = Object.entries(work.queries ?? {})
     .filter(([, query]) => query.trim())
     .map(([id, query]) => ({ id, query }))
-  const results = (await runSqlBatch(setup, jobs)).map((r) => ({
-    ...r,
-    rows: r.rows?.slice(0, RUN_ROWS),
-  }))
-  return { kind: 'sql', results, durationMs: Date.now() - started }
+  const run = await runSql([{ setup, jobs }], 'run')
+  const results: SqlResult[] =
+    'error' in run ? jobs.map((job) => ({ id: job.id, error: run.error })) : run.groups[0]
+  return {
+    kind: 'sql',
+    results: results.map((r) => ({ ...r, rows: r.rows?.slice(0, RUN_ROWS) })),
+    durationMs: Date.now() - started,
+  }
 }
 
 // ─── Deterministic grading ────────────────────────────────────────────────
@@ -417,33 +426,48 @@ const formatTable = (r: SqlResult | undefined) => {
 
 async function evaluateSql(ctx: Ctx, work: Submissions) {
   const challenge = sqlOf(ctx)
-  const visible = challenge.dataset(ctx.seed, 'visible')
-  const changed = challenge.dataset(ctx.seed, 'changed')
+  const visible = setupScript(challenge, ctx.seed, 'visible')
+  const changed = setupScript(challenge, ctx.seed, 'changed')
   const allTasks = challenge.tasks
   const mainTasks = allTasks.filter((t) => t.stage === 'main')
   const mainQueries = work.main?.queries ?? {}
   const followQueries = work.followup?.queries ?? {}
-
-  const refVisible = await runSqlBatch(
-    visible,
-    mainTasks.map((t) => ({ id: t.id, query: t.reference }))
-  )
-  const refChanged = await runSqlBatch(
-    changed,
-    allTasks.map((t) => ({ id: t.id, query: t.reference }))
-  )
   const result: DeterministicResult = { scores: {}, context: [], flags: [], extraWork: [] }
+
+  // The answer key and the candidate's queries run separately on the same
+  // engine, so nothing a candidate writes can disturb the answer key.
+  const [reference, candidate] = await Promise.all([
+    runSql(
+      [
+        { setup: visible, jobs: mainTasks.map((t) => ({ id: t.id, query: t.reference })) },
+        { setup: changed, jobs: allTasks.map((t) => ({ id: t.id, query: t.reference })) },
+      ],
+      'grade'
+    ),
+    runSql(
+      [
+        {
+          setup: visible,
+          jobs: mainTasks.map((t) => ({ id: t.id, query: mainQueries[t.id] ?? '' })),
+        },
+        {
+          setup: changed,
+          jobs: allTasks.map((t) => ({
+            id: t.id,
+            query: followQueries[t.id] ?? mainQueries[t.id] ?? '',
+          })),
+        },
+      ],
+      'grade'
+    ),
+  ])
+  if ('error' in reference) return { ...result, systemError: reference.error }
+  if ('error' in candidate) return { ...result, systemError: candidate.error }
+  const [refVisible, refChanged] = reference.groups
   if ([...refVisible, ...refChanged].some((r) => r.error)) {
     return { ...result, systemError: 'The SQL runner failed on the answer key.' }
   }
-  const candVisible = await runSqlBatch(
-    visible,
-    mainTasks.map((t) => ({ id: t.id, query: mainQueries[t.id] ?? '' }))
-  )
-  const candChanged = await runSqlBatch(
-    changed,
-    allTasks.map((t) => ({ id: t.id, query: followQueries[t.id] ?? mainQueries[t.id] ?? '' }))
-  )
+  const [candVisible, candChanged] = candidate.groups
 
   const grade = (cand: SqlResult[], ref: SqlResult[], tasks: SqlTaskDef[], label: string) => {
     const evidence: string[] = []

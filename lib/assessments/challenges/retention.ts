@@ -12,7 +12,7 @@
 
 import type { SqlTable, Stage } from '../types'
 import { createRng, deriveSeed } from '../random'
-import { sqlString, type SqlChallenge, type SqlTaskDef } from './sql'
+import type { SqlChallenge, SqlRows, SqlTaskDef } from './sql'
 
 const TABLES: SqlTable[] = [
   {
@@ -56,7 +56,7 @@ const day = (month: number, d: number) =>
   `2026-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 const monthOf = (date: string) => Number(date.slice(5, 7))
 
-function dataset(seed: number, variant: 'visible' | 'changed'): string {
+function rows(seed: number, variant: 'visible' | 'changed'): SqlRows {
   const rng = createRng(deriveSeed(seed, `retention:${variant}`))
   const customers: Customer[] = []
   const orders: Order[] = []
@@ -150,20 +150,11 @@ function dataset(seed: number, variant: 'visible' | 'changed'): string {
     .map((c) => numbered.filter((o) => o.customer === c.id && o.status === 'completed'))
     .find((done) => done.length === 1)
   const dupes = [...(oneTime ?? []), ...rng.shuffle(numbered).slice(0, rng.int(2, 4))]
-  const rows = rng.shuffle([...numbered, ...dupes])
-
-  const customerSql = customers
-    .map((c) => `(${c.id}, ${sqlString(c.signup)}, ${sqlString(c.channel)}, ${c.test ? 1 : 0})`)
-    .join(',\n')
-  const orderSql = rows
-    .map((o) => `(${o.id}, ${o.customer}, ${sqlString(o.date)}, ${sqlString(o.status)})`)
-    .join(',\n')
-  return `CREATE TABLE customers (customer_id INTEGER, signup_date TEXT, channel TEXT, is_test INTEGER);
-CREATE TABLE orders (order_id INTEGER, customer_id INTEGER, order_date TEXT, status TEXT);
-INSERT INTO customers VALUES
-${customerSql};
-INSERT INTO orders VALUES
-${orderSql};`
+  const exported = rng.shuffle([...numbered, ...dupes])
+  return {
+    customers: customers.map((c) => [c.id, c.signup, c.channel, c.test ? 1 : 0]),
+    orders: exported.map((o) => [o.id, o.customer, o.date, o.status]),
+  }
 }
 
 const TASKS: SqlTaskDef[] = [
@@ -254,7 +245,7 @@ export const CUSTOMER_RETENTION: SqlChallenge = {
   version: 1,
   title: 'Customer retention report',
   tables: TABLES,
-  dataset,
+  rows,
   tasks: TASKS,
   instructions,
   explainQuestions: [
