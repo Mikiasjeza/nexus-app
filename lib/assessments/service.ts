@@ -17,6 +17,7 @@ import {
 } from './catalog'
 import {
   buildBrief,
+  canRun,
   cleanWork,
   evaluateDeterministic,
   gradingInput,
@@ -25,7 +26,7 @@ import {
   type Ctx,
 } from './engine'
 import { gradeWithAI, type AiGrade, type GradingInput } from './ai-grader'
-import { CODE_CHALLENGES } from './challenges'
+import { challengeInfo } from './challenges'
 import {
   anchorShare,
   decide,
@@ -123,6 +124,7 @@ function hasContent(work: StageWork | undefined): boolean {
     work.code?.trim() ||
     work.text?.trim() ||
     Object.values(work.queries ?? {}).some((q) => q.trim()) ||
+    Object.values(work.fields ?? {}).some((f) => f.trim()) ||
     work.answers?.some((a) => a.trim())
   )
 }
@@ -263,7 +265,7 @@ export async function settleIfExpired(
     ? now.getTime() >= attempt.deadlineAt.getTime()
     : isPastDeadline(attempt.deadlineAt, now)
   if (!over) return attempt
-  const def = definition(attempt.slug)
+  const ctx = attemptCtx(attempt)
   if (!attempt.submissions.main && !hasContent(attempt.drafts.main)) {
     return deps.store.updateAttempt(attempt.id, 'IN_PROGRESS', {
       status: 'EXPIRED',
@@ -273,7 +275,7 @@ export async function settleIfExpired(
   const order: Stage[] = ['main', 'followup', 'explain']
   for (const stage of order.slice(order.indexOf(attempt.stage))) {
     if (attempt.submissions[stage]) continue
-    const work = cleanWork(def, stage, attempt.drafts[stage] ?? {})
+    const work = cleanWork(ctx, stage, attempt.drafts[stage] ?? {})
     await deps.store.saveSubmission(attempt.id, stage, work, contentHash(work))
   }
   await deps.store.addEvents(attempt.id, [
@@ -293,7 +295,7 @@ export async function saveDraft(
   raw: unknown
 ): Promise<AttemptRecord> {
   assertWorking(attempt, clock(deps), stage)
-  const work = cleanWork(definition(attempt.slug), stage, raw)
+  const work = cleanWork(attemptCtx(attempt), stage, raw)
   return deps.store.updateAttempt(attempt.id, 'IN_PROGRESS', {
     drafts: { ...attempt.drafts, [stage]: work },
   })
@@ -330,6 +332,7 @@ export async function runAttempt(deps: Deps, attempt: AttemptRecord, raw: unknow
   assertWorking(attempt, clock(deps))
   if (attempt.stage === 'explain') throw new AssessmentError('Nothing to run in this step.')
   const ctx = attemptCtx(attempt)
+  if (!canRun(ctx.def)) throw new AssessmentError('Nothing to run in this task.')
   const limit = (await usesExternalRunner(ctx.def)) ? MAX_EXTERNAL_RUNS : MAX_RUNS
   if (attempt.runCount >= limit) {
     throw new AssessmentError(
@@ -337,7 +340,7 @@ export async function runAttempt(deps: Deps, attempt: AttemptRecord, raw: unknow
       429
     )
   }
-  const work = cleanWork(ctx.def, attempt.stage, raw)
+  const work = cleanWork(ctx, attempt.stage, raw)
   await deps.store.updateAttempt(attempt.id, 'IN_PROGRESS', {
     runCount: attempt.runCount + 1,
     drafts: { ...attempt.drafts, [attempt.stage]: work },
@@ -352,8 +355,7 @@ export async function submitStage(
   raw: unknown
 ): Promise<AttemptRecord> {
   assertWorking(attempt, clock(deps), stage)
-  const def = definition(attempt.slug)
-  const work = cleanWork(def, stage, raw)
+  const work = cleanWork(attemptCtx(attempt), stage, raw)
   // A retry after a half-finished submit finds the stage already locked.
   if (!attempt.submissions[stage]) {
     await deps.store.saveSubmission(attempt.id, stage, work, contentHash(work))
@@ -869,7 +871,9 @@ export function resultView(
     slug: def.slug,
     skillName: def.skillName,
     title: def.title,
-    challengeTitle: CODE_CHALLENGES[attempt.challengeId]?.title ?? null,
+    // Named only where a skill draws from several challenges.
+    challengeTitle:
+      def.challengeIds.length > 1 ? (challengeInfo(attempt.challengeId)?.title ?? null) : null,
     level: def.level,
     mode: attempt.mode,
     status: attempt.status,
@@ -927,7 +931,7 @@ export async function gradePractice(
   const { def } = ctx
   if (!isAvailable(def)) throw new AssessmentError('This assessment is not open yet.', 409)
   const work = Object.fromEntries(
-    (['main', 'followup', 'explain'] as Stage[]).map((s) => [s, cleanWork(def, s, raw[s] ?? {})])
+    (['main', 'followup', 'explain'] as Stage[]).map((s) => [s, cleanWork(ctx, s, raw[s] ?? {})])
   ) as Record<Stage, StageWork>
   const deterministic = await evaluateDeterministic(ctx, work)
   if (deterministic.systemError) throw new AssessmentError(deterministic.systemError, 503)
@@ -966,7 +970,7 @@ export async function practiceBrief(
   if (!isAvailable(ctx.def)) throw new AssessmentError('This assessment is not open yet.', 409)
   const order: Stage[] = ['main', 'followup', 'explain']
   const prevStage = order[order.indexOf(stage) - 1]
-  return buildBrief(ctx, stage, prevStage ? cleanWork(ctx.def, prevStage, previous) : undefined)
+  return buildBrief(ctx, stage, prevStage ? cleanWork(ctx, prevStage, previous) : undefined)
 }
 
 export async function practiceRunFor(
@@ -979,7 +983,8 @@ export async function practiceRunFor(
   const ctx = practiceCtx(slug, seed, allChallenges)
   if (!isAvailable(ctx.def)) throw new AssessmentError('This assessment is not open yet.', 409)
   if (stage === 'explain') throw new AssessmentError('Nothing to run in this step.')
-  return practiceRun(ctx, stage, cleanWork(ctx.def, stage, raw))
+  if (!canRun(ctx.def)) throw new AssessmentError('Nothing to run in this task.')
+  return practiceRun(ctx, stage, cleanWork(ctx, stage, raw))
 }
 
 export const CATALOG = ASSESSMENTS

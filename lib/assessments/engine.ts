@@ -5,7 +5,7 @@
  * seed (its `Ctx`).
  */
 
-import { challengeVersion, type AssessmentDefinition } from './catalog'
+import type { AssessmentDefinition } from './catalog'
 import type {
   AssessmentMode,
   CodeLanguage,
@@ -15,24 +15,10 @@ import type {
   Stage,
   StageWork,
 } from './types'
-import { codeChallenge } from './challenges'
+import { codeChallenge, sqlChallenge, writingChallenge } from './challenges'
 import type { CodeChallenge } from './challenges/code'
-import {
-  SALES_EXPLAIN_QUESTIONS,
-  SALES_TABLES,
-  SALES_TASKS,
-  salesDataset,
-  salesInstructions,
-  salesTasksFor,
-} from './challenges/sales'
-import {
-  EMAIL_EXPLAIN_QUESTIONS,
-  EMAIL_WORD_RANGE,
-  emailChecks,
-  emailInstructions,
-  emailScenario,
-  formatDate,
-} from './challenges/client-email'
+import { tasksFor, type SqlChallenge, type SqlTaskDef } from './challenges/sql'
+import { fieldIds, type WritingChallenge } from './challenges/writing'
 import { runInQuickJS, stripTypes, type GuestCall, type GuestRun } from './runners/quickjs'
 import { javascriptRuntime, pythonRuntime, runInJudge0 } from './runners/judge0'
 import { DEV_PYTHON_RUNTIME, devPythonEnabled, runInPyodide } from './runners/pyodide-dev'
@@ -50,48 +36,67 @@ export interface Ctx {
 }
 
 /** Size limits for saved work, enforced on every save and submit. */
-export const WORK_LIMITS = { code: 50_000, query: 5_000, text: 10_000, answer: 4_000, answers: 5 }
+export const WORK_LIMITS = {
+  code: 50_000,
+  query: 5_000,
+  text: 10_000,
+  field: 1_000,
+  answer: 4_000,
+  answers: 5,
+}
 
 const SAMPLE_ROWS = 8
 const RUN_ROWS = 50
 
 const codeOf = (ctx: Ctx): CodeChallenge => codeChallenge(ctx.challengeId)
+const sqlOf = (ctx: Ctx): SqlChallenge => sqlChallenge(ctx.challengeId)
+const writingOf = (ctx: Ctx): WritingChallenge => writingChallenge(ctx.challengeId)
 const languageOf = (ctx: Ctx) => ctx.def.language as CodeLanguage
 
-/** Trim saved work to the fields and sizes this workspace accepts. */
-export function cleanWork(def: AssessmentDefinition, stage: Stage, raw: unknown): StageWork {
+/** The challenge behind an attempt, whatever its workspace. */
+function challengeOf(ctx: Ctx): CodeChallenge | SqlChallenge | WritingChallenge {
+  if (ctx.def.workspace === 'code') return codeOf(ctx)
+  if (ctx.def.workspace === 'sql') return sqlOf(ctx)
+  return writingOf(ctx)
+}
+
+/** Trim saved work to the fields and sizes this challenge accepts. */
+export function cleanWork(ctx: Ctx, stage: Stage, raw: unknown): StageWork {
   const input = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
   const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '')
+  const pick = (value: unknown, ids: string[], max: number) => {
+    const given = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
+    const out: Record<string, string> = {}
+    for (const id of ids) if (typeof given[id] === 'string') out[id] = str(given[id], max)
+    return out
+  }
   if (stage === 'explain') {
     const answers = Array.isArray(input.answers) ? input.answers : []
     return { answers: answers.slice(0, WORK_LIMITS.answers).map((a) => str(a, WORK_LIMITS.answer)) }
   }
-  if (def.workspace === 'code') return { code: str(input.code, WORK_LIMITS.code) }
-  if (def.workspace === 'sql') {
-    const queries: Record<string, string> = {}
-    const given = (
-      input.queries && typeof input.queries === 'object' ? input.queries : {}
-    ) as Record<string, unknown>
-    for (const task of SALES_TASKS) {
-      if (typeof given[task.id] === 'string')
-        queries[task.id] = str(given[task.id], WORK_LIMITS.query)
-    }
-    return { queries }
+  if (ctx.def.workspace === 'code') return { code: str(input.code, WORK_LIMITS.code) }
+  if (ctx.def.workspace === 'sql') {
+    const ids = sqlOf(ctx).tasks.map((t) => t.id)
+    return { queries: pick(input.queries, ids, WORK_LIMITS.query) }
   }
-  return { text: str(input.text, WORK_LIMITS.text) }
+  const challenge = writingOf(ctx)
+  const work: StageWork = {}
+  if (challenge.text) work.text = str(input.text, WORK_LIMITS.text)
+  if (challenge.fields) {
+    work.fields = pick(input.fields, fieldIds(challenge, ctx.seed), WORK_LIMITS.field)
+  }
+  return work
 }
 
 export function explainQuestions(ctx: Ctx): string[] {
-  if (ctx.def.workspace === 'code') return codeOf(ctx).explainQuestions
-  if (ctx.def.workspace === 'sql') return SALES_EXPLAIN_QUESTIONS
-  return EMAIL_EXPLAIN_QUESTIONS
+  return challengeOf(ctx).explainQuestions
 }
 
 function instructionsFor(ctx: Ctx, stage: Stage): string[] {
   if (ctx.def.workspace === 'code')
     return codeOf(ctx).instructions(ctx.seed, stage, languageOf(ctx))
-  if (ctx.def.workspace === 'sql') return salesInstructions(stage)
-  return emailInstructions(ctx.seed, stage)
+  if (ctx.def.workspace === 'sql') return sqlOf(ctx).instructions(stage)
+  return writingOf(ctx).instructions(ctx.seed, stage)
 }
 
 // ─── Where code runs ──────────────────────────────────────────────────────
@@ -159,10 +164,16 @@ async function execute(
 // ─── Briefs ───────────────────────────────────────────────────────────────
 
 /** First rows of each table, for the schema panel. */
-async function sampleRows(setup: string): Promise<Record<string, unknown[][]>> {
+async function sampleRows(
+  challenge: SqlChallenge,
+  setup: string
+): Promise<Record<string, unknown[][]>> {
   const results = await runSqlBatch(
     setup,
-    SALES_TABLES.map((t) => ({ id: t.name, query: `SELECT * FROM ${t.name} LIMIT ${SAMPLE_ROWS}` }))
+    challenge.tables.map((t) => ({
+      id: t.name,
+      query: `SELECT * FROM ${t.name} LIMIT ${SAMPLE_ROWS}`,
+    }))
   )
   return Object.fromEntries(results.map((r) => [r.id, r.rows ?? []]))
 }
@@ -177,10 +188,11 @@ export async function buildBrief(
   previous: StageWork | undefined
 ): Promise<PublicBrief> {
   const { def, seed } = ctx
+  const challenge = challengeOf(ctx)
   const brief: PublicBrief = {
     challengeId: ctx.challengeId,
-    challengeVersion: challengeVersion(ctx.challengeId),
-    title: def.workspace === 'code' ? codeOf(ctx).title : def.title,
+    challengeVersion: challenge.version,
+    title: challenge.title,
     skillName: def.skillName,
     workspace: def.workspace,
     language: def.language,
@@ -193,42 +205,39 @@ export async function buildBrief(
     brief.explainQuestions = explainQuestions(ctx)
     brief.starter = previous?.code ?? previous?.text
     brief.starterQueries = previous?.queries
+    brief.starterFields = previous?.fields
+    // The field labels, so the submitted short answers show with them.
+    const fields = def.workspace === 'writing' ? writingOf(ctx).fields : undefined
+    if (fields) brief.writing = { facts: [], fields: fields(seed, 'followup') }
     return brief
   }
 
   if (def.workspace === 'code') {
-    const challenge = codeOf(ctx)
+    const code = codeOf(ctx)
     const language = languageOf(ctx)
-    brief.functionName = challenge.functionName(language)
+    brief.functionName = code.functionName(language)
     brief.starter =
-      stage === 'main' ? challenge.starter(language) : previous?.code || challenge.starter(language)
-    brief.visibleTests = challenge.visibleTests(seed, stage)
+      stage === 'main' ? code.starter(language) : previous?.code || code.starter(language)
+    brief.visibleTests = code.visibleTests(seed, stage)
   } else if (def.workspace === 'sql') {
-    const setup = salesDataset(seed, stage === 'main' ? 'visible' : 'changed')
+    const sql = sqlOf(ctx)
+    const setup = sql.dataset(seed, stage === 'main' ? 'visible' : 'changed')
     brief.sql = {
-      tables: SALES_TABLES,
-      sample: await sampleRows(setup),
-      tasks: salesTasksFor(stage),
+      tables: sql.tables,
+      sample: await sampleRows(sql, setup),
+      tasks: tasksFor(sql, stage),
     }
     brief.starterQueries = stage === 'main' ? {} : (previous?.queries ?? {})
   } else {
-    const s = emailScenario(seed)
+    const writing = writingOf(ctx)
     brief.writing = {
-      minWords: EMAIL_WORD_RANGE.min,
-      maxWords: EMAIL_WORD_RANGE.max,
-      facts: [
-        `Client: ${s.client}, project lead ${s.contact}`,
-        `Project: ${s.project}`,
-        `Original date: ${formatDate(s.originalDate)}`,
-        `New date: ${formatDate(s.newDate)}`,
-        `Reason: ${s.reason}`,
-        `Mitigation: ${s.mitigation}`,
-        ...(stage === 'followup'
-          ? [`Can ship early: ${s.partialPart}, by ${formatDate(s.originalDate)}`]
-          : []),
-      ],
+      facts: writing.facts(seed, stage),
+      table: writing.table?.(seed, stage),
+      fields: writing.fields?.(seed, stage),
+      text: writing.text,
     }
-    brief.starter = stage === 'main' ? '' : (previous?.text ?? '')
+    if (writing.text) brief.starter = stage === 'main' ? '' : (previous?.text ?? '')
+    if (writing.fields) brief.starterFields = stage === 'main' ? {} : (previous?.fields ?? {})
   }
   return brief
 }
@@ -238,6 +247,9 @@ export async function buildBrief(
 export type PracticeRun =
   | { kind: 'code'; report: RunReport }
   | { kind: 'sql'; results: SqlResult[]; durationMs: number }
+
+/** Writing tasks have nothing to run. */
+export const canRun = (def: AssessmentDefinition) => def.workspace !== 'writing'
 
 /** A practice run on visible material only. Never touches hidden tests. */
 export async function practiceRun(
@@ -276,7 +288,7 @@ export async function practiceRun(
       },
     }
   }
-  const setup = salesDataset(ctx.seed, stage === 'main' ? 'visible' : 'changed')
+  const setup = sqlOf(ctx).dataset(ctx.seed, stage === 'main' ? 'visible' : 'changed')
   const jobs = Object.entries(work.queries ?? {})
     .filter(([, query]) => query.trim())
     .map(([id, query]) => ({ id, query }))
@@ -376,10 +388,12 @@ const formatTable = (r: SqlResult | undefined) => {
   return [r.columns?.join(' | ') ?? '', ...rows].join('\n')
 }
 
-async function evaluateSql(seed: number, work: Submissions) {
-  const visible = salesDataset(seed, 'visible')
-  const changed = salesDataset(seed, 'changed')
-  const mainTasks = SALES_TASKS.filter((t) => t.stage === 'main')
+async function evaluateSql(ctx: Ctx, work: Submissions) {
+  const challenge = sqlOf(ctx)
+  const visible = challenge.dataset(ctx.seed, 'visible')
+  const changed = challenge.dataset(ctx.seed, 'changed')
+  const allTasks = challenge.tasks
+  const mainTasks = allTasks.filter((t) => t.stage === 'main')
   const mainQueries = work.main?.queries ?? {}
   const followQueries = work.followup?.queries ?? {}
 
@@ -389,7 +403,7 @@ async function evaluateSql(seed: number, work: Submissions) {
   )
   const refChanged = await runSqlBatch(
     changed,
-    SALES_TASKS.map((t) => ({ id: t.id, query: t.reference }))
+    allTasks.map((t) => ({ id: t.id, query: t.reference }))
   )
   const result: DeterministicResult = { scores: {}, context: [], flags: [], extraWork: [] }
   if ([...refVisible, ...refChanged].some((r) => r.error)) {
@@ -401,10 +415,10 @@ async function evaluateSql(seed: number, work: Submissions) {
   )
   const candChanged = await runSqlBatch(
     changed,
-    SALES_TASKS.map((t) => ({ id: t.id, query: followQueries[t.id] ?? mainQueries[t.id] ?? '' }))
+    allTasks.map((t) => ({ id: t.id, query: followQueries[t.id] ?? mainQueries[t.id] ?? '' }))
   )
 
-  const grade = (cand: SqlResult[], ref: SqlResult[], tasks: typeof SALES_TASKS, label: string) => {
+  const grade = (cand: SqlResult[], ref: SqlResult[], tasks: SqlTaskDef[], label: string) => {
     const evidence: string[] = []
     let correct = 0
     for (const task of tasks) {
@@ -429,7 +443,7 @@ async function evaluateSql(seed: number, work: Submissions) {
   }
 
   const accuracy = grade(candVisible, refVisible, mainTasks, 'tasks on your dataset')
-  const robustness = grade(candChanged, refChanged, SALES_TASKS, 'tasks on the newer export')
+  const robustness = grade(candChanged, refChanged, allTasks, 'tasks on the newer export')
   result.scores['sql:main'] = accuracy
   result.scores['sql:followup'] = robustness
   result.context.push(accuracy.evidence[0], robustness.evidence[0])
@@ -453,16 +467,17 @@ async function evaluateSql(seed: number, work: Submissions) {
   return result
 }
 
-function evaluateWriting(seed: number, work: Submissions): DeterministicResult {
-  const main = emailChecks(seed, 'main', work.main?.text ?? '')
-  const follow = emailChecks(seed, 'followup', work.followup?.text ?? '')
+function evaluateWriting(ctx: Ctx, work: Submissions): DeterministicResult {
+  const challenge = writingOf(ctx)
+  const main = challenge.checks(ctx.seed, 'main', work.main ?? {})
+  const follow = challenge.checks(ctx.seed, 'followup', work.followup ?? {})
   const all = [
-    ...main.map((c) => ({ ...c, stage: 'First email' })),
-    ...follow.map((c) => ({ ...c, stage: 'Revision' })),
+    ...main.map((c) => ({ ...c, stage: challenge.workLabels.main })),
+    ...follow.map((c) => ({ ...c, stage: challenge.workLabels.followup })),
   ]
   const passed = all.filter((c) => c.passed).length
   const failed = all.filter((c) => !c.passed).map((c) => `${c.stage}: ${c.label.toLowerCase()}`)
-  const evidence = [`${passed} of ${all.length} fact checks passed.`]
+  const evidence = [`${passed} of ${all.length} checks passed.`]
   if (failed.length) evidence.push(`Missed: ${failed.join('; ')}.`)
   return {
     scores: {
@@ -479,8 +494,34 @@ export async function evaluateDeterministic(
   work: Submissions
 ): Promise<DeterministicResult> {
   if (ctx.def.workspace === 'code') return evaluateCode(ctx, work)
-  if (ctx.def.workspace === 'sql') return evaluateSql(ctx.seed, work)
-  return evaluateWriting(ctx.seed, work)
+  if (ctx.def.workspace === 'sql') return evaluateSql(ctx, work)
+  return evaluateWriting(ctx, work)
+}
+
+/** A writing task's facts and table as plain lines, for the grader's brief. */
+function writingBrief(ctx: Ctx, stage: 'main' | 'followup'): string[] {
+  if (ctx.def.workspace !== 'writing') return []
+  const challenge = writingOf(ctx)
+  const lines = challenge.facts(ctx.seed, stage).map((fact) => `Fact: ${fact}`)
+  const table = challenge.table?.(ctx.seed, stage)
+  if (table) {
+    lines.push(
+      `Table: ${table.caption}`,
+      table.columns.join(' | '),
+      ...table.rows.map((row) => row.join(' | '))
+    )
+  }
+  return lines
+}
+
+/** A writing stage's answers as the grader reads them: each field with its label, then the text. */
+function writtenWork(ctx: Ctx, stage: 'main' | 'followup', work: StageWork | undefined): string {
+  const challenge = writingOf(ctx)
+  const parts = (challenge.fields?.(ctx.seed, stage) ?? []).map(
+    (field) => `${field.label}: ${work?.fields?.[field.id]?.trim() || '(blank)'}`
+  )
+  if (challenge.text) parts.push(work?.text ?? '')
+  return parts.join(challenge.text && parts.length > 1 ? '\n\n' : '\n')
 }
 
 /** The AI grader's view of the attempt. */
@@ -496,7 +537,13 @@ export function gradingInput(
   const qa = questions
     .map((q, i) => `Q: ${q}\nA: ${answers[i]?.trim() || '(no answer)'}`)
     .join('\n\n')
-  const brief = [...instructionsFor(ctx, 'main'), ...instructionsFor(ctx, 'followup')]
+  const mainFacts = writingBrief(ctx, 'main')
+  const brief = [
+    ...instructionsFor(ctx, 'main'),
+    ...mainFacts,
+    ...instructionsFor(ctx, 'followup'),
+    ...writingBrief(ctx, 'followup').filter((line) => !mainFacts.includes(line)),
+  ]
 
   const items: { label: string; content: string }[] = []
   if (def.workspace === 'code') {
@@ -515,9 +562,13 @@ export function gradingInput(
       ...deterministic.extraWork
     )
   } else {
+    const challenge = writingOf(ctx)
     items.push(
-      { label: 'First email', content: work.main?.text ?? '' },
-      { label: 'Revised email', content: work.followup?.text ?? '' }
+      { label: challenge.workLabels.main, content: writtenWork(ctx, 'main', work.main) },
+      {
+        label: challenge.workLabels.followup,
+        content: writtenWork(ctx, 'followup', work.followup),
+      }
     )
   }
   items.push({ label: 'Answers about the work', content: qa })

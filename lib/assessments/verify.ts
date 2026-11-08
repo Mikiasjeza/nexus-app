@@ -61,6 +61,7 @@ export function toPublicCredential(
     rubric: { id: credential.rubricId, version: credential.rubricVersion },
     challenge: { id: credential.challengeId, version: credential.challengeVersion },
     measures: def?.measures ?? [],
+    note: def?.note ?? null,
     sample: false,
   }
 }

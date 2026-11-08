@@ -59,6 +59,8 @@ const SKILL_ALIAS_MAP: Record<string, string[]> = {
   'problem solving': ['critical thinking'],
   coaching: ['mentoring'],
   copywriting: ['content writing'],
+  'ux writing': ['microcopy', 'ux copy', 'ux copywriting'],
+  'financial analysis': ['finance', 'financial modeling', 'financial modelling'],
   'video editing': ['post-production'],
   photography: ['photo editing'],
 }
@@ -94,7 +96,7 @@ const CATEGORY_PATTERNS: Array<{ category: SkillCategory; pattern: RegExp }> = [
   {
     category: 'Professional Skills',
     pattern:
-      /(leadership|management|coaching|mentoring|stakeholder|sales|finance|strategy|operations|customer success|product management|project management|business analysis|crm|collaboration|teamwork)/,
+      /(leadership|management|coaching|mentoring|stakeholder|sales|financ|budget|forecast|strategy|operations|customer success|product management|project management|business analysis|crm|collaboration|teamwork)/,
   },
   {
     category: 'Learning & Growth',
@@ -143,6 +145,7 @@ export const SKILL_SUGGESTION_GROUPS: SkillSuggestionGroup[] = [
       'Wireframing',
       'Accessibility',
       'Copywriting',
+      'UX Writing',
       'Video Editing',
       'Motion Design',
       'Marketing',
@@ -180,6 +183,7 @@ export const SKILL_SUGGESTION_GROUPS: SkillSuggestionGroup[] = [
     skills: [
       'Leadership',
       'Project Management',
+      'Financial Analysis',
       'Team Collaboration',
       'Problem Solving',
       'Stakeholder Management',

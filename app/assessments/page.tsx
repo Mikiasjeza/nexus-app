@@ -9,6 +9,10 @@ import SectionHeading from '@/components/Layout/SectionHeading'
 import Loader from '@/components/UI/Loader'
 import { assessmentsApi, type Catalog, type CatalogEntry } from '@/lib/api/assessments'
 import { PLAN_INFO } from '@/lib/plans'
+import { LABS } from '@/lib/assessments/labs'
+
+/** "Coding Lab" → "group-coding-lab": ids can't contain spaces. */
+const groupId = (group: string) => `group-${group.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
 
 function statusOf(
   entry: CatalogEntry
@@ -45,18 +49,17 @@ export default function AssessmentsPage() {
       .catch((e: Error) => setError(e.message))
   }, [])
 
+  // Grouped by lab, in the order the labs are listed.
   const groups = useMemo(() => {
     const out = new Map<string, CatalogEntry[]>()
     for (const entry of catalog?.assessments ?? []) {
-      const key =
-        entry.workspace === 'writing'
-          ? 'Communication'
-          : entry.workspace === 'sql'
-            ? 'Data'
-            : 'Code'
-      out.set(key, [...(out.get(key) ?? []), entry])
+      out.set(entry.lab, [...(out.get(entry.lab) ?? []), entry])
     }
-    return [...out.entries()]
+    const rank = (lab: string) => {
+      const at = (LABS as readonly string[]).indexOf(lab)
+      return at < 0 ? LABS.length : at
+    }
+    return [...out.entries()].sort(([a], [b]) => rank(a) - rank(b))
   }, [catalog])
 
   return (
@@ -118,9 +121,9 @@ export default function AssessmentsPage() {
 
             <div className="space-y-14">
               {groups.map(([group, entries]) => (
-                <section key={group} aria-labelledby={`group-${group}`}>
+                <section key={group} aria-labelledby={groupId(group)}>
                   <SectionHeading
-                    id={`group-${group}`}
+                    id={groupId(group)}
                     note={`${entries.length} ${entries.length === 1 ? 'skill' : 'skills'}`}
                   >
                     {group}

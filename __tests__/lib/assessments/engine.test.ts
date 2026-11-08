@@ -12,7 +12,8 @@ import {
 } from '@/lib/assessments/challenges/ledger'
 import { referenceTriage } from '@/lib/assessments/challenges/log-triage'
 import { referencePlan } from '@/lib/assessments/challenges/reorder-plan'
-import { emailChecks, mentionsDate } from '@/lib/assessments/challenges/client-email'
+import { DELAY_EMAIL } from '@/lib/assessments/challenges/client-email'
+import { mentionsDate } from '@/lib/assessments/challenges/text'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -409,15 +410,19 @@ describe('writing challenge', () => {
   })
 
   it('a good email passes every fact check', () => {
-    expect(emailChecks(SEED, 'main', delayEmail(SEED, false)).every((c) => c.passed)).toBe(true)
-    expect(emailChecks(SEED, 'followup', delayEmail(SEED, true)).every((c) => c.passed)).toBe(true)
+    expect(
+      DELAY_EMAIL.checks(SEED, 'main', { text: delayEmail(SEED, false) }).every((c) => c.passed)
+    ).toBe(true)
+    expect(
+      DELAY_EMAIL.checks(SEED, 'followup', { text: delayEmail(SEED, true) }).every((c) => c.passed)
+    ).toBe(true)
   })
 
   it('flags placeholders', () => {
     const text = delayEmail(SEED, false).replace('Sam', '[Your name]')
-    expect(emailChecks(SEED, 'main', text).find((c) => c.id === 'no-placeholders')?.passed).toBe(
-      false
-    )
+    expect(
+      DELAY_EMAIL.checks(SEED, 'main', { text }).find((c) => c.id === 'no-placeholders')?.passed
+    ).toBe(false)
   })
 })
 

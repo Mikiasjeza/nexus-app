@@ -10,13 +10,46 @@ nothing; Judge0 (`infra/judge0`) on a small paid server is the alternative.
 
 ## What exists today
 
-| Skill            | Workspace    | Runs on                               | Challenges                               |
-| ---------------- | ------------ | ------------------------------------- | ---------------------------------------- |
-| Python           | Code editor  | Code runner (`infra/runner`)          | Ledger summary, Log triage, Reorder plan |
-| JavaScript       | Code editor  | Judge0 with Node.js 18+, else QuickJS | Ledger summary, Log triage, Reorder plan |
-| TypeScript       | Code editor  | Types removed, then as JavaScript     | Ledger summary, Log triage, Reorder plan |
-| SQL              | Query editor | SQLite (sql.js) in a worker           | Sales cleanup                            |
-| Business Writing | Text editor  | Deterministic checks + AI             | Project delay email                      |
+Skills are grouped into labs, the verification environments shown on
+`/assessments` (`lib/assessments/labs.ts`):
+
+| Lab                        | Skill              | Workspace                     | Runs on / checked by                  | Challenges                               |
+| -------------------------- | ------------------ | ----------------------------- | ------------------------------------- | ---------------------------------------- |
+| Coding Lab                 | Python             | Code editor                   | Code runner (`infra/runner`)          | Ledger summary, Log triage, Reorder plan |
+| Coding Lab                 | JavaScript         | Code editor                   | Judge0 with Node.js 18+, else QuickJS | Ledger summary, Log triage, Reorder plan |
+| Coding Lab                 | TypeScript         | Code editor                   | Types removed, then as JavaScript     | Ledger summary, Log triage, Reorder plan |
+| Data Analytics Lab         | SQL                | Query editor                  | SQLite (sql.js) in a worker           | Sales cleanup, Customer retention report |
+| Finance Lab                | Financial Analysis | Figures + memo                | Figures checked against a model + AI  | Expansion decision                       |
+| Creative and Design Studio | UX Writing         | Strings with character limits | Deterministic checks + AI             | Interface copy rewrite                   |
+| Business Simulation Lab    | Project Management | Plan editor                   | Deterministic checks + AI             | Launch recovery plan                     |
+| Communication Studio       | Business Writing   | Text editor                   | Deterministic checks + AI             | Project delay email                      |
+
+- **Financial Analysis.** A fictional company considers opening another
+  site. The candidate builds a three-year forecast from the base-case
+  assumptions and enters Year 3 revenue, EBIT, margin, interest cover, the
+  peak cash the company must put in and a downside-case EBIT, then writes a
+  memo. The follow-up raises the loan rate and the rent. Figures are checked
+  against a model computed from the seed (within half a percent); the
+  recommendation itself is never scored, so either answer can earn full
+  marks when the reasoning holds.
+- **Project Management.** A client launch with a budget, a team member on
+  leave, a contractor and dependencies. The plan has one line per work item
+  ("Item — Owner — Date"); checks confirm every item has a suitable,
+  available owner, a finish date before launch, the dependency order and the
+  contractor budget. The follow-up adds a requirement and raises the
+  contractor's rate, so the old plan no longer fits the budget. The skill
+  page and the credential say a short scenario is not proof of leadership or
+  teamwork on a real team.
+- **UX Writing.** Five interface strings (an error, a button, an empty state,
+  a delete dialog) rewritten within character limits; the follow-up moves
+  deletes to Trash for 30 days and tightens the button limit. Checks cover
+  the limits, leftover codes and jargon, a next step, specific buttons and a
+  dialog that matches the behaviour, so the score never rests on an AI's
+  taste alone.
+- **SQL.** Attempts draw one of two datasets. Customer retention has test
+  accounts, hand-typed channel names, repeated order rows and cancelled
+  orders; every generated dataset is built so that forgetting any one of
+  those changes an answer.
 
 Without a code runner, Python shows as "Opening soon". Two kits set one up:
 [`infra/runner`](../infra/runner/README.md), the free Nexus runner (ARM or
@@ -26,7 +59,9 @@ on a paid x86 server. Both answer the same API, so Nexus treats them alike;
 "Judge0" below means either.
 
 **Challenge pool.** Coding assessments draw one of three challenges per
-attempt (by seed), and a retake draws one the candidate hasn't had. Each
+attempt (by seed) and SQL one of two, and a retake draws one the candidate
+hasn't had. Free practice uses each skill's first challenge; paid plans
+practise them all. Each
 challenge also varies its rules per attempt (fee threshold, reporting
 threshold, safety and cover days), so a leaked solution covers little.
 
@@ -61,8 +96,8 @@ updates are conditional (`UPDATE … WHERE status = expected`), so a double
 submit or two tabs can't both win.
 
 - **Seed.** Each attempt gets a random seed stored on the server. It
-  generates the attempt's parameters (fee rule, dataset, email scenario) and
-  its hidden tests. The browser never sees the seed for a real attempt.
+  generates the attempt's parameters (fee rule, dataset, scenario, figures)
+  and its hidden tests. The browser never sees the seed for a real attempt.
 - **Stages.** `main` → `followup` → `explain`. Each stage is locked on
   submit (`AssessmentSubmission`, unique per attempt and stage, with a
   SHA-256 of the payload). The follow-up starts from the submitted main work.
@@ -223,12 +258,27 @@ attempts answer "Assessments are not set up on this server yet."
   the pool. Add a candidate-style answer in JavaScript and Python to
   `test-utils/assessment-fixtures.ts`; the tests then prove it in QuickJS and
   real CPython automatically.
-- **A new skill:** add a catalog entry in `catalog.ts`, and teach
-  `engine.ts` its workspace if it is a new kind.
+- **A SQL challenge:** implement `SqlChallenge` (`sql.ts`): the tables, a
+  seeded dataset with a changed export for the follow-up, and tasks with
+  trusted reference queries. Register it in `challenges/index.ts` and add
+  its id to the SQL entry's `challengeIds`. Make each trap in the data
+  change an answer on every seed, and test that it does
+  (`__tests__/lib/assessments/challenges.test.ts`).
+- **A writing challenge:** implement `WritingChallenge` (`writing.ts`):
+  facts, an optional table, short answers (`fields`, e.g. figures or
+  interface strings with character limits) and/or a long answer (`text`),
+  and deterministic checks per stage. Checks should be lenient about format
+  and strict about substance; text helpers are in `text.ts`. Add a strong
+  candidate's answer to `test-utils/assessment-fixtures.ts` and test it
+  passes every check on many seeds.
+- **A new skill:** add a catalog entry in `catalog.ts` with its lab, its
+  rubric and, where a pass could be over-read, a `note` saying what it does
+  not show (shown on the skill page and the credential). Teach `engine.ts`
+  its workspace if it is a new kind.
 
 ## Before employers rely on it
 
-The rubrics are version 1 and not yet validated. Before results are used in
+The rubrics (SQL v2, the rest v1) are not yet validated. Before results are used in
 hiring decisions: pilot each assessment with people of known ability and
 check that scores separate them; have a second reviewer re-score a sample to
 measure agreement; review the tasks for job relevance and bias; test the
@@ -237,6 +287,16 @@ accommodations; and take legal advice on the jurisdictions you hire in.
 
 ## Not built yet
 
-Spreadsheet (finance) and simulation (business) workspaces, design
-assessments, employer-sent assessment invitations and reports, and identity
-checks for level B. The types and the lifecycle already allow for them.
+Each lab's full workspace: a file explorer, restricted terminal and
+documentation panel (Coding Lab); a spreadsheet and chart builder (Data
+Analytics and Finance Labs, which today take figures in answer boxes); a
+design canvas (Creative and Design Studio); a project board, budget controls
+and complications introduced mid-task (Business Simulation Lab); revision
+history, presentations and audio or video (Communication Studio). Also
+employer-sent assessment invitations and reports, and identity checks for
+level B. The types and the lifecycle already allow for them.
+
+JavaScript, TypeScript and SQL can run inside the app's own functions
+(QuickJS and sql.js, both WebAssembly sandboxes with time and memory caps).
+To keep every candidate program off the app server, run JavaScript on the
+code runner (`infra/runner`) and move SQL there too.

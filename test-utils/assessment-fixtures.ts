@@ -3,8 +3,13 @@
 import { ledgerParams } from '@/lib/assessments/challenges/ledger'
 import { triageParams } from '@/lib/assessments/challenges/log-triage'
 import { reorderParams } from '@/lib/assessments/challenges/reorder-plan'
-import { SALES_TASKS } from '@/lib/assessments/challenges/sales'
-import { emailScenario, formatDate } from '@/lib/assessments/challenges/client-email'
+import { sqlChallenge } from '@/lib/assessments/challenges'
+import { emailScenario } from '@/lib/assessments/challenges/client-email'
+import { expansionCase, expansionFigures } from '@/lib/assessments/challenges/expansion'
+import { launchScenario } from '@/lib/assessments/challenges/launch-plan'
+import { copyScenario } from '@/lib/assessments/challenges/interface-copy'
+import { addDays, formatDate, usd } from '@/lib/assessments/challenges/text'
+import type { StageWork } from '@/lib/assessments/types'
 
 export function ledgerSolutionJs(seed: number, dedupe: boolean): string {
   const { feeThreshold, fee } = ledgerParams(seed)
@@ -291,14 +296,19 @@ export function solutionPy(challengeId: string, seed: number, followup: boolean)
   return ledgerSolutionPy(seed, followup)
 }
 
-export function salesQueries(stage: 'main' | 'followup'): Record<string, string> {
+/** A SQL challenge's reference queries for a stage, as a candidate would submit them. */
+export function referenceQueries(
+  challengeId: string,
+  stage: 'main' | 'followup'
+): Record<string, string> {
   return Object.fromEntries(
-    SALES_TASKS.filter((t) => stage === 'followup' || t.stage === 'main').map((t) => [
-      t.id,
-      t.reference,
-    ])
+    sqlChallenge(challengeId)
+      .tasks.filter((t) => stage === 'followup' || t.stage === 'main')
+      .map((t) => [t.id, t.reference])
   )
 }
+
+export const salesQueries = (stage: 'main' | 'followup') => referenceQueries('sales-cleanup', stage)
 
 export function delayEmail(seed: number, revised: boolean): string {
   const s = emailScenario(seed)
@@ -321,4 +331,76 @@ export function delayEmail(seed: number, revised: boolean): string {
     'Sam'
   )
   return lines.join('\n')
+}
+
+/** A strong candidate's figures and memo for the expansion decision. */
+export function expansionAnswer(seed: number, revised: boolean): StageWork {
+  const c = expansionCase(seed)
+  const f = expansionFigures(c, revised)
+  const fields: Record<string, string> = {
+    'y3-ebit': String(Math.round(f.ebit[2])),
+    'y3-margin': f.margin3.toFixed(1),
+    'y3-cover': f.cover3.toFixed(1),
+    'peak-cash': usd(f.peakCash),
+    'downside-ebit': String(Math.round(f.downsideEbit3)),
+  }
+  if (!revised) fields['y3-revenue'] = usd(f.revenue[2])
+  const text = [
+    `Hi ${c.owner},`,
+    '',
+    `My recommendation: go ahead with the ${c.city} ${c.site}, but only once we have a cash buffer agreed with the bank.`,
+    revised
+      ? `The new terms change the numbers. With the loan at ${(c.newRate * 100).toFixed(1)}% and the higher rent, Year 3 EBIT falls to ${usd(f.ebit[2])}, a margin of ${f.margin3.toFixed(1)}%, and interest is covered ${f.cover3.toFixed(1)} times.`
+      : `On the base case, revenue reaches ${usd(f.revenue[2])} in Year 3 and EBIT ${usd(f.ebit[2])}, an operating margin of ${f.margin3.toFixed(1)}%. Interest is covered ${f.cover3.toFixed(1)} times, so the loan is manageable once the site is established.`,
+    `The first year is the hard part. The site loses money on an EBIT basis, and our own cash is down ${usd(f.peakCash)} at the end of Year 1, which is the peak cash need.`,
+    `The downside case matters: if revenue comes in 15% below plan, Year 3 EBIT is ${usd(f.downsideEbit3)}. That is a real risk, because the plan has the new site growing faster than our existing ${c.sites} ever did.`,
+    'Before committing, I would test the growth assumption against our last opening, agree an overdraft for the first year, and set a review point after six months of trading.',
+  ].join('\n')
+  return { fields, text }
+}
+
+/** A strong candidate's launch plan. The revision moves the contractor to the cheaper task. */
+export function launchPlanText(seed: number, revised: boolean): string {
+  const s = launchScenario(seed)
+  const [backend, frontend, qa, design] = s.team
+  const on = (days: number) => formatDate(addDays(s.today, days))
+  const lines = [
+    `Hi ${s.sponsor},`,
+    '',
+    `Here is the plan to launch on ${formatDate(s.launch)}. ${s.onLeave.name} is on leave, so the checkout screens need a new owner.`,
+    '',
+    `Payment timeout fix — ${backend.name} — ${on(3)}`,
+    revised
+      ? `Checkout screens — ${frontend.name} — ${on(8)}`
+      : `Checkout screens — ${s.contractor.name} (taking over from ${s.onLeave.name}) — ${on(8)}`,
+    ...(revised ? [`Delivery scheduling — ${s.contractor.name} — ${on(9)}`] : []),
+    `Accessibility review — ${design.name} — ${on(revised ? 11 : 10)}`,
+    `Regression testing — ${qa.name} — ${on(revised ? 15 : 11)}`,
+    `Release notes and support guide — ${design.name} — ${on(12)}`,
+    '',
+    'The biggest risk is the payment fix. If it slips, regression testing slips with it, so I will check in with the team every morning and keep the scope of the fix small.',
+    revised
+      ? `The contractor's higher rate means the four days of checkout screens no longer fit the budget, so ${frontend.name} takes the screens and the contractor builds delivery scheduling instead, which costs less.`
+      : `Hiring the contractor for the checkout screens uses most of the budget but keeps ${frontend.name} free for fixes after testing.`,
+    `The launch on ${formatDate(s.launch)} holds, with a few days of slack after regression testing for anything it finds.`,
+  ]
+  return lines.join('\n')
+}
+
+/** A strong candidate's interface strings. */
+export function interfaceStrings(seed: number, revised: boolean): Record<string, string> {
+  const s = copyScenario(seed)
+  const errors: Record<string, string> = {
+    '402': 'Your card was declined. Try another card or contact your bank.',
+    '1009': 'You’re offline. Check your connection and try again.',
+    '401': 'You’ve been signed out. Sign in again to keep your changes.',
+  }
+  return {
+    error: errors[s.error.jargon[0]],
+    'save-button': `Save ${s.thing}`,
+    empty: `No ${s.things} yet. Add your first ${s.thing} to get started.`,
+    'delete-title': revised ? `Move this ${s.thing} to Trash?` : `Delete this ${s.thing}?`,
+    'delete-button': revised ? 'Move to Trash' : 'Delete',
+    ...(revised ? { 'delete-body': 'You can restore it from Trash for 30 days.' } : {}),
+  }
 }

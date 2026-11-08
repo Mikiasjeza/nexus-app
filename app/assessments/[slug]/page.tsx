@@ -142,6 +142,11 @@ export default function AssessmentDetailPage() {
                   <li key={m}>{m}</li>
                 ))}
               </ul>
+              {entry.note && (
+                <p className="mt-4 max-w-[40rem] text-sm leading-relaxed text-ink-faint">
+                  {entry.note}
+                </p>
+              )}
             </section>
 
             <section aria-labelledby="rubric-heading">
