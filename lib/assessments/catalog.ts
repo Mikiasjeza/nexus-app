@@ -8,9 +8,13 @@
 import type { SkillCategory } from '@/lib/types'
 import type { AssessmentMode, CodeLanguage, Rubric, WorkspaceKind } from './types'
 import { CODE_RUBRIC } from './challenges/code'
-import { CODE_CHALLENGES } from './challenges'
-import { SQL_RUBRIC } from './challenges/sales'
+import { CODE_CHALLENGES, challengeInfo } from './challenges'
+import { SQL_RUBRIC } from './challenges/sql'
 import { WRITING_RUBRIC } from './challenges/client-email'
+import { FINANCE_RUBRIC } from './challenges/expansion'
+import { PLAN_RUBRIC } from './challenges/launch-plan'
+import { UX_WRITING_RUBRIC } from './challenges/interface-copy'
+import type { Lab } from './labs'
 import { judge0Configured } from './runners/judge0'
 import { devPythonEnabled } from './runners/pyodide-dev'
 
@@ -19,6 +23,8 @@ export interface AssessmentDefinition {
   skillName: string
   /** Matches the skill taxonomy pillar names used elsewhere in Nexus. */
   category: SkillCategory
+  /** The verification environment it belongs to, for grouping in the catalog. */
+  lab: Lab
   workspace: WorkspaceKind
   language?: CodeLanguage | 'sql'
   /** The challenges an attempt can draw; more than one keeps leaks contained. */
@@ -28,6 +34,8 @@ export interface AssessmentDefinition {
   level: string
   summary: string
   measures: string[]
+  /** What a pass does not show, stated wherever the result is read. */
+  note?: string
   /** Suggested minutes per stage; the attempt deadline is their sum. */
   stageMinutes: { main: number; followup: number; explain: number }
   modes: AssessmentMode[]
@@ -51,6 +59,7 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     slug: 'python',
     skillName: 'Python',
     category: 'Technical Skills',
+    lab: 'Coding Lab',
     workspace: 'code',
     language: 'python',
     challengeIds: CODE_POOL,
@@ -69,6 +78,7 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     slug: 'javascript',
     skillName: 'JavaScript',
     category: 'Technical Skills',
+    lab: 'Coding Lab',
     workspace: 'code',
     language: 'javascript',
     challengeIds: CODE_POOL,
@@ -86,6 +96,7 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     slug: 'typescript',
     skillName: 'TypeScript',
     category: 'Technical Skills',
+    lab: 'Coding Lab',
     workspace: 'code',
     language: 'typescript',
     challengeIds: CODE_POOL,
@@ -103,15 +114,16 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     slug: 'sql',
     skillName: 'SQL',
     category: 'Technical Skills',
+    lab: 'Data Analytics Lab',
     workspace: 'sql',
     language: 'sql',
-    challengeIds: ['sales-cleanup'],
-    title: 'Sales cleanup in SQL',
+    challengeIds: ['sales-cleanup', 'customer-retention'],
+    title: 'Data analysis in SQL',
     level: 'Working level',
     summary:
-      'Answer revenue questions from a messy export, survive a newer export, and recommend a next step.',
+      'Answer business questions from a messy export, survive a newer export, and recommend a next step.',
     measures: [
-      'Correct results with duplicates, missing values and refunds in the data',
+      'Correct results despite duplicates, missing or inconsistent values and rows that must not count',
       'Queries that still hold on a newer export',
       'Reading the results and recommending an action',
       'Explaining how you handled the data',
@@ -122,9 +134,79 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     credentialValidMonths: 24,
   },
   {
+    slug: 'financial-analysis',
+    skillName: 'Financial Analysis',
+    category: 'Professional Skills',
+    lab: 'Finance Lab',
+    workspace: 'writing',
+    challengeIds: ['expansion-decision'],
+    title: 'Expansion decision',
+    level: 'Working level',
+    summary:
+      'Forecast a new site for a fictional company, work out the cash it needs and a downside case, and recommend whether to go ahead.',
+    measures: [
+      'A three-year forecast and key ratios, checked against the model',
+      'The cash the company must put in, and a downside scenario',
+      'Reasoning from the numbers to a recommendation, whichever way it goes',
+      'Updating the analysis when the loan and rent terms change',
+    ],
+    note: 'Tests financial reasoning on a fictional company in one sitting. The recommendation itself is not scored, only how well the numbers support it.',
+    stageMinutes: { main: 30, followup: 12, explain: 8 },
+    modes: ['independent', 'ai_assisted'],
+    rubric: FINANCE_RUBRIC,
+    credentialValidMonths: 24,
+  },
+  {
+    slug: 'ux-writing',
+    skillName: 'UX Writing',
+    category: 'Creative Skills',
+    lab: 'Creative and Design Studio',
+    workspace: 'writing',
+    challengeIds: ['interface-copy'],
+    title: 'Interface copy rewrite',
+    level: 'Working level',
+    summary:
+      'Rewrite an app’s confusing error, button, empty state and delete dialog within character limits, then update them when the product changes.',
+    measures: [
+      'Plain, useful words within strict character limits',
+      'Errors and empty states that tell people what to do next',
+      'Buttons and dialogs that say exactly what will happen',
+      'Updating the copy when the product’s behaviour changes',
+    ],
+    note: 'Scored against published criteria and automatic checks, not anyone’s personal taste, and any result can be appealed to a person.',
+    stageMinutes: { main: 15, followup: 8, explain: 5 },
+    modes: ['independent', 'ai_assisted'],
+    rubric: UX_WRITING_RUBRIC,
+    credentialValidMonths: 24,
+  },
+  {
+    slug: 'project-management',
+    skillName: 'Project Management',
+    category: 'Professional Skills',
+    lab: 'Business Simulation Lab',
+    workspace: 'writing',
+    challengeIds: ['launch-plan'],
+    title: 'Launch recovery plan',
+    level: 'Working level',
+    summary:
+      'Plan a client launch with a budget, a team member on leave and dependencies, then adapt when the client adds work and costs rise.',
+    measures: [
+      'An owner and a finish date for every piece of work',
+      'Respecting dependencies, availability and the budget',
+      'Naming the biggest risk and making a clear call on the launch date',
+      'Adapting the plan when the requirements and costs change',
+    ],
+    note: 'A short written scenario shows how someone plans and adapts on paper. It is not proof of leadership or teamwork on a real team.',
+    stageMinutes: { main: 25, followup: 10, explain: 5 },
+    modes: ['independent', 'ai_assisted'],
+    rubric: PLAN_RUBRIC,
+    credentialValidMonths: 24,
+  },
+  {
     slug: 'business-writing',
     skillName: 'Business Writing',
     category: 'Communication Skills',
+    lab: 'Communication Studio',
     workspace: 'writing',
     challengeIds: ['project-delay-email'],
     title: 'Project delay email',
@@ -150,7 +232,7 @@ export function getAssessment(slug: string): AssessmentDefinition | undefined {
 
 /** Version of a challenge, recorded on attempts and credentials. */
 export function challengeVersion(challengeId: string): number {
-  return CODE_CHALLENGES[challengeId]?.version ?? 1
+  return challengeInfo(challengeId)?.version ?? 1
 }
 
 /**

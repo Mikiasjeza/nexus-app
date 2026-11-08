@@ -49,10 +49,14 @@ export interface CatalogEntry {
   slug: string
   skillName: string
   category: string
+  /** The verification environment, e.g. "Finance Lab". */
+  lab: string
   title: string
   level: string
   summary: string
   measures: string[]
+  /** What a pass does not show, when the skill states it. */
+  note: string | null
   workspace: string
   language: string | null
   minutes: number

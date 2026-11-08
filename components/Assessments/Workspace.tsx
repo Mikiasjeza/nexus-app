@@ -55,14 +55,25 @@ function startingWork(brief: PublicBrief, saved: StageWork | null): StageWork {
   if (brief.workspace === 'code') return { code: saved?.code ?? brief.starter ?? '' }
   if (brief.workspace === 'sql')
     return { queries: { ...(brief.starterQueries ?? {}), ...(saved?.queries ?? {}) } }
-  return { text: saved?.text ?? brief.starter ?? '' }
+  const work: StageWork = {}
+  if (brief.writing?.text) work.text = saved?.text ?? brief.starter ?? ''
+  if (brief.writing?.fields) {
+    work.fields = { ...(brief.starterFields ?? {}), ...(saved?.fields ?? {}) }
+  }
+  return work
 }
 
 const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length
+const charCount = (text: string) => [...text.trim()].length
 
-/** "Python · Log triage" for coding challenges; the brief's own title otherwise. */
+type WritingBrief = NonNullable<PublicBrief['writing']>
+
+/**
+ * "Python · Log triage" where a skill draws from several challenges (code,
+ * SQL); a writing task's own title otherwise.
+ */
 export function briefTitle(brief: PublicBrief): string {
-  return brief.workspace === 'code' ? `${brief.skillName} · ${brief.title}` : brief.title
+  return brief.workspace === 'writing' ? brief.title : `${brief.skillName} · ${brief.title}`
 }
 
 export default function Workspace({
@@ -174,14 +185,29 @@ export default function Workspace({
     setConfirming(false)
   }
 
-  const incomplete = useMemo(() => {
-    if (brief.stage === 'explain') return (work.answers ?? []).some((a) => wordCount(a) < 5)
+  /** Why the work looks unfinished, if it does. Submitting is still allowed. */
+  const incomplete = useMemo((): string | null => {
+    if (brief.stage === 'explain') {
+      return (work.answers ?? []).some((a) => wordCount(a) < 5)
+        ? 'Some answers are very short.'
+        : null
+    }
     if (brief.workspace === 'sql') {
       return (brief.sql?.tasks ?? []).some((task) => !(work.queries?.[task.id] ?? '').trim())
+        ? 'Some of the work is still empty.'
+        : null
     }
-    if (brief.workspace === 'writing')
-      return wordCount(work.text ?? '') < (brief.writing?.minWords ?? 0)
-    return !(work.code ?? '').trim()
+    if (brief.workspace === 'writing') {
+      if ((brief.writing?.fields ?? []).some((f) => !(work.fields?.[f.id] ?? '').trim())) {
+        return 'Some answers are still empty.'
+      }
+      const text = brief.writing?.text
+      if (text && wordCount(work.text ?? '') < text.minWords) {
+        return 'The text is shorter than asked.'
+      }
+      return null
+    }
+    return (work.code ?? '').trim() ? null : 'Some of the work is still empty.'
   }, [brief, work])
 
   return (
@@ -280,6 +306,7 @@ export default function Workspace({
                   </li>
                 ))}
               </ul>
+              {brief.writing.table && <BriefTableView table={brief.writing.table} />}
             </section>
           )}
 
@@ -402,13 +429,26 @@ export default function Workspace({
               ))}
             </div>
           ) : (
-            <WritingEditor
-              value={work.text ?? ''}
-              onChange={(text) => setWork({ text })}
-              onPaste={onPaste}
-              minWords={brief.writing?.minWords ?? 0}
-              maxWords={brief.writing?.maxWords ?? 0}
-            />
+            <div className="space-y-10">
+              {brief.writing?.fields && brief.writing.fields.length > 0 && (
+                <FieldAnswers
+                  fields={brief.writing.fields}
+                  values={work.fields ?? {}}
+                  onChange={(id, value) =>
+                    setWork((prev) => ({ ...prev, fields: { ...prev.fields, [id]: value } }))
+                  }
+                  onPaste={onPaste}
+                />
+              )}
+              {brief.writing?.text && (
+                <WritingEditor
+                  value={work.text ?? ''}
+                  onChange={(text) => setWork((prev) => ({ ...prev, text }))}
+                  onPaste={onPaste}
+                  spec={brief.writing.text}
+                />
+              )}
+            </div>
           )}
         </section>
       </div>
@@ -426,15 +466,7 @@ export default function Workspace({
               : 'Your work will be graded. This can take up to a minute.'
             : 'This step locks once submitted, and the next one begins. You can’t come back to it.'}
         </p>
-        {incomplete && (
-          <p className="mt-4 text-sm text-caution">
-            {brief.stage === 'explain'
-              ? 'Some answers are very short.'
-              : brief.workspace === 'writing'
-                ? 'The text is shorter than asked.'
-                : 'Some of the work is still empty.'}
-          </p>
-        )}
+        {incomplete && <p className="mt-4 text-sm text-caution">{incomplete}</p>}
         {submitError && (
           <p role="alert" className="mt-4 text-sm text-[#ffc9c9]">
             {submitError}
@@ -679,21 +711,19 @@ function WritingEditor({
   value,
   onChange,
   onPaste,
-  minWords,
-  maxWords,
+  spec,
 }: {
   value: string
   onChange: (value: string) => void
   onPaste: (chars: number) => void
-  minWords: number
-  maxWords: number
+  spec: NonNullable<WritingBrief['text']>
 }) {
   const words = wordCount(value)
-  const outside = words > 0 && (words < minWords || words > maxWords)
+  const outside = words > 0 && (words < spec.minWords || words > spec.maxWords)
   return (
     <div>
       <label htmlFor="writing-answer" className="metalab-label">
-        Your email
+        {spec.label}
       </label>
       <textarea
         id="writing-answer"
@@ -702,12 +732,131 @@ function WritingEditor({
         onPaste={(e) => onPaste(e.clipboardData.getData('text').length)}
         rows={18}
         spellCheck
+        aria-describedby="writing-count"
         className="metalab-input min-h-[24rem] resize-y text-[0.9375rem] leading-relaxed"
-        placeholder="Hi …"
+        placeholder={spec.placeholder}
       />
-      <p className={`mt-2 text-sm tabular-nums ${outside ? 'text-caution' : 'text-ink-faint'}`}>
-        {words} words · aim for {minWords}–{maxWords}
+      <p
+        id="writing-count"
+        className={`mt-2 text-sm tabular-nums ${outside ? 'text-caution' : 'text-ink-faint'}`}
+      >
+        {words} words · aim for {spec.minWords}–{spec.maxWords}
       </p>
+    </div>
+  )
+}
+
+/** Short answers: figures, or interface strings with a live character count. */
+function FieldAnswers({
+  fields,
+  values,
+  onChange,
+  onPaste,
+}: {
+  fields: NonNullable<WritingBrief['fields']>
+  values: Record<string, string>
+  onChange: (id: string, value: string) => void
+  onPaste: (chars: number) => void
+}) {
+  return (
+    <div className="space-y-6">
+      {fields.map((field) => {
+        const value = values[field.id] ?? ''
+        const id = `field-${field.id}`
+        const count = charCount(value)
+        const over = field.maxChars !== undefined && count > field.maxChars
+        const describedBy =
+          [field.hint && `${id}-hint`, field.maxChars !== undefined && `${id}-count`]
+            .filter(Boolean)
+            .join(' ') || undefined
+        // One line for figures and short strings; a small box for longer text.
+        const singleLine = field.numeric || (field.maxChars ?? 0) <= 40
+        return (
+          <div key={field.id}>
+            <label htmlFor={id} className="block text-[0.9375rem] leading-relaxed text-ink">
+              {field.label}
+            </label>
+            {field.hint && (
+              <p id={`${id}-hint`} className="mt-1 text-sm text-ink-faint">
+                {field.hint}
+              </p>
+            )}
+            {singleLine ? (
+              <input
+                id={id}
+                type="text"
+                value={value}
+                inputMode={field.numeric ? 'decimal' : undefined}
+                autoComplete="off"
+                spellCheck={!field.numeric}
+                aria-describedby={describedBy}
+                aria-invalid={over || undefined}
+                onChange={(e) => onChange(field.id, e.target.value)}
+                onPaste={(e) => onPaste(e.clipboardData.getData('text').length)}
+                className={`metalab-input mt-2 ${field.numeric ? 'max-w-[16rem] tabular-nums' : ''}`}
+              />
+            ) : (
+              <textarea
+                id={id}
+                value={value}
+                rows={2}
+                spellCheck
+                aria-describedby={describedBy}
+                aria-invalid={over || undefined}
+                onChange={(e) => onChange(field.id, e.target.value)}
+                onPaste={(e) => onPaste(e.clipboardData.getData('text').length)}
+                className="metalab-input mt-2 resize-y leading-relaxed"
+              />
+            )}
+            {field.maxChars !== undefined && (
+              <p
+                id={`${id}-count`}
+                className={`mt-1.5 text-xs tabular-nums ${over ? 'text-caution' : 'text-ink-faint'}`}
+              >
+                {count} / {field.maxChars} characters
+              </p>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/** A read-only table in the brief, e.g. a company's past results. */
+function BriefTableView({ table }: { table: NonNullable<WritingBrief['table']> }) {
+  return (
+    <div className="mt-5 overflow-x-auto rounded-lg bg-raised">
+      <table className="w-full text-left text-xs">
+        <caption className="px-3 pt-2.5 text-left text-ink-faint">{table.caption}</caption>
+        <thead>
+          <tr>
+            {table.columns.map((column, i) => (
+              <th
+                key={column}
+                scope="col"
+                className={`px-3 py-2 font-normal text-ink-faint ${i > 0 ? 'text-right' : ''}`}
+              >
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((row, i) => (
+            <tr key={i} className="border-t border-line">
+              {row.map((cell, j) => (
+                <td
+                  key={j}
+                  className={`whitespace-nowrap px-3 py-1.5 tabular-nums text-ink-muted ${j > 0 ? 'text-right' : ''}`}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -752,9 +901,25 @@ function ExplainStage({
               ariaLabel="Your submitted code"
             />
           ) : (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-muted">
-              {brief.starter}
-            </p>
+            <div className="space-y-4">
+              {brief.writing?.fields && brief.writing.fields.length > 0 && (
+                <dl className="space-y-3 text-sm">
+                  {brief.writing.fields.map((field) => (
+                    <div key={field.id}>
+                      <dt className="text-xs text-ink-faint">{field.label}</dt>
+                      <dd className="mt-0.5 whitespace-pre-wrap text-ink-muted">
+                        {brief.starterFields?.[field.id]?.trim() || '(blank)'}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              {brief.starter && (
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-muted">
+                  {brief.starter}
+                </p>
+              )}
+            </div>
           )}
         </div>
       </details>

@@ -6,10 +6,11 @@
  * and adds a task. Reference queries produce the expected results.
  */
 
-import type { Rubric, SqlTable, SqlTask, Stage } from '../types'
+import type { SqlTable, Stage } from '../types'
 import { createRng, deriveSeed, round2 } from '../random'
+import { sqlString, type SqlChallenge, type SqlTaskDef } from './sql'
 
-export const SALES_TABLES: SqlTable[] = [
+const TABLES: SqlTable[] = [
   {
     name: 'customers',
     columns: [
@@ -51,10 +52,7 @@ const REGIONS = ['North', 'South', 'East', 'West']
 type Customer = { id: number; name: string; region: string; signup: string }
 type Order = { id: number; customer: number; date: string; amount: number | null; status: string }
 
-const sqlString = (value: string) => `'${value.replace(/'/g, "''")}'`
-
-/** A dataset as a setup script. `variant` gives the changed export for the follow-up. */
-export function salesDataset(seed: number, variant: 'visible' | 'changed'): string {
+function dataset(seed: number, variant: 'visible' | 'changed'): string {
   const rng = createRng(deriveSeed(seed, `sales:${variant}`))
   const year = 2026
   const startMonth = rng.int(1, 4)
@@ -109,7 +107,7 @@ const CLEAN = `clean AS (
   FROM orders WHERE status = 'completed' AND amount IS NOT NULL
 )`
 
-export const SALES_TASKS: (SqlTask & { reference: string; stage: 'main' | 'followup' })[] = [
+const TASKS: SqlTaskDef[] = [
   {
     id: 'revenue',
     stage: 'main',
@@ -153,12 +151,7 @@ ORDER BY customer_id`,
   },
 ]
 
-export function salesTasksFor(stage: Stage): SqlTask[] {
-  const tasks = stage === 'main' ? SALES_TASKS.filter((t) => t.stage === 'main') : SALES_TASKS
-  return tasks.map(({ id, prompt, ordered }) => ({ id, prompt, ordered }))
-}
-
-export function salesInstructions(stage: Stage): string[] {
+function instructions(stage: Stage): string[] {
   if (stage === 'main') {
     return [
       'You have the orders and customers tables for a fictional shop. The export is messy: some orders appear twice, some amounts are missing, and refunded or pending orders must not count as revenue.',
@@ -175,44 +168,18 @@ export function salesInstructions(stage: Stage): string[] {
   return ['Answer in your own words, referring to your queries and results.']
 }
 
-export const SALES_EXPLAIN_QUESTIONS = [
+const EXPLAIN_QUESTIONS = [
   'How did your queries deal with duplicated orders, missing amounts and refunds?',
   'Looking at your results, what is the most important business problem or opportunity, and what would you recommend the shop do?',
 ]
 
-export const SQL_RUBRIC: Rubric = {
-  id: 'sql-core',
+export const SALES_CLEANUP: SqlChallenge = {
+  id: 'sales-cleanup',
   version: 1,
-  passThreshold: 0.7,
-  criteria: [
-    {
-      id: 'accuracy',
-      label: 'Numerical accuracy',
-      weight: 45,
-      source: 'sql:main',
-      description: 'Each main task returns the right result on your dataset.',
-    },
-    {
-      id: 'robustness',
-      label: 'Changed data and new request',
-      weight: 20,
-      source: 'sql:followup',
-      description: 'The same queries stay correct on a newer export; the new request is answered.',
-    },
-    {
-      id: 'insight',
-      label: 'Interpretation and recommendation',
-      weight: 25,
-      source: 'ai:insight',
-      description: 'A sound reading of the results and a sensible, specific recommendation.',
-    },
-    {
-      id: 'explanation',
-      label: 'Explanation of data handling',
-      weight: 10,
-      source: 'ai:explanation',
-      description: 'Explains duplicates, missing values and status filtering accurately.',
-    },
-  ],
-  gates: [{ criterionId: 'accuracy', minimum: 0.6 }],
+  title: 'Sales cleanup',
+  tables: TABLES,
+  dataset,
+  tasks: TASKS,
+  instructions,
+  explainQuestions: EXPLAIN_QUESTIONS,
 }

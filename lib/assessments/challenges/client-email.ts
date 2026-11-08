@@ -6,23 +6,10 @@
  * clarity, tone and adaptation against the rubric.
  */
 
-import type { Rubric, Stage } from '../types'
+import type { Rubric, Stage, StageWork } from '../types'
 import { createRng, deriveSeed } from '../random'
-
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
+import { formatDate, hasPlaceholder, mentionsDate, wordCount, type CheckResult } from './text'
+import type { WritingChallenge } from './writing'
 
 export interface EmailScenario {
   client: string
@@ -62,9 +49,7 @@ export function emailScenario(seed: number): EmailScenario {
   }
 }
 
-export const formatDate = (d: { day: number; month: number }) => `${MONTHS[d.month - 1]} ${d.day}`
-
-export function emailInstructions(seed: number, stage: Stage): string[] {
+function instructions(seed: number, stage: Stage): string[] {
   const s = emailScenario(seed)
   if (stage === 'main') {
     return [
@@ -83,54 +68,28 @@ export function emailInstructions(seed: number, stage: Stage): string[] {
   return ['Answer briefly in your own words.']
 }
 
-export const EMAIL_EXPLAIN_QUESTIONS = [
+const EXPLAIN_QUESTIONS = [
   'What did you put first in the email, and why?',
   'What did you change in the revision, and what did you deliberately leave out?',
 ]
 
-export const EMAIL_WORD_RANGE = { min: 70, max: 280 }
+const WORDS = { min: 70, max: 280 }
 
-export function wordCount(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length
-}
-
-/** True when the text names this date in a common written form. */
-export function mentionsDate(text: string, d: { day: number; month: number }): boolean {
-  const name = MONTHS[d.month - 1]
-  const short = name.slice(0, 3)
-  const day = String(d.day)
-  const mm = String(d.month).padStart(2, '0')
-  const dd = day.padStart(2, '0')
-  const patterns = [
-    new RegExp(`\\b(${name}|${short})\\.?\\s+${day}(st|nd|rd|th)?\\b`, 'i'),
-    new RegExp(`\\b${day}(st|nd|rd|th)?\\s+(of\\s+)?(${name}|${short})\\b`, 'i'),
-    new RegExp(`\\b\\d{4}-${mm}-${dd}\\b`),
-    new RegExp(`\\b0?${d.month}/0?${day}\\b`),
-    new RegExp(`\\b0?${day}/0?${d.month}\\b`),
-  ]
-  return patterns.some((p) => p.test(text))
-}
-
-export interface CheckResult {
-  id: string
-  label: string
-  passed: boolean
-}
-
-/** Deterministic checks for a stage's text. */
-export function emailChecks(seed: number, stage: 'main' | 'followup', text: string): CheckResult[] {
+/** Deterministic checks for a stage's email. */
+function checks(seed: number, stage: 'main' | 'followup', work: StageWork): CheckResult[] {
   const s = emailScenario(seed)
+  const text = work.text ?? ''
   const words = wordCount(text)
-  const checks: CheckResult[] = [
+  const results: CheckResult[] = [
     {
       id: 'length',
-      label: `Between ${EMAIL_WORD_RANGE.min} and ${EMAIL_WORD_RANGE.max} words`,
-      passed: words >= EMAIL_WORD_RANGE.min && words <= EMAIL_WORD_RANGE.max,
+      label: `Between ${WORDS.min} and ${WORDS.max} words`,
+      passed: words >= WORDS.min && words <= WORDS.max,
     },
     {
       id: 'no-placeholders',
       label: 'No placeholders left in',
-      passed: !/\[[^\]]*\]|\{[^}]*\}|\bTODO\b|\bXX+\b|<[^>]+>/i.test(text),
+      passed: !hasPlaceholder(text),
     },
     {
       id: 'new-date',
@@ -144,7 +103,7 @@ export function emailChecks(seed: number, stage: 'main' | 'followup', text: stri
     },
   ]
   if (stage === 'followup') {
-    checks.push(
+    results.push(
       {
         id: 'partial',
         label: `Mentions the ${s.partialPart} arriving early`,
@@ -160,7 +119,34 @@ export function emailChecks(seed: number, stage: 'main' | 'followup', text: stri
       }
     )
   }
-  return checks
+  return results
+}
+
+function facts(seed: number, stage: 'main' | 'followup'): string[] {
+  const s = emailScenario(seed)
+  return [
+    `Client: ${s.client}, project lead ${s.contact}`,
+    `Project: ${s.project}`,
+    `Original date: ${formatDate(s.originalDate)}`,
+    `New date: ${formatDate(s.newDate)}`,
+    `Reason: ${s.reason}`,
+    `Mitigation: ${s.mitigation}`,
+    ...(stage === 'followup'
+      ? [`Can ship early: ${s.partialPart}, by ${formatDate(s.originalDate)}`]
+      : []),
+  ]
+}
+
+export const DELAY_EMAIL: WritingChallenge = {
+  id: 'project-delay-email',
+  version: 1,
+  title: 'Project delay email',
+  instructions,
+  facts,
+  text: { label: 'Your email', placeholder: 'Hi …', minWords: WORDS.min, maxWords: WORDS.max },
+  checks,
+  explainQuestions: EXPLAIN_QUESTIONS,
+  workLabels: { main: 'First email', followup: 'Revised email' },
 }
 
 export const WRITING_RUBRIC: Rubric = {

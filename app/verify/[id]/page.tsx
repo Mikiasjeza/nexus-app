@@ -155,6 +155,11 @@ export default async function VerifyCredentialPage({ params }: Props) {
                 <li key={m}>{m}</li>
               ))}
             </ul>
+            {credential.note && (
+              <p className="mt-4 max-w-[40rem] text-sm leading-relaxed text-ink-faint">
+                {credential.note}
+              </p>
+            )}
           </section>
         )}
 

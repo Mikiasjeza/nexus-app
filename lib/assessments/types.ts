@@ -76,6 +76,33 @@ export interface SqlTask {
   ordered: boolean
 }
 
+/** A small read-only table in a writing brief, e.g. last year's results. */
+export interface BriefTable {
+  caption: string
+  columns: string[]
+  rows: (string | number)[][]
+}
+
+/** A short answer in a writing task: a figure, or a piece of interface text. */
+export interface WritingField {
+  id: string
+  label: string
+  /** Shown under the label, e.g. the original text being rewritten. */
+  hint?: string
+  /** A character limit, shown with a live count. The checks enforce it. */
+  maxChars?: number
+  /** Figures get a numeric keyboard and a narrow box. */
+  numeric?: boolean
+}
+
+/** The long answer in a writing task: an email, a memo, a plan. */
+export interface WritingText {
+  label: string
+  placeholder: string
+  minWords: number
+  maxWords: number
+}
+
 /** Rubric criterion: how one part of the score is produced. */
 export interface Criterion {
   id: string
@@ -148,13 +175,16 @@ export interface PublicBrief {
   starter?: string
   /** SQL: the previous stage's queries, by task id. */
   starterQueries?: Record<string, string>
+  /** Writing: the previous stage's short answers, by field id. */
+  starterFields?: Record<string, string>
   /** Code: where it runs, e.g. "Python (3.11.2)". */
   runtime?: string
   /** Code: the function the candidate must write. */
   functionName?: string
   visibleTests?: { id: string; description: string; args: unknown[]; expected: unknown }[]
   sql?: { tables: SqlTable[]; sample: Record<string, unknown[][]>; tasks: SqlTask[] }
-  writing?: { minWords: number; maxWords: number; facts: string[] }
+  /** Writing: the facts, any table, the short answers asked for and the long one. */
+  writing?: { facts: string[]; table?: BriefTable; fields?: WritingField[]; text?: WritingText }
   explainQuestions?: string[]
 }
 
@@ -163,5 +193,7 @@ export interface StageWork {
   code?: string
   queries?: Record<string, string>
   text?: string
+  /** Writing: short answers by field id. */
+  fields?: Record<string, string>
   answers?: string[]
 }
