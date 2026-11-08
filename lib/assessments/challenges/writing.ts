@@ -6,6 +6,7 @@
  */
 
 import type { BriefTable, Stage, StageWork, WritingField, WritingText } from '../types'
+import type { SheetTemplate } from '@/lib/sheets/sheet'
 import type { CheckResult } from './text'
 
 export interface WritingChallenge {
@@ -17,6 +18,8 @@ export interface WritingChallenge {
   /** The facts panel for a stage. */
   facts: (seed: number, stage: 'main' | 'followup') => string[]
   table?: (seed: number, stage: 'main' | 'followup') => BriefTable
+  /** A spreadsheet to build the work in. */
+  sheet?: (seed: number, stage: 'main' | 'followup') => SheetTemplate
   /** Short answers (figures, interface strings), when the task has them. */
   fields?: (seed: number, stage: 'main' | 'followup') => WritingField[]
   /** The long answer, when the task has one. */

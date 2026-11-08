@@ -19,6 +19,7 @@ import { codeChallenge, sqlChallenge, writingChallenge } from './challenges'
 import type { CodeChallenge } from './challenges/code'
 import { tasksFor, type SqlChallenge, type SqlTaskDef } from './challenges/sql'
 import { fieldIds, type WritingChallenge } from './challenges/writing'
+import { describeSheet, inBounds, isLocked, MAX_CELL_LENGTH } from '@/lib/sheets/sheet'
 import { runInQuickJS, stripTypes, type GuestCall, type GuestRun } from './runners/quickjs'
 import { javascriptRuntime, pythonRuntime, runInJudge0 } from './runners/judge0'
 import { DEV_PYTHON_RUNTIME, devPythonEnabled, runInPyodide } from './runners/pyodide-dev'
@@ -41,6 +42,8 @@ export const WORK_LIMITS = {
   query: 5_000,
   text: 10_000,
   field: 1_000,
+  /** Spreadsheet cells a stage may fill. */
+  cells: 400,
   answer: 4_000,
   answers: 5,
 }
@@ -84,6 +87,19 @@ export function cleanWork(ctx: Ctx, stage: Stage, raw: unknown): StageWork {
   if (challenge.text) work.text = str(input.text, WORK_LIMITS.text)
   if (challenge.fields) {
     work.fields = pick(input.fields, fieldIds(challenge, ctx.seed), WORK_LIMITS.field)
+  }
+  if (challenge.sheet) {
+    const template = challenge.sheet(ctx.seed, stage === 'main' ? 'main' : 'followup')
+    const given = (input.sheet && typeof input.sheet === 'object' ? input.sheet : {}) as Record<
+      string,
+      unknown
+    >
+    const ids = Object.keys(given).filter(
+      (id) => typeof given[id] === 'string' && inBounds(template, id) && !isLocked(template, id)
+    )
+    work.sheet = Object.fromEntries(
+      ids.slice(0, WORK_LIMITS.cells).map((id) => [id, str(given[id], MAX_CELL_LENGTH)])
+    )
   }
   return work
 }
@@ -206,9 +222,18 @@ export async function buildBrief(
     brief.starter = previous?.code ?? previous?.text
     brief.starterQueries = previous?.queries
     brief.starterFields = previous?.fields
-    // The field labels, so the submitted short answers show with them.
-    const fields = def.workspace === 'writing' ? writingOf(ctx).fields : undefined
-    if (fields) brief.writing = { facts: [], fields: fields(seed, 'followup') }
+    brief.starterSheet = previous?.sheet
+    // The field labels and the sheet, so the submitted work shows as it was.
+    if (def.workspace === 'writing') {
+      const writing = writingOf(ctx)
+      if (writing.fields || writing.sheet) {
+        brief.writing = {
+          facts: [],
+          fields: writing.fields?.(seed, 'followup'),
+          sheet: writing.sheet?.(seed, 'followup'),
+        }
+      }
+    }
     return brief
   }
 
@@ -233,11 +258,13 @@ export async function buildBrief(
     brief.writing = {
       facts: writing.facts(seed, stage),
       table: writing.table?.(seed, stage),
+      sheet: writing.sheet?.(seed, stage),
       fields: writing.fields?.(seed, stage),
       text: writing.text,
     }
     if (writing.text) brief.starter = stage === 'main' ? '' : (previous?.text ?? '')
     if (writing.fields) brief.starterFields = stage === 'main' ? {} : (previous?.fields ?? {})
+    if (writing.sheet) brief.starterSheet = stage === 'main' ? {} : (previous?.sheet ?? {})
   }
   return brief
 }
@@ -503,6 +530,13 @@ function writingBrief(ctx: Ctx, stage: 'main' | 'followup'): string[] {
   if (ctx.def.workspace !== 'writing') return []
   const challenge = writingOf(ctx)
   const lines = challenge.facts(ctx.seed, stage).map((fact) => `Fact: ${fact}`)
+  const sheet = challenge.sheet?.(ctx.seed, stage)
+  if (sheet) {
+    const label = (id: string) => sheet.cells[`A${id.slice(1)}`]?.value ?? id
+    for (const [id, cell] of Object.entries(sheet.cells)) {
+      if (cell.role === 'input') lines.push(`Sheet assumption ${id} (${label(id)}): ${cell.value}`)
+    }
+  }
   const table = challenge.table?.(ctx.seed, stage)
   if (table) {
     lines.push(
@@ -520,6 +554,11 @@ function writtenWork(ctx: Ctx, stage: 'main' | 'followup', work: StageWork | und
   const parts = (challenge.fields?.(ctx.seed, stage) ?? []).map(
     (field) => `${field.label}: ${work?.fields?.[field.id]?.trim() || '(blank)'}`
   )
+  const sheet = challenge.sheet?.(ctx.seed, stage)
+  if (sheet) {
+    const lines = describeSheet(sheet, work?.sheet)
+    parts.push(`Spreadsheet (cells the candidate filled):\n${lines.join('\n') || '(empty)'}`)
+  }
   if (challenge.text) parts.push(work?.text ?? '')
   return parts.join(challenge.text && parts.length > 1 ? '\n\n' : '\n')
 }

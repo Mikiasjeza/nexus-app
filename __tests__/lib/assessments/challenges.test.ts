@@ -18,10 +18,13 @@ import {
   type Ctx,
 } from '@/lib/assessments/engine'
 import {
+  CELL,
   EXPANSION_DECISION,
   expansionCase,
   expansionFigures,
+  expansionInputs,
 } from '@/lib/assessments/challenges/expansion'
+import { sheetValues } from '@/lib/sheets/sheet'
 import {
   LAUNCH_PLAN,
   itemsFor,
@@ -242,15 +245,55 @@ describe('expansion decision (finance)', () => {
     expect(failed(EXPANSION_DECISION.checks(seed, 'main', no))).toEqual([])
   })
 
-  it('marks a wrong figure wrong, and only that one', () => {
+  it('marks a wrong formula wrong, and only that one', () => {
     const seed = SEEDS[5]
     const answer = expansionAnswer(seed, false)
-    const ebit = Number(answer.fields!['y3-ebit'])
-    const off = {
+    // Interest cover against Year 1's interest plus one: wrong, and nothing depends on it.
+    const off = { ...answer, sheet: { ...answer.sheet, [CELL.cover3]: '=D20/B21+1' } }
+    expect(failed(EXPANSION_DECISION.checks(seed, 'main', off))).toEqual(['y3-cover'])
+  })
+
+  it('typed-in numbers pass on the plan but fail when the assumptions change', () => {
+    const seed = SEEDS[6]
+    const answer = expansionAnswer(seed, false)
+    const c = expansionCase(seed)
+    const template = EXPANSION_DECISION.sheet!(seed, 'main')
+    const values = sheetValues(template, answer.sheet, expansionInputs(c, false))
+    // Every model cell replaced by the number it showed.
+    const typed = Object.fromEntries(
+      Object.keys(answer.sheet!).map((id) => [id, String(values[id])])
+    )
+    expect(failed(EXPANSION_DECISION.checks(seed, 'main', { ...answer, sheet: typed }))).toEqual([
+      'downside',
+      'formulas',
+    ])
+    expect(
+      failed(EXPANSION_DECISION.checks(seed, 'followup', { ...answer, sheet: typed }))
+    ).toEqual(expect.arrayContaining(['y3-ebit', 'y3-cover', 'peak-cash', 'downside']))
+  })
+
+  it('a model that ignores the scenario cell fails only the downside case', () => {
+    const seed = SEEDS[7]
+    const answer = expansionAnswer(seed, false)
+    const ignoring = { ...answer, sheet: { ...answer.sheet, B16: '=B2' } }
+    expect(failed(EXPANSION_DECISION.checks(seed, 'main', ignoring))).toEqual(['downside'])
+  })
+
+  it('grading resets the assumptions, so experimenting with them costs nothing', () => {
+    const seed = SEEDS[8]
+    const answer = expansionAnswer(seed, false)
+    const playing = { ...answer, sheet: { ...answer.sheet, B13: '85%', B12: '12%' } }
+    expect(failed(EXPANSION_DECISION.checks(seed, 'main', playing))).toEqual([])
+  })
+
+  it('reads the margin as a share or a percentage, and the cash need with either sign', () => {
+    const seed = SEEDS[9]
+    const answer = expansionAnswer(seed, false)
+    const variant = {
       ...answer,
-      fields: { ...answer.fields, 'y3-ebit': String(Math.round(ebit * 1.05)) },
+      sheet: { ...answer.sheet, B27: '=D20/D16*100', B29: '=MIN(B23, B24:D24)' },
     }
-    expect(failed(EXPANSION_DECISION.checks(seed, 'main', off))).toEqual(['y3-ebit'])
+    expect(failed(EXPANSION_DECISION.checks(seed, 'main', variant))).toEqual([])
   })
 
   it('the answer key behaves like a new site: a slow first year, then profit', () => {
@@ -267,11 +310,15 @@ describe('expansion decision (finance)', () => {
     }
   })
 
-  it('the follow-up does not ask for revenue again', () => {
-    const ids = (stage: 'main' | 'followup') =>
-      EXPANSION_DECISION.fields!(1, stage).map((f) => f.id)
-    expect(ids('main')).toContain('y3-revenue')
-    expect(ids('followup')).not.toContain('y3-revenue')
+  it('the follow-up sheet already holds the new terms', () => {
+    const c = expansionCase(1)
+    const main = EXPANSION_DECISION.sheet!(1, 'main')
+    const follow = EXPANSION_DECISION.sheet!(1, 'followup')
+    expect(main.cells[CELL.fixed1].value).toBe(String(c.fixed1))
+    expect(follow.cells[CELL.fixed1].value).toBe(String(c.fixed1 + c.extraRent))
+    expect(follow.cells[CELL.rate].value).toBe(`${Math.round(c.newRate * 1000) / 10}%`)
+    expect(main.cells.A20).toEqual({ value: 'EBIT', role: 'label' })
+    expect(main.cells[CELL.ebit3].role).toBe('answer')
   })
 })
 
@@ -408,24 +455,43 @@ describe('interface copy rewrite (UX writing)', () => {
 })
 
 describe('writing workspace', () => {
-  it('briefs carry the facts, table, short answers and the long answer', async () => {
+  it('briefs carry the facts, the table, the sheet and the long answer', async () => {
     const ctx = ctxFor('financial-analysis', SEEDS[0])
     const main = await buildBrief(ctx, 'main', undefined)
     expect(main.title).toBe('Expansion decision')
-    expect(main.writing?.fields).toHaveLength(6)
+    expect(main.writing?.sheet?.cells[CELL.revenue1].role).toBe('input')
+    expect(main.writing?.fields).toBeUndefined()
     expect(main.writing?.table?.rows).toHaveLength(3)
     expect(main.writing?.text?.label).toBe('Your memo')
-    expect(main.starterFields).toEqual({})
+    expect(main.starterSheet).toEqual({})
 
     const previous = expansionAnswer(SEEDS[0], false)
     const follow = await buildBrief(ctx, 'followup', previous)
-    expect(follow.writing?.fields).toHaveLength(5)
-    expect(follow.starterFields).toEqual(previous.fields)
+    expect(follow.starterSheet).toEqual(previous.sheet)
     expect(follow.starter).toBe(previous.text)
 
     const explain = await buildBrief(ctx, 'explain', previous)
-    expect(explain.writing?.fields?.map((f) => f.id)).toContain('peak-cash')
-    expect(explain.starterFields).toEqual(previous.fields)
+    expect(explain.writing?.sheet).toBeDefined()
+    expect(explain.starterSheet).toEqual(previous.sheet)
+  })
+
+  it('keeps only sheet cells that exist and can be typed into', () => {
+    const ctx = ctxFor('financial-analysis', 7)
+    const work = cleanWork(ctx, 'main', {
+      sheet: {
+        D20: '=D16-D17',
+        A20: 'Renamed label',
+        E1: '=1',
+        Z9: '1',
+        B2: '2000000',
+        C5: 'x'.repeat(500),
+        D21: 42,
+      },
+      text: 'Memo',
+    })
+    expect(Object.keys(work.sheet!).sort()).toEqual(['B2', 'C5', 'D20'])
+    expect(work.sheet!.C5).toHaveLength(300)
+    expect(work.text).toBe('Memo')
   })
 
   it('a fields-only task has no text box', async () => {
@@ -473,11 +539,13 @@ describe('writing workspace', () => {
       followup: expansionAnswer(ctx.seed, true),
     }
     const input = gradingInput(ctx, 'independent', work, await evaluateDeterministic(ctx, work))
-    expect(input.brief.some((line) => line.startsWith('Fact: Year 1 revenue'))).toBe(true)
+    expect(
+      input.brief.some((line) => line.startsWith('Sheet assumption B2 (Year 1 revenue)'))
+    ).toBe(true)
     expect(input.brief.some((line) => line.startsWith('Table: '))).toBe(true)
     expect(input.brief.filter((line) => line.startsWith('Fact: New terms'))).toHaveLength(1)
-    expect(input.work[0].label).toBe('First figures and memo')
-    expect(input.work[0].content).toContain('Peak cash need ($): $')
+    expect(input.work[0].label).toBe('First model and memo')
+    expect(input.work[0].content).toContain('B29 (Peak cash need): =-MIN(B23, B24:D24) → $')
     expect(input.rubric.id).toBe('finance-core')
   })
 

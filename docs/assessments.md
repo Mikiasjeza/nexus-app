@@ -13,25 +13,37 @@ nothing; Judge0 (`infra/judge0`) on a small paid server is the alternative.
 Skills are grouped into labs, the verification environments shown on
 `/assessments` (`lib/assessments/labs.ts`):
 
-| Lab                        | Skill              | Workspace                     | Runs on / checked by                  | Challenges                               |
-| -------------------------- | ------------------ | ----------------------------- | ------------------------------------- | ---------------------------------------- |
-| Coding Lab                 | Python             | Code editor                   | Code runner (`infra/runner`)          | Ledger summary, Log triage, Reorder plan |
-| Coding Lab                 | JavaScript         | Code editor                   | Judge0 with Node.js 18+, else QuickJS | Ledger summary, Log triage, Reorder plan |
-| Coding Lab                 | TypeScript         | Code editor                   | Types removed, then as JavaScript     | Ledger summary, Log triage, Reorder plan |
-| Data Analytics Lab         | SQL                | Query editor                  | SQLite (sql.js) in a worker           | Sales cleanup, Customer retention report |
-| Finance Lab                | Financial Analysis | Figures + memo                | Figures checked against a model + AI  | Expansion decision                       |
-| Creative and Design Studio | UX Writing         | Strings with character limits | Deterministic checks + AI             | Interface copy rewrite                   |
-| Business Simulation Lab    | Project Management | Plan editor                   | Deterministic checks + AI             | Launch recovery plan                     |
-| Communication Studio       | Business Writing   | Text editor                   | Deterministic checks + AI             | Project delay email                      |
+| Lab                        | Skill              | Workspace                     | Runs on / checked by                     | Challenges                               |
+| -------------------------- | ------------------ | ----------------------------- | ---------------------------------------- | ---------------------------------------- |
+| Coding Lab                 | Python             | Code editor                   | Code runner (`infra/runner`)             | Ledger summary, Log triage, Reorder plan |
+| Coding Lab                 | JavaScript         | Code editor                   | Judge0 with Node.js 18+, else QuickJS    | Ledger summary, Log triage, Reorder plan |
+| Coding Lab                 | TypeScript         | Code editor                   | Types removed, then as JavaScript        | Ledger summary, Log triage, Reorder plan |
+| Data Analytics Lab         | SQL                | Query editor                  | SQLite (sql.js) in a worker              | Sales cleanup, Customer retention report |
+| Finance Lab                | Financial Analysis | Spreadsheet + memo            | Formulas re-run with changed inputs + AI | Expansion decision                       |
+| Creative and Design Studio | UX Writing         | Strings with character limits | Deterministic checks + AI                | Interface copy rewrite                   |
+| Business Simulation Lab    | Project Management | Plan editor                   | Deterministic checks + AI                | Launch recovery plan                     |
+| Communication Studio       | Business Writing   | Text editor                   | Deterministic checks + AI                | Project delay email                      |
 
 - **Financial Analysis.** A fictional company considers opening another
-  site. The candidate builds a three-year forecast from the base-case
-  assumptions and enters Year 3 revenue, EBIT, margin, interest cover, the
-  peak cash the company must put in and a downside-case EBIT, then writes a
-  memo. The follow-up raises the loan rate and the rent. Figures are checked
-  against a model computed from the seed (within half a percent); the
-  recommendation itself is never scored, so either answer can earn full
-  marks when the reasoning holds.
+  site. The candidate builds a three-year forecast in a spreadsheet that
+  holds the base-case assumptions, working out Year 3 revenue, EBIT, margin,
+  interest cover and the peak cash the company must put in, then writes a
+  memo. Grading resets the assumption cells, reads the results, then sets
+  the scenario cell to 85% (the downside case) and reads them again; in the
+  follow-up it does the same with the new loan rate and rent. Only formulas
+  that really depend on the assumptions pass: typed-in numbers fail as soon
+  as an assumption changes. Results are compared with a model computed from
+  the seed (within half a percent). The recommendation itself is never
+  scored, so either answer can earn full marks when the reasoning holds.
+- **The spreadsheet** (`lib/sheets`, `components/Assessments/Spreadsheet.tsx`)
+  has its own formula engine, shared by the browser and grading: numbers,
+  cell references and ranges, + − × ÷ ^ & and comparisons, and SUM, AVERAGE,
+  MIN, MAX, COUNT, ROUND, ABS, IF, AND, OR, NOT and IFERROR. It parses
+  formulas itself, with no eval: a formula can only read cells of its own
+  sheet (12 columns by 60 rows at most) and call those functions, so it is
+  data the app interprets, like a calculator, not a candidate program.
+  Reference loops show #CYCLE!; other problems show #DIV/0!, #REF!, #NAME?,
+  #VALUE! or #ERROR! instead of breaking anything.
 - **Project Management.** A client launch with a budget, a team member on
   leave, a contractor and dependencies. The plan has one line per work item
   ("Item — Owner — Date"); checks confirm every item has a suitable,
@@ -265,9 +277,11 @@ attempts answer "Assessments are not set up on this server yet."
   change an answer on every seed, and test that it does
   (`__tests__/lib/assessments/challenges.test.ts`).
 - **A writing challenge:** implement `WritingChallenge` (`writing.ts`):
-  facts, an optional table, short answers (`fields`, e.g. figures or
-  interface strings with character limits) and/or a long answer (`text`),
-  and deterministic checks per stage. Checks should be lenient about format
+  facts, an optional table, an optional spreadsheet (`sheet`: labels,
+  assumption inputs and answer cells), short answers (`fields`, e.g.
+  figures or interface strings with character limits) and/or a long answer
+  (`text`), and deterministic checks per stage. Sheet checks should reset
+  the inputs, change them and read the results again with `sheetValues`. Checks should be lenient about format
   and strict about substance; text helpers are in `text.ts`. Add a strong
   candidate's answer to `test-utils/assessment-fixtures.ts` and test it
   passes every check on many seeds.
@@ -288,8 +302,9 @@ accommodations; and take legal advice on the jurisdictions you hire in.
 ## Not built yet
 
 Each lab's full workspace: a file explorer, restricted terminal and
-documentation panel (Coding Lab); a spreadsheet and chart builder (Data
-Analytics and Finance Labs, which today take figures in answer boxes); a
+documentation panel (Coding Lab); a chart builder, and the spreadsheet for
+Excel and data-cleaning tasks (Data Analytics Lab; the Finance Lab has the
+spreadsheet); a
 design canvas (Creative and Design Studio); a project board, budget controls
 and complications introduced mid-task (Business Simulation Lab); revision
 history, presentations and audio or video (Communication Studio). Also
