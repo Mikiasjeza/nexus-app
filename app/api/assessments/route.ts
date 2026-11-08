@@ -85,7 +85,7 @@ export async function GET() {
             minutes: totalMinutes(def),
             stageMinutes: def.stageMinutes,
             modes: def.modes,
-            available: isAvailable(def),
+            available: await isAvailable(def),
             // Code that runs on the metered external runner needs an account, even in practice.
             practiceNeedsAccount: await usesExternalRunner(def),
             credentialValidMonths: def.credentialValidMonths,

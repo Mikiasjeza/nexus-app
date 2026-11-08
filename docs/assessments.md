@@ -13,16 +13,16 @@ nothing; Judge0 (`infra/judge0`) on a small paid server is the alternative.
 Skills are grouped into labs, the verification environments shown on
 `/assessments` (`lib/assessments/labs.ts`):
 
-| Lab                        | Skill              | Workspace                     | Runs on / checked by                  | Challenges                               |
-| -------------------------- | ------------------ | ----------------------------- | ------------------------------------- | ---------------------------------------- |
-| Coding Lab                 | Python             | Code editor                   | Code runner (`infra/runner`)          | Ledger summary, Log triage, Reorder plan |
-| Coding Lab                 | JavaScript         | Code editor                   | Judge0 with Node.js 18+, else QuickJS | Ledger summary, Log triage, Reorder plan |
-| Coding Lab                 | TypeScript         | Code editor                   | Types removed, then as JavaScript     | Ledger summary, Log triage, Reorder plan |
-| Data Analytics Lab         | SQL                | Query editor                  | SQLite (sql.js) in a worker           | Sales cleanup, Customer retention report |
-| Finance Lab                | Financial Analysis | Figures + memo                | Figures checked against a model + AI  | Expansion decision                       |
-| Creative and Design Studio | UX Writing         | Strings with character limits | Deterministic checks + AI             | Interface copy rewrite                   |
-| Business Simulation Lab    | Project Management | Plan editor                   | Deterministic checks + AI             | Launch recovery plan                     |
-| Communication Studio       | Business Writing   | Text editor                   | Deterministic checks + AI             | Project delay email                      |
+| Lab                        | Skill              | Workspace                     | Runs on / checked by                 | Challenges                               |
+| -------------------------- | ------------------ | ----------------------------- | ------------------------------------ | ---------------------------------------- |
+| Coding Lab                 | Python             | Code editor                   | Code runner (`infra/runner`)         | Ledger summary, Log triage, Reorder plan |
+| Coding Lab                 | JavaScript         | Code editor                   | Code runner (Node.js 18+)            | Ledger summary, Log triage, Reorder plan |
+| Coding Lab                 | TypeScript         | Code editor                   | Types removed, then as JavaScript    | Ledger summary, Log triage, Reorder plan |
+| Data Analytics Lab         | SQL                | Query editor                  | Code runner (Python's sqlite3)       | Sales cleanup, Customer retention report |
+| Finance Lab                | Financial Analysis | Figures + memo                | Figures checked against a model + AI | Expansion decision                       |
+| Creative and Design Studio | UX Writing         | Strings with character limits | Deterministic checks + AI            | Interface copy rewrite                   |
+| Business Simulation Lab    | Project Management | Plan editor                   | Deterministic checks + AI            | Launch recovery plan                     |
+| Communication Studio       | Business Writing   | Text editor                   | Deterministic checks + AI            | Project delay email                      |
 
 - **Financial Analysis.** A fictional company considers opening another
   site. The candidate builds a three-year forecast from the base-case
@@ -65,15 +65,21 @@ practise them all. Each
 challenge also varies its rules per attempt (fee threshold, reporting
 threshold, safety and cover days), so a leaked solution covers little.
 
-**Where code runs.** Python always runs on Judge0, on a separate server.
-JavaScript and TypeScript run there too whenever the Judge0 server offers
-Node.js 18 or newer (set `JUDGE0_JAVASCRIPT=off` to opt out); otherwise they
-run in QuickJS, a separate JavaScript engine compiled to WebAssembly, inside
-the app's process but with no access to Node, the filesystem or the network.
-Judge0 is the stronger isolation; QuickJS is the free fallback. Language
-versions come from the server's `/languages` list (newest Python 3, newest
-Node.js 18+) and are shown to candidates as "Runs on …". SQL always runs in
-sql.js on a throwaway in-memory database in a worker thread.
+**Where code runs.** In production every candidate program runs on the
+code runner, a separate server (`infra/runner` or Judge0), never on the app
+server: Python on its Python 3, JavaScript and TypeScript on its Node.js 18
+or newer, and SQL through a small Python program that uses Python's built-in
+sqlite3. Each SQL query gets a fresh in-memory copy of the dataset, made
+read-only, with an authorizer that allows reads only, a 1-second limit per
+query and a 64 MB heap. The answer key runs in a separate call from the
+candidate's queries, on the same engine. Without the runner, Python,
+JavaScript, TypeScript and SQL show as "Opening soon" and grading waits:
+the in-process sandboxes (QuickJS, sql.js, Pyodide) are for local
+development and tests only and refuse to run in production. Only parsing
+happens in the app (TypeScript types are stripped before the code is sent,
+and every query is checked to be a single SELECT). Language versions come
+from the server's `/languages` list (newest Python 3, newest Node.js 18+)
+and are shown to candidates as "Runs on …".
 
 **Local development.** With `ASSESSMENT_DEV_PYTHON=pyodide` (and any
 `NODE_ENV` but production), Python runs in Pyodide (CPython compiled to
@@ -178,12 +184,12 @@ attempts don't count.
 
 | Threat                              | Defence                                                                                                         |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Code reads secrets or the network   | QuickJS has no `process`, `require`, filesystem, timers or network; Judge0 runs with networking off             |
-| Infinite loops, memory bombs        | QuickJS interrupt deadline per call, 64 MB heap, 1 MB stack; Judge0 CPU/wall/memory limits                      |
+| Code reads secrets or the network   | All candidate code runs on the code runner, never the app server, in gVisor with networking off                 |
+| Infinite loops, memory bombs        | The runner's CPU, wall-clock, memory and process limits; SQL also gets a per-query time limit and a heap cap    |
 | Faking a pass from inside the code  | Answers leave the sandbox as JSON through frozen built-ins and are compared on the server                       |
 | Reading the hidden tests            | Generated server-side from a seed the browser never receives; runs show visible examples only                   |
 | Hard-coding answers                 | Follow-up re-runs SQL on a different export; hidden ledgers differ per seed                                     |
-| Destructive SQL                     | One SELECT/WITH only, on a fresh in-memory database per query, in a worker with a heap cap and a 4 s kill       |
+| Destructive SQL                     | One SELECT/WITH only, on a fresh read-only in-memory database per query, with a reads-only authorizer           |
 | Prompt injection into the AI grader | Work is fenced as data with a random tag; strict JSON schema; quotes verified; steering text flagged for review |
 | Double submits, races               | Conditional status updates and a unique index on submissions                                                    |
 
@@ -192,17 +198,16 @@ internal network.
 
 ## Configuration
 
-| Variable                                | What for                                                                |
-| --------------------------------------- | ----------------------------------------------------------------------- |
-| `AI_PROVIDER`, `AI_MODEL`, provider key | AI grading of judgement criteria. `groq` + `GROQ_API_KEY` is free.      |
-| `ADMIN_EMAILS`                          | Comma-separated reviewer emails.                                        |
-| `JUDGE0_URL` + `JUDGE0_AUTH_TOKEN`      | Your code runner (`infra/runner` or `infra/judge0`).                    |
-| `JUDGE0_RAPIDAPI_KEY`                   | Or Judge0 CE on RapidAPI, used when `JUDGE0_URL` is empty.              |
-| `JUDGE0_DAILY_LIMIT`                    | Judge0 calls per UTC day before runs pause (default 1,000).             |
-| `JUDGE0_JAVASCRIPT`                     | `off` keeps JavaScript/TypeScript in QuickJS even when Judge0 has Node. |
-| `JUDGE0_PYTHON_LANGUAGE_ID`             | Pin a Python version by id (normally detected).                         |
-| `JUDGE0_JAVASCRIPT_LANGUAGE_ID`         | Pin a Node.js version by id (normally detected).                        |
-| `ASSESSMENT_DEV_PYTHON`                 | `pyodide` runs Python locally without Judge0. Ignored in production.    |
+| Variable                                | What for                                                             |
+| --------------------------------------- | -------------------------------------------------------------------- |
+| `AI_PROVIDER`, `AI_MODEL`, provider key | AI grading of judgement criteria. `groq` + `GROQ_API_KEY` is free.   |
+| `ADMIN_EMAILS`                          | Comma-separated reviewer emails.                                     |
+| `JUDGE0_URL` + `JUDGE0_AUTH_TOKEN`      | Your code runner (`infra/runner` or `infra/judge0`).                 |
+| `JUDGE0_RAPIDAPI_KEY`                   | Or Judge0 CE on RapidAPI, used when `JUDGE0_URL` is empty.           |
+| `JUDGE0_DAILY_LIMIT`                    | Judge0 calls per UTC day before runs pause (default 1,000).          |
+| `JUDGE0_PYTHON_LANGUAGE_ID`             | Pin a Python version by id (normally detected).                      |
+| `JUDGE0_JAVASCRIPT_LANGUAGE_ID`         | Pin a Node.js version by id (normally detected).                     |
+| `ASSESSMENT_DEV_PYTHON`                 | `pyodide` runs Python locally without Judge0. Ignored in production. |
 
 ### Watching costs
 
@@ -295,8 +300,3 @@ and complications introduced mid-task (Business Simulation Lab); revision
 history, presentations and audio or video (Communication Studio). Also
 employer-sent assessment invitations and reports, and identity checks for
 level B. The types and the lifecycle already allow for them.
-
-JavaScript, TypeScript and SQL can run inside the app's own functions
-(QuickJS and sql.js, both WebAssembly sandboxes with time and memory caps).
-To keep every candidate program off the app server, run JavaScript on the
-code runner (`infra/runner`) and move SQL there too.

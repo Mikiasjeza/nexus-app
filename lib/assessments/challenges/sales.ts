@@ -8,7 +8,7 @@
 
 import type { SqlTable, Stage } from '../types'
 import { createRng, deriveSeed, round2 } from '../random'
-import { sqlString, type SqlChallenge, type SqlTaskDef } from './sql'
+import type { SqlChallenge, SqlRows, SqlTaskDef } from './sql'
 
 const TABLES: SqlTable[] = [
   {
@@ -52,7 +52,7 @@ const REGIONS = ['North', 'South', 'East', 'West']
 type Customer = { id: number; name: string; region: string; signup: string }
 type Order = { id: number; customer: number; date: string; amount: number | null; status: string }
 
-function dataset(seed: number, variant: 'visible' | 'changed'): string {
+function rows(seed: number, variant: 'visible' | 'changed'): SqlRows {
   const rng = createRng(deriveSeed(seed, `sales:${variant}`))
   const year = 2026
   const startMonth = rng.int(1, 4)
@@ -83,22 +83,11 @@ function dataset(seed: number, variant: 'visible' | 'changed'): string {
   }
   // Exact duplicate rows, as a bad export would produce.
   const dupes = rng.shuffle(orders).slice(0, rng.int(3, 6))
-  const rows = rng.shuffle([...orders, ...dupes])
-  const customerSql = customers
-    .map((c) => `(${c.id}, ${sqlString(c.name)}, ${sqlString(c.region)}, ${sqlString(c.signup)})`)
-    .join(',\n')
-  const orderSql = rows
-    .map(
-      (o) =>
-        `(${o.id}, ${o.customer}, ${sqlString(o.date)}, ${o.amount ?? 'NULL'}, ${sqlString(o.status)})`
-    )
-    .join(',\n')
-  return `CREATE TABLE customers (customer_id INTEGER, name TEXT, region TEXT, signup_date TEXT);
-CREATE TABLE orders (order_id INTEGER, customer_id INTEGER, order_date TEXT, amount REAL, status TEXT);
-INSERT INTO customers VALUES
-${customerSql};
-INSERT INTO orders VALUES
-${orderSql};`
+  const exported = rng.shuffle([...orders, ...dupes])
+  return {
+    customers: customers.map((c) => [c.id, c.name, c.region, c.signup]),
+    orders: exported.map((o) => [o.id, o.customer, o.date, o.amount, o.status]),
+  }
 }
 
 /** Completed orders, one row per order_id, with an amount. */
@@ -178,7 +167,7 @@ export const SALES_CLEANUP: SqlChallenge = {
   version: 1,
   title: 'Sales cleanup',
   tables: TABLES,
-  dataset,
+  rows,
   tasks: TASKS,
   instructions,
   explainQuestions: EXPLAIN_QUESTIONS,

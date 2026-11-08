@@ -1,6 +1,8 @@
 /**
- * Runs candidate SQL against a throwaway in-memory SQLite database (sql.js,
- * SQLite compiled to WebAssembly) inside a worker thread.
+ * Local development and tests only: runs SQL against a throwaway in-memory
+ * SQLite database (sql.js, SQLite compiled to WebAssembly) inside a worker
+ * thread. In production SQL runs on the code runner (sql-runner.ts), and
+ * this refuses to run.
  *
  * Every query gets a fresh database built from the challenge's setup script,
  * so nothing a query does can touch real data or other runs. Only a single
@@ -12,6 +14,7 @@
 import { Worker } from 'node:worker_threads'
 import { createRequire } from 'node:module'
 import path from 'node:path'
+import { LOCAL_ONLY_MESSAGE, localSandboxesAllowed } from './local'
 
 const BATCH_TIMEOUT_MS = 4000
 const MAX_ROWS = 500
@@ -106,6 +109,9 @@ function sqlJsPath(): string {
 
 /** Run several queries, each on its own fresh copy of the setup data. */
 export function runSqlBatch(setup: string, jobs: SqlJob[]): Promise<SqlResult[]> {
+  if (!localSandboxesAllowed()) {
+    return Promise.resolve(jobs.map((job) => ({ id: job.id, error: LOCAL_ONLY_MESSAGE })))
+  }
   const prepared: SqlJob[] = []
   const rejected: SqlResult[] = []
   for (const job of jobs) {

@@ -15,7 +15,8 @@ import { FINANCE_RUBRIC } from './challenges/expansion'
 import { PLAN_RUBRIC } from './challenges/launch-plan'
 import { UX_WRITING_RUBRIC } from './challenges/interface-copy'
 import type { Lab } from './labs'
-import { judge0Configured } from './runners/judge0'
+import { javascriptRuntime, judge0Configured, pythonRuntime } from './runners/judge0'
+import { localSandboxesAllowed } from './runners/local'
 import { devPythonEnabled } from './runners/pyodide-dev'
 
 export interface AssessmentDefinition {
@@ -41,8 +42,11 @@ export interface AssessmentDefinition {
   modes: AssessmentMode[]
   rubric: Rubric
   credentialValidMonths: number
-  /** A runner that must be configured before the assessment can be taken. */
-  requires?: 'python-runner'
+  /**
+   * What must be in place before the assessment can be taken. Candidate code
+   * runs on the code runner, never on the app server in production.
+   */
+  requires?: 'python-runner' | 'code-runner'
 }
 
 const CODE_MEASURES = [
@@ -91,6 +95,7 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     modes: ['independent', 'ai_assisted'],
     rubric: CODE_RUBRIC,
     credentialValidMonths: 24,
+    requires: 'code-runner',
   },
   {
     slug: 'typescript',
@@ -109,6 +114,7 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     modes: ['independent', 'ai_assisted'],
     rubric: CODE_RUBRIC,
     credentialValidMonths: 24,
+    requires: 'code-runner',
   },
   {
     slug: 'sql',
@@ -132,6 +138,7 @@ export const ASSESSMENTS: AssessmentDefinition[] = [
     modes: ['independent', 'ai_assisted'],
     rubric: SQL_RUBRIC,
     credentialValidMonths: 24,
+    requires: 'code-runner',
   },
   {
     slug: 'financial-analysis',
@@ -253,9 +260,19 @@ export function totalMinutes(def: AssessmentDefinition): number {
   return def.stageMinutes.main + def.stageMinutes.followup + def.stageMinutes.explain
 }
 
-/** Whether every runner this assessment needs is switched on. */
-export function isAvailable(def: AssessmentDefinition): boolean {
+/**
+ * Whether every runner this assessment needs is ready. JavaScript,
+ * TypeScript and SQL need the code runner's Node.js 18+ or Python 3 (local
+ * development falls back to in-process sandboxes); Python needs the runner
+ * switched on.
+ */
+export async function isAvailable(def: AssessmentDefinition): Promise<boolean> {
   if (def.requires === 'python-runner') return judge0Configured() || devPythonEnabled()
+  if (def.requires === 'code-runner') {
+    if (localSandboxesAllowed()) return true
+    const runtime = def.workspace === 'sql' ? await pythonRuntime() : await javascriptRuntime()
+    return runtime !== null
+  }
   return true
 }
 

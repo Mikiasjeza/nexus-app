@@ -1,9 +1,13 @@
 # Judge0 for Nexus
 
-Nexus runs candidates' Python (and JavaScript/TypeScript, when Judge0 offers
-Node.js 18+) on [Judge0 CE](https://github.com/judge0/judge0), an
-open-source sandbox for untrusted code, on its own server. Nothing a
+Nexus runs all candidate code (Python, JavaScript and TypeScript, and SQL
+through Python's sqlite3) on [Judge0 CE](https://github.com/judge0/judge0),
+an open-source sandbox for untrusted code, on its own server. Nothing a
 candidate writes runs on the Vercel app or near the database.
+
+JavaScript and TypeScript need Node.js 18 or newer on the server. If yours
+offers only an older one (Judge0 CE's standard image has Node.js 12), they
+stay closed; the free Nexus runner (`infra/runner`) has Node.js 22.
 
 ## Option A: your own server (recommended)
 
@@ -67,14 +71,16 @@ plans charge by volume. Your code still never runs on the Nexus servers.
 | `JUDGE0_URL`, `JUDGE0_AUTH_TOKEN` | Your server (option A).                                                                |
 | `JUDGE0_RAPIDAPI_KEY`             | RapidAPI (option B), used when `JUDGE0_URL` is empty.                                  |
 | `JUDGE0_DAILY_LIMIT`              | Calls to Judge0 per UTC day before runs pause (default 1,000). Grading gets 20% extra. |
-| `JUDGE0_JAVASCRIPT`               | `off` keeps JavaScript/TypeScript in the in-app QuickJS sandbox.                       |
 | `JUDGE0_PYTHON_LANGUAGE_ID`       | Pin a Python version by id. Normally detected: the newest Python 3 on the server.      |
 | `JUDGE0_JAVASCRIPT_LANGUAGE_ID`   | Pin a Node.js version by id. Normally detected: the newest Node.js 18 or later.        |
 
 ## How Nexus uses it
 
 Each run is one submission: the candidate's function plus a small harness
-that calls it once per test and prints the results as JSON. Hidden tests'
+that calls it once per test and prints the results as JSON. SQL is sent as
+a small Python program that runs each query on a fresh read-only copy of the
+dataset; grading makes two such calls (the answer key, then the candidate's
+queries). Hidden tests'
 expected answers never leave the Nexus server; comparison happens there.
 A typical attempt makes 10–40 practice runs and 2 grading runs. Attempts are
 capped at 60 runs and practice on Judge0 needs an account. At the daily cap,
