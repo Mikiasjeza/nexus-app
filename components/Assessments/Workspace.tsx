@@ -8,6 +8,7 @@ import Modal from '@/components/UI/Modal'
 import type { IntegrityEvent, PracticeRun, PublicBrief, StageWork } from '@/lib/api/assessments'
 import type { AssessmentMode, Stage } from '@/lib/assessments/types'
 import type { EditorLanguage } from './CodeEditor'
+import Spreadsheet from './Spreadsheet'
 import { formatValue } from '@/lib/assessments/format'
 
 const CodeEditor = dynamic(() => import('./CodeEditor'), {
@@ -59,6 +60,9 @@ function startingWork(brief: PublicBrief, saved: StageWork | null): StageWork {
   if (brief.writing?.text) work.text = saved?.text ?? brief.starter ?? ''
   if (brief.writing?.fields) {
     work.fields = { ...(brief.starterFields ?? {}), ...(saved?.fields ?? {}) }
+  }
+  if (brief.writing?.sheet) {
+    work.sheet = { ...(brief.starterSheet ?? {}), ...(saved?.sheet ?? {}) }
   }
   return work
 }
@@ -198,6 +202,15 @@ export default function Workspace({
         : null
     }
     if (brief.workspace === 'writing') {
+      const sheet = brief.writing?.sheet
+      if (
+        sheet &&
+        Object.entries(sheet.cells).some(
+          ([id, cell]) => cell.role === 'answer' && !(work.sheet?.[id] ?? '').trim()
+        )
+      ) {
+        return 'Some of the model is still empty.'
+      }
       if ((brief.writing?.fields ?? []).some((f) => !(work.fields?.[f.id] ?? '').trim())) {
         return 'Some answers are still empty.'
       }
@@ -430,6 +443,17 @@ export default function Workspace({
             </div>
           ) : (
             <div className="space-y-10">
+              {brief.writing?.sheet && (
+                <Spreadsheet
+                  template={brief.writing.sheet}
+                  edits={work.sheet ?? {}}
+                  onChange={(id, raw) =>
+                    setWork((prev) => ({ ...prev, sheet: { ...prev.sheet, [id]: raw } }))
+                  }
+                  onPaste={onPaste}
+                  label={`${title} spreadsheet`}
+                />
+              )}
               {brief.writing?.fields && brief.writing.fields.length > 0 && (
                 <FieldAnswers
                   fields={brief.writing.fields}
@@ -902,6 +926,13 @@ function ExplainStage({
             />
           ) : (
             <div className="space-y-4">
+              {brief.writing?.sheet && (
+                <Spreadsheet
+                  template={brief.writing.sheet}
+                  edits={brief.starterSheet ?? {}}
+                  label="Your submitted spreadsheet"
+                />
+              )}
               {brief.writing?.fields && brief.writing.fields.length > 0 && (
                 <dl className="space-y-3 text-sm">
                   {brief.writing.fields.map((field) => (

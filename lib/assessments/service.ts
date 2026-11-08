@@ -125,6 +125,7 @@ function hasContent(work: StageWork | undefined): boolean {
     work.text?.trim() ||
     Object.values(work.queries ?? {}).some((q) => q.trim()) ||
     Object.values(work.fields ?? {}).some((f) => f.trim()) ||
+    Object.values(work.sheet ?? {}).some((c) => c.trim()) ||
     work.answers?.some((a) => a.trim())
   )
 }

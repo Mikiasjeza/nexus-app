@@ -7,6 +7,8 @@
  * tests) live on the server only; the browser receives a `PublicBrief`.
  */
 
+import type { SheetTemplate } from '@/lib/sheets/sheet'
+
 export type AssessmentMode = 'independent' | 'ai_assisted'
 
 export type WorkspaceKind = 'code' | 'sql' | 'writing' | 'spreadsheet' | 'simulation'
@@ -177,6 +179,8 @@ export interface PublicBrief {
   starterQueries?: Record<string, string>
   /** Writing: the previous stage's short answers, by field id. */
   starterFields?: Record<string, string>
+  /** Writing: the previous stage's spreadsheet edits, by cell id. */
+  starterSheet?: Record<string, string>
   /** Code: where it runs, e.g. "Python (3.11.2)". */
   runtime?: string
   /** Code: the function the candidate must write. */
@@ -184,7 +188,14 @@ export interface PublicBrief {
   visibleTests?: { id: string; description: string; args: unknown[]; expected: unknown }[]
   sql?: { tables: SqlTable[]; sample: Record<string, unknown[][]>; tasks: SqlTask[] }
   /** Writing: the facts, any table, the short answers asked for and the long one. */
-  writing?: { facts: string[]; table?: BriefTable; fields?: WritingField[]; text?: WritingText }
+  writing?: {
+    facts: string[]
+    table?: BriefTable
+    /** A spreadsheet to build the work in, with the task's labels and assumptions. */
+    sheet?: SheetTemplate
+    fields?: WritingField[]
+    text?: WritingText
+  }
   explainQuestions?: string[]
 }
 
@@ -195,5 +206,7 @@ export interface StageWork {
   text?: string
   /** Writing: short answers by field id. */
   fields?: Record<string, string>
+  /** Writing: what was typed into the spreadsheet, by cell id. */
+  sheet?: Record<string, string>
   answers?: string[]
 }

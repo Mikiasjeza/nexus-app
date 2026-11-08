@@ -333,18 +333,37 @@ export function delayEmail(seed: number, revised: boolean): string {
   return lines.join('\n')
 }
 
-/** A strong candidate's figures and memo for the expansion decision. */
+/** A strong candidate's model for the expansion sheet: formulas that point at the assumptions. */
+export function expansionModel(): Record<string, string> {
+  const sheet: Record<string, string> = {
+    B16: '=B2*B13',
+    C16: '=B16*(1+B3)',
+    D16: '=C16*(1+B4)',
+    B18: '=B6',
+    C18: '=B18*(1+$B$7)',
+    D18: '=C18*(1+$B$7)',
+    B23: '=-(B8+B10-B11)',
+    B24: '=B23+B22',
+    C24: '=B24+C22',
+    D24: '=C24+D22',
+    B27: '=D20/D16',
+    B28: '=D20/D21',
+    B29: '=-MIN(B23, B24:D24)',
+  }
+  for (const col of ['B', 'C', 'D']) {
+    sheet[`${col}17`] = `=${col}16*$B$5`
+    sheet[`${col}19`] = '=$B$8/$B$9'
+    sheet[`${col}20`] = `=${col}16-${col}17-${col}18-${col}19`
+    sheet[`${col}21`] = '=$B$11*$B$12'
+    sheet[`${col}22`] = `=${col}20+${col}19-${col}21`
+  }
+  return sheet
+}
+
+/** A strong candidate's model and memo for the expansion decision. */
 export function expansionAnswer(seed: number, revised: boolean): StageWork {
   const c = expansionCase(seed)
   const f = expansionFigures(c, revised)
-  const fields: Record<string, string> = {
-    'y3-ebit': String(Math.round(f.ebit[2])),
-    'y3-margin': f.margin3.toFixed(1),
-    'y3-cover': f.cover3.toFixed(1),
-    'peak-cash': usd(f.peakCash),
-    'downside-ebit': String(Math.round(f.downsideEbit3)),
-  }
-  if (!revised) fields['y3-revenue'] = usd(f.revenue[2])
   const text = [
     `Hi ${c.owner},`,
     '',
@@ -356,7 +375,7 @@ export function expansionAnswer(seed: number, revised: boolean): StageWork {
     `The downside case matters: if revenue comes in 15% below plan, Year 3 EBIT is ${usd(f.downsideEbit3)}. That is a real risk, because the plan has the new site growing faster than our existing ${c.sites} ever did.`,
     'Before committing, I would test the growth assumption against our last opening, agree an overdraft for the first year, and set a review point after six months of trading.',
   ].join('\n')
-  return { fields, text }
+  return { sheet: expansionModel(), text }
 }
 
 /** A strong candidate's launch plan. The revision moves the contractor to the cheaper task. */

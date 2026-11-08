@@ -5,16 +5,21 @@
  * the company must put in and a downside case, and recommends in a memo.
  * The follow-up changes the loan rate and the rent.
  *
- * The figures are checked against a model computed from the seed. The
- * recommendation itself is never scored: either answer can earn full marks
+ * The candidate builds the model in a spreadsheet. Grading resets the
+ * assumption cells, reads the results, then changes the assumptions (the
+ * downside case, and the follow-up's new terms) and reads them again, so
+ * only formulas that really depend on the assumptions pass; typed-in
+ * numbers don't. The figures are compared with a model computed from the
+ * seed. The recommendation itself is never scored: either answer can earn full marks
  * when the reasoning holds, so the rubric tests financial reasoning rather
  * than one predetermined opinion.
  */
 
-import type { BriefTable, Rubric, Stage, StageWork, WritingField } from '../types'
+import type { BriefTable, Rubric, Stage, StageWork } from '../types'
 import { createRng, deriveSeed, round2 } from '../random'
+import { classify } from '@/lib/sheets/formula'
+import { numberAt, sheetValues, type CellFormat, type SheetTemplate } from '@/lib/sheets/sheet'
 import {
-  closeTo,
   hasPlaceholder,
   mentionsAmount,
   moneySlack,
@@ -148,23 +153,123 @@ export function expansionFigures(c: ExpansionCase, revised: boolean): ExpansionF
 
 const pct = (share: number) => `${round2(share * 100)}%`
 
+/** Where everything sits in the sheet. */
+export const CELL = {
+  revenue1: 'B2',
+  growth2: 'B3',
+  growth3: 'B4',
+  costOfSales: 'B5',
+  fixed1: 'B6',
+  fixedGrowth: 'B7',
+  capex: 'B8',
+  years: 'B9',
+  launch: 'B10',
+  loan: 'B11',
+  rate: 'B12',
+  scenario: 'B13',
+  revenue3: 'D16',
+  ebit3: 'D20',
+  margin3: 'B27',
+  cover3: 'B28',
+  peakCash: 'B29',
+} as const
+
+const ASSUMPTIONS: [string, string, CellFormat][] = [
+  [CELL.revenue1, 'Year 1 revenue', 'money'],
+  [CELL.growth2, 'Revenue growth, Year 2', 'percent'],
+  [CELL.growth3, 'Revenue growth, Year 3', 'percent'],
+  [CELL.costOfSales, 'Cost of sales, share of revenue', 'percent'],
+  [CELL.fixed1, 'Fixed costs, Year 1', 'money'],
+  [CELL.fixedGrowth, 'Fixed costs rise each year by', 'percent'],
+  [CELL.capex, 'Fit-out and equipment', 'money'],
+  [CELL.years, 'Depreciation, years', 'number'],
+  [CELL.launch, 'Launch costs', 'money'],
+  [CELL.loan, 'Bank loan', 'money'],
+  [CELL.rate, 'Loan interest rate', 'percent'],
+  [CELL.scenario, 'Revenue vs plan (scenario)', 'percent'],
+]
+
+const MODEL_ROWS: [number, string][] = [
+  [16, 'Revenue'],
+  [17, 'Cost of sales'],
+  [18, 'Fixed costs'],
+  [19, 'Depreciation'],
+  [20, 'EBIT'],
+  [21, 'Interest'],
+  [22, 'Cash flow'],
+  [24, 'Cash position at year end'],
+]
+
+/** The assumption cells, as typed, under the base or revised terms and a revenue scenario. */
+export function expansionInputs(
+  c: ExpansionCase,
+  revised: boolean,
+  scenario = 1
+): Record<string, string> {
+  return {
+    [CELL.revenue1]: String(c.revenue1),
+    [CELL.growth2]: pct(c.growth2),
+    [CELL.growth3]: pct(c.growth3),
+    [CELL.costOfSales]: pct(c.costOfSales),
+    [CELL.fixed1]: String(c.fixed1 + (revised ? c.extraRent : 0)),
+    [CELL.fixedGrowth]: pct(FIXED_GROWTH),
+    [CELL.capex]: String(c.capex),
+    [CELL.years]: String(DEPRECIATION_YEARS),
+    [CELL.launch]: String(c.launch),
+    [CELL.loan]: String(c.loan),
+    [CELL.rate]: pct(revised ? c.newRate : c.rate),
+    [CELL.scenario]: pct(scenario),
+  }
+}
+
+/** The sheet: the assumptions to build from, the forecast to fill, and the results. */
+function sheet(seed: number, stage: 'main' | 'followup'): SheetTemplate {
+  const c = expansionCase(seed)
+  const values = expansionInputs(c, stage === 'followup')
+  const cells: SheetTemplate['cells'] = {}
+  const label = (id: string, value: string) => (cells[id] = { value, role: 'label' })
+  const heading = (id: string, value: string) => (cells[id] = { value, role: 'heading' })
+  const answer = (id: string, format: CellFormat) =>
+    (cells[id] = { value: '', role: 'answer', format })
+
+  heading('A1', 'Assumptions')
+  for (const [id, text, format] of ASSUMPTIONS) {
+    label(`A${id.slice(1)}`, text)
+    cells[id] = { value: values[id], role: 'input', format }
+  }
+  heading('A15', 'Forecast')
+  heading('B15', 'Year 1')
+  heading('C15', 'Year 2')
+  heading('D15', 'Year 3')
+  for (const [row, text] of MODEL_ROWS) {
+    label(`A${row}`, text)
+    for (const col of ['B', 'C', 'D']) answer(`${col}${row}`, 'money')
+  }
+  label('A23', 'Cash position at opening')
+  answer('B23', 'money')
+  heading('A26', 'Results')
+  label('A27', 'Year 3 operating margin')
+  answer(CELL.margin3, 'percent')
+  label('A28', 'Year 3 interest cover')
+  answer(CELL.cover3, 'ratio')
+  label('A29', 'Peak cash need')
+  answer(CELL.peakCash, 'money')
+  return { columns: 4, rows: 30, cells }
+}
+
 function facts(seed: number, stage: 'main' | 'followup'): string[] {
   const c = expansionCase(seed)
   const lines = [
-    `Year 1 revenue: ${usd(c.revenue1)}. Growth: ${pct(c.growth2)} in Year 2, ${pct(c.growth3)} in Year 3.`,
-    `Cost of sales: ${pct(c.costOfSales)} of revenue.`,
-    `Fixed operating costs (rent, staff, utilities): ${usd(c.fixed1)} in Year 1, rising ${pct(FIXED_GROWTH)} a year.`,
-    `Fit-out and equipment: ${usd(c.capex)}, paid at opening, depreciated straight-line over ${DEPRECIATION_YEARS} years.`,
-    `Launch costs: ${usd(c.launch)}, paid at opening. They are part of the upfront cash, not of any year’s EBIT.`,
-    `Bank loan: ${usd(c.loan)} at ${pct(c.rate)} a year, interest only for these three years.`,
-    'Ignore tax and working capital.',
+    'The assumptions are in the sheet. Grading resets them to these values, so try other scenarios freely.',
+    `Fit-out is depreciated straight-line over ${DEPRECIATION_YEARS} years. Launch costs are paid at opening and are not part of any year’s EBIT.`,
+    'The loan is interest only for these three years. Ignore tax and working capital.',
     'EBIT = revenue − cost of sales − fixed costs − depreciation. Cash flow each year = EBIT + depreciation − interest.',
-    'Peak cash need: the most the company’s own cash is down at opening or at any year-end, counting the upfront amount net of the loan.',
-    `Downside case: revenue ${pct(DOWNSIDE)} below the base case every year, cost of sales still ${pct(c.costOfSales)} of revenue, everything else unchanged.`,
+    'Cash position at opening = −(fit-out + launch costs − loan). Each year end adds that year’s cash flow. Peak cash need = the lowest position, as a positive amount.',
+    `Downside case: set B13 to ${pct(1 - DOWNSIDE)}, so revenue is ${pct(DOWNSIDE)} below plan every year and cost of sales stays the same share of it.`,
   ]
   if (stage === 'followup') {
     lines.push(
-      `New terms: the loan rate is ${pct(c.newRate)}, and fixed costs are ${usd(c.extraRent)} higher from Year 1 (${usd(c.fixed1 + c.extraRent)}), still rising ${pct(FIXED_GROWTH)} a year.`
+      `New terms, already in the sheet: the loan rate is ${pct(c.newRate)} (B12), and fixed costs are ${usd(c.extraRent)} higher from Year 1 (B6), still rising ${pct(FIXED_GROWTH)} a year.`
     )
   }
   return lines
@@ -179,64 +284,72 @@ function table(seed: number): BriefTable {
   }
 }
 
-const FIELD_LABELS: Record<string, string> = {
-  'y3-revenue': 'Year 3 revenue ($)',
-  'y3-ebit': 'Year 3 operating profit, EBIT ($)',
-  'y3-margin': 'Year 3 operating margin (% of revenue, 1 decimal)',
-  'y3-cover': 'Year 3 interest cover (EBIT ÷ interest, 1 decimal)',
-  'peak-cash': 'Peak cash need ($)',
-  'downside-ebit': 'Downside case: Year 3 EBIT ($)',
-}
-
-function fields(seed: number, stage: 'main' | 'followup'): WritingField[] {
-  // Revenue doesn't change in the follow-up, so it isn't asked again.
-  const ids = Object.keys(FIELD_LABELS).filter((id) => stage === 'main' || id !== 'y3-revenue')
-  return ids.map((id) => ({ id, label: FIELD_LABELS[id], numeric: true }))
-}
-
 const RECOMMENDS =
   /\b(recommend|recommendation|go ahead|proceed|approve|should|shouldn['’]t|do not|don['’]t|hold off|wait|delay|postpone|reject|decline|pass on)\b/i
 
+/** The cells that must be formulas, so the model reacts when an assumption changes. */
+const RESULT_CELLS = [CELL.revenue3, CELL.ebit3, CELL.margin3, CELL.cover3, CELL.peakCash]
+
 function checks(seed: number, stage: 'main' | 'followup', work: StageWork): CheckResult[] {
   const c = expansionCase(seed)
-  const f = expansionFigures(c, stage === 'followup')
-  const given = work.fields ?? {}
+  const revised = stage === 'followup'
+  const f = expansionFigures(c, revised)
+  const template = sheet(seed, stage)
+  // Grading puts the task's assumptions back, then reads the candidate's formulas.
+  const plan = sheetValues(template, work.sheet, expansionInputs(c, revised))
+  const downside = sheetValues(template, work.sheet, expansionInputs(c, revised, 1 - DOWNSIDE))
+  const near = (value: number | null, expected: number, slack: number) =>
+    value !== null && Math.abs(value - expected) <= slack
+  const margin = numberAt(plan, CELL.margin3)
+  const peak = numberAt(plan, CELL.peakCash)
   const text = work.text ?? ''
   const words = wordCount(text)
   const results: CheckResult[] = []
-  if (stage === 'main') {
+  if (!revised) {
     results.push({
       id: 'y3-revenue',
-      label: 'Year 3 revenue is right',
-      passed: closeTo(given['y3-revenue'], f.revenue[2], moneySlack(f.revenue[2])),
+      label: `Year 3 revenue is right (${CELL.revenue3})`,
+      passed: near(numberAt(plan, CELL.revenue3), f.revenue[2], moneySlack(f.revenue[2])),
     })
   }
   results.push(
     {
       id: 'y3-ebit',
-      label: 'Year 3 EBIT is right',
-      passed: closeTo(given['y3-ebit'], f.ebit[2], moneySlack(f.ebit[2])),
+      label: `Year 3 EBIT is right (${CELL.ebit3})`,
+      passed: near(numberAt(plan, CELL.ebit3), f.ebit[2], moneySlack(f.ebit[2])),
     },
     {
       id: 'y3-margin',
-      label: 'Year 3 operating margin is right',
-      passed: closeTo(given['y3-margin'], f.margin3, 0.15),
+      label: `Year 3 operating margin is right (${CELL.margin3})`,
+      // As a share (0.099) or as a percentage (9.9): both read the same.
+      passed:
+        margin !== null &&
+        (Math.abs(margin * 100 - f.margin3) <= 0.15 || Math.abs(margin - f.margin3) <= 0.15),
     },
     {
       id: 'y3-cover',
-      label: 'Year 3 interest cover is right',
-      passed: closeTo(given['y3-cover'], f.cover3, 0.1),
+      label: `Year 3 interest cover is right (${CELL.cover3})`,
+      passed: near(numberAt(plan, CELL.cover3), f.cover3, 0.1),
     },
     {
       id: 'peak-cash',
-      label: 'Peak cash need is right',
-      passed: closeTo(given['peak-cash'], f.peakCash, moneySlack(f.peakCash)),
+      label: `Peak cash need is right (${CELL.peakCash})`,
+      passed: peak !== null && near(Math.abs(peak), f.peakCash, moneySlack(f.peakCash)),
     },
     {
-      id: 'downside-ebit',
-      label: 'Downside Year 3 EBIT is right',
-      passed: closeTo(given['downside-ebit'], f.downsideEbit3, moneySlack(f.downsideEbit3)),
-    },
+      id: 'downside',
+      label: `The downside case works: at ${pct(1 - DOWNSIDE)} in ${CELL.scenario}, Year 3 EBIT is right`,
+      passed: near(numberAt(downside, CELL.ebit3), f.downsideEbit3, moneySlack(f.downsideEbit3)),
+    }
+  )
+  if (!revised) {
+    results.push({
+      id: 'formulas',
+      label: 'The results are formulas, not typed numbers',
+      passed: RESULT_CELLS.every((id) => classify(work.sheet?.[id]) === 'formula'),
+    })
+  }
+  results.push(
     {
       id: 'length',
       label: `Memo between ${WORDS.min} and ${WORDS.max} words`,
@@ -248,22 +361,20 @@ function checks(seed: number, stage: 'main' | 'followup', work: StageWork): Chec
       id: 'states-cash',
       label: 'The memo states the peak cash need',
       passed: mentionsAmount(text, f.peakCash),
-    }
-  )
-  results.push(
-    stage === 'main'
+    },
+    revised
       ? {
-          id: 'downside',
+          id: 'new-terms',
+          label: 'The memo covers the new loan rate and costs',
+          passed: /(interest|rate|rent|landlord|bank|fixed costs)/i.test(text),
+        }
+      : {
+          id: 'downside-memo',
           label: 'The memo discusses the downside case',
           passed:
             /(downside|worse case|worst case|weaker|lower revenue|revenue (falls|drops|is lower)|15%)/i.test(
               text
             ),
-        }
-      : {
-          id: 'new-terms',
-          label: 'The memo covers the new loan rate and costs',
-          passed: /(interest|rate|rent|landlord|bank|fixed costs)/i.test(text),
         }
   )
   return results
@@ -273,15 +384,15 @@ function instructions(seed: number, stage: Stage): string[] {
   const c = expansionCase(seed)
   if (stage === 'main') {
     return [
-      `${c.owner}, the founder of ${c.company}, is deciding whether to open a new ${c.site} in ${c.city}. The facts give the base-case assumptions; the table shows how the existing ${c.sites} have done.`,
-      'Build a three-year forecast for the new site and fill in the figures. Use a spreadsheet or calculator if you like; the figures you enter and your memo are what gets graded.',
+      `${c.owner}, the founder of ${c.company}, is deciding whether to open a new ${c.site} in ${c.city}. The sheet holds the base-case assumptions; the table shows how the existing ${c.sites} have done.`,
+      `Build the three-year forecast in the sheet with formulas that point at the assumption cells, so it updates when an assumption changes. Make revenue use the scenario cell ${CELL.scenario}: grading checks your model at 100% and at ${pct(1 - DOWNSIDE)}.`,
       `Then write a short memo to ${c.owner}: your recommendation, the numbers behind it, the cash it needs and what the downside case means. Either recommendation can score full marks. What counts is the reasoning.`,
     ]
   }
   if (stage === 'followup') {
     return [
-      `The bank’s final offer is ${pct(c.newRate)}, not ${pct(c.rate)}, and the landlord wants ${usd(c.extraRent)} more a year from Year 1, rising with the other fixed costs.`,
-      'Update your figures and revise the memo. Say whether your recommendation changes, and why. Your previous answers are loaded below.',
+      `The bank’s final offer is ${pct(c.newRate)}, not ${pct(c.rate)}, and the landlord wants ${usd(c.extraRent)} more a year from Year 1, rising with the other fixed costs. Both are already in the sheet.`,
+      'Check that your model reflects them, and revise the memo. Say whether your recommendation changes, and why. Your previous work is loaded below.',
     ]
   }
   return ['Answer briefly in your own words.']
@@ -289,12 +400,12 @@ function instructions(seed: number, stage: Stage): string[] {
 
 export const EXPANSION_DECISION: WritingChallenge = {
   id: 'expansion-decision',
-  version: 1,
+  version: 2,
   title: 'Expansion decision',
   instructions,
   facts,
   table,
-  fields,
+  sheet,
   text: {
     label: 'Your memo',
     placeholder: 'Recommendation: …',
@@ -304,14 +415,14 @@ export const EXPANSION_DECISION: WritingChallenge = {
   checks,
   explainQuestions: [
     'Which base-case assumption worries you most, and how would you test it before committing?',
-    'Walk through how you worked out the peak cash need, and what it means for the company.',
+    'Walk through how your sheet works out the peak cash need, and what it means for the company.',
   ],
-  workLabels: { main: 'First figures and memo', followup: 'Revised figures and memo' },
+  workLabels: { main: 'First model and memo', followup: 'Revised model and memo' },
 }
 
 export const FINANCE_RUBRIC: Rubric = {
   id: 'finance-core',
-  version: 1,
+  version: 2,
   passThreshold: 0.7,
   criteria: [
     {
@@ -320,7 +431,7 @@ export const FINANCE_RUBRIC: Rubric = {
       weight: 35,
       source: 'checks:all',
       description:
-        'The forecast, ratios, cash need and downside figures are right in both versions, and the memo states the cash need.',
+        'The forecast, ratios, cash need and downside case are right in both versions, from formulas that react when the assumptions change, and the memo states the cash need.',
     },
     {
       id: 'reasoning',
