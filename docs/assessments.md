@@ -13,14 +13,31 @@ nothing; Judge0 (`infra/judge0`) on a small paid server is the alternative.
 Skills are grouped into labs, the verification environments shown on
 `/assessments` (`lib/assessments/labs.ts`):
 
-- **Python** (Coding Lab): code editor. Runs on the code runner (`infra/runner`). Challenges: Ledger summary, Log triage, Reorder plan.
-- **JavaScript** (Coding Lab): code editor. Runs on Judge0 with Node.js 18+, else QuickJS. Challenges: Ledger summary, Log triage, Reorder plan.
-- **TypeScript** (Coding Lab): code editor. Types removed, then run as JavaScript. Challenges: Ledger summary, Log triage, Reorder plan.
-- **SQL** (Data Analytics Lab): query editor. Runs on SQLite (sql.js) in a worker. Challenges: Sales cleanup, Customer retention report.
-- **Financial Analysis** (Finance Lab): spreadsheet and a memo. Formulas re-run with changed assumptions, plus AI. Challenge: Expansion decision.
-- **UX Writing** (Creative and Design Studio): interface strings with character limits. Deterministic checks plus AI. Challenge: Interface copy rewrite.
-- **Project Management** (Business Simulation Lab): plan editor. Deterministic checks plus AI. Challenge: Launch recovery plan.
-- **Business Writing** (Communication Studio): text editor. Deterministic checks plus AI. Challenge: Project delay email.
+**Coding Lab**
+
+- **Python**: code editor. Runs on the code runner (`infra/runner`). Challenges: Ledger summary, Log triage, Reorder plan.
+- **JavaScript**: code editor. Runs on Judge0 with Node.js 18+, else QuickJS. Challenges: Ledger summary, Log triage, Reorder plan.
+- **TypeScript**: code editor. Types removed, then run as JavaScript. Challenges: Ledger summary, Log triage, Reorder plan.
+
+**Data Analytics Lab**
+
+- **SQL**: query editor. Runs on SQLite (sql.js) in a worker. Challenges: Sales cleanup, Customer retention report.
+
+**Finance Lab**
+
+- **Financial Analysis**: spreadsheet and a memo. Formulas re-run with changed assumptions, plus AI. Challenge: Expansion decision.
+
+**Creative and Design Studio**
+
+- **UX Writing**: interface strings with character limits. Deterministic checks plus AI. Challenge: Interface copy rewrite.
+
+**Business Simulation Lab**
+
+- **Project Management**: plan editor. Deterministic checks plus AI. Challenge: Launch recovery plan.
+
+**Communication Studio**
+
+- **Business Writing**: text editor. Deterministic checks plus AI. Challenge: Project delay email.
 
 - **Financial Analysis.** A fictional company considers opening another
   site. The candidate builds a three-year forecast in a spreadsheet that
