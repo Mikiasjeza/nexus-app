@@ -13,16 +13,14 @@ nothing; Judge0 (`infra/judge0`) on a small paid server is the alternative.
 Skills are grouped into labs, the verification environments shown on
 `/assessments` (`lib/assessments/labs.ts`):
 
-| Lab                        | Skill              | Workspace                     | Runs on / checked by                  | Challenges                               |
-| -------------------------- | ------------------ | ----------------------------- | ------------------------------------- | ---------------------------------------- |
-| Coding Lab                 | Python             | Code editor                   | Code runner (`infra/runner`)          | Ledger summary, Log triage, Reorder plan |
-| Coding Lab                 | JavaScript         | Code editor                   | Judge0 with Node.js 18+, else QuickJS | Ledger summary, Log triage, Reorder plan |
-| Coding Lab                 | TypeScript         | Code editor                   | Types removed, then as JavaScript     | Ledger summary, Log triage, Reorder plan |
-| Data Analytics Lab         | SQL                | Query editor                  | SQLite (sql.js) in a worker           | Sales cleanup, Customer retention report |
-| Finance Lab                | Financial Analysis | Figures + memo                | Figures checked against a model + AI  | Expansion decision                       |
-| Creative and Design Studio | UX Writing         | Strings with character limits | Deterministic checks + AI             | Interface copy rewrite                   |
-| Business Simulation Lab    | Project Management | Plan editor                   | Deterministic checks + AI             | Launch recovery plan                     |
-| Communication Studio       | Business Writing   | Text editor                   | Deterministic checks + AI             | Project delay email                      |
+- **Python** (Coding Lab): code editor. Runs on the code runner (`infra/runner`). Challenges: Ledger summary, Log triage, Reorder plan.
+- **JavaScript** (Coding Lab): code editor. Runs on Judge0 with Node.js 18+, else QuickJS. Challenges: Ledger summary, Log triage, Reorder plan.
+- **TypeScript** (Coding Lab): code editor. Types removed, then run as JavaScript. Challenges: Ledger summary, Log triage, Reorder plan.
+- **SQL** (Data Analytics Lab): query editor. Runs on SQLite (sql.js) in a worker. Challenges: Sales cleanup, Customer retention report.
+- **Financial Analysis** (Finance Lab): figures and a memo. Figures checked against a model, plus AI. Challenge: Expansion decision.
+- **UX Writing** (Creative and Design Studio): interface strings with character limits. Deterministic checks plus AI. Challenge: Interface copy rewrite.
+- **Project Management** (Business Simulation Lab): plan editor. Deterministic checks plus AI. Challenge: Launch recovery plan.
+- **Business Writing** (Communication Studio): text editor. Deterministic checks plus AI. Challenge: Project delay email.
 
 - **Financial Analysis.** A fictional company considers opening another
   site. The candidate builds a three-year forecast from the base-case
