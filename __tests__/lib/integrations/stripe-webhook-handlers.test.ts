@@ -78,4 +78,17 @@ describe('stripe webhook handlers', () => {
     await handleInvoiceEvent({ subscription: null } as never)
     expect(mockSync.mock.calls).toEqual([['sub_1'], ['sub_2']])
   })
+
+  it('finds the subscription where newer Stripe API versions put it', async () => {
+    // Webhooks on API versions from 2025-03-31 (e.g. 2026-01-28.clover) drop invoice.subscription.
+    await handleInvoiceEvent({
+      parent: { subscription_details: { subscription: 'sub_new' } },
+    } as never)
+    await handlePaymentFailed({
+      parent: { subscription_details: { subscription: { id: 'sub_new_obj' } } },
+      attempt_count: 1,
+    } as never)
+    await handleInvoiceEvent({ parent: { subscription_details: null } } as never)
+    expect(mockSync.mock.calls).toEqual([['sub_new'], ['sub_new_obj']])
+  })
 })
