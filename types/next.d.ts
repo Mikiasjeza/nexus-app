@@ -16,8 +16,8 @@ declare module 'next/link' {
 
 declare module 'next/navigation' {
   export function useRouter(): {
-    push: (href: string) => void
-    replace: (href: string) => void
+    push: (href: string, options?: { scroll?: boolean }) => void
+    replace: (href: string, options?: { scroll?: boolean }) => void
     back: () => void
     forward: () => void
     refresh: () => void

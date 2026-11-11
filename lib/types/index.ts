@@ -55,6 +55,8 @@ export interface User {
   customSlug?: string
   onboardingComplete?: boolean
   discoverableByEmployers?: boolean
+  /** Set by the session route for accounts listed in ADMIN_EMAILS. */
+  isAdmin?: boolean
 }
 
 export interface Activity {

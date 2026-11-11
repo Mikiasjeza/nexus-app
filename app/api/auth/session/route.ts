@@ -5,6 +5,7 @@ import { getSessionUserId, hasGuestPreviewSession } from '@/lib/auth/session'
 import { dbErrorResponse } from '@/lib/db-error'
 import { env } from '@/lib/config/env'
 import { guestUser } from '@/lib/mock/guest'
+import { isAdminAccount } from '@/lib/auth/admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,6 +55,8 @@ export async function GET() {
         onboardingComplete: user.onboardingComplete,
         discoverableByEmployers: user.discoverableByEmployers,
         createdAt: user.createdAt.toISOString(),
+        // Only ever true for the person themselves; shows them the way to /admin.
+        ...(isAdminAccount(user) ? { isAdmin: true } : {}),
       },
     })
   } catch (e) {

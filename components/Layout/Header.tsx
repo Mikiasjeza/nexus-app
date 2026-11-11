@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Menu, X, LogOut, User as UserIcon } from 'lucide-react'
+import { Menu, X, LogOut, Shield, User as UserIcon } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { clsx } from 'clsx'
 import { useUser } from '@/lib/hooks/useUser'
@@ -198,6 +198,16 @@ export default function Header() {
                         <UserIcon className="h-4 w-4" aria-hidden />
                         Profile and settings
                       </Link>
+                      {user.isAdmin && (
+                        <Link
+                          href="/admin"
+                          role="menuitem"
+                          className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-muted transition-colors duration-150 hover:bg-pill hover:text-ink"
+                        >
+                          <Shield className="h-4 w-4" aria-hidden />
+                          Admin
+                        </Link>
+                      )}
                       <button
                         type="button"
                         role="menuitem"
@@ -251,6 +261,20 @@ export default function Header() {
                 </Link>
               )
             })}
+            {!marketing && user?.isAdmin && (
+              <Link
+                href="/admin"
+                aria-current={pathname.startsWith('/admin') ? 'page' : undefined}
+                className={clsx(
+                  'rounded-xl px-3 py-2.5 text-base transition-colors duration-150',
+                  pathname.startsWith('/admin')
+                    ? 'bg-pill text-ink'
+                    : 'text-ink-muted hover:text-ink'
+                )}
+              >
+                Admin
+              </Link>
+            )}
             {marketing && <div className="flex gap-2 px-1 pt-2">{authActions}</div>}
             {!marketing && user && (
               <button

@@ -13,6 +13,9 @@ jest.mock('@/lib/db', () => ({
       update: jest.fn(),
       findFirst: jest.fn(),
     },
+    session: { deleteMany: jest.fn() },
+    oAuthConnection: { deleteMany: jest.fn() },
+    $transaction: jest.fn(async (ops: unknown[]) => Promise.all(ops)),
   },
 }))
 
@@ -33,6 +36,8 @@ const { prisma } = jest.requireMock('@/lib/db') as {
       update: jest.Mock
       findFirst: jest.Mock
     }
+    session: { deleteMany: jest.Mock }
+    oAuthConnection: { deleteMany: jest.Mock }
   }
 }
 
@@ -127,5 +132,7 @@ describe('password reset routes', () => {
     expect(typeof updateArg.data.passwordHash).toBe('string')
     expect(updateArg.data.passwordHash).not.toBe('newPassword123')
     expect(await bcrypt.compare('newPassword123', updateArg.data.passwordHash)).toBe(true)
+    expect(prisma.session.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user_2' } })
+    expect(prisma.oAuthConnection.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user_2' } })
   })
 })

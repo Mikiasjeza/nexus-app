@@ -1,11 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
+import AdminNav from '@/components/Admin/AdminNav'
+import AdminUnavailable from '@/components/Admin/AdminUnavailable'
 import CriteriaList from '@/components/Assessments/CriteriaList'
 import type { CriterionScore, IntegrityFlag, Rubric, StageWork } from '@/lib/assessments/types'
 
@@ -149,15 +150,7 @@ export default function ReviewsPage() {
     }
   }
 
-  if (error) {
-    return (
-      <AppPageShell>
-        <div className="page-shell">
-          <PageHeader title="Not available" description={error} />
-        </div>
-      </AppPageShell>
-    )
-  }
+  if (error) return <AdminUnavailable message={error} />
   if (!queue) return <Loader />
 
   const judged = detail?.assessment?.rubric.criteria.filter((c) => c.source.startsWith('ai:')) ?? []
@@ -169,11 +162,7 @@ export default function ReviewsPage() {
           title="Reviews"
           rule
           description="Attempts waiting for a person, gradings that failed, and appeals. Automatic scores can’t be changed here."
-          actions={
-            <Link href="/admin/billing" className="button-base button-secondary min-h-11 px-5">
-              Billing
-            </Link>
-          }
+          actions={<AdminNav />}
         />
         <RunnerPanel runner={queue.runner} />
 

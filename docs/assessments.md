@@ -192,7 +192,8 @@ Credentials appear on the public Skill Passport (`/api/share/<id>` returns
 
 ## Reviews and appeals
 
-`/admin/reviews` is for accounts whose email is in `ADMIN_EMAILS`. Reviewers
+`/admin/reviews` is for accounts whose email is in `ADMIN_EMAILS` (the same
+accounts can open the rest of `/admin`; see `docs/SIGN_IN.md`). Reviewers
 see the work, the scores, the signals and the event counts; they score open
 judgement criteria (0–4) or decide they can't accept the work as the
 candidate's own (with a note the candidate sees). Deterministic scores can't
@@ -228,7 +229,7 @@ internal network.
 | Variable                                | What for                                                             |
 | --------------------------------------- | -------------------------------------------------------------------- |
 | `AI_PROVIDER`, `AI_MODEL`, provider key | AI grading of judgement criteria. `groq` + `GROQ_API_KEY` is free.   |
-| `ADMIN_EMAILS`                          | Comma-separated reviewer emails.                                     |
+| `ADMIN_EMAILS`                          | Comma-separated admin emails: reviews, billing and the user list.    |
 | `JUDGE0_URL` + `JUDGE0_AUTH_TOKEN`      | Your code runner (`infra/runner` or `infra/judge0`).                 |
 | `JUDGE0_RAPIDAPI_KEY`                   | Or Judge0 CE on RapidAPI, used when `JUDGE0_URL` is empty.           |
 | `JUDGE0_DAILY_LIMIT`                    | Judge0 calls per UTC day before runs pause (default 1,000).          |

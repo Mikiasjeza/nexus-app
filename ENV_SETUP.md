@@ -29,7 +29,11 @@ AI_MODEL="gemini-2.5-flash"
 NEXTAUTH_SECRET="your-secret-key-here"
 NEXTAUTH_URL="http://localhost:3000"
 
-# GitHub OAuth
+# Sign-in with Google, Microsoft or LinkedIn: see docs/SIGN_IN.md
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# GitHub OAuth (only for "Connect GitHub" in Settings; not a way to sign in)
 GITHUB_CLIENT_ID=""
 GITHUB_CLIENT_SECRET=""
 GITHUB_REDIRECT_URI="http://localhost:3000/api/auth/github/callback"

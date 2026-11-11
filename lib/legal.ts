@@ -13,7 +13,7 @@ export const LEGAL = {
   LEGAL_ENTITY: 'Mikias Jeza', // the owner, until a company is registered
   POSTAL_ADDRESS: '', // shown on legal pages when set
   GOVERNING_LAW: 'the State of Delaware, United States',
-  effectiveDate: 'November 7, 2026',
+  effectiveDate: 'November 11, 2026',
   contact: {
     privacy: 'mikiasjeza@gmail.com',
     legal: 'mikiasjeza@gmail.com',
@@ -54,7 +54,8 @@ export const STORAGE_ITEMS: StorageItem[] = [
     name: 'nexus_oauth_state',
     kind: 'Cookie',
     category: 'essential',
-    purpose: 'Protects "Continue with GitHub" sign-in against forgery (CSRF).',
+    purpose:
+      'Protects sign-in with Google, Microsoft or LinkedIn, and connecting GitHub, against forgery (CSRF).',
     duration: '10 minutes',
   },
   {
@@ -151,10 +152,32 @@ export const SUBPROCESSORS: Subprocessor[] = [
     policyUrl: 'https://resend.com/legal/privacy-policy',
   },
   {
+    name: 'Google (sign-in)',
+    purpose: 'Optional "Continue with Google" sign-in',
+    data: 'Google tells us your Google account ID, name and email address, and learns that you signed in to Nexus',
+    when: 'Only if you choose Google sign-in',
+    policyUrl: 'https://policies.google.com/privacy',
+  },
+  {
+    name: 'Microsoft (sign-in)',
+    purpose: 'Optional "Continue with Microsoft" sign-in',
+    data: 'Microsoft tells us your Microsoft account ID, name and email address, and learns that you signed in to Nexus',
+    when: 'Only if you choose Microsoft sign-in',
+    policyUrl: 'https://www.microsoft.com/privacy/privacystatement',
+  },
+  {
+    name: 'LinkedIn (sign-in)',
+    purpose: 'Optional "Continue with LinkedIn" sign-in',
+    data: 'LinkedIn tells us your LinkedIn member ID, name and email address, and learns that you signed in to Nexus',
+    when: 'Only if you choose LinkedIn sign-in',
+    policyUrl: 'https://www.linkedin.com/legal/privacy-policy',
+  },
+  {
     name: 'GitHub',
-    purpose: 'Optional "Continue with GitHub" sign-in',
-    data: 'Your public GitHub profile (username, name, avatar, email)',
-    when: 'Only if you choose GitHub sign-in',
+    purpose:
+      'Optional: connect GitHub so repositories you submit as evidence can be confirmed as yours',
+    data: 'GitHub tells us your GitHub user ID and username, and learns that you connected Nexus',
+    when: 'Only if you connect GitHub in Settings',
     policyUrl:
       'https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement',
   },

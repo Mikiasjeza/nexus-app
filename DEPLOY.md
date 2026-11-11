@@ -75,6 +75,9 @@ In the Vercel project setup, expand **Environment Variables** and add:
 
 ### Auth & OAuth
 
+Sign-in with Google, Microsoft or LinkedIn is set up in [docs/SIGN_IN.md](docs/SIGN_IN.md).
+GitHub is not a way to sign in; these settings are only for "Connect GitHub" in Settings.
+
 | Variable               | Value                                                      |
 | ---------------------- | ---------------------------------------------------------- |
 | `GITHUB_CLIENT_ID`     | From GitHub OAuth app                                      |
