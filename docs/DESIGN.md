@@ -1,6 +1,6 @@
 # Design
 
-Nexus looks like a report someone had fun with: a white page, black ink,
+Nexus looks like a report someone had fun with: a charcoal page, light ink,
 hairline rules, square corners, tight headings, and big flat fields of colour.
 
 The design language is adapted from the **Accountant website template by 8B**
@@ -13,25 +13,35 @@ and type scale come from it. The code is our own, and so is all the text.
 Defined once as CSS variables in `app/globals.css`, and read by Tailwind
 (`tailwind.config.ts`).
 
+The theme is called **Charcoal**. All of it is one set of colour channels in
+`:root`; every other colour is built from them, so a different theme only
+needs different channels.
+
 | Name        | Value     | Used for                                                    |
 | ----------- | --------- | ----------------------------------------------------------- |
-| `ground`    | `#ffffff` | The page                                                    |
-| `ink`       | `#0b0b0b` | Text, rules, black fields, the main button                  |
+| `ground`    | `#171717` | The page                                                    |
+| `raised`    | `#222221` | Panels that need a ground of their own (forms, menus)       |
+| `ink`       | `#f4f3ef` | Text, the main button                                       |
+| `ink-muted` | `#b8b6b0` | Secondary text                                              |
+| `ink-faint` | `#8f8d87` | Quiet labels                                                |
+| `rule`      | ink, 50%  | The rule above headings and around the navigation           |
+| `line`      | ink, 20%  | Hairlines between rows                                      |
 | `verified`  | `#fe7141` | Orange fields, the call-to-action, verified state in charts |
 | `lavender`  | `#cdabfe` | Lavender fields, highlights, hover fills                    |
 | `sage`      | `#d1ddd3` | Sage fields                                                 |
-| `ink-muted` | `#595959` | Secondary text on white                                     |
-| `ink-faint` | `#737373` | Quiet labels on white                                       |
 
-Text is never set in an accent colour on white. Where orange has to be text
-(a "Verified" label), use `verified-ink`, which is dark enough to read.
+Orange can be text on the charcoal page (`text-verified-ink`); inside a
+colour field `verified-ink` turns black. Anything that fills lavender or
+orange on hover also turns its text black (`#0b0b0b`).
 
 ### Black and colour fields
 
-Put `on-ink` on any black section and everything inside reads in white: the
-same class names (`text-ink`, `border-line`, `text-ink-muted`) flip. Put
-`on-accent` on an orange, lavender or sage section for black ink with darker
-secondary text. Each field takes one accent, never two.
+Put `on-ink` on a section to make it a near-black field (`#080808`) with
+white ink, a step darker than the page: the cover, the footer, menus and
+toasts. Put `on-accent` on an orange, lavender or sage section for black ink
+with darker secondary text and solid black rules. The same class names
+(`text-ink`, `border-rule`, `text-ink-muted`) read correctly inside either.
+Each field takes one accent, never two.
 
 ## Type
 
@@ -61,24 +71,28 @@ for labels, 700 only for big numerals and the wordmark.
 
 ## Components
 
-- **Navigation:** a 48px white bar with a black bottom rule. The black logo
+- **Navigation:** a 48px charcoal bar with a rule underneath. The logo
   block sits on the left; links are divided by vertical rules and fill
   lavender on hover.
-- **Buttons:** `button-primary` is black and turns orange on hover.
+- **Buttons:** `button-primary` is the ink colour (light) and turns orange on
+  hover.
   `button-accent` is the orange call-to-action. `button-secondary` is outlined.
-- **Pills** (filters, tabs): outlined squares; the selected one is black.
-- **Logo:** the word "Nexus", bold and tight, in a solid black block
-  (`components/UI/NexusLogo.tsx`). The app icon is a solid N on black
+- **Pills** (filters, tabs): outlined squares; the selected one is filled
+  with ink.
+- **Logo:** the word "Nexus", bold and tight, in a solid block of the ink
+  colour (`components/UI/NexusLogo.tsx`): light on the page, black inside a
+  colour field. The app icon is a solid white N on black
   (`lib/brand/nexus-mark.ts`).
 - **Footer:** black, with the interactive "nexus" wordmark printed in dots
   (`components/UI/HalftoneWord.tsx`).
-- **Charts:** orange carries the verified or passed series; black and greys
+- **Charts:** orange carries the verified or passed series; ink and greys
   carry everything else (`--chart-*` in `globals.css`).
 
 ## Do and don't
 
 - Do keep one accent per block, and one highlighted phrase per heading.
-- Do keep text black, white or grey.
+- Do keep text in the ink colours (light, grey) or black inside colour fields.
+- Printing and "Save as PDF" always use black on white paper.
 - Don't add shadows, rounded cards, gradients or stock icons.
 - Don't invent facts, numbers or testimonials for marketing pages: every
   figure on the home page comes from the product itself.

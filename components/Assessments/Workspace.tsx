@@ -227,7 +227,7 @@ export default function Workspace({
     <div className="pb-24">
       {/* Bar: where you are, how long is left, and the one action that matters. */}
       {/* Sticks directly under the site's navigation bar, edge to edge. */}
-      <div className="sticky top-12 z-30 -mx-[clamp(1rem,2vw,1.25rem)] mb-6 border-b border-ink bg-ground px-[clamp(1rem,2vw,1.25rem)] py-3">
+      <div className="sticky top-12 z-30 -mx-[clamp(1rem,2vw,1.25rem)] mb-6 border-b border-rule bg-ground px-[clamp(1rem,2vw,1.25rem)] py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-sm text-ink-muted">

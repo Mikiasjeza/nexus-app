@@ -133,8 +133,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: '#0b0b0b',
-                  color: '#ffffff',
+                  background: 'var(--ink)',
+                  color: 'var(--ground)',
                   borderRadius: '0',
                   fontSize: '14px',
                 },

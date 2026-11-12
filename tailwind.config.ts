@@ -10,8 +10,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Nexus colours (see docs/DESIGN.md): white ground, black ink, hairline
-        // rules, and three flat accents. They read CSS variables from
+        // Nexus colours (see docs/DESIGN.md): a charcoal ground, light ink,
+        // hairline rules, and three flat accents. They read CSS variables from
         // globals.css, so a black field (.on-ink) flips them for everything inside.
         ground: 'rgb(var(--ground-rgb) / <alpha-value>)',
         raised: 'rgb(var(--raised-rgb) / <alpha-value>)',
@@ -24,12 +24,14 @@ const config: Config = {
           DEFAULT: 'var(--line)',
           strong: 'var(--line-strong)',
         },
+        // The strong rule above headings and around the navigation.
+        rule: 'var(--rule)',
         pill: {
           DEFAULT: 'var(--pill)',
           hover: 'var(--pill-hover)',
         },
         // Orange: verified state and the call-to-action. As text, use
-        // verified-ink (dark enough to read on white).
+        // verified-ink (it turns black inside colour fields).
         verified: {
           DEFAULT: 'rgb(var(--verified-rgb) / <alpha-value>)',
           ink: 'rgb(var(--verified-ink-rgb) / <alpha-value>)',

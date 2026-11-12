@@ -47,8 +47,8 @@ const appNav = [
 // A nav cell: full bar height, divided from its neighbours by a rule, filling lavender on hover.
 const navLinkClass = (active: boolean) =>
   clsx(
-    'inline-flex h-12 items-center border-l border-ink px-4 text-[0.9375rem] font-medium tracking-[-0.02em] transition-colors duration-150 xl:px-5',
-    active ? 'bg-ink text-ground' : 'text-ink hover:bg-lavender'
+    'inline-flex h-12 items-center border-l border-rule px-4 text-[0.9375rem] font-medium tracking-[-0.02em] transition-colors duration-150 xl:px-5',
+    active ? 'bg-ink text-ground' : 'text-ink hover:bg-lavender hover:text-[#0b0b0b]'
   )
 
 /** One floating pill bar: wordmark, navigation, account. */
@@ -108,7 +108,7 @@ export default function Header() {
   }
 
   const menuItemClass =
-    'flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink transition-colors duration-150 hover:bg-lavender'
+    'flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink transition-colors duration-150 hover:bg-lavender hover:text-[#0b0b0b]'
 
   // The phone menu also carries the links the bar shows as buttons.
   const mobileItems = [
@@ -134,7 +134,7 @@ export default function Header() {
     : (user?.email?.slice(0, 2).toUpperCase() ?? '?')
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-ink bg-ground">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-rule bg-ground">
       <nav aria-label="Primary" className="flex h-12 items-stretch justify-between">
         <div className="flex items-stretch">
           <Link href={user ? '/dashboard' : '/'} className="flex" aria-label="Nexus home">
@@ -183,7 +183,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => setUserMenuOpen((o) => !o)}
-                className="flex h-12 w-12 items-center justify-center border-l border-ink text-xs font-semibold text-ink transition-colors duration-150 hover:bg-lavender"
+                className="flex h-12 w-12 items-center justify-center border-l border-rule text-xs font-semibold text-ink transition-colors duration-150 hover:bg-lavender hover:text-[#0b0b0b]"
                 aria-expanded={userMenuOpen}
                 aria-haspopup="menu"
                 aria-label="Account menu"
@@ -193,7 +193,7 @@ export default function Header() {
               {userMenuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-12 w-60 border border-ink bg-ground"
+                  className="absolute right-0 top-12 w-60 border border-rule bg-ground"
                 >
                   <div className="border-b border-line px-4 py-3">
                     <p className="truncate text-sm font-medium text-ink">
@@ -227,7 +227,7 @@ export default function Header() {
 
           <button
             type="button"
-            className="inline-flex h-12 items-center gap-2 border-l border-ink px-4 text-[0.9375rem] font-medium text-ink lg:hidden"
+            className="inline-flex h-12 items-center gap-2 border-l border-rule px-4 text-[0.9375rem] font-medium text-ink lg:hidden"
             onClick={() => setMobileMenuOpen((o) => !o)}
             aria-expanded={mobileMenuOpen}
             aria-controls="primary-mobile-navigation"

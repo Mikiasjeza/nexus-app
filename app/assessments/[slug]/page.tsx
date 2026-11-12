@@ -227,7 +227,7 @@ export default function AssessmentDetailPage() {
                               value={m}
                               checked={mode === m}
                               onChange={() => setMode(m)}
-                              className="accent-[#0b0b0b]"
+                              className="accent-[#fe7141]"
                             />
                             <span className="text-ink">{catalog.modes[m].label}</span>
                           </span>

@@ -144,15 +144,15 @@ export default function HomePage() {
       <section aria-labelledby="promises-heading" className="on-accent bg-lavender">
         <div className="page-shell grid gap-10 !py-14 md:!py-20 lg:grid-cols-12 lg:gap-4">
           <div className="lg:col-span-5">
-            <div className="border-t border-ink pt-5">
+            <div className="border-t border-rule pt-5">
               <h2 id="promises-heading" className="section-title">
                 Built around the proof, <span className="mark mark-white">not the profile.</span>
               </h2>
             </div>
             <ol className="mt-10">
               {PROMISES.map((promise, i) => (
-                <li key={promise.title} className="flex gap-4 border-t border-ink py-5">
-                  <span className="flex size-10 shrink-0 items-center justify-center border border-ink text-sm font-medium">
+                <li key={promise.title} className="flex gap-4 border-t border-rule py-5">
+                  <span className="flex size-10 shrink-0 items-center justify-center border border-rule text-sm font-medium">
                     {i + 1}
                   </span>
                   <div>
@@ -187,7 +187,7 @@ export default function HomePage() {
         <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-4">
           <div>
             <h3 className="label">Pillars</h3>
-            <ul className="mt-3 border-t border-ink">
+            <ul className="mt-3 border-t border-rule">
               {SKILL_PILLAR_DETAILS.map((pillar) => (
                 <li
                   key={pillar.category}
@@ -201,7 +201,7 @@ export default function HomePage() {
           </div>
           <div>
             <h3 className="label">Kinds of proof</h3>
-            <ul className="mt-3 border-t border-ink">
+            <ul className="mt-3 border-t border-rule">
               {PROOF_KINDS.map((kind) => (
                 <li
                   key={kind.name}
@@ -219,7 +219,7 @@ export default function HomePage() {
       {/* A CV against a passport, as an orange slab. */}
       <section aria-labelledby="compare-heading" className="on-accent bg-verified">
         <div className="page-shell !py-14 md:!py-20">
-          <div className="border-t border-ink pt-5">
+          <div className="border-t border-rule pt-5">
             <h2
               id="compare-heading"
               className="text-[clamp(2.5rem,7vw,6rem)] font-medium leading-[0.94] tracking-[-0.055em]"
@@ -253,7 +253,7 @@ export default function HomePage() {
       <section aria-label="Product facts" className="on-accent bg-sage">
         <dl className="page-shell grid grid-cols-2 gap-y-8 !py-10 md:grid-cols-4">
           {FACTS.map((fact) => (
-            <div key={fact.label} className="border-l border-ink pl-4">
+            <div key={fact.label} className="border-l border-rule pl-4">
               <dt className="sr-only">{fact.label}</dt>
               <dd className="text-[clamp(2rem,4vw,3.25rem)] font-medium leading-none tracking-[-0.055em]">
                 {fact.value}
@@ -295,7 +295,7 @@ export default function HomePage() {
 /** A check result the way the Verification page shows it, labelled as a sample. */
 function SampleCheck() {
   return (
-    <figure className="border border-ink bg-white p-5 text-[#0b0b0b] sm:p-7 lg:sticky lg:top-16">
+    <figure className="border border-rule bg-white p-5 text-[#0b0b0b] sm:p-7 lg:sticky lg:top-16">
       <figcaption className="label flex items-center justify-between border-b border-[#0b0b0b] pb-3">
         <span>Sample check</span>
         <span>React · Advanced</span>
@@ -333,11 +333,11 @@ function ComparisonList({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
       <h3 className="label">{title}</h3>
-      <ul className="mt-3 border-t border-ink">
+      <ul className="mt-3 border-t border-rule">
         {items.map((item) => (
           <li
             key={item}
-            className="border-b border-ink py-3.5 text-[1.0625rem] font-medium tracking-[-0.02em]"
+            className="border-b border-rule py-3.5 text-[1.0625rem] font-medium tracking-[-0.02em]"
           >
             {item}
           </li>

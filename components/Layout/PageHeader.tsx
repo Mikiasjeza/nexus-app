@@ -23,7 +23,7 @@ export default function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <header className="grid gap-5 border-t border-ink pb-8 pt-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+    <header className="grid gap-5 border-t border-rule pb-8 pt-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
       <div className="min-w-0">
         <h1 className="page-title">
           {title}

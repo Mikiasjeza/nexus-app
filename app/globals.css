@@ -3,50 +3,62 @@
 @tailwind utilities;
 
 /*
- * Nexus visual world: a report someone had fun with. White page, black ink,
- * hairline rules, square corners, tight grotesk headings, and flat colour
- * fields (orange, lavender, sage). Orange also marks verified state. Design
- * language adapted from the "Accountant" template by 8B (MIT); see
- * docs/DESIGN.md.
+ * Nexus visual world: a report someone had fun with. Hairline rules, square
+ * corners, tight grotesk headings, and flat colour fields (orange, lavender,
+ * sage) on a dark page. Orange also marks verified state. Design language
+ * adapted from the "Accountant" template by 8B (MIT); see docs/DESIGN.md.
  *
- * Colours are CSS variables so a dark field can flip them: put `on-ink` on
- * any black section and everything inside reads in white.
+ * Colours are CSS variables so a field can flip them: put `on-ink` on any
+ * black section and `on-accent` on any colour section, and the same class
+ * names read correctly inside.
  */
 
 @layer base {
-  /* Raw colour channels. Tailwind's colours read these, so opacity modifiers work. */
+  /*
+   * The theme (Charcoal) is this one set of raw colour channels; everything
+   * else is built from them below. Tailwind's colours read the channels, so
+   * opacity modifiers work. A different theme only needs different channels.
+   */
   :root {
-    --ground-rgb: 255 255 255;
-    --raised-rgb: 244 244 242;
-    --ink-rgb: 11 11 11;
-    --ink-muted-rgb: 89 89 89;
-    --ink-faint-rgb: 115 115 115;
+    --ground-rgb: 23 23 23;
+    --raised-rgb: 34 34 33;
+    --ink-rgb: 244 243 239;
+    --ink-muted-rgb: 184 182 176;
+    --ink-faint-rgb: 143 141 135;
     --verified-rgb: 254 113 65;
-    --verified-ink-rgb: 178 60 12;
-    --caution-rgb: 133 100 4;
-    --critical-rgb: 190 30 30;
-    --lavender-rgb: 205 171 254;
-    --sage-rgb: 209 221 211;
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-
-    /* Constants read by the Bklit charts and older components. */
-    --popover: #ffffff;
-    --popover-foreground: #0b0b0b;
-    --border: #d6d6d6;
-
-    color-scheme: light;
-  }
-
-  /* A black field: the same tokens, flipped. */
-  .on-ink {
-    --ground-rgb: 11 11 11;
-    --raised-rgb: 28 28 28;
-    --ink-rgb: 255 255 255;
-    --ink-muted-rgb: 190 190 190;
-    --ink-faint-rgb: 168 168 168;
     --verified-ink-rgb: 254 113 65;
     --caution-rgb: 230 200 90;
     --critical-rgb: 255 120 120;
+    --lavender-rgb: 205 171 254;
+    --sage-rgb: 209 221 211;
+    /* The colour of a "black field" (.on-ink), and of panels raised on it. */
+    --field-rgb: 8 8 8;
+    --field-raised-rgb: 26 26 26;
+    /* How strongly rules and quiet fills show against this ground. */
+    --line-alpha: 0.2;
+    --line-strong-alpha: 0.5;
+    --pill-alpha: 0.1;
+    --pill-hover-alpha: 0.18;
+    --rule-alpha: 0.5;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    color-scheme: dark;
+  }
+
+  /* A black field: white ink on the theme's field colour. */
+  .on-ink {
+    --ground-rgb: var(--field-rgb);
+    --raised-rgb: var(--field-raised-rgb);
+    --ink-rgb: 255 255 255;
+    --ink-muted-rgb: 190 190 190;
+    --ink-faint-rgb: 160 160 160;
+    --verified-ink-rgb: 254 113 65;
+    --caution-rgb: 230 200 90;
+    --critical-rgb: 255 120 120;
+    --line-alpha: 0.24;
+    --line-strong-alpha: 0.55;
+    --pill-alpha: 0.12;
+    --pill-hover-alpha: 0.2;
+    --rule-alpha: 0.5;
     background: var(--ground);
     color: var(--ink);
     color-scheme: dark;
@@ -60,8 +72,13 @@
     --ink-muted-rgb: 40 40 40;
     --ink-faint-rgb: 60 60 60;
     --verified-ink-rgb: 11 11 11;
-    --caution-rgb: 133 100 4;
+    --caution-rgb: 110 80 0;
     --critical-rgb: 150 20 20;
+    --line-alpha: 0.4;
+    --line-strong-alpha: 0.6;
+    --pill-alpha: 0.08;
+    --pill-hover-alpha: 0.16;
+    --rule-alpha: 1;
     color: var(--ink);
     color-scheme: light;
   }
@@ -70,7 +87,7 @@
    * The named colours, built from the channels. A custom property is worked
    * out where it is declared, so these are declared again on every field
    * that changes the channels; otherwise a black field would inherit the
-   * page's black ink.
+   * page's ink.
    */
   :root,
   .on-ink,
@@ -80,10 +97,12 @@
     --ink: rgb(var(--ink-rgb));
     --ink-muted: rgb(var(--ink-muted-rgb));
     --ink-faint: rgb(var(--ink-faint-rgb));
-    --line: rgb(var(--ink-rgb) / 0.16);
-    --line-strong: rgb(var(--ink-rgb) / 0.4);
-    --pill: rgb(var(--ink-rgb) / 0.06);
-    --pill-hover: rgb(var(--ink-rgb) / 0.12);
+    --line: rgb(var(--ink-rgb) / var(--line-alpha));
+    --line-strong: rgb(var(--ink-rgb) / var(--line-strong-alpha));
+    --pill: rgb(var(--ink-rgb) / var(--pill-alpha));
+    --pill-hover: rgb(var(--ink-rgb) / var(--pill-hover-alpha));
+    /* The full-width rule above a heading: solid ink on light, softer on dark. */
+    --rule: rgb(var(--ink-rgb) / var(--rule-alpha));
     --verified: rgb(var(--verified-rgb));
     --verified-ink: rgb(var(--verified-ink-rgb));
     --caution: rgb(var(--caution-rgb));
@@ -96,6 +115,9 @@
     --foreground: var(--ink);
     --card: var(--ground);
     --card-foreground: var(--ink);
+    --popover: var(--ground);
+    --popover-foreground: var(--ink);
+    --border: var(--line-strong);
     --muted: var(--raised);
     --muted-foreground: var(--ink-muted);
     --bg-primary: var(--ground);
@@ -106,16 +128,44 @@
     --accent: var(--verified);
     --accent-hover: var(--verified-ink);
     --danger: var(--critical);
-  }
-  /* Rules need more weight on colour than on white, and more again on black. */
-  .on-accent {
-    --line: rgb(var(--ink-rgb) / 0.4);
-  }
-  .on-ink {
-    --line: rgb(var(--ink-rgb) / 0.28);
-    --line-strong: rgb(var(--ink-rgb) / 0.55);
-    --pill: rgb(var(--ink-rgb) / 0.12);
-    --pill-hover: rgb(var(--ink-rgb) / 0.2);
+
+    /* Bklit chart tokens. Orange carries the verified (or passed) series; ink
+       and greys carry everything else. Tooltips are the page, inverted. */
+    --chart-1: var(--verified);
+    --chart-2: var(--ink);
+    --chart-3: var(--ink-faint);
+    --chart-4: var(--lavender);
+    --chart-5: var(--sage);
+    --chart-positive: var(--verified-ink);
+    --chart-negative: var(--critical);
+    --chart-background: var(--ground);
+    --chart-foreground: var(--ink);
+    --chart-foreground-muted: var(--ink-muted);
+    --chart-line-primary: var(--chart-1);
+    --chart-line-secondary: var(--chart-2);
+    --chart-crosshair: rgb(var(--ink-rgb) / 0.4);
+    --chart-grid: rgb(var(--ink-rgb) / 0.12);
+    --chart-brush-border: var(--chart-grid);
+    --chart-tooltip-background: var(--ink);
+    --chart-tooltip-foreground: var(--ground);
+    --chart-tooltip-muted: rgb(var(--ground-rgb) / 0.65);
+    --chart-marker-background: var(--ground);
+    --chart-marker-border: rgb(var(--ink-rgb) / 0.3);
+    --chart-marker-foreground: var(--ink);
+    --chart-label: var(--ink-muted);
+    --chart-scale-mix: var(--ground);
+    --chart-scale-01: var(--raised);
+    --chart-scale-02: color-mix(in oklab, var(--chart-1) 30%, var(--chart-scale-mix));
+    --chart-scale-03: color-mix(in oklab, var(--chart-1) 52%, var(--chart-scale-mix));
+    --chart-scale-04: color-mix(in oklab, var(--chart-1) 76%, var(--chart-scale-mix));
+    --chart-scale-05: var(--chart-1);
+    --chart-scale-pattern-color: var(--ground);
+    --chart-indicator-color: var(--ink);
+    --chart-indicator-secondary-color: var(--ground);
+    --chart-marker-badge-background: var(--ink);
+    --chart-marker-badge-foreground: var(--ground);
+    --chart-segment-background: rgb(var(--ink-rgb) / 0.04);
+    --chart-segment-line: rgb(var(--ink-rgb) / 0.3);
   }
 
   * {
@@ -212,46 +262,6 @@
   time {
     font-variant-numeric: tabular-nums;
   }
-  /* Bklit chart tokens, mapped onto the Nexus world. Orange carries the
-     candidate's own (verified) series; white and greys carry comparisons. */
-  :root {
-    --chart-1: #fe7141;
-    --chart-2: #0b0b0b;
-    --chart-3: #a8a8a8;
-    --chart-4: #cdabfe;
-    --chart-5: #d1ddd3;
-    --chart-positive: #b23c0c;
-    --chart-negative: #be1e1e;
-    --chart-background: #ffffff;
-    --chart-foreground: #0b0b0b;
-    --chart-foreground-muted: #595959;
-    --chart-line-primary: var(--chart-1);
-    --chart-line-secondary: var(--chart-2);
-    --chart-crosshair: rgba(11, 11, 11, 0.4);
-    --chart-grid: rgba(11, 11, 11, 0.12);
-    --chart-brush-border: var(--chart-grid);
-    --chart-tooltip-background: #0b0b0b;
-    --chart-tooltip-foreground: #ffffff;
-    --chart-tooltip-muted: #a8a8a8;
-    --chart-marker-background: #ffffff;
-    --chart-marker-border: rgba(11, 11, 11, 0.3);
-    --chart-marker-foreground: #0b0b0b;
-    --chart-label: #595959;
-    --chart-scale-mix: #ffffff;
-    --chart-scale-01: #ededeb;
-    --chart-scale-02: color-mix(in oklab, var(--chart-1) 30%, var(--chart-scale-mix));
-    --chart-scale-03: color-mix(in oklab, var(--chart-1) 52%, var(--chart-scale-mix));
-    --chart-scale-04: color-mix(in oklab, var(--chart-1) 76%, var(--chart-scale-mix));
-    --chart-scale-05: var(--chart-1);
-    --chart-scale-pattern-color: #ffffff;
-    --chart-indicator-color: #0b0b0b;
-    --chart-indicator-secondary-color: #ffffff;
-    --chart-marker-badge-background: #0b0b0b;
-    --chart-marker-badge-foreground: #ffffff;
-    --chart-segment-background: rgba(11, 11, 11, 0.04);
-    --chart-segment-line: rgba(11, 11, 11, 0.3);
-  }
-
   /* Ring and pie centres size their text with container units. Tailwind v3
      has no container-query plugin here, so declare the container directly. */
   .\@container\/chart-center {
@@ -302,7 +312,7 @@
   .section-head {
     display: grid;
     gap: 1rem 1rem;
-    border-top: 1px solid var(--ink);
+    border-top: 1px solid var(--rule);
     padding-top: 1.25rem;
   }
   @media (min-width: 900px) {
@@ -472,7 +482,7 @@
   }
   .button-danger:hover {
     background: var(--critical);
-    color: #ffffff;
+    color: #0b0b0b;
   }
 
   .metalab-oauth {
@@ -491,6 +501,7 @@
   }
   .metalab-oauth:hover {
     background: var(--lavender);
+    color: #0b0b0b;
   }
 
   .metalab-link {

@@ -271,7 +271,7 @@ function PromotionEditor({ promotion, onSaved }: { promotion: Promotion; onSaved
             type="checkbox"
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
-            className="size-4 accent-[#0b0b0b]"
+            className="size-4 accent-[#fe7141]"
           />
           On
         </label>
