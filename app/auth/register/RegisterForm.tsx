@@ -66,7 +66,9 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
   return (
     <AuthShell maxWidthClass="max-w-md">
       <div className="mb-10">
-        <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">Create account</h1>
+        <h1 className="mb-3 font-display text-[2.5rem] font-medium leading-tight">
+          Create account
+        </h1>
         <p className="text-base metalab-muted">
           {providers.length > 0
             ? 'Continue with an account you already have, or use your email'

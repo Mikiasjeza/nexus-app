@@ -55,7 +55,7 @@ export default function EmployerSignupPage() {
   return (
     <AuthShell>
       <div className="mb-10">
-        <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">
+        <h1 className="mb-3 font-display text-[2.5rem] font-medium leading-tight">
           Register as employer
         </h1>
         <p className="text-sm leading-relaxed metalab-muted md:text-base">

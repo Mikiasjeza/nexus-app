@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Hanken_Grotesk, Noto_Serif_Display } from 'next/font/google'
+import { Google_Sans } from 'next/font/google'
 import * as Sentry from '@sentry/nextjs'
 import { getMetadataBase, getAppUrl } from '@/lib/config/env'
 import './globals.css'
@@ -19,19 +19,14 @@ const PageTransition = dynamic(() => import('@/components/PageTransition'), {
   ssr: true,
 })
 
-// UI text. Variable, so in-between weights such as 350 are available.
-const sans = Hanken_Grotesk({
+// One typeface does everything; headings get their character from tight tracking.
+const sans = Google_Sans({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-sans',
   display: 'swap',
-})
-
-// Thin high-contrast display serif for page titles and headline numbers.
-const display = Noto_Serif_Display({
-  subsets: ['latin'],
-  weight: ['200', '300'],
-  variable: '--font-display',
-  display: 'swap',
+  // next/font has no fallback metrics for this face yet; skip the adjustment.
+  adjustFontFallback: false,
 })
 
 function getSafeMetadataBase(): URL {
@@ -121,12 +116,12 @@ export function generateMetadata(): Metadata {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${sans.variable} ${display.variable}`}>
+    <html lang="en" className={sans.variable}>
       <body className="flex min-h-screen flex-col bg-ground font-sans text-ink">
         <ErrorBoundary>
           <ToastProvider>
             <Header />
-            <main className="w-full flex-1 pt-20">
+            <main className="w-full flex-1 pt-12">
               <OnboardingGuard>
                 <PageTransition>{children}</PageTransition>
               </OnboardingGuard>
@@ -138,9 +133,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: '#1d1b18',
-                  color: '#e9e4da',
-                  borderRadius: '9999px',
+                  background: '#0b0b0b',
+                  color: '#ffffff',
+                  borderRadius: '0',
                   fontSize: '14px',
                 },
               }}

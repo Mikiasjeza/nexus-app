@@ -20,7 +20,7 @@ export default function AuthShell({
     <AppPageShell className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center px-4 py-16">
       <div className={`w-full ${maxWidthClass}`}>
         {beforeCard ? <div className="mb-6">{beforeCard}</div> : null}
-        <div className="rounded-[1.5rem] border border-line bg-raised p-8 lg:p-10">{children}</div>
+        <div className=" border border-line bg-raised p-8 lg:p-10">{children}</div>
       </div>
     </AppPageShell>
   )

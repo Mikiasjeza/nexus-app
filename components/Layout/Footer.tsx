@@ -65,7 +65,7 @@ export default function Footer() {
 
   return (
     <HalftoneWordmarkFooter
-      className="mt-24"
+      className="on-ink"
       printed={printed}
       label="Nexus"
       meta={

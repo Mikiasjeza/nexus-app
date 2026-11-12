@@ -475,7 +475,7 @@ function SettingsSection({
     <section
       id={id}
       aria-labelledby={`${title.replace(/\W+/g, '-').toLowerCase()}-heading`}
-      className="grid scroll-mt-28 gap-6 border-b border-line py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10"
+      className="grid scroll-mt-16 gap-6 border-b border-line py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10"
     >
       <div>
         <h2

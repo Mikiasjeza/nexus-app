@@ -38,7 +38,7 @@ export default function LegalPage({ title, summary, current, children }: LegalPa
         </nav>
 
         <div className="grid gap-12 border-t border-line pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-          <aside className="text-[0.9375rem] leading-relaxed text-ink lg:sticky lg:top-28 lg:self-start">
+          <aside className="text-[0.9375rem] leading-relaxed text-ink lg:sticky lg:top-16 lg:self-start">
             {summary}
           </aside>
           <article className="max-w-[44rem] space-y-12 text-[0.9375rem] leading-relaxed text-ink-muted">
@@ -60,7 +60,7 @@ export function Section({
   children: ReactNode
 }) {
   return (
-    <section id={id} className="scroll-mt-28">
+    <section id={id} className="scroll-mt-16">
       <h2 className="mb-4 text-lg font-medium text-ink">{title}</h2>
       <div className="space-y-4">{children}</div>
     </section>

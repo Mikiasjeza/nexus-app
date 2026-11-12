@@ -353,7 +353,7 @@ export default function MarketplacePage() {
                         <p className="text-sm text-ink-faint">{match.job?.company.name}</p>
                       </div>
                       <span
-                        className={`display-number text-3xl leading-none ${match.recommended ? 'text-verified' : ''}`}
+                        className={`display-number text-3xl leading-none ${match.recommended ? 'text-verified-ink' : ''}`}
                       >
                         {match.matchScore}%
                       </span>
@@ -505,7 +505,7 @@ export default function MarketplacePage() {
                   className="grid gap-6 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_12rem]"
                 >
                   <div>
-                    <h3 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight">
+                    <h3 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-medium leading-tight">
                       {job.title}
                     </h3>
                     <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
@@ -546,7 +546,7 @@ export default function MarketplacePage() {
                   <div className="flex flex-col gap-3 lg:items-end">
                     <p className="flex items-baseline gap-2">
                       <span
-                        className={`display-number text-4xl leading-none ${job.match >= 85 ? 'text-verified' : ''}`}
+                        className={`display-number text-4xl leading-none ${job.match >= 85 ? 'text-verified-ink' : ''}`}
                       >
                         {job.match}%
                       </span>

@@ -238,7 +238,7 @@ export default function OnboardingPage() {
                         : 'border-line hover:border-line-strong'
                     }`}
                   >
-                    <span className="block font-display text-[1.75rem] font-light leading-tight">
+                    <span className="block font-display text-[1.75rem] font-medium leading-tight">
                       {goal.title}
                     </span>
                     <span className="mt-2 block text-sm text-ink-muted">{goal.description}</span>

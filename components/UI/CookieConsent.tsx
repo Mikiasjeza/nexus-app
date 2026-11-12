@@ -54,13 +54,13 @@ export default function CookieConsent() {
           aria-modal="false"
           aria-labelledby="cookie-consent-title"
           aria-describedby="cookie-consent-desc"
-          className="cookie-consent-banner fixed bottom-0 left-0 right-0 z-[60] border-t border-line bg-[rgba(21,20,18,0.96)] backdrop-blur-md"
+          className="cookie-consent-banner fixed bottom-0 left-0 right-0 z-[60] on-ink border-t border-line"
         >
           <div className="mx-auto max-w-7xl px-4 py-4 md:px-6 md:py-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
               <div className="flex flex-1 items-start gap-4">
                 <div className="mt-0.5 hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pill sm:flex">
-                  <Cookie className="h-5 w-5 text-verified" aria-hidden />
+                  <Cookie className="h-5 w-5 text-verified-ink" aria-hidden />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 id="cookie-consent-title" className="mb-1 text-sm font-medium text-ink">

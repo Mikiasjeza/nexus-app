@@ -301,7 +301,7 @@ export default function BillingPanel({ disabled = false }: { disabled?: boolean 
               className={`flex gap-3 text-sm ${summary.entitlements.length > 0 ? '' : 'text-ink-faint'}`}
             >
               <Check
-                className={`mt-0.5 size-4 shrink-0 ${summary.entitlements.length > 0 ? 'text-verified' : ''}`}
+                className={`mt-0.5 size-4 shrink-0 ${summary.entitlements.length > 0 ? 'text-verified-ink' : ''}`}
                 aria-hidden
               />
               {ENTITLEMENT_LABELS[entitlement]}

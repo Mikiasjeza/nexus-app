@@ -311,7 +311,7 @@ export default function AnalyticsPage() {
             {focus.map((item) => (
               <div key={item.label} className="border-t border-line py-5">
                 <dt className="text-sm text-ink-faint">{item.label}</dt>
-                <dd className="mt-1 font-display text-3xl font-light">{item.value}</dd>
+                <dd className="mt-1 font-display text-3xl font-medium">{item.value}</dd>
                 <dd className="mt-1 text-sm text-ink-muted">{item.note}</dd>
               </div>
             ))}
@@ -355,7 +355,7 @@ export default function AnalyticsPage() {
                     {LEVEL_LABELS[skill.level]}
                   </span>
                   <span
-                    className={`text-right text-sm ${skill.verified ? 'text-verified' : 'text-ink-faint'}`}
+                    className={`text-right text-sm ${skill.verified ? 'text-verified-ink' : 'text-ink-faint'}`}
                   >
                     {skill.verified ? 'Verified' : 'Not verified yet'}
                   </span>

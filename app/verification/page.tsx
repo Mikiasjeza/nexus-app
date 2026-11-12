@@ -810,7 +810,7 @@ export default function VerificationPage() {
           <section
             aria-labelledby="result-heading"
             aria-live="polite"
-            className="min-w-0 lg:sticky lg:top-24 lg:self-start"
+            className="min-w-0 lg:sticky lg:top-16 lg:self-start"
           >
             <h2 id="result-heading" className="mb-4 text-sm font-normal text-ink-muted">
               {isSampleResult ? 'Sample result' : 'Result'}

@@ -141,7 +141,7 @@ export default function CompanyPage() {
                   className="grid gap-4 py-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] lg:items-center"
                 >
                   <div>
-                    <h3 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight">
+                    <h3 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-medium leading-tight">
                       {job.title}
                     </h3>
                     <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">

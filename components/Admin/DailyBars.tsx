@@ -70,11 +70,7 @@ export default function DailyBars({ days, segments, caption, emptyMessage }: Pro
         <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-muted">
           {segments.map((segment) => (
             <li key={segment.key} className="flex items-center gap-2">
-              <span
-                aria-hidden
-                className="size-2.5 rounded-[3px]"
-                style={{ background: segment.color }}
-              />
+              <span aria-hidden className="size-2.5" style={{ background: segment.color }} />
               {segment.label}
             </li>
           ))}

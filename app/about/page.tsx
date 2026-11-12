@@ -95,7 +95,7 @@ export default function AboutPage() {
                 <span className="display-number text-2xl text-ink-faint">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-light leading-tight">
+                <h3 className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-medium leading-tight">
                   {step.title}
                 </h3>
                 <p className="max-w-[30rem] leading-relaxed text-ink-muted">{step.body}</p>

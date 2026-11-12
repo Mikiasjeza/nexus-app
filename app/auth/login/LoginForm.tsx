@@ -86,7 +86,7 @@ export default function LoginForm({ providers }: { providers: ProviderSummary[] 
   return (
     <AuthShell>
       <div className="mb-10">
-        <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">Welcome back</h1>
+        <h1 className="mb-3 font-display text-[2.5rem] font-medium leading-tight">Welcome back</h1>
         <p className="text-base metalab-muted">Sign in to continue your passport</p>
         <button
           type="button"
@@ -176,7 +176,7 @@ export default function LoginForm({ providers }: { providers: ProviderSummary[] 
           <label className="flex cursor-pointer items-center gap-2.5 text-sm metalab-muted">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-line-strong bg-ground/70 text-verified focus:ring-verified/40"
+              className="h-4 w-4 rounded border-line-strong bg-ground/70 text-verified-ink focus:ring-verified/40"
             />
             <span>Remember me</span>
           </label>

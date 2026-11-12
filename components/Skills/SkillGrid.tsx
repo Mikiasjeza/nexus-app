@@ -42,7 +42,7 @@ export default function SkillGrid({
   if (filteredSkills.length === 0) {
     return (
       <div className="border-y border-line py-16">
-        <p className="font-display text-3xl font-light">No skills here yet</p>
+        <p className="font-display text-3xl font-medium">No skills here yet</p>
         <p className="mt-3 max-w-md text-ink-muted">
           {emptyMessage ??
             (filterCategory || filterLevel || searchQuery

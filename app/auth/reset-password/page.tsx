@@ -98,7 +98,7 @@ function ResetPasswordPageContent() {
 
   return (
     <AuthShell beforeCard={backLink}>
-      <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">
+      <h1 className="mb-3 font-display text-[2.5rem] font-medium leading-tight">
         Choose a password
       </h1>
       <p className="mb-8 text-sm leading-relaxed metalab-muted">
