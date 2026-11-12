@@ -17,7 +17,7 @@ interface SkillCardProps {
 
 function Status({ verified }: { verified?: boolean }) {
   return verified ? (
-    <span className="inline-flex items-center gap-2 text-sm text-verified">
+    <span className="inline-flex items-center gap-2 text-sm text-verified-ink">
       <span className="size-1.5 rounded-full bg-verified" aria-hidden />
       Verified
     </span>
@@ -62,7 +62,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
     return (
       <div className="grid items-center gap-x-6 gap-y-3 py-6 md:grid-cols-[minmax(0,2.2fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_minmax(0,1fr)_12.5rem]">
         <div className="min-w-0">
-          <p className="truncate font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight">
+          <p className="truncate font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-medium leading-tight">
             {skill.name}
           </p>
           {skill.description && (
@@ -86,7 +86,7 @@ function SkillCard({ skill, onEdit, onDelete, viewMode = 'grid' }: SkillCardProp
         <Status verified={skill.verified} />
       </p>
       <div className="flex-1">
-        <h3 className="mt-6 font-display text-[2rem] font-light leading-tight">{skill.name}</h3>
+        <h3 className="mt-6 font-display text-[2rem] font-medium leading-tight">{skill.name}</h3>
         {skill.description && (
           <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-muted">
             {skill.description}

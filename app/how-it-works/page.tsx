@@ -52,7 +52,7 @@ export default function HowItWorksPage() {
                 {String(i + 1).padStart(2, '0')}
               </span>
               <div>
-                <h2 className="font-display text-[clamp(2rem,3.5vw,3rem)] font-light leading-tight">
+                <h2 className="font-display text-[clamp(2rem,3.5vw,3rem)] font-medium leading-tight">
                   {step.title}
                 </h2>
                 <p className="mt-4 max-w-[36rem] text-lg leading-relaxed text-ink-muted">

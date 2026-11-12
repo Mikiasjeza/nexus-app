@@ -268,7 +268,7 @@ export default function EmployerJobsPage() {
           <Loader />
         ) : jobs.length === 0 ? (
           <div className="border-y border-line py-12">
-            <p className="font-display text-3xl font-light">No roles yet</p>
+            <p className="font-display text-3xl font-medium">No roles yet</p>
             <p className="mt-3 max-w-md text-ink-muted">
               Post one and it appears on the marketplace, where the AI ranks candidates against it.
             </p>
@@ -283,7 +283,7 @@ export default function EmployerJobsPage() {
                 }`}
               >
                 <div>
-                  <h2 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight">
+                  <h2 className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-medium leading-tight">
                     {job.title}
                   </h2>
                   <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">

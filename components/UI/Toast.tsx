@@ -23,7 +23,7 @@ const icons = {
 }
 
 const iconColors = {
-  success: 'text-verified',
+  success: 'text-verified-ink',
   error: 'text-critical',
   warning: 'text-caution',
   info: 'text-ink-muted',
@@ -47,7 +47,7 @@ export default function Toast({ id, type, title, message, duration = 5000, onClo
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, transition: { duration: 0.12 } }}
       transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-      className="max-w-sm overflow-hidden rounded-2xl border border-line bg-[#1d1b18] p-4"
+      className="max-w-sm overflow-hidden rounded-2xl on-ink border border-line p-4"
     >
       <div className="flex items-start gap-3">
         <Icon className={`mt-0.5 size-4 shrink-0 ${iconColors[type]}`} aria-hidden />

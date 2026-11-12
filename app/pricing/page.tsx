@@ -439,7 +439,7 @@ export default function PricingPage() {
                   <ul className="mt-8 space-y-2.5" aria-label={`${plan.name} includes`}>
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex gap-3 text-sm">
-                        <Check className="mt-0.5 size-4 shrink-0 text-verified" aria-hidden />
+                        <Check className="mt-0.5 size-4 shrink-0 text-verified-ink" aria-hidden />
                         {feature}
                       </li>
                     ))}

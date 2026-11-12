@@ -35,14 +35,24 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 10)
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordHash,
-        resetToken: null,
-        resetExpires: null,
-      },
-    })
+    // Opening the emailed link proves the mailbox is theirs, so this is also
+    // how an account is recovered. Every older way in goes with the old
+    // password: other devices are signed out and linked accounts (Google,
+    // Microsoft, LinkedIn, GitHub) are removed. Someone who registered this
+    // address first, or linked their own account to it, keeps no access.
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordHash,
+          resetToken: null,
+          resetExpires: null,
+          emailVerified: true,
+        },
+      }),
+      prisma.session.deleteMany({ where: { userId: user.id } }),
+      prisma.oAuthConnection.deleteMany({ where: { userId: user.id } }),
+    ])
 
     return NextResponse.json({ ok: true })
   } catch (e) {

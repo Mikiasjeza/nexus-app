@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Menu, X, LogOut, User as UserIcon } from 'lucide-react'
+import { Menu, X, LogOut, Shield, User as UserIcon } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { clsx } from 'clsx'
 import { useUser } from '@/lib/hooks/useUser'
@@ -44,10 +44,11 @@ const appNav = [
   { href: '/settings', label: 'Settings' },
 ]
 
+// A nav cell: full bar height, divided from its neighbours by a rule, filling lavender on hover.
 const navLinkClass = (active: boolean) =>
   clsx(
-    'inline-flex h-8 items-center rounded-full px-3 text-sm transition-colors duration-150',
-    active ? 'bg-pill text-ink' : 'text-ink-muted hover:text-ink'
+    'inline-flex h-12 items-center border-l border-rule px-4 text-[0.9375rem] font-medium tracking-[-0.02em] transition-colors duration-150 xl:px-5',
+    active ? 'bg-ink text-ground' : 'text-ink hover:bg-lavender hover:text-[#0b0b0b]'
   )
 
 /** One floating pill bar: wordmark, navigation, account. */
@@ -106,6 +107,23 @@ export default function Header() {
     router.refresh()
   }
 
+  const menuItemClass =
+    'flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink transition-colors duration-150 hover:bg-lavender hover:text-[#0b0b0b]'
+
+  // The phone menu also carries the links the bar shows as buttons.
+  const mobileItems = [
+    ...navItems,
+    ...(!marketing && user?.isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
+    ...(marketing
+      ? user
+        ? [{ href: '/dashboard', label: 'Dashboard' }]
+        : [
+            { href: '/auth/login', label: 'Log in' },
+            { href: '/auth/register', label: 'Start your passport' },
+          ]
+      : []),
+  ]
+
   const initials = user?.name
     ? user.name
         .split(' ')
@@ -115,39 +133,25 @@ export default function Header() {
         .slice(0, 2)
     : (user?.email?.slice(0, 2).toUpperCase() ?? '?')
 
-  const authActions =
-    !userLoading &&
-    (user ? (
-      <Link href="/dashboard" className="pill">
-        Dashboard
-      </Link>
-    ) : (
-      <>
-        <Link href="/auth/login" className={navLinkClass(false)}>
-          Log in
-        </Link>
-        <Link href="/auth/register" className="pill" data-active="true">
-          Sign up free
-        </Link>
-      </>
-    ))
-
   return (
-    <header className="fixed inset-x-0 top-3 z-50 px-3">
-      <nav
-        aria-label="Primary"
-        className="mx-auto max-w-[60rem] rounded-[1.375rem] bg-[rgba(29,27,24,0.86)] p-1.5 backdrop-blur-md"
-      >
-        <div className="flex h-9 items-center justify-between gap-2">
-          <Link
-            href={user ? '/dashboard' : '/'}
-            className="inline-flex h-8 items-center rounded-full px-3"
-            aria-label="Nexus home"
-          >
-            <NexusLogo size={18} />
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-rule bg-ground">
+      <nav aria-label="Primary" className="flex h-12 items-stretch justify-between">
+        <div className="flex items-stretch">
+          <Link href={user ? '/dashboard' : '/'} className="flex" aria-label="Nexus home">
+            <NexusLogo size={48} />
           </Link>
+          {marketing && !userLoading && !user && (
+            <Link
+              href="/auth/register"
+              className="hidden h-12 items-center gap-6 bg-verified px-4 text-[0.9375rem] font-medium tracking-[-0.02em] text-[#0b0b0b] transition-colors duration-150 hover:bg-ink hover:text-ground sm:inline-flex"
+            >
+              Start your passport <span aria-hidden>+</span>
+            </Link>
+          )}
+        </div>
 
-          <div className="hidden items-center lg:flex">
+        <div className="flex items-stretch">
+          <div className="hidden items-stretch lg:flex">
             {navItems.map((item) => {
               const active = isNavItemActive(item.href)
               return (
@@ -161,110 +165,116 @@ export default function Header() {
                 </Link>
               )
             })}
-          </div>
-
-          <div className="flex items-center gap-1">
-            {marketing ? (
-              <div className="hidden items-center gap-1 lg:flex">{authActions}</div>
-            ) : (
-              user && (
-                <div className="relative" ref={userMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => setUserMenuOpen((o) => !o)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-pill text-xs font-medium text-ink transition-colors duration-150 hover:bg-pill-hover"
-                    aria-expanded={userMenuOpen}
-                    aria-haspopup="menu"
-                    aria-label="Account menu"
-                  >
-                    {initials}
-                  </button>
-                  {userMenuOpen && (
-                    <div
-                      role="menu"
-                      className="absolute right-0 top-11 w-56 origin-top-right rounded-2xl bg-raised p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
-                    >
-                      <div className="px-3 py-2.5">
-                        <p className="truncate text-sm text-ink">{user.name || user.email}</p>
-                        {user.name && (
-                          <p className="truncate text-xs text-ink-faint">{user.email}</p>
-                        )}
-                      </div>
-                      <Link
-                        href="/settings"
-                        role="menuitem"
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-muted transition-colors duration-150 hover:bg-pill hover:text-ink"
-                      >
-                        <UserIcon className="h-4 w-4" aria-hidden />
-                        Profile and settings
-                      </Link>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={handleLogout}
-                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-muted transition-colors duration-150 hover:bg-pill hover:text-ink"
-                      >
-                        <LogOut className="h-4 w-4" aria-hidden />
-                        Sign out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )
-            )}
-
-            <button
-              type="button"
-              className="inline-flex h-8 items-center gap-1.5 rounded-full bg-pill px-3 text-sm text-ink lg:hidden"
-              onClick={() => setMobileMenuOpen((o) => !o)}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="primary-mobile-navigation"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-4 w-4" aria-hidden />
-              ) : (
-                <Menu className="h-4 w-4" aria-hidden />
-              )}
-              Menu
-            </button>
-          </div>
-        </div>
-
-        {mobileMenuOpen && (
-          <div
-            id="primary-mobile-navigation"
-            className="flex flex-col gap-0.5 px-1 pb-1 pt-2 lg:hidden"
-          >
-            {navItems.map((item) => {
-              const active = isNavItemActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? 'page' : undefined}
-                  className={clsx(
-                    'rounded-xl px-3 py-2.5 text-base transition-colors duration-150',
-                    active ? 'bg-pill text-ink' : 'text-ink-muted hover:text-ink'
-                  )}
-                >
-                  {item.label}
+            {marketing &&
+              !userLoading &&
+              (user ? (
+                <Link href="/dashboard" className={navLinkClass(false)}>
+                  Dashboard
                 </Link>
-              )
-            })}
-            {marketing && <div className="flex gap-2 px-1 pt-2">{authActions}</div>}
-            {!marketing && user && (
+              ) : (
+                <Link href="/auth/login" className={navLinkClass(false)}>
+                  Log in
+                </Link>
+              ))}
+          </div>
+
+          {!marketing && user && (
+            <div className="relative flex" ref={userMenuRef}>
               <button
                 type="button"
-                onClick={handleLogout}
-                className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-base text-ink-muted hover:text-ink"
+                onClick={() => setUserMenuOpen((o) => !o)}
+                className="flex h-12 w-12 items-center justify-center border-l border-rule text-xs font-semibold text-ink transition-colors duration-150 hover:bg-lavender hover:text-[#0b0b0b]"
+                aria-expanded={userMenuOpen}
+                aria-haspopup="menu"
+                aria-label="Account menu"
               >
-                <LogOut className="h-4 w-4" aria-hidden />
-                Sign out
+                {initials}
               </button>
+              {userMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-12 w-60 border border-rule bg-ground"
+                >
+                  <div className="border-b border-line px-4 py-3">
+                    <p className="truncate text-sm font-medium text-ink">
+                      {user.name || user.email}
+                    </p>
+                    {user.name && <p className="truncate text-xs text-ink-muted">{user.email}</p>}
+                  </div>
+                  <Link href="/settings" role="menuitem" className={menuItemClass}>
+                    <UserIcon className="h-4 w-4" aria-hidden />
+                    Profile and settings
+                  </Link>
+                  {user.isAdmin && (
+                    <Link href="/admin" role="menuitem" className={menuItemClass}>
+                      <Shield className="h-4 w-4" aria-hidden />
+                      Admin
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleLogout}
+                    className={`${menuItemClass} w-full`}
+                  >
+                    <LogOut className="h-4 w-4" aria-hidden />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="inline-flex h-12 items-center gap-2 border-l border-rule px-4 text-[0.9375rem] font-medium text-ink lg:hidden"
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="primary-mobile-navigation"
+          >
+            {mobileMenuOpen ? (
+              <X className="h-4 w-4" aria-hidden />
+            ) : (
+              <Menu className="h-4 w-4" aria-hidden />
             )}
-          </div>
-        )}
+            Menu
+          </button>
+        </div>
       </nav>
+
+      {mobileMenuOpen && (
+        <div
+          id="primary-mobile-navigation"
+          className="on-ink flex max-h-[calc(100vh-3rem)] flex-col overflow-y-auto lg:hidden"
+        >
+          {mobileItems.map((item) => {
+            const active = isNavItemActive(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={clsx(
+                  'border-b border-line px-4 py-3.5 text-xl font-medium tracking-[-0.03em]',
+                  active ? 'text-verified' : 'text-ink'
+                )}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+          {!marketing && user && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-3.5 text-left text-xl font-medium tracking-[-0.03em] text-ink-muted"
+            >
+              <LogOut className="h-4 w-4" aria-hidden />
+              Sign out
+            </button>
+          )}
+        </div>
+      )}
     </header>
   )
 }

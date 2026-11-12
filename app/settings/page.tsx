@@ -13,6 +13,7 @@ import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import BillingPanel from '@/components/Billing/BillingPanel'
+import ConnectedAccounts from '@/components/Auth/ConnectedAccounts'
 
 export default function SettingsPage() {
   const { addToast } = useToast()
@@ -54,25 +55,6 @@ export default function SettingsPage() {
     }
     loadUser()
   }, [])
-
-  useEffect(() => {
-    const result = new URLSearchParams(window.location.search).get('github')
-    if (!result) return
-    if (result === 'connected') {
-      addToast({
-        type: 'success',
-        title: 'GitHub connected',
-        message: 'You can now sign in with GitHub.',
-      })
-    } else if (result === 'already_linked') {
-      addToast({
-        type: 'error',
-        title: 'GitHub not connected',
-        message: 'That GitHub account is already linked to a different Nexus account.',
-      })
-    }
-    window.history.replaceState(null, '', window.location.pathname)
-  }, [addToast])
 
   const handleSave = async () => {
     if (!user) return
@@ -338,41 +320,26 @@ export default function SettingsPage() {
             <div className="flex flex-wrap gap-2">
               {isGuestPreview ? (
                 // Plain text for guests: a disabled-looking link still opens from the keyboard.
-                <>
-                  <span
-                    aria-disabled="true"
-                    className="button-base button-secondary min-h-11 px-5 opacity-40"
-                  >
-                    Change password
-                  </span>
-                  <span
-                    aria-disabled="true"
-                    className="button-base button-secondary min-h-11 px-5 opacity-40"
-                  >
-                    Connect GitHub
-                  </span>
-                </>
+                <span
+                  aria-disabled="true"
+                  className="button-base button-secondary min-h-11 px-5 opacity-40"
+                >
+                  Change password
+                </span>
               ) : (
-                <>
-                  <Link
-                    href="/auth/forgot-password"
-                    className="button-base button-secondary min-h-11 px-5"
-                  >
-                    Change password
-                  </Link>
-                  {/* Full navigation (not <Link>): the OAuth flow leaves the app. */}
-                  <a
-                    href="/api/auth/github/authorize"
-                    className="button-base button-secondary min-h-11 px-5"
-                  >
-                    Connect GitHub
-                  </a>
-                </>
+                <Link
+                  href="/auth/forgot-password"
+                  className="button-base button-secondary min-h-11 px-5"
+                >
+                  Change password
+                </Link>
               )}
             </div>
             <p className="mt-3 text-sm text-ink-faint">
-              GitHub sign-in reads only your public profile and verified email.
+              We email you a link. Setting a new password signs you out on every device and
+              disconnects any linked accounts; you can connect them again afterwards.
             </p>
+            <ConnectedAccounts disabled={isGuestPreview} />
           </SettingsSection>
 
           <SettingsSection
@@ -508,7 +475,7 @@ function SettingsSection({
     <section
       id={id}
       aria-labelledby={`${title.replace(/\W+/g, '-').toLowerCase()}-heading`}
-      className="grid scroll-mt-28 gap-6 border-b border-line py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10"
+      className="grid scroll-mt-16 gap-6 border-b border-line py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10"
     >
       <div>
         <h2

@@ -199,7 +199,7 @@ export default function AssessmentDetailPage() {
             </section>
           </div>
 
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          <aside className="lg:sticky lg:top-16 lg:self-start">
             <div className="rounded-2xl bg-raised p-6">
               {!entry.available ? (
                 <>
@@ -227,7 +227,7 @@ export default function AssessmentDetailPage() {
                               value={m}
                               checked={mode === m}
                               onChange={() => setMode(m)}
-                              className="accent-[#e9762b]"
+                              className="accent-[#fe7141]"
                             />
                             <span className="text-ink">{catalog.modes[m].label}</span>
                           </span>
@@ -301,7 +301,7 @@ export default function AssessmentDetailPage() {
                       </Link>
                     )}
                     {startError && (
-                      <div role="alert" className="space-y-2 text-sm text-[#ffc9c9]">
+                      <div role="alert" className="space-y-2 text-sm text-critical">
                         <p>{startError.message}</p>
                         {startError.upgradeTo && isPlan(startError.upgradeTo) && (
                           <Link href="/pricing" className="metalab-link">

@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthShell beforeCard={backLink}>
-      <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">Reset password</h1>
+      <h1 className="mb-3 font-display text-[2.5rem] font-medium leading-tight">Reset password</h1>
       <p className="mb-8 text-sm leading-relaxed metalab-muted">
         Enter your email and we&apos;ll send a secure link to choose a new password.
       </p>

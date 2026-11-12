@@ -63,7 +63,7 @@ export default function HalftoneWordmarkFooter({
 
   const content = (
     <>
-      <div className="relative z-[1] mx-auto grid max-w-[90rem] grid-cols-2 gap-x-6 gap-y-10 px-[clamp(1rem,4vw,3rem)] pt-[clamp(2rem,4vw,3.5rem)] md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
+      <div className="relative z-[1] mx-auto grid max-w-[90rem] grid-cols-2 gap-x-6 gap-y-10 px-[clamp(1rem,2vw,1.25rem)] pt-[clamp(2rem,4vw,3.5rem)] md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
         <div className="col-span-2 md:col-span-1">
           {label && <p className="text-[0.9375rem] font-medium">{label}</p>}
           {meta && <p className="mt-1 max-w-[22rem] text-[0.9375rem] text-ink-faint">{meta}</p>}
@@ -94,7 +94,7 @@ export default function HalftoneWordmarkFooter({
         ))}
       </div>
 
-      <div className="relative z-[1] mx-auto mt-[clamp(1.5rem,3vw,2.5rem)] max-w-[90rem] px-[clamp(1rem,4vw,3rem)]">
+      <div className="relative z-[1] mx-auto mt-[clamp(1.5rem,3vw,2.5rem)] max-w-[90rem] px-[clamp(1rem,2vw,1.25rem)]">
         <div className="flex items-center justify-between gap-4 border-t border-line pt-3 text-sm text-ink-faint">
           <span>{legal}</span>
           {backToTop && (

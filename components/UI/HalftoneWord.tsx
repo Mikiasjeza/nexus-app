@@ -21,9 +21,9 @@ export interface HalftonePalette {
 }
 
 export const NEXUS_HALFTONE: HalftonePalette = {
-  background: '#0c0c0b',
-  ink: '#e9e4da',
-  warm: '#e9762b',
+  background: '#0b0b0b',
+  ink: '#ffffff',
+  warm: '#fe7141',
 }
 
 export interface HalftoneWordProps {

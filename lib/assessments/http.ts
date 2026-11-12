@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
+import { adminEmails, isAdminAccount } from '@/lib/auth/admin'
 import { dbErrorResponse } from '@/lib/db-error'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { prismaAssessmentStore } from './prisma-store'
@@ -55,20 +56,20 @@ export async function ownedAttempt(deps: Deps, id: string, userId: string): Prom
   return attempt
 }
 
-export function adminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS || '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-}
+export { adminEmails }
 
-/** The reviewer's email, if the signed-in user is listed in ADMIN_EMAILS. */
+/**
+ * The admin's email, if the signed-in user is an admin (lib/auth/admin.ts).
+ * Everyone else gets a plain 404, so the admin area gives nothing away.
+ */
 export async function requireReviewer(): Promise<string> {
   const userId = await requireUser()
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } })
-  const email = user?.email.toLowerCase()
-  if (!email || !adminEmails().includes(email)) throw new AssessmentError('Not found', 404)
-  return email
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, emailVerified: true, createdAt: true },
+  })
+  if (!user || !isAdminAccount(user)) throw new AssessmentError('Not found', 404)
+  return user.email.toLowerCase()
 }
 
 export function limit(key: string, maxRequests: number, windowMs = 60_000) {

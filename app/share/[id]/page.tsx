@@ -180,7 +180,7 @@ export default function SharePage() {
                   key={credential.id}
                   className="print-skill-card grid gap-x-6 gap-y-1 py-5 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)] md:items-baseline"
                 >
-                  <span className="font-display text-[clamp(1.5rem,2.4vw,2rem)] font-light leading-tight">
+                  <span className="font-display text-[clamp(1.5rem,2.4vw,2rem)] font-medium leading-tight">
                     {credential.skillName}
                   </span>
                   <span className="text-ink-muted">
@@ -272,7 +272,7 @@ function SkillRows({ skills }: { skills: Skill[] }) {
           key={skill.id}
           className="print-skill-card grid gap-x-6 gap-y-1 py-5 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)] md:items-baseline"
         >
-          <span className="font-display text-[clamp(1.5rem,2.4vw,2rem)] font-light leading-tight">
+          <span className="font-display text-[clamp(1.5rem,2.4vw,2rem)] font-medium leading-tight">
             {skill.name}
           </span>
           <span className="text-ink-muted">
@@ -280,7 +280,7 @@ function SkillRows({ skills }: { skills: Skill[] }) {
             {LEVEL_LABELS[skill.level]}
           </span>
           <span
-            className={`text-sm md:text-right ${skill.verified ? 'text-verified' : 'text-ink-faint'}`}
+            className={`text-sm md:text-right ${skill.verified ? 'text-verified-ink' : 'text-ink-faint'}`}
           >
             {skill.verified ? 'Verified' : 'Not verified yet'}
           </span>

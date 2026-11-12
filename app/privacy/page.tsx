@@ -120,12 +120,25 @@ export default function PrivacyPage() {
             an HTTP-only cookie.
           </li>
         </List>
-        <p className="font-medium text-ink">If you choose “Continue with GitHub”</p>
+        <p className="font-medium text-ink">
+          If you choose “Continue with Google”, Microsoft or LinkedIn
+        </p>
         <List>
           <li>
-            Your GitHub user ID, username, display name, avatar and email. We request read-only
-            access to your profile and email, use it once to sign you in, and don&apos;t store the
-            access token. You can revoke Nexus&apos;s access at any time in your GitHub settings.
+            Your account ID with that provider, your name, your email address and whether the
+            provider has verified that address. We use them to create your account or sign you in.
+            We don&apos;t receive your password, contacts or files. We don&apos;t use or keep your
+            profile picture, and we don&apos;t keep the provider&apos;s access token. You can remove
+            Nexus&apos;s access at any time in that provider&apos;s account settings.
+          </li>
+        </List>
+        <p className="font-medium text-ink">If you connect GitHub in Settings</p>
+        <List>
+          <li>
+            Your GitHub user ID and username, so repositories you submit as evidence can be
+            confirmed as yours. We ask only for read access to your public profile, don&apos;t keep
+            the access token, and don&apos;t use GitHub to sign you in. You can remove Nexus&apos;s
+            access at any time in your GitHub settings.
           </li>
         </List>
         <p className="font-medium text-ink">Technical data</p>
@@ -392,6 +405,11 @@ export default function PrivacyPage() {
           We use TLS for all traffic, store passwords only as salted hashes, keep session cookies
           HTTP-only and limit access to production data. No system is perfectly secure; if a breach
           affects your data we will notify you as required by law.
+        </p>
+        <p>
+          The people who run Nexus can see account records (your name, email address, plan,
+          assessment results and credentials) to operate the service, review assessments and answer
+          support requests. They cannot see your password.
         </p>
       </Section>
 

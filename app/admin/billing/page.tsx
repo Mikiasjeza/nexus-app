@@ -1,11 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
+import AdminNav from '@/components/Admin/AdminNav'
+import AdminUnavailable from '@/components/Admin/AdminUnavailable'
 import { PLAN_INFO, formatPlanPrice } from '@/lib/plans'
 import type { BillingOverview } from '@/lib/billing/admin'
 
@@ -41,15 +42,7 @@ export default function BillingAdminPage() {
 
   useEffect(load, [load])
 
-  if (error) {
-    return (
-      <AppPageShell>
-        <div className="page-shell">
-          <PageHeader title="Not available" description={error} />
-        </div>
-      </AppPageShell>
-    )
-  }
+  if (error) return <AdminUnavailable message={error} />
   if (!data) return <Loader />
 
   const live = data.config.stripeMode === 'live'
@@ -61,11 +54,7 @@ export default function BillingAdminPage() {
           title="Billing"
           rule
           description="Plans on sale, subscribers, the founding-member offer, this month's usage and AI spend."
-          actions={
-            <Link href="/admin/reviews" className="button-base button-secondary min-h-11 px-5">
-              Reviews
-            </Link>
-          }
+          actions={<AdminNav />}
         />
 
         <section aria-labelledby="sale-heading" className="mb-12">
@@ -282,7 +271,7 @@ function PromotionEditor({ promotion, onSaved }: { promotion: Promotion; onSaved
             type="checkbox"
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
-            className="size-4 accent-[#e9762b]"
+            className="size-4 accent-[#fe7141]"
           />
           On
         </label>

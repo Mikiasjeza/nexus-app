@@ -125,7 +125,7 @@ export default function EmployerPoolsPage() {
           <Loader />
         ) : pools.length === 0 ? (
           <div className="mt-6 border-y border-line py-12">
-            <p className="font-display text-3xl font-light">No shortlists yet</p>
+            <p className="font-display text-3xl font-medium">No shortlists yet</p>
             <p className="mt-3 max-w-md text-ink-muted">
               Create one above, then add people to it from a talent search.
             </p>
@@ -141,7 +141,7 @@ export default function EmployerPoolsPage() {
             {pools.map((pool) => (
               <li key={pool.id} className="flex items-center justify-between gap-6 py-6">
                 <Link href={`/employer/pools/${pool.id}`} className="group min-w-0 flex-1">
-                  <span className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-light leading-tight group-hover:text-ink">
+                  <span className="font-display text-[clamp(1.75rem,2.6vw,2.25rem)] font-medium leading-tight group-hover:text-ink">
                     {pool.name}
                   </span>
                   <span className="mt-1 block text-sm text-ink-faint">

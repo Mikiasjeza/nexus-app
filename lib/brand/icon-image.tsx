@@ -1,10 +1,9 @@
 import { ImageResponse } from 'next/og'
-import { MARK_VIEWBOX, markGeometry } from './nexus-mark'
+import { MARK_PATH, MARK_VIEWBOX } from './nexus-mark'
 
-/** The mark in white on a black rounded square, as a PNG of the given size. */
-export function renderNexusIcon(size: number, { rounded = true } = {}) {
-  const { stroke, segments } = markGeometry(size < 64 ? 'compact' : 'regular')
-  const mark = Math.round(size * 0.68)
+/** The mark in white on a black square, as a PNG of the given size. */
+export function renderNexusIcon(size: number) {
+  const mark = Math.round(size * 0.72)
   return new ImageResponse(
     <div
       style={{
@@ -13,22 +12,11 @@ export function renderNexusIcon(size: number, { rounded = true } = {}) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#0c0c0b',
-        borderRadius: rounded ? Math.round(size * 0.22) : 0,
+        background: '#0b0b0b',
       }}
     >
-      <svg
-        width={mark}
-        height={mark}
-        viewBox={MARK_VIEWBOX}
-        fill="none"
-        stroke="#e9e4da"
-        strokeWidth={stroke}
-        strokeLinecap="round"
-      >
-        {segments.map((s, i) => (
-          <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} />
-        ))}
+      <svg width={mark} height={mark} viewBox={MARK_VIEWBOX} fill="#ffffff">
+        <path d={MARK_PATH} />
       </svg>
     </div>,
     { width: size, height: size }

@@ -32,7 +32,7 @@ Revolutionary AI-powered platform for universal skill verification and talent in
 - ✅ Account deletion flow
 - ✅ Account data export
 - ✅ Secure token handling
-- ⏳ OAuth (Google / GitHub) - Ready for implementation
+- ✅ Sign-in with Google, Microsoft or LinkedIn (docs/SIGN_IN.md)
 - ⏳ Rate limiting on auth endpoints - Infrastructure ready
 
 ### Public Sharing & Identity

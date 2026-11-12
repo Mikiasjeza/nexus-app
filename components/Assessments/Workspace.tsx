@@ -226,8 +226,8 @@ export default function Workspace({
   return (
     <div className="pb-24">
       {/* Bar: where you are, how long is left, and the one action that matters. */}
-      {/* Reaches up behind the floating site header so nothing shows through above it. */}
-      <div className="sticky top-0 z-30 -mx-[clamp(1rem,4vw,3rem)] -mt-20 mb-8 border-b border-line bg-ground/95 px-[clamp(1rem,4vw,3rem)] pb-3 pt-[5.75rem] backdrop-blur">
+      {/* Sticks directly under the site's navigation bar, edge to edge. */}
+      <div className="sticky top-12 z-30 -mx-[clamp(1rem,2vw,1.25rem)] mb-6 border-b border-rule bg-ground px-[clamp(1rem,2vw,1.25rem)] py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-sm text-ink-muted">
@@ -358,7 +358,7 @@ export default function Workspace({
 
         <section className="min-w-0 space-y-6" aria-label="Your work">
           {runError && (
-            <p role="alert" className="rounded-xl bg-critical/10 px-4 py-3 text-sm text-[#ffc9c9]">
+            <p role="alert" className="rounded-xl bg-critical/10 px-4 py-3 text-sm text-critical">
               {runError}
             </p>
           )}
@@ -492,7 +492,7 @@ export default function Workspace({
         </p>
         {incomplete && <p className="mt-4 text-sm text-caution">{incomplete}</p>}
         {submitError && (
-          <p role="alert" className="mt-4 text-sm text-[#ffc9c9]">
+          <p role="alert" className="mt-4 text-sm text-critical">
             {submitError}
           </p>
         )}
@@ -575,7 +575,7 @@ function CodeRunOutput({
   return (
     <div className="space-y-4">
       {report.error && (
-        <pre className="whitespace-pre-wrap rounded-xl bg-critical/10 p-4 text-sm text-[#ffc9c9]">
+        <pre className="whitespace-pre-wrap rounded-xl bg-critical/10 p-4 text-sm text-critical">
           {report.error}
         </pre>
       )}
@@ -693,7 +693,7 @@ function SqlResultTable({
 }) {
   if (result.error) {
     return (
-      <pre className="mt-3 whitespace-pre-wrap rounded-xl bg-critical/10 p-3 text-sm text-[#ffc9c9]">
+      <pre className="mt-3 whitespace-pre-wrap rounded-xl bg-critical/10 p-3 text-sm text-critical">
         {result.error}
       </pre>
     )

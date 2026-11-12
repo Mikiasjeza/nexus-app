@@ -56,7 +56,7 @@ export default function Tooltip({
       {isVisible && (
         <div
           role="tooltip"
-          className={`page-enter pointer-events-none absolute z-50 ${positions[position]} whitespace-nowrap rounded-lg border border-line bg-[#1d1b18] px-3 py-1.5 text-sm text-ink`}
+          className={`page-enter pointer-events-none absolute z-50 ${positions[position]} whitespace-nowrap rounded-lg on-ink px-3 py-1.5 text-sm text-ink`}
         >
           {content}
         </div>

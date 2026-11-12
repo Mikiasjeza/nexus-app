@@ -132,7 +132,7 @@ export default function EmployerPoolDetailPage() {
 
         {pool.candidates.length === 0 ? (
           <div className="border-y border-line py-12">
-            <p className="font-display text-3xl font-light">Nobody here yet</p>
+            <p className="font-display text-3xl font-medium">Nobody here yet</p>
             <p className="mt-3 max-w-md text-ink-muted">
               Search for talent and use “Add to {pool.name}” on anyone worth a second look.
             </p>
@@ -160,7 +160,7 @@ export default function EmployerPoolDetailPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h2 className="font-display text-[2rem] font-light leading-tight">{c.name}</h2>
+                    <h2 className="font-display text-[2rem] font-medium leading-tight">{c.name}</h2>
                     <p className="text-sm text-ink-faint">{pillarSummary(c.skills)}</p>
                   </div>
                 </div>

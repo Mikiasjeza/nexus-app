@@ -266,7 +266,7 @@ export default function ResultPage() {
                 className="metalab-input resize-y leading-relaxed"
               />
               {appealError && (
-                <p role="alert" className="mt-2 text-sm text-[#ffc9c9]">
+                <p role="alert" className="mt-2 text-sm text-critical">
                   {appealError}
                 </p>
               )}

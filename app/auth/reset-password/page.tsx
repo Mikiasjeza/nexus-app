@@ -98,11 +98,13 @@ function ResetPasswordPageContent() {
 
   return (
     <AuthShell beforeCard={backLink}>
-      <h1 className="mb-3 font-display text-[2.5rem] font-light leading-tight">
+      <h1 className="mb-3 font-display text-[2.5rem] font-medium leading-tight">
         Choose a password
       </h1>
       <p className="mb-8 text-sm leading-relaxed metalab-muted">
-        Use at least 8 characters you haven&apos;t used elsewhere.
+        Use at least 8 characters you haven&apos;t used elsewhere. Setting a new password signs you
+        out on every device and disconnects linked accounts such as Google; you can connect them
+        again in Settings.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">

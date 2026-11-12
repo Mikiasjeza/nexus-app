@@ -21,7 +21,7 @@ export default function GlobalError({
     <html lang="en" className="dark">
       <body className="min-h-screen bg-ground font-sans text-ink antialiased">
         <main className="mx-auto flex min-h-screen max-w-[90rem] flex-col justify-center px-[clamp(1rem,4vw,3rem)]">
-          <h1 className="font-display text-[clamp(2.75rem,5vw,5.5rem)] font-extralight leading-[1.08]">
+          <h1 className="font-display text-[clamp(2.75rem,5vw,5.5rem)] font-medium leading-[1.08]">
             Nexus hit a problem
           </h1>
           <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-ink-muted">

@@ -85,7 +85,7 @@ export default function ContactPage() {
 
           {submitted ? (
             <div role="status" className="max-w-[40rem]">
-              <p className="font-display text-[clamp(2rem,3.5vw,3rem)] font-light leading-tight">
+              <p className="font-display text-[clamp(2rem,3.5vw,3rem)] font-medium leading-tight">
                 Message sent
               </p>
               <p className="mt-3 text-ink-muted">

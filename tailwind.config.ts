@@ -10,35 +10,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Nexus world (see .impeccable/surfaces): warm off-black ground, cream ink,
-        // warm grey secondary text, hairlines, translucent pills, and one
-        // orange reserved for verified state, selection and focus.
-        ground: '#0c0c0b',
-        raised: '#151412',
+        // Nexus colours (see docs/DESIGN.md): a charcoal ground, light ink,
+        // hairline rules, and three flat accents. They read CSS variables from
+        // globals.css, so a black field (.on-ink) flips them for everything inside.
+        ground: 'rgb(var(--ground-rgb) / <alpha-value>)',
+        raised: 'rgb(var(--raised-rgb) / <alpha-value>)',
         ink: {
-          DEFAULT: '#e9e4da',
-          muted: '#a39d92',
-          faint: '#7a746a',
+          DEFAULT: 'rgb(var(--ink-rgb) / <alpha-value>)',
+          muted: 'rgb(var(--ink-muted-rgb) / <alpha-value>)',
+          faint: 'rgb(var(--ink-faint-rgb) / <alpha-value>)',
         },
         line: {
-          DEFAULT: 'rgba(233, 228, 218, 0.1)',
-          strong: 'rgba(233, 228, 218, 0.18)',
+          DEFAULT: 'var(--line)',
+          strong: 'var(--line-strong)',
         },
+        // The strong rule above headings and around the navigation.
+        rule: 'var(--rule)',
         pill: {
-          DEFAULT: 'rgba(233, 228, 218, 0.12)',
-          hover: 'rgba(233, 228, 218, 0.2)',
+          DEFAULT: 'var(--pill)',
+          hover: 'var(--pill-hover)',
         },
+        // Orange: verified state and the call-to-action. As text, use
+        // verified-ink (it turns black inside colour fields).
         verified: {
-          DEFAULT: '#e9762b',
-          ink: '#f3a066',
-          wash: 'rgba(233, 118, 43, 0.14)',
+          DEFAULT: 'rgb(var(--verified-rgb) / <alpha-value>)',
+          ink: 'rgb(var(--verified-ink-rgb) / <alpha-value>)',
+          wash: 'rgb(var(--verified-rgb) / 0.18)',
         },
-        caution: '#d9c46b',
-        critical: '#ff6b6b',
+        lavender: 'rgb(var(--lavender-rgb) / <alpha-value>)',
+        sage: 'rgb(var(--sage-rgb) / <alpha-value>)',
+        caution: 'rgb(var(--caution-rgb) / <alpha-value>)',
+        critical: 'rgb(var(--critical-rgb) / <alpha-value>)',
         // Utilities the Bklit charts (components/charts) use for axis labels,
         // tooltips and ring centres. Values live in globals.css.
-        foreground: '#e9e4da',
-        muted: '#161512',
+        foreground: 'rgb(var(--ink-rgb) / <alpha-value>)',
+        muted: 'rgb(var(--raised-rgb) / <alpha-value>)',
         chart: {
           label: 'var(--chart-label)',
           positive: 'var(--chart-positive)',
@@ -85,12 +91,12 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
-        display: ['var(--font-display)', 'Georgia', 'Times New Roman', 'serif'],
+        display: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
       },
       fontSize: {
         // Page titles and headline numbers, set in the thin display serif.
-        title: ['clamp(2.75rem, 5vw, 5.5rem)', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
-        score: ['clamp(4.5rem, 8vw, 7.5rem)', { lineHeight: '0.95', letterSpacing: '-0.03em' }],
+        title: ['clamp(2rem, 3.4vw, 3.25rem)', { lineHeight: '1', letterSpacing: '-0.045em' }],
+        score: ['clamp(3.5rem, 6vw, 5.5rem)', { lineHeight: '0.9', letterSpacing: '-0.055em' }],
         'display-2xl': [
           '4.5rem',
           { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' },
@@ -111,10 +117,18 @@ const config: Config = {
         '26': '6.5rem',
         '30': '7.5rem',
       },
+      // Every corner is square; only true circles (dots, avatars, switches) stay round.
       borderRadius: {
-        '2xl': '1rem',
-        '3xl': '1.5rem',
-        '4xl': '2rem',
+        none: '0',
+        sm: '0',
+        DEFAULT: '0',
+        md: '0',
+        lg: '0',
+        xl: '0',
+        '2xl': '0',
+        '3xl': '0',
+        '4xl': '0',
+        full: '9999px',
       },
       boxShadow: {
         soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',

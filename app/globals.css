@@ -3,44 +3,123 @@
 @tailwind utilities;
 
 /*
- * Nexus visual world. The direction contract lives in
- * .impeccable/surfaces/app-verification-page-tsx.md: warm off-black ground, cream ink,
- * warm grey secondary text, hairline rules, translucent pills for every small
- * control, one orange for verified state, selection and focus. Thin display
- * serif for titles and headline numbers, grotesk for UI text.
+ * Nexus visual world: a report someone had fun with. Hairline rules, square
+ * corners, tight grotesk headings, and flat colour fields (orange, lavender,
+ * sage) on a dark page. Orange also marks verified state. Design language
+ * adapted from the "Accountant" template by 8B (MIT); see docs/DESIGN.md.
  *
- * Legacy class names below are kept so pages not yet redesigned still render,
- * but they now draw the new world: no glass, glow, gradients, orbs or grain.
+ * Colours are CSS variables so a field can flip them: put `on-ink` on any
+ * black section and `on-accent` on any colour section, and the same class
+ * names read correctly inside.
  */
 
 @layer base {
-  :root,
-  .dark {
-    --ground: #0c0c0b;
-    --raised: #151412;
-    --ink: #e9e4da;
-    --ink-muted: #a39d92;
-    --ink-faint: #7a746a;
-    --line: rgba(233, 228, 218, 0.1);
-    --line-strong: rgba(233, 228, 218, 0.18);
-    --pill: rgba(233, 228, 218, 0.12);
-    --pill-hover: rgba(233, 228, 218, 0.2);
-    --verified: #e9762b;
-    --verified-ink: #f3a066;
-    --caution: #d9c46b;
-    --critical: #ff6b6b;
+  /*
+   * The theme (Charcoal) is this one set of raw colour channels; everything
+   * else is built from them below. Tailwind's colours read the channels, so
+   * opacity modifiers work. A different theme only needs different channels.
+   */
+  :root {
+    --ground-rgb: 23 23 23;
+    --raised-rgb: 34 34 33;
+    --ink-rgb: 244 243 239;
+    --ink-muted-rgb: 184 182 176;
+    --ink-faint-rgb: 143 141 135;
+    --verified-rgb: 254 113 65;
+    --verified-ink-rgb: 254 113 65;
+    --caution-rgb: 230 200 90;
+    --critical-rgb: 255 120 120;
+    --lavender-rgb: 205 171 254;
+    --sage-rgb: 209 221 211;
+    /* The colour of a "black field" (.on-ink), and of panels raised on it. */
+    --field-rgb: 8 8 8;
+    --field-raised-rgb: 26 26 26;
+    /* How strongly rules and quiet fills show against this ground. */
+    --line-alpha: 0.2;
+    --line-strong-alpha: 0.5;
+    --pill-alpha: 0.1;
+    --pill-hover-alpha: 0.18;
+    --rule-alpha: 0.5;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    color-scheme: dark;
+  }
+
+  /* A black field: white ink on the theme's field colour. */
+  .on-ink {
+    --ground-rgb: var(--field-rgb);
+    --raised-rgb: var(--field-raised-rgb);
+    --ink-rgb: 255 255 255;
+    --ink-muted-rgb: 190 190 190;
+    --ink-faint-rgb: 160 160 160;
+    --verified-ink-rgb: 254 113 65;
+    --caution-rgb: 230 200 90;
+    --critical-rgb: 255 120 120;
+    --line-alpha: 0.24;
+    --line-strong-alpha: 0.55;
+    --pill-alpha: 0.12;
+    --pill-hover-alpha: 0.2;
+    --rule-alpha: 0.5;
+    background: var(--ground);
+    color: var(--ink);
+    color-scheme: dark;
+  }
+
+  /* An accent field (orange, lavender or sage): black ink, darker secondary text. */
+  .on-accent {
+    --ground-rgb: 255 255 255;
+    --raised-rgb: 255 255 255;
+    --ink-rgb: 11 11 11;
+    --ink-muted-rgb: 40 40 40;
+    --ink-faint-rgb: 60 60 60;
+    --verified-ink-rgb: 11 11 11;
+    --caution-rgb: 110 80 0;
+    --critical-rgb: 150 20 20;
+    --line-alpha: 0.4;
+    --line-strong-alpha: 0.6;
+    --pill-alpha: 0.08;
+    --pill-hover-alpha: 0.16;
+    --rule-alpha: 1;
+    color: var(--ink);
+    color-scheme: light;
+  }
+
+  /*
+   * The named colours, built from the channels. A custom property is worked
+   * out where it is declared, so these are declared again on every field
+   * that changes the channels; otherwise a black field would inherit the
+   * page's ink.
+   */
+  :root,
+  .on-ink,
+  .on-accent {
+    --ground: rgb(var(--ground-rgb));
+    --raised: rgb(var(--raised-rgb));
+    --ink: rgb(var(--ink-rgb));
+    --ink-muted: rgb(var(--ink-muted-rgb));
+    --ink-faint: rgb(var(--ink-faint-rgb));
+    --line: rgb(var(--ink-rgb) / var(--line-alpha));
+    --line-strong: rgb(var(--ink-rgb) / var(--line-strong-alpha));
+    --pill: rgb(var(--ink-rgb) / var(--pill-alpha));
+    --pill-hover: rgb(var(--ink-rgb) / var(--pill-hover-alpha));
+    /* The full-width rule above a heading: solid ink on light, softer on dark. */
+    --rule: rgb(var(--ink-rgb) / var(--rule-alpha));
+    --verified: rgb(var(--verified-rgb));
+    --verified-ink: rgb(var(--verified-ink-rgb));
+    --caution: rgb(var(--caution-rgb));
+    --critical: rgb(var(--critical-rgb));
+    --lavender: rgb(var(--lavender-rgb));
+    --sage: rgb(var(--sage-rgb));
 
     /* shadcn-style names, read by the Bklit charts and older components. */
-    --background: #0c0c0b;
-    --foreground: #e9e4da;
-    --card: #151412;
-    --card-foreground: #e9e4da;
-    --popover: #1d1b18;
-    --popover-foreground: #e9e4da;
-    --border: #2a2824;
-    --muted: #161512;
-    --muted-foreground: #a39d92;
+    --background: var(--ground);
+    --foreground: var(--ink);
+    --card: var(--ground);
+    --card-foreground: var(--ink);
+    --popover: var(--ground);
+    --popover-foreground: var(--ink);
+    --border: var(--line-strong);
+    --muted: var(--raised);
+    --muted-foreground: var(--ink-muted);
     --bg-primary: var(--ground);
     --bg-secondary: var(--raised);
     --text-primary: var(--ink);
@@ -50,7 +129,43 @@
     --accent-hover: var(--verified-ink);
     --danger: var(--critical);
 
-    color-scheme: dark;
+    /* Bklit chart tokens. Orange carries the verified (or passed) series; ink
+       and greys carry everything else. Tooltips are the page, inverted. */
+    --chart-1: var(--verified);
+    --chart-2: var(--ink);
+    --chart-3: var(--ink-faint);
+    --chart-4: var(--lavender);
+    --chart-5: var(--sage);
+    --chart-positive: var(--verified-ink);
+    --chart-negative: var(--critical);
+    --chart-background: var(--ground);
+    --chart-foreground: var(--ink);
+    --chart-foreground-muted: var(--ink-muted);
+    --chart-line-primary: var(--chart-1);
+    --chart-line-secondary: var(--chart-2);
+    --chart-crosshair: rgb(var(--ink-rgb) / 0.4);
+    --chart-grid: rgb(var(--ink-rgb) / 0.12);
+    --chart-brush-border: var(--chart-grid);
+    --chart-tooltip-background: var(--ink);
+    --chart-tooltip-foreground: var(--ground);
+    --chart-tooltip-muted: rgb(var(--ground-rgb) / 0.65);
+    --chart-marker-background: var(--ground);
+    --chart-marker-border: rgb(var(--ink-rgb) / 0.3);
+    --chart-marker-foreground: var(--ink);
+    --chart-label: var(--ink-muted);
+    --chart-scale-mix: var(--ground);
+    --chart-scale-01: var(--raised);
+    --chart-scale-02: color-mix(in oklab, var(--chart-1) 30%, var(--chart-scale-mix));
+    --chart-scale-03: color-mix(in oklab, var(--chart-1) 52%, var(--chart-scale-mix));
+    --chart-scale-04: color-mix(in oklab, var(--chart-1) 76%, var(--chart-scale-mix));
+    --chart-scale-05: var(--chart-1);
+    --chart-scale-pattern-color: var(--ground);
+    --chart-indicator-color: var(--ink);
+    --chart-indicator-secondary-color: var(--ground);
+    --chart-marker-badge-background: var(--ink);
+    --chart-marker-badge-foreground: var(--ground);
+    --chart-segment-background: rgb(var(--ink-rgb) / 0.04);
+    --chart-segment-line: rgb(var(--ink-rgb) / 0.3);
   }
 
   * {
@@ -68,7 +183,7 @@
     color: var(--ink);
     font-size: 1rem;
     line-height: 1.5;
-    letter-spacing: -0.005em;
+    letter-spacing: -0.01em;
     font-feature-settings:
       'kern' 1,
       'calt' 1;
@@ -76,12 +191,12 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     caret-color: var(--verified);
-    scrollbar-color: rgba(233, 228, 218, 0.22) transparent;
+    scrollbar-color: rgb(var(--ink-rgb) / 0.3) transparent;
   }
 
   ::selection {
-    background: var(--verified);
-    color: #e9e4da;
+    background: var(--lavender);
+    color: #0b0b0b;
   }
 
   ::-webkit-scrollbar {
@@ -92,17 +207,16 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(233, 228, 218, 0.18);
+    background: rgb(var(--ink-rgb) / 0.25);
     border: 3px solid var(--ground);
-    border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(233, 228, 218, 0.3);
+    background: rgb(var(--ink-rgb) / 0.45);
   }
 
   :focus-visible {
-    outline: 2px solid var(--verified);
-    outline-offset: 3px;
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 
   a {
@@ -117,24 +231,24 @@
   h5,
   h6 {
     font-weight: 500;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.03em;
     text-wrap: balance;
   }
 
   h1 {
-    font-size: 2.5rem;
-    line-height: 1.1;
+    font-size: 2rem;
+    line-height: 1.05;
   }
   h2 {
-    font-size: 1.75rem;
-    line-height: 1.15;
+    font-size: 1.5rem;
+    line-height: 1.1;
   }
   h3 {
-    font-size: 1.25rem;
-    line-height: 1.25;
+    font-size: 1.125rem;
+    line-height: 1.2;
   }
   h4 {
-    font-size: 1.125rem;
+    font-size: 1rem;
     line-height: 1.3;
   }
   h5,
@@ -148,47 +262,6 @@
   time {
     font-variant-numeric: tabular-nums;
   }
-  /* Bklit chart tokens, mapped onto the Nexus world. Orange carries the
-     candidate's own (verified) series; white and greys carry comparisons. */
-  :root,
-  .dark {
-    --chart-1: #e9762b;
-    --chart-2: #e9e4da;
-    --chart-3: #7a746a;
-    --chart-4: #f3a066;
-    --chart-5: #d9c46b;
-    --chart-positive: #f3a066;
-    --chart-negative: #ff6b6b;
-    --chart-background: #0c0c0b;
-    --chart-foreground: #e9e4da;
-    --chart-foreground-muted: #a39d92;
-    --chart-line-primary: var(--chart-1);
-    --chart-line-secondary: var(--chart-2);
-    --chart-crosshair: rgba(233, 228, 218, 0.35);
-    --chart-grid: rgba(233, 228, 218, 0.1);
-    --chart-brush-border: var(--chart-grid);
-    --chart-tooltip-background: var(--popover);
-    --chart-tooltip-foreground: var(--popover-foreground);
-    --chart-tooltip-muted: #a39d92;
-    --chart-marker-background: #1d1b18;
-    --chart-marker-border: rgba(233, 228, 218, 0.18);
-    --chart-marker-foreground: #e9e4da;
-    --chart-label: #7a746a;
-    --chart-scale-mix: #151412;
-    --chart-scale-01: #1c1a17;
-    --chart-scale-02: color-mix(in oklab, var(--chart-1) 30%, var(--chart-scale-mix));
-    --chart-scale-03: color-mix(in oklab, var(--chart-1) 52%, var(--chart-scale-mix));
-    --chart-scale-04: color-mix(in oklab, var(--chart-1) 76%, var(--chart-scale-mix));
-    --chart-scale-05: var(--chart-1);
-    --chart-scale-pattern-color: #0c0c0b;
-    --chart-indicator-color: #e9e4da;
-    --chart-indicator-secondary-color: #0c0c0b;
-    --chart-marker-badge-background: #e9e4da;
-    --chart-marker-badge-foreground: #0c0c0b;
-    --chart-segment-background: rgba(233, 228, 218, 0.04);
-    --chart-segment-line: rgba(233, 228, 218, 0.18);
-  }
-
   /* Ring and pie centres size their text with container units. Tailwind v3
      has no container-query plugin here, so declare the container directly. */
   .\@container\/chart-center {
@@ -199,31 +272,77 @@
 @layer components {
   /* ── Type ─────────────────────────────────────────────────── */
 
-  /* Page title: thin display serif, the world's signature voice. */
+  /* Page title: the grotesk, medium weight, set tight. */
   .page-title {
-    font-family: var(--font-display), Georgia, serif;
-    font-weight: 200;
-    font-size: clamp(2.75rem, 5vw, 5.5rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    font-size: clamp(2rem, 3.4vw, 3.25rem);
+    line-height: 1;
+    letter-spacing: -0.045em;
     color: var(--ink);
   }
 
-  /* A long rule that trails the first line of a title. */
+  /* The marker-pen highlight behind one key phrase of a heading. */
+  .mark {
+    background: var(--lavender);
+    color: #0b0b0b;
+    padding: 0 0.08em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .mark-orange {
+    background: var(--verified);
+  }
+  .mark-sage {
+    background: var(--sage);
+  }
+  .mark-white {
+    background: #ffffff;
+  }
+
+  /* Small uppercase label above lists and on colour tiles. */
+  .label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  /* Section head: a full-width rule, heading left, short intro right. */
+  .section-head {
+    display: grid;
+    gap: 1rem 1rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+  }
+  @media (min-width: 900px) {
+    .section-head {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+    .section-head > :first-child {
+      grid-column: 1 / span 7;
+    }
+    .section-head > :nth-child(2) {
+      grid-column: 9 / span 4;
+      align-self: end;
+    }
+  }
+  .section-title {
+    font-weight: 500;
+    font-size: clamp(2.125rem, 4vw, 3.5rem);
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+
+  /* The old trailing dash after titles. Titles now sit under a full-width rule instead. */
   .title-rule {
-    display: inline-block;
-    width: 0.9em;
-    height: 1px;
-    margin-left: 0.25em;
-    vertical-align: 0.3em;
-    background: currentColor;
+    display: none;
   }
 
   .display-number {
-    font-family: var(--font-display), Georgia, serif;
-    font-weight: 200;
-    letter-spacing: -0.03em;
-    font-variant-numeric: lining-nums tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    font-variant-numeric: lining-nums;
   }
 
   /* Former tracked-uppercase "kicker" pills. Labels above headings are not
@@ -266,11 +385,12 @@
     align-items: center;
     gap: 0.375rem;
     height: 2rem;
-    padding: 0 0.875rem;
-    border-radius: 9999px;
-    background: var(--pill);
+    padding: 0 0.75rem;
+    border: 1px solid var(--line-strong);
+    background: transparent;
     color: var(--ink);
     font-size: 0.875rem;
+    font-weight: 500;
     line-height: 1;
     white-space: nowrap;
     transition:
@@ -279,7 +399,8 @@
       transform 120ms var(--ease-out);
   }
   .pill:hover {
-    background: var(--pill-hover);
+    background: var(--lavender);
+    color: #0b0b0b;
   }
   .pill:active {
     transform: scale(0.97);
@@ -287,6 +408,7 @@
   .pill[aria-pressed='true'],
   .pill[aria-current='page'],
   .pill[data-active='true'] {
+    border-color: var(--ink);
     background: var(--ink);
     color: var(--ground);
   }
@@ -299,11 +421,12 @@
     justify-content: center;
     gap: 0.5rem;
     min-height: 2.75rem;
-    padding: 0 1.25rem;
-    border-radius: 9999px;
+    padding: 0 1.125rem;
+    border: 1px solid transparent;
     font-size: 0.9375rem;
     font-weight: 500;
-    line-height: 1;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
     transition:
       background-color 160ms var(--ease-out),
       color 160ms var(--ease-out),
@@ -319,15 +442,28 @@
     color: var(--ground);
   }
   .button-primary:hover {
-    background: #f4f0e8;
+    background: var(--verified);
+    color: #0b0b0b;
+  }
+
+  /* The orange call-to-action. */
+  .button-accent {
+    background: var(--verified);
+    color: #0b0b0b;
+  }
+  .button-accent:hover {
+    background: var(--ink);
+    color: var(--ground);
   }
 
   .button-secondary {
-    background: var(--pill);
+    border-color: var(--ink);
+    background: transparent;
     color: var(--ink);
   }
   .button-secondary:hover {
-    background: var(--pill-hover);
+    background: var(--lavender);
+    color: #0b0b0b;
   }
 
   .button-ghost {
@@ -340,11 +476,13 @@
   }
 
   .button-danger {
-    background: rgba(255, 107, 107, 0.16);
+    border-color: var(--critical);
+    background: transparent;
     color: var(--critical);
   }
   .button-danger:hover {
-    background: rgba(255, 107, 107, 0.26);
+    background: var(--critical);
+    color: #0b0b0b;
   }
 
   .metalab-oauth {
@@ -354,15 +492,16 @@
     justify-content: center;
     gap: 0.5rem;
     min-height: 2.75rem;
-    border-radius: 9999px;
-    background: var(--pill);
+    border: 1px solid var(--ink);
+    background: var(--ground);
     font-size: 0.9375rem;
     font-weight: 500;
     color: var(--ink);
     transition: background-color 160ms var(--ease-out);
   }
   .metalab-oauth:hover {
-    background: var(--pill-hover);
+    background: var(--lavender);
+    color: #0b0b0b;
   }
 
   .metalab-link {
@@ -377,8 +516,8 @@
   }
 
   .focus-ring:focus-visible {
-    outline: 2px solid var(--verified);
-    outline-offset: 3px;
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 
   /* ── Surfaces ─────────────────────────────────────────────── */
@@ -395,9 +534,8 @@
   .cyber-card,
   .skill-node-card {
     position: relative;
-    border: 0;
-    border-radius: 1rem;
-    background: var(--raised);
+    border: 1px solid var(--line);
+    background: var(--ground);
     box-shadow: none;
     backdrop-filter: none;
   }
@@ -423,7 +561,7 @@
   .page-shell {
     max-width: 90rem;
     margin: 0 auto;
-    padding: 2.5rem clamp(1rem, 4vw, 3rem) 6rem;
+    padding: 1.5rem clamp(1rem, 2vw, 1.25rem) 4rem;
   }
 
   /* Removed decoration: orbs, grids, vignettes, grain. */
@@ -442,9 +580,8 @@
   .metalab-input {
     width: 100%;
     min-height: 2.75rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--line);
-    background: var(--raised);
+    border: 1px solid var(--line-strong);
+    background: var(--ground);
     padding: 0.625rem 0.875rem;
     font-size: 0.9375rem;
     line-height: 1.4;
@@ -455,11 +592,12 @@
     color: var(--ink-faint);
   }
   .metalab-input:hover {
-    border-color: var(--line-strong);
+    border-color: var(--ink);
   }
   .metalab-input:focus {
-    outline: none;
-    border-color: var(--verified);
+    outline: 2px solid var(--ink);
+    outline-offset: -1px;
+    border-color: var(--ink);
   }
   .metalab-input:disabled {
     opacity: 0.5;
@@ -468,13 +606,13 @@
 
   .metalab-alert-error {
     margin-bottom: 1.5rem;
-    border-radius: 0.75rem;
-    background: rgba(255, 107, 107, 0.12);
+    border-left: 3px solid var(--critical);
+    background: rgb(var(--critical-rgb) / 0.08);
     padding: 0.875rem 1rem;
   }
   .metalab-alert-error p {
     font-size: 0.875rem;
-    color: #ffc9c9;
+    color: var(--critical);
   }
 
   /* ── Status ───────────────────────────────────────────────── */
@@ -663,7 +801,7 @@
   }
 
   .premium-scrollbar {
-    scrollbar-color: rgba(233, 228, 218, 0.22) transparent;
+    scrollbar-color: rgb(var(--ink-rgb) / 0.3) transparent;
   }
 
   .transition-premium {

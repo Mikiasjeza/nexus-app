@@ -264,7 +264,7 @@ export default function EmployerTalentPage() {
 
         {!loading && searchError ? (
           <div className="mt-6 border-y border-line py-12" role="alert">
-            <p className="font-display text-3xl font-light">The search didn&apos;t run</p>
+            <p className="font-display text-3xl font-medium">The search didn&apos;t run</p>
             <p className="mt-3 max-w-md text-ink-muted">{searchError}</p>
             <Button className="mt-6" variant="secondary" onClick={() => search()}>
               Try again
@@ -272,7 +272,7 @@ export default function EmployerTalentPage() {
           </div>
         ) : !loading && candidates.length === 0 ? (
           <div className="mt-6 border-y border-line py-12">
-            <p className="font-display text-3xl font-light">No one matches yet</p>
+            <p className="font-display text-3xl font-medium">No one matches yet</p>
             <p className="mt-3 max-w-md text-ink-muted">
               Try fewer or broader skills. Candidates appear only with a public profile and employer
               discovery turned on.
@@ -301,7 +301,7 @@ export default function EmployerTalentPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h2 className="font-display text-[2rem] font-light leading-tight">{c.name}</h2>
+                    <h2 className="font-display text-[2rem] font-medium leading-tight">{c.name}</h2>
                     {c.bio && <p className="mt-1 line-clamp-2 text-sm text-ink-muted">{c.bio}</p>}
                     <p className="mt-2 text-sm text-ink-faint">
                       {getCandidatePillars(c.skills)
@@ -336,7 +336,7 @@ export default function EmployerTalentPage() {
                 <div className="flex flex-col gap-3 lg:items-end">
                   <p className="flex items-baseline gap-2">
                     <span
-                      className={`display-number text-4xl leading-none ${c.matchScore >= 80 ? 'text-verified' : ''}`}
+                      className={`display-number text-4xl leading-none ${c.matchScore >= 80 ? 'text-verified-ink' : ''}`}
                     >
                       {c.matchScore}%
                     </span>

@@ -1,22 +1,21 @@
-import NexusMark from './NexusMark'
-
 type NexusLogoProps = {
-  /** Height of the mark in px; the word scales with it. */
+  /** Height of the block in px; the word scales with it. */
   size?: number
   className?: string
 }
 
-/** The binding mark beside the word "Nexus". Decorative wrapper only: links go outside. */
-export default function NexusLogo({ size = 18, className = '' }: NexusLogoProps) {
+/**
+ * The wordmark: "Nexus" set bold and tight in a solid block of the page's ink,
+ * so it is a light block on a dark page and a black block on a light one.
+ * Decorative wrapper only: links go outside.
+ */
+export default function NexusLogo({ size = 48, className = '' }: NexusLogoProps) {
   return (
-    <span className={`inline-flex items-center gap-[0.4em] text-ink ${className}`}>
-      <NexusMark size={size} />
-      <span
-        className="font-medium leading-none tracking-[-0.015em]"
-        style={{ fontSize: size * 0.9 }}
-      >
-        Nexus
-      </span>
+    <span
+      className={`inline-flex items-center bg-ink font-bold leading-none tracking-[-0.055em] text-ground ${className}`}
+      style={{ height: size, padding: `0 ${Math.round(size * 0.3)}px`, fontSize: size * 0.44 }}
+    >
+      Nexus
     </span>
   )
 }

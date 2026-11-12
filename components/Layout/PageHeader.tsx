@@ -23,7 +23,7 @@ export default function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <header className="grid gap-8 pb-10 pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+    <header className="grid gap-5 border-t border-rule pb-8 pt-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
       <div className="min-w-0">
         <h1 className="page-title">
           {title}
@@ -36,12 +36,12 @@ export default function PageHeader({
           )}
         </h1>
         {description && (
-          <p className="mt-6 max-w-[34rem] text-base leading-relaxed text-ink-muted">
+          <p className="mt-4 max-w-[34rem] text-[0.9375rem] leading-snug text-ink-muted">
             {description}
           </p>
         )}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2 lg:pb-3">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 lg:pb-1">{actions}</div>}
     </header>
   )
 }
