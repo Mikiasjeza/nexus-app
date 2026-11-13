@@ -902,6 +902,7 @@ export function resultView(
       ? {
           id: credential.id,
           status: effectiveStatus(credential, now),
+          issuedAt: credential.issuedAt.toISOString(),
           expiresAt: credential.expiresAt.toISOString(),
         }
       : null,
