@@ -8,6 +8,7 @@ import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
 import CriteriaList from '@/components/Assessments/CriteriaList'
+import LinkedInButtons from '@/components/Assessments/LinkedInButtons'
 import { ApiError, assessmentsApi, type ResultPage } from '@/lib/api/assessments'
 
 const HEADLINES: Record<string, { title: string; description: string }> = {
@@ -183,6 +184,15 @@ export default function ResultPage() {
               <Button variant="secondary" onClick={copyLink}>
                 {copied ? 'Link copied' : 'Copy link'}
               </Button>
+              {result.credential.status === 'ACTIVE' && (
+                <LinkedInButtons
+                  verifyPath={verifyPath}
+                  name={`Nexus Verified: ${result.title}`}
+                  id={result.credential.id}
+                  issuedAt={result.credential.issuedAt}
+                  expiresAt={result.credential.expiresAt}
+                />
+              )}
             </div>
           </section>
         )}
