@@ -118,7 +118,7 @@ export default function TermsPage() {
         </List>
       </Section>
 
-      <Section title="5a. Employer accounts">
+      <Section id="employers" title="5a. Employer accounts">
         <p>If you use Nexus to find candidates, you also agree to:</p>
         <List>
           <li>use candidate profiles only to recruit for real roles at your company;</li>

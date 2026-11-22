@@ -19,6 +19,11 @@ const PUBLIC_PATHS = [
   '/terms',
   '/privacy',
   '/cookies',
+  '/ai',
+  '/accessibility',
+  '/copyright',
+  '/security',
+  '/.well-known/', // security.txt
   '/monitoring', // Sentry tunnel: error reports from logged-out pages too
   '/auth/login',
   '/auth/register',

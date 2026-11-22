@@ -23,14 +23,22 @@ export const authApi = {
     email: string,
     password: string,
     name: string,
-    employer?: { companyName: string }
+    employer?: { companyName: string },
+    ageConfirmed = false
   ): Promise<User> => {
     const user = await fetchApi<User>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(
         employer
-          ? { email, password, name, accountType: 'employer', companyName: employer.companyName }
-          : { email, password, name }
+          ? {
+              email,
+              password,
+              name,
+              ageConfirmed,
+              accountType: 'employer',
+              companyName: employer.companyName,
+            }
+          : { email, password, name, ageConfirmed }
       ),
     })
     return user

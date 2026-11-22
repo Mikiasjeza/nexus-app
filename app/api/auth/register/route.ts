@@ -19,6 +19,10 @@ const registerSchema = z.object({
     .min(1, 'Name is required')
     .max(200)
     .transform((v) => v.trim()),
+  /** The Terms require account holders to be 16 or older; the form asks them to confirm it. */
+  ageConfirmed: z.literal(true, {
+    errorMap: () => ({ message: 'You must be 16 or older to create an account' }),
+  }),
   /** Which side of Nexus the account is for. Employers also name their company. */
   accountType: z.enum(['candidate', 'employer']).default('candidate'),
   companyName: z

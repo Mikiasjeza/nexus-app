@@ -18,6 +18,10 @@ const MARKETING_PATHS = new Set([
   '/terms',
   '/privacy',
   '/cookies',
+  '/ai',
+  '/accessibility',
+  '/copyright',
+  '/security',
 ])
 const MARKETING_PREFIXES = ['/company/', '/share/', '/auth/']
 

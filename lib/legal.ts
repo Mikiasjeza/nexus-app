@@ -18,6 +18,10 @@ export const LEGAL = {
     privacy: 'mikiasjeza@gmail.com',
     legal: 'mikiasjeza@gmail.com',
     support: 'mikiasjeza@gmail.com',
+    /** Vulnerability reports (also published in /.well-known/security.txt). */
+    security: 'mikiasjeza@gmail.com',
+    /** Copyright notices; register this address as the DMCA agent too. */
+    copyright: 'mikiasjeza@gmail.com',
   },
 } as const
 

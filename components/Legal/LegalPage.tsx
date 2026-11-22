@@ -8,6 +8,10 @@ const LEGAL_NAV = [
   { href: '/privacy', label: 'Privacy Policy' },
   { href: '/terms', label: 'Terms of Service' },
   { href: '/cookies', label: 'Cookie Policy' },
+  { href: '/ai', label: 'How we use AI' },
+  { href: '/accessibility', label: 'Accessibility' },
+  { href: '/copyright', label: 'Copyright' },
+  { href: '/security', label: 'Security' },
 ]
 
 type LegalPageProps = {
