@@ -86,7 +86,11 @@ export async function GET(
     const token = await createSession(outcome.userId)
     await clearGuestPreviewCookie()
     await setSessionCookie(token)
-    return to(outcome.onboardingComplete ? safeNextPath(flow.next) : '/onboarding')
+    const next = safeNextPath(flow.next)
+    // Employers started from the hiring side finish there (naming their company),
+    // never in the candidate onboarding.
+    const employerFlow = next.startsWith('/employer/')
+    return to(outcome.onboardingComplete || employerFlow ? next : '/onboarding')
   } catch (error) {
     const code = error instanceof OAuthError ? error.code : 'unexpected'
     console.error(`OAuth callback error (${provider.id}):`, error)

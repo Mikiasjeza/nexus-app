@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   '/how-it-works',
   '/contact',
   '/pricing',
+  '/employers', // Public page for the hiring side
   '/terms',
   '/privacy',
   '/cookies',

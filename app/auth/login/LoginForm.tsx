@@ -11,6 +11,7 @@ import AuthShell from '@/components/Layout/AuthShell'
 import SocialSignIn, { OrDivider } from '@/components/Auth/SocialSignIn'
 import { signInErrorMessage } from '@/lib/auth/oauth/labels'
 import { safeNextPath } from '@/lib/auth/safe-redirect'
+import { invalidateUserCache } from '@/lib/hooks/useUser'
 import type { ProviderSummary } from '@/lib/auth/oauth/providers'
 
 export default function LoginForm({ providers }: { providers: ProviderSummary[] }) {
@@ -36,6 +37,7 @@ export default function LoginForm({ providers }: { providers: ProviderSummary[] 
 
     try {
       const user = await authApi.login(formData.email, formData.password)
+      invalidateUserCache()
       addToast({
         type: 'success',
         title: 'Welcome back!',
@@ -198,6 +200,12 @@ export default function LoginForm({ providers }: { providers: ProviderSummary[] 
           Don&apos;t have an account?{' '}
           <Link href="/auth/register" className="metalab-link">
             Sign up
+          </Link>
+        </p>
+        <p className="mt-2 text-sm metalab-muted">
+          Hiring?{' '}
+          <Link href="/auth/register?type=employer" className="metalab-link">
+            Create an employer account
           </Link>
         </p>
       </div>

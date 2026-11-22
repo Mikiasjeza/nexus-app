@@ -57,7 +57,13 @@ export interface User {
   discoverableByEmployers?: boolean
   /** Set by the session route for accounts listed in ADMIN_EMAILS. */
   isAdmin?: boolean
+  /** Which side of Nexus the account is on: proving skills, or hiring. */
+  accountType?: AccountType
+  /** The employer's company, when accountType is 'employer'. */
+  company?: { id: string; name: string; slug: string; role: string }
 }
+
+export type AccountType = 'candidate' | 'employer'
 
 export interface Activity {
   id: string

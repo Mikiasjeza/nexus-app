@@ -7,6 +7,7 @@ import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import Link from 'next/link'
 import AuthShell from '@/components/Layout/AuthShell'
+import { invalidateUserCache } from '@/lib/hooks/useUser'
 
 export default function EmployerSignupPage() {
   const router = useRouter()
@@ -34,6 +35,7 @@ export default function EmployerSignupPage() {
       if (!res.ok) {
         throw new Error(data.error || 'Failed to register')
       }
+      invalidateUserCache()
       addToast({
         type: 'success',
         title: 'Employer account created',
@@ -56,10 +58,11 @@ export default function EmployerSignupPage() {
     <AuthShell>
       <div className="mb-10">
         <h1 className="mb-3 font-display text-[2.5rem] font-medium leading-tight">
-          Register as employer
+          Name your company
         </h1>
         <p className="text-sm leading-relaxed metalab-muted md:text-base">
-          Create a company profile to search talent by verified proof and Nexus skill pillars.
+          One last step. Your company is what candidates see when you save them to a shortlist or
+          post a role.
         </p>
       </div>
 
@@ -101,15 +104,15 @@ export default function EmployerSignupPage() {
         </p>
 
         <Button type="submit" disabled={loading} isLoading={loading} fullWidth size="lg">
-          Create employer account
+          Continue
         </Button>
       </form>
 
       <div className="mt-8 border-t border-line pt-6">
         <p className="text-sm metalab-muted">
-          Looking for a role?{' '}
-          <Link href="/marketplace" className="metalab-link">
-            Browse marketplace
+          Here to prove your own skills?{' '}
+          <Link href="/dashboard" className="metalab-link">
+            Go to your skills passport
           </Link>
         </p>
       </div>

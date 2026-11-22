@@ -2,15 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Menu, X, LogOut, Shield, User as UserIcon } from 'lucide-react'
+import { Menu, X, LogOut, Shield, User as UserIcon, Building2 } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { clsx } from 'clsx'
-import { useUser } from '@/lib/hooks/useUser'
+import { useUser, invalidateUserCache } from '@/lib/hooks/useUser'
 import NexusLogo from '@/components/UI/NexusLogo'
 
 const MARKETING_PATHS = new Set([
   '/',
   '/about',
+  '/employers',
   '/how-it-works',
   '/pricing',
   '/contact',
@@ -28,19 +29,30 @@ function isMarketing(pathname: string): boolean {
 const marketingNav = [
   { href: '/about', label: 'About' },
   { href: '/how-it-works', label: 'How it works' },
+  { href: '/employers', label: 'For employers' },
   { href: '/assessments', label: 'Assessments' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/contact', label: 'Contact' },
 ]
 
-const appNav = [
+/** The side for people proving their skills. */
+const candidateNav = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/skills', label: 'Skills' },
   { href: '/assessments', label: 'Assessments' },
   { href: '/verification', label: 'Verification' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/marketplace', label: 'Marketplace' },
-  { href: '/employer/dashboard', label: 'Employer' },
+  { href: '/settings', label: 'Settings' },
+]
+
+/** The side for people hiring. */
+const employerNav = [
+  { href: '/employer/dashboard', label: 'Dashboard' },
+  { href: '/employer/talent', label: 'Find talent' },
+  { href: '/employer/pools', label: 'Shortlists' },
+  { href: '/employer/jobs', label: 'Jobs' },
+  { href: '/employer/company', label: 'Company' },
   { href: '/settings', label: 'Settings' },
 ]
 
@@ -61,7 +73,10 @@ export default function Header() {
   const { user, loading: userLoading } = useUser()
 
   const marketing = isMarketing(pathname)
-  const navItems = marketing ? marketingNav : appNav
+  // Employer pages always show the hiring menu, even before the session loads.
+  const employer = user?.accountType === 'employer' || pathname.startsWith('/employer/')
+  const homeHref = user ? (employer ? '/employer/dashboard' : '/dashboard') : '/'
+  const navItems = marketing ? marketingNav : employer ? employerNav : candidateNav
 
   useEffect(() => {
     setMobileMenuOpen(false)
@@ -92,17 +107,13 @@ export default function Header() {
   }, [userMenuOpen])
 
   const isNavItemActive = useCallback(
-    (href: string) => {
-      if (href === '/employer/dashboard') {
-        return pathname === href || pathname.startsWith('/employer/')
-      }
-      return pathname === href || pathname.startsWith(`${href}/`)
-    },
+    (href: string) => pathname === href || pathname.startsWith(`${href}/`),
     [pathname]
   )
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
+    invalidateUserCache()
     router.push('/')
     router.refresh()
   }
@@ -116,10 +127,12 @@ export default function Header() {
     ...(!marketing && user?.isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
     ...(marketing
       ? user
-        ? [{ href: '/dashboard', label: 'Dashboard' }]
+        ? [{ href: homeHref, label: 'Dashboard' }]
         : [
             { href: '/auth/login', label: 'Log in' },
-            { href: '/auth/register', label: 'Start your passport' },
+            pathname === '/employers'
+              ? { href: '/auth/register?type=employer', label: 'Start hiring' }
+              : { href: '/auth/register', label: 'Start your passport' },
           ]
       : []),
   ]
@@ -137,16 +150,22 @@ export default function Header() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-rule bg-ground">
       <nav aria-label="Primary" className="flex h-12 items-stretch justify-between">
         <div className="flex items-stretch">
-          <Link href={user ? '/dashboard' : '/'} className="flex" aria-label="Nexus home">
+          <Link href={homeHref} className="flex" aria-label="Nexus home">
             <NexusLogo size={48} />
           </Link>
           {marketing && !userLoading && !user && (
             <Link
-              href="/auth/register"
+              href={pathname === '/employers' ? '/auth/register?type=employer' : '/auth/register'}
               className="hidden h-12 items-center gap-6 bg-verified px-4 text-[0.9375rem] font-medium tracking-[-0.02em] text-[#0b0b0b] transition-colors duration-150 hover:bg-ink hover:text-ground sm:inline-flex"
             >
-              Start your passport <span aria-hidden>+</span>
+              {pathname === '/employers' ? 'Start hiring' : 'Start your passport'}{' '}
+              <span aria-hidden>+</span>
             </Link>
+          )}
+          {!marketing && employer && user?.company && (
+            <span className="hidden h-12 items-center border-l border-rule px-4 text-[0.9375rem] font-medium tracking-[-0.02em] text-ink-muted md:inline-flex">
+              {user.company.name}
+            </span>
           )}
         </div>
 
@@ -168,7 +187,7 @@ export default function Header() {
             {marketing &&
               !userLoading &&
               (user ? (
-                <Link href="/dashboard" className={navLinkClass(false)}>
+                <Link href={homeHref} className={navLinkClass(false)}>
                   Dashboard
                 </Link>
               ) : (
@@ -200,11 +219,22 @@ export default function Header() {
                       {user.name || user.email}
                     </p>
                     {user.name && <p className="truncate text-xs text-ink-muted">{user.email}</p>}
+                    {user.company && (
+                      <p className="mt-1 truncate text-xs text-ink-faint">
+                        Hiring at {user.company.name}
+                      </p>
+                    )}
                   </div>
                   <Link href="/settings" role="menuitem" className={menuItemClass}>
                     <UserIcon className="h-4 w-4" aria-hidden />
                     Profile and settings
                   </Link>
+                  {employer && (
+                    <Link href="/employer/company" role="menuitem" className={menuItemClass}>
+                      <Building2 className="h-4 w-4" aria-hidden />
+                      Company profile
+                    </Link>
+                  )}
                   {user.isAdmin && (
                     <Link href="/admin" role="menuitem" className={menuItemClass}>
                       <Shield className="h-4 w-4" aria-hidden />
