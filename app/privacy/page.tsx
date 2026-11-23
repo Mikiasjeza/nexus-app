@@ -22,8 +22,8 @@ export default function PrivacyPage() {
               evidence you add, and billing status if you upgrade.
             </li>
             <li>
-              We don&apos;t sell your data, show ads, or run advertising or analytics trackers in
-              your browser.
+              We don&apos;t sell your data, show ads, or run advertising trackers. Anonymous usage
+              stats (no cookies) run only if you allow them.
             </li>
             <li>
               Your profile is private until you turn on public sharing, and employers can only find
@@ -154,8 +154,10 @@ export default function PrivacyPage() {
             address, cookies or account details.
           </li>
           <li>
-            Only if you allow “Diagnostics” in cookie settings: a short replay of the moments before
-            an error, with all text, form inputs and images hidden.
+            Only if you allow “Diagnostics and usage stats” in cookie settings: a short replay of
+            the moments before an error, with all text, form inputs and images hidden, and anonymous
+            page views (page address without its query string, referrer, country, browser and device
+            type) counted by Vercel Web Analytics without cookies.
           </li>
         </List>
         <p className="font-medium text-ink">What we deliberately don&apos;t collect</p>
@@ -165,7 +167,8 @@ export default function PrivacyPage() {
           </li>
           <li>No precise location, contacts, or data from other apps.</li>
           <li>
-            No product-analytics scripts, and no session recording unless you opt in to diagnostics.
+            No analytics or session recording unless you opt in to diagnostics and usage stats. Even
+            then, page views are anonymous and cookie-free, and link query strings are dropped.
           </li>
         </List>
       </Section>
@@ -212,7 +215,7 @@ export default function PrivacyPage() {
               <td className="p-3">Performance of contract</td>
             </tr>
             <tr>
-              <td className="p-3">Masked error replays (diagnostics)</td>
+              <td className="p-3">Masked error replays and anonymous usage stats</td>
               <td className="p-3">Consent, which you can withdraw at any time</td>
             </tr>
           </tbody>

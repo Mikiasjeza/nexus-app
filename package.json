@@ -57,6 +57,7 @@
     "@number-flow/react": "^0.6.2",
     "@sentry/nextjs": "^10.46.0",
     "@uiw/react-codemirror": "^4.25.12",
+    "@vercel/analytics": "2.0.1",
     "@visx/curve": "^4.0.0",
     "@visx/event": "^4.0.0",
     "@visx/gradient": "^4.0.0",

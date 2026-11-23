@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/db'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { hashResetToken } from '@/lib/auth/reset-token'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.findFirst({
       where: {
-        resetToken: token,
+        resetToken: hashResetToken(token),
         resetExpires: { gt: new Date() },
       },
     })

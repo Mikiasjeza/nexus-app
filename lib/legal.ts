@@ -13,7 +13,7 @@ export const LEGAL = {
   LEGAL_ENTITY: 'Mikias Jeza', // the owner, until a company is registered
   POSTAL_ADDRESS: '', // shown on legal pages when set
   GOVERNING_LAW: 'the State of Delaware, United States',
-  effectiveDate: 'November 11, 2026',
+  effectiveDate: 'November 23, 2026',
   contact: {
     privacy: 'mikiasjeza@gmail.com',
     legal: 'mikiasjeza@gmail.com',
@@ -26,7 +26,8 @@ export const LEGAL = {
 } as const
 
 /** Bump when the set of cookie categories changes so visitors are re-asked. */
-export const CONSENT_VERSION = 1
+// 2: the optional category now also covers anonymous usage stats, so ask again.
+export const CONSENT_VERSION = 2
 
 export type CookieCategory = 'essential' | 'analytics'
 
@@ -82,7 +83,7 @@ export const STORAGE_ITEMS: StorageItem[] = [
     kind: 'Local storage',
     category: 'analytics',
     purpose:
-      'Only if you allow diagnostics: lets Sentry stitch together a privacy-masked replay of the moments before an error.',
+      'Only if you allow diagnostics and usage stats: lets Sentry stitch together a privacy-masked replay of the moments before an error.',
     duration: 'Until the tab is closed',
   },
 ]
@@ -104,7 +105,7 @@ export const SUBPROCESSORS: Subprocessor[] = [
   {
     name: 'Vercel',
     purpose: 'Application hosting and delivery',
-    data: 'IP address and request metadata (standard server logs)',
+    data: 'IP address and request metadata (standard server logs). If you allow usage stats: anonymous page views (page address without query, referrer, country, browser and device type), no cookies.',
     when: 'Every request',
     policyUrl: 'https://vercel.com/legal/privacy-policy',
   },
@@ -199,6 +200,14 @@ export const SUBPROCESSORS: Subprocessor[] = [
       'Optional: connect GitHub so repositories you submit as evidence can be confirmed as yours',
     data: 'GitHub tells us your GitHub user ID and username, and learns that you connected Nexus',
     when: 'Only if you connect GitHub in Settings',
+    policyUrl:
+      'https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement',
+  },
+  {
+    name: 'GitHub Actions',
+    purpose: 'Runs and stores our nightly database backups',
+    data: 'An encrypted copy of the database; GitHub cannot read it without our passphrase',
+    when: 'Nightly, kept for 30 days',
     policyUrl:
       'https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement',
   },

@@ -5,6 +5,7 @@
 import { POST as forgotPasswordPost } from '@/app/api/auth/forgot-password/route'
 import { POST as resetPasswordPost } from '@/app/api/auth/reset-password/route'
 import bcrypt from 'bcryptjs'
+import { hashResetToken } from '@/lib/auth/reset-token'
 
 jest.mock('@/lib/db', () => ({
   prisma: {
@@ -91,6 +92,22 @@ describe('password reset routes', () => {
     expect(callArg.data.resetToken.length).toBeGreaterThan(20)
     expect(callArg.data.resetExpires).toBeInstanceOf(Date)
     expect(emailService.sendPasswordResetEmail).toHaveBeenCalledTimes(1)
+    // The email carries the token; the database only keeps its hash.
+    const emailed = (emailService.sendPasswordResetEmail as jest.Mock).mock.calls[0]?.[1]
+    expect(callArg.data.resetToken).not.toBe(emailed)
+    expect(callArg.data.resetToken).toBe(hashResetToken(emailed))
+  })
+
+  it('reset-password looks the token up by its hash', async () => {
+    prisma.user.findFirst.mockResolvedValueOnce(null)
+    await resetPasswordPost(
+      new Request('http://localhost/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token: 'abc', newPassword: 'newPassword123' }),
+      })
+    )
+    expect(prisma.user.findFirst.mock.calls[0]?.[0].where.resetToken).toBe(hashResetToken('abc'))
   })
 
   it('reset-password rejects invalid token', async () => {

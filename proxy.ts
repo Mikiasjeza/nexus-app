@@ -26,6 +26,8 @@ const PUBLIC_PATHS = [
   '/security',
   '/.well-known/', // security.txt
   '/monitoring', // Sentry tunnel: error reports from logged-out pages too
+  '/_vercel/', // Vercel Web Analytics (only loads with consent)
+  '/status', // Public status page
   '/auth/login',
   '/auth/register',
   '/auth/forgot-password',

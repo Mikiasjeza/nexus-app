@@ -71,8 +71,8 @@ export default function CookieConsent() {
                     className="text-[13px] leading-relaxed text-ink-muted"
                   >
                     We use essential cookies to keep you signed in and secure. We don&apos;t run
-                    advertising or cross-site tracking. Optional diagnostics stay off unless you
-                    turn them on.{' '}
+                    advertising or cross-site tracking. Optional diagnostics and usage stats stay
+                    off unless you turn them on.{' '}
                     <Link
                       href="/cookies"
                       className="text-ink underline decoration-line-strong underline-offset-2 hover:decoration-ink"
@@ -99,15 +99,18 @@ export default function CookieConsent() {
                       </div>
                       <div className="flex items-start justify-between gap-4 rounded-xl border border-line p-3">
                         <div>
-                          <p className="text-sm font-medium text-ink">Diagnostics</p>
+                          <p className="text-sm font-medium text-ink">
+                            Diagnostics and usage stats
+                          </p>
                           <p className="text-xs text-ink-faint">
                             If something breaks, send our error monitor (Sentry) a short replay of
-                            the moments before it, with all text, inputs and images hidden. Helps us
-                            fix bugs faster.
+                            the moments before it, with all text, inputs and images hidden. Also
+                            count anonymous page views (Vercel Web Analytics, no cookies) so we know
+                            which pages people use.
                           </p>
                         </div>
                         <ToggleSwitch
-                          ariaLabel="Diagnostics"
+                          ariaLabel="Diagnostics and usage stats"
                           checked={choices.analytics}
                           onChange={(analytics) => setChoices({ ...choices, analytics })}
                         />
