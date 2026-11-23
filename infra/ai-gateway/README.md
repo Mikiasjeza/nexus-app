@@ -34,11 +34,11 @@ server planned for the code runner works; see `infra/runner/README.md`.
 
 In Vercel, set:
 
-| Variable         | Value                                    | Type   |
-| ---------------- | ---------------------------------------- | ------ |
-| `AI_PROVIDER`    | `gateway`                                | Config |
-| `AI_GATEWAY_URL` | `https://<your-gateway-host>/v1`         | Config |
-| `AI_GATEWAY_KEY` | the key from step 3                      | Secret |
-| `AI_MODEL`       | the combo or model name, e.g. `nexus`    | Config |
+| Variable         | Value                                 | Type   |
+| ---------------- | ------------------------------------- | ------ |
+| `AI_PROVIDER`    | `gateway`                             | Config |
+| `AI_GATEWAY_URL` | `https://<your-gateway-host>/v1`      | Config |
+| `AI_GATEWAY_KEY` | the key from step 3                   | Secret |
+| `AI_MODEL`       | the combo or model name, e.g. `nexus` | Config |
 
 Then redeploy. To go back, set `AI_PROVIDER` to the previous provider.
