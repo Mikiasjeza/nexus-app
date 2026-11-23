@@ -31,9 +31,12 @@ const SIDES: { id: AccountType; title: string; body: string }[] = [
 export default function RegisterForm({
   providers,
   initialSide = 'candidate',
+  next,
 }: {
   providers: ProviderSummary[]
   initialSide?: AccountType
+  /** Where to go after signing up instead of onboarding (only team invites). */
+  next?: string
 }) {
   const router = useRouter()
   const { addToast } = useToast()
@@ -96,7 +99,7 @@ export default function RegisterForm({
           ? `${formData.companyName.trim()} is set up. Start by finding talent.`
           : 'Your account has been created successfully.',
       })
-      router.push(employer ? '/employer/dashboard' : '/onboarding')
+      router.push(next ?? (employer ? '/employer/dashboard' : '/onboarding'))
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Failed to create account. Please try again.'

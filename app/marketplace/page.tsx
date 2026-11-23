@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
 import Link from 'next/link'
 import ReportButton from '@/components/UI/ReportButton'
+import ApplyButton from '@/components/Jobs/ApplyButton'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 
@@ -67,6 +68,20 @@ export default function MarketplacePage() {
 
   const isGuestPreview = user?.id === 'guest-user'
   const userSkills = skills.map((skill) => skill.name)
+
+  // Which jobs the person already applied to, so each listing shows its state.
+  const [applications, setApplications] = useState<Record<string, string>>({})
+  useEffect(() => {
+    if (!user || isGuestPreview) return
+    fetch('/api/applications', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : { applications: [] }))
+      .then((data: { applications?: { jobId: string; status: string }[] }) =>
+        setApplications(
+          Object.fromEntries((data.applications ?? []).map((a) => [a.jobId, a.status]))
+        )
+      )
+      .catch(() => {})
+  }, [user, isGuestPreview])
 
   useEffect(() => {
     let isActive = true
@@ -560,11 +575,18 @@ export default function MarketplacePage() {
                       <span className="text-sm text-ink-faint">match</span>
                     </p>
                     <div className="flex flex-wrap gap-2 lg:justify-end">
-                      {/* There is no apply flow yet, so point at the company rather than
-                          a button that does nothing. */}
+                      <ApplyButton
+                        jobId={job.id}
+                        jobTitle={job.title}
+                        companyName={job.company.name}
+                        status={applications[job.id]}
+                        onChange={(status) =>
+                          setApplications((prev) => ({ ...prev, [job.id]: status ?? '' }))
+                        }
+                      />
                       <Link
                         href={`/company/${job.company.slug}`}
-                        className="button-base button-primary min-h-9 px-4 text-sm"
+                        className="button-base button-secondary min-h-9 px-4 text-sm"
                       >
                         View company
                       </Link>

@@ -43,6 +43,7 @@ model User {
   promotions        PromotionRedemption[]
   waitlistEntries   WaitlistEntry[]
   reportsFiled      Report[]
+  jobApplications   JobApplication[]
 
   @@index([email])
   @@index([shareableId])
@@ -314,6 +315,7 @@ model Company {
   updatedAt   DateTime @updatedAt
 
   members       CompanyMember[]
+  invites       CompanyInvite[]
   jobListings   JobListing[]
   talentPools   TalentPool[]
   subscriptions Subscription[]
@@ -350,7 +352,8 @@ model JobListing {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company      Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications JobApplication[]
 
   @@index([companyId])
   @@index([status])
@@ -559,4 +562,40 @@ model Report {
   @@index([status, createdAt])
   @@index([targetType, targetId])
   @@index([reporterId])
+}
+
+/// A candidate's application to a job listing. Applying shares their passport with the company.
+model JobApplication {
+  id        String   @id @default(cuid())
+  jobId     String
+  userId    String
+  message   String?
+  status    String   @default("submitted") // 'submitted' | 'shortlisted' | 'rejected' | 'withdrawn'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job  JobListing @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, userId])
+  @@index([userId])
+  @@index([jobId, status])
+}
+
+/// An emailed invitation to join a company's employer account. Only the token's hash is stored.
+model CompanyInvite {
+  id         String    @id @default(cuid())
+  companyId  String
+  email      String
+  role       String // 'admin' | 'recruiter' | 'viewer'
+  tokenHash  String    @unique
+  invitedBy  String // user id
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  acceptedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([email])
 }

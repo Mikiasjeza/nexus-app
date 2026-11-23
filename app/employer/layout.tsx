@@ -10,7 +10,8 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    if (pathname?.startsWith('/employer/signup')) {
+    // Signing up and accepting an invite happen before someone has a company.
+    if (pathname?.startsWith('/employer/signup') || pathname?.startsWith('/employer/invite')) {
       setChecking(false)
       return
     }
@@ -28,7 +29,11 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
       .finally(() => setChecking(false))
   }, [pathname, router])
 
-  if (checking && !pathname?.startsWith('/employer/signup')) {
+  if (
+    checking &&
+    !pathname?.startsWith('/employer/signup') &&
+    !pathname?.startsWith('/employer/invite')
+  ) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <Loader />

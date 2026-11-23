@@ -117,3 +117,61 @@ export function loginAlertEmailText({ name, device, when }: LoginAlertDetails): 
     `${baseUrl()}/auth/forgot-password`,
   ].join('\n')
 }
+
+export type InviteDetails = {
+  companyName: string
+  inviterName: string
+  role: string
+  url: string
+  days: number
+}
+
+/** Team invite. Names are escaped: people choose their own and their company's. */
+export function inviteEmailHtml({
+  companyName,
+  inviterName,
+  role,
+  url,
+  days,
+}: InviteDetails): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join ${escapeHtml(companyName)} on Nexus</title>
+</head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;">
+  <div style="max-width:600px;margin:40px auto;padding:40px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <h1 style="margin:0 0 24px;font-size:24px;color:#111;">Join ${escapeHtml(companyName)} on Nexus</h1>
+    <p style="margin:0 0 24px;font-size:16px;color:#444;line-height:1.6;">
+      ${escapeHtml(inviterName)} invited you to hire with ${escapeHtml(companyName)} on Nexus, as ${escapeHtml(role)}.
+    </p>
+    <a href="${url}" style="display:inline-block;padding:12px 24px;background:#111;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">
+      Accept invite
+    </a>
+    <p style="margin:24px 0 0;font-size:14px;color:#888;">
+      This invite expires in ${days} days. If you weren&#39;t expecting it, you can ignore this email.
+    </p>
+  </div>
+</body>
+</html>
+`
+}
+
+export function inviteEmailText({
+  companyName,
+  inviterName,
+  role,
+  url,
+  days,
+}: InviteDetails): string {
+  return [
+    `${inviterName} invited you to hire with ${companyName} on Nexus, as ${role}.`,
+    '',
+    `Accept the invite: ${url}`,
+    '',
+    `It expires in ${days} days. If you weren't expecting it, you can ignore this email.`,
+  ].join('\n')
+}

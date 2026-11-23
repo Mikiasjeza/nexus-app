@@ -7,6 +7,7 @@ import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
+import TeamPanel from '@/components/Employer/TeamPanel'
 import { useToast } from '@/components/UI/ToastProvider'
 import { invalidateUserCache } from '@/lib/hooks/useUser'
 
@@ -141,7 +142,7 @@ export default function CompanyProfilePage() {
         <PageHeader
           title="Company"
           rule
-          description="This is what candidates see when you save them to a shortlist or post a role."
+          description="Your public profile, and the people who hire with you."
           actions={
             <Link
               href={`/company/${company.slug}`}
@@ -264,6 +265,8 @@ export default function CompanyProfilePage() {
             </p>
           </aside>
         </form>
+
+        <TeamPanel />
       </div>
     </AppPageShell>
   )
