@@ -242,10 +242,11 @@ export default function PrivacyPage() {
         </List>
         <p>
           We never send your name or email. We only use API terms under which the provider may not
-          train its models on our API data. Groq does not store request content by default, apart
-          from logs it may keep for up to 30 days to fix errors or investigate abuse. We store only
-          the results we show you (score, explanation, suggestions, matches) and token usage, not
-          the provider&apos;s full raw response.
+          train its models on our API data. If we send requests through our own self-hosted AI
+          gateway, it only forwards them to the providers named here, on those same terms. Groq does
+          not store request content by default, apart from logs it may keep for up to 30 days to fix
+          errors or investigate abuse. We store only the results we show you (score, explanation,
+          suggestions, matches) and token usage, not the provider&apos;s full raw response.
         </p>
         <p>
           AI results are informational and can be wrong. No legal or similarly significant decision

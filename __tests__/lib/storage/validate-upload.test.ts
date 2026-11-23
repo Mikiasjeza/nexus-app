@@ -64,4 +64,24 @@ describe('validateUpload', () => {
   it('rejects overly long file names', () => {
     expect(validateUpload(`${'a'.repeat(300)}.png`, PNG).ok).toBe(false)
   })
+
+  it('refuses server and script files, even disguised with a second extension', () => {
+    for (const name of ['shell.php', 'index.jsp', 'run.exe', 'page.html', 'icon.svg']) {
+      expect(validateUpload(name, PNG).ok).toBe(false)
+    }
+    expect(validateUpload('shell.php.png', PNG)).toEqual({
+      ok: false,
+      error: 'This kind of file is not allowed',
+    })
+    expect(validateUpload('notes.html.txt', bytes('hello')).ok).toBe(false)
+  })
+
+  it('refuses names with control or direction-override characters', () => {
+    expect(validateUpload('photo' + String.fromCharCode(0x202e) + 'gnp.png', PNG).ok).toBe(false)
+    expect(validateUpload('photo' + String.fromCharCode(0) + '.png', PNG).ok).toBe(false)
+  })
+
+  it('still accepts ordinary names with several dots', () => {
+    expect(validateUpload('my.cv.final.pdf', bytes('%PDF-1.7')).ok).toBe(true)
+  })
 })

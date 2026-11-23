@@ -78,6 +78,12 @@ class StorageService {
         Key: key,
         Body: file,
         ContentType: mimeType,
+        // Only images and video may display in the browser; anything else
+        // downloads, so a crafted document can't run in the page's context.
+        ContentDisposition:
+          mimeType.startsWith('image/') || mimeType.startsWith('video/')
+            ? 'inline'
+            : `attachment; filename="${sanitizedFileName}"`,
         ServerSideEncryption: 'AES256',
       })
 

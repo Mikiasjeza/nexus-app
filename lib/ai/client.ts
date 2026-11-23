@@ -24,8 +24,12 @@ export type { EvidenceInput } from './verification'
 
 type Provider = 'gemini' | 'openai' | 'anthropic'
 
-// Groq speaks the OpenAI API, so it runs through the OpenAI client below.
-const DEFAULT_PROVIDER = (env.ai.provider === 'groq' ? 'openai' : env.ai.provider) as Provider
+// Groq and gateways such as OmniRoute speak the OpenAI API, so they run through
+// the OpenAI client below.
+const OPENAI_COMPATIBLE = new Set(['groq', 'gateway'])
+const DEFAULT_PROVIDER = (
+  OPENAI_COMPATIBLE.has(env.ai.provider) ? 'openai' : env.ai.provider
+) as Provider
 const DEFAULT_MODEL = env.ai.model
 
 // GPT-OSS (Groq's current models) reasons before it answers, and that reasoning
@@ -116,6 +120,13 @@ class AIClient {
       })
     }
 
+    if (env.ai.provider === 'gateway' && env.ai.gatewayUrl && env.ai.gatewayKey) {
+      this.openai = new OpenAI({
+        apiKey: env.ai.gatewayKey,
+        baseURL: env.ai.gatewayUrl.replace(/\/+$/, ''),
+      })
+    }
+
     if (env.ai.anthropicKey) {
       this.anthropic = new Anthropic({
         apiKey: env.ai.anthropicKey,
@@ -125,7 +136,7 @@ class AIClient {
     if (!this.gemini && !this.openai && !this.anthropic) {
       console.warn('⚠️  No AI API keys configured. AI features will not work.')
       console.warn(
-        '   Set GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY or GROQ_API_KEY in .env'
+        '   Set GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, GROQ_API_KEY, or AI_GATEWAY_URL and AI_GATEWAY_KEY in .env'
       )
     }
   }
