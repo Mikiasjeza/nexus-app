@@ -36,7 +36,11 @@ export default function LoginForm({ providers }: { providers: ProviderSummary[] 
     setError('')
 
     try {
-      const user = await authApi.login(formData.email, formData.password)
+      const user = await authApi.login(formData.email, formData.password, next)
+      if (user.twoFactorRequired) {
+        router.push('/auth/two-factor')
+        return
+      }
       invalidateUserCache()
       addToast({
         type: 'success',

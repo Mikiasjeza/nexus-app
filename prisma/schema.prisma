@@ -25,6 +25,11 @@ model User {
   resetExpires            DateTime?
   onboardingComplete      Boolean   @default(false)
   discoverableByEmployers Boolean   @default(false)
+  // Two-step login: secret encrypted (lib/auth/totp.ts); pending until enabledAt is set.
+  twoFactorSecret         String?
+  twoFactorEnabledAt      DateTime?
+  twoFactorLastStep       Int? // last accepted 30-second step, so a code works once
+  twoFactorRecoveryCodes  String[]  @default([]) // SHA-256 hashes of unused codes
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 
