@@ -42,6 +42,7 @@ model User {
   usagePeriods      UsagePeriod[]
   promotions        PromotionRedemption[]
   waitlistEntries   WaitlistEntry[]
+  reportsFiled      Report[]
 
   @@index([email])
   @@index([shareableId])
@@ -537,4 +538,25 @@ model RunnerUsage {
   day       String   @id // YYYY-MM-DD, UTC
   calls     Int      @default(0)
   updatedAt DateTime @updatedAt
+}
+
+/// Something a signed-in person flagged for review: a profile, job or company.
+model Report {
+  id         String    @id @default(cuid())
+  reporterId String?
+  targetType String // 'profile' | 'job' | 'company'
+  targetId   String
+  reason     String // 'spam' | 'fake' | 'offensive' | 'scam' | 'copyright' | 'other'
+  details    String?
+  status     String    @default("open") // 'open' | 'actioned' | 'dismissed'
+  resolvedBy String? // admin email
+  resolution String?
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  reporter User? @relation(fields: [reporterId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@index([reporterId])
 }

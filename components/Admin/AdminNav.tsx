@@ -7,10 +7,11 @@ const LINKS = [
   { href: '/admin', label: 'Overview' },
   { href: '/admin/users', label: 'Users' },
   { href: '/admin/reviews', label: 'Reviews' },
+  { href: '/admin/reports', label: 'Reports' },
   { href: '/admin/billing', label: 'Billing' },
 ]
 
-/** The four admin screens as pills; sits in each page header's actions. */
+/** The admin screens as pills; sits in each page header's actions. */
 export default function AdminNav() {
   const pathname = usePathname() ?? ''
   return (

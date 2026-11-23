@@ -16,6 +16,7 @@ import {
 import { useToast } from '@/components/UI/ToastProvider'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
+import ReportButton from '@/components/UI/ReportButton'
 import type { PublicCredential } from '@/lib/assessments/verify'
 
 export default function SharePage() {
@@ -146,6 +147,9 @@ export default function SharePage() {
             </div>
           }
         />
+        <div className="no-print -mt-4 mb-8 flex justify-end">
+          <ReportButton targetType="profile" targetId={shareableId} what="this profile" />
+        </div>
 
         <dl className="print-card grid grid-cols-2 border-y border-line md:grid-cols-4">
           {[
