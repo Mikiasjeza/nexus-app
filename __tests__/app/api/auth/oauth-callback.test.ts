@@ -15,6 +15,9 @@ jest.mock('@/lib/auth/oauth/account', () => ({
   signInWithProvider: jest.fn(),
   connectProvider: jest.fn(),
 }))
+jest.mock('@/lib/db', () => ({ prisma: { user: { findUnique: jest.fn() } } }))
+jest.mock('@/lib/auth/two-factor', () => ({ startChallenge: jest.fn() }))
+jest.mock('@/lib/auth/login-alert', () => ({ noteSignIn: jest.fn(), trustThisDevice: jest.fn() }))
 jest.mock('@/lib/auth/session', () => ({
   createSession: jest.fn(),
   setSessionCookie: jest.fn(),
@@ -37,6 +40,12 @@ const session = jest.requireMock('@/lib/auth/session') as {
   clearGuestPreviewCookie: jest.Mock
 }
 const { rateLimit } = jest.requireMock('@/lib/utils/rateLimit') as { rateLimit: jest.Mock }
+const { prisma } = jest.requireMock('@/lib/db') as {
+  prisma: { user: { findUnique: jest.Mock } }
+}
+const { startChallenge } = jest.requireMock('@/lib/auth/two-factor') as {
+  startChallenge: jest.Mock
+}
 
 const PROFILE = { providerId: 'sub-1', email: 'ada@example.com', emailVerified: true, name: 'Ada' }
 
@@ -67,6 +76,7 @@ beforeEach(() => {
   delete process.env.LINKEDIN_CLIENT_SECRET
   rateLimit.mockReturnValue({ allowed: true })
   takeOAuthFlow.mockResolvedValue(flow())
+  prisma.user.findUnique.mockResolvedValue({ twoFactorEnabledAt: null })
   completeAuthorization.mockResolvedValue(PROFILE)
   account.signInWithProvider.mockResolvedValue({
     kind: 'signed_in',
@@ -216,5 +226,15 @@ describe('linking a provider from Settings', () => {
     const res = await callback()
     expect(location(res).searchParams.get('connect_error')).toBe('already_linked')
     expect(location(res).searchParams.get('provider')).toBe('google')
+  })
+})
+
+describe('provider sign-in with two-step login on', () => {
+  it('asks for a code before creating a session', async () => {
+    prisma.user.findUnique.mockResolvedValue({ twoFactorEnabledAt: new Date() })
+    takeOAuthFlow.mockResolvedValue(flow({ next: '/skills' }))
+    expect(location(await callback()).pathname).toBe('/auth/two-factor')
+    expect(startChallenge).toHaveBeenCalledWith('user-1', '/skills')
+    expect(session.createSession).not.toHaveBeenCalled()
   })
 })

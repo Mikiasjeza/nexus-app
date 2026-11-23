@@ -23,6 +23,8 @@ import { connectProvider, signInWithProvider } from '@/lib/auth/oauth/account'
 import { OAuthError, safeEqual } from '@/lib/auth/oauth/id-token'
 import { safeNextPath } from '@/lib/auth/safe-redirect'
 import { noteSignIn, trustThisDevice } from '@/lib/auth/login-alert'
+import { startChallenge } from '@/lib/auth/two-factor'
+import { prisma } from '@/lib/db'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
 export const dynamic = 'force-dynamic'
@@ -83,6 +85,18 @@ export async function GET(
 
     const outcome = await signInWithProvider(provider.id, profile)
     if (outcome.kind === 'refused') return fail(outcome.reason)
+
+    // Two-step login applies to provider sign-in too: no session until the code.
+    if (!outcome.isNew) {
+      const account = await prisma.user.findUnique({
+        where: { id: outcome.userId },
+        select: { twoFactorEnabledAt: true },
+      })
+      if (account?.twoFactorEnabledAt) {
+        await startChallenge(outcome.userId, safeNextPath(flow.next))
+        return to('/auth/two-factor')
+      }
+    }
 
     const token = await createSession(outcome.userId)
     await clearGuestPreviewCookie()

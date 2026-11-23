@@ -14,6 +14,7 @@ import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import BillingPanel from '@/components/Billing/BillingPanel'
 import ConnectedAccounts from '@/components/Auth/ConnectedAccounts'
+import TwoFactorSettings from '@/components/Auth/TwoFactorSettings'
 
 export default function SettingsPage() {
   const { addToast } = useToast()
@@ -316,7 +317,10 @@ export default function SettingsPage() {
             </ul>
           </SettingsSection>
 
-          <SettingsSection title="Sign-in" description="Your password and connected accounts.">
+          <SettingsSection
+            title="Sign-in"
+            description="Your password, connected accounts and two-step login."
+          >
             <div className="flex flex-wrap gap-2">
               {isGuestPreview ? (
                 // Plain text for guests: a disabled-looking link still opens from the keyboard.
@@ -340,6 +344,7 @@ export default function SettingsPage() {
               disconnects any linked accounts; you can connect them again afterwards.
             </p>
             <ConnectedAccounts disabled={isGuestPreview} />
+            <TwoFactorSettings disabled={isGuestPreview} />
           </SettingsSection>
 
           <SettingsSection

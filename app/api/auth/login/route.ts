@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { z } from 'zod'
 import { noteSignIn } from '@/lib/auth/login-alert'
+import { startChallenge } from '@/lib/auth/two-factor'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { createSession, setSessionCookie, clearGuestPreviewCookie } from '@/lib/auth/session'
@@ -51,6 +52,12 @@ export async function POST(request: Request) {
     const valid = await bcrypt.compare(password, user.passwordHash)
     if (!valid) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    }
+
+    // Two-step login: no session until the second step succeeds.
+    if (user.twoFactorEnabledAt) {
+      await startChallenge(user.id, typeof body?.next === 'string' ? body.next : undefined)
+      return NextResponse.json({ twoFactorRequired: true })
     }
 
     const token = await createSession(user.id)

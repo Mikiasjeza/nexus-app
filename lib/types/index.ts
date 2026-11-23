@@ -59,6 +59,8 @@ export interface User {
   isAdmin?: boolean
   /** True while the email is unconfirmed and confirmation emails can be sent. */
   needsEmailVerification?: boolean
+  /** Two-step login (authenticator app) is on for this account. */
+  twoFactorEnabled?: boolean
   /** Which side of Nexus the account is on: proving skills, or hiring. */
   accountType?: AccountType
   /** The employer's company, when accountType is 'employer'. */

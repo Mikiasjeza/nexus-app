@@ -36,6 +36,7 @@ export async function GET() {
         emailVerified: true,
         onboardingComplete: true,
         discoverableByEmployers: true,
+        twoFactorEnabledAt: true,
         createdAt: true,
       },
     })
@@ -60,6 +61,7 @@ export async function GET() {
         discoverableByEmployers: user.discoverableByEmployers,
         createdAt: user.createdAt.toISOString(),
         accountType: membership ? 'employer' : 'candidate',
+        twoFactorEnabled: Boolean(user.twoFactorEnabledAt),
         needsEmailVerification: !user.emailVerified && emailDeliveryConfigured(),
         ...(membership ? { company: { ...membership.company, role: membership.role } } : {}),
         // Only ever true for the person themselves; shows them the way to /admin.

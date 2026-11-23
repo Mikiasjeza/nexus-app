@@ -30,6 +30,7 @@ const PUBLIC_PATHS = [
   '/auth/forgot-password',
   '/auth/reset-password',
   '/auth/verify-email', // Link from the confirmation email
+  '/auth/two-factor', // Second sign-in step, before a session exists
   '/share/', // Public shareable profiles
   '/assessments', // Catalog, details and practice rounds (attempts are below)
   '/verify', // Public credential checks

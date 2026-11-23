@@ -11,10 +11,15 @@ export const authApi = {
     }
   },
 
-  login: async (email: string, password: string): Promise<User> => {
-    const user = await fetchApi<User>('/api/auth/login', {
+  /** Signs in; resolves to { twoFactorRequired: true } when a code is needed next. */
+  login: async (
+    email: string,
+    password: string,
+    next?: string | null
+  ): Promise<User & { twoFactorRequired?: boolean }> => {
+    const user = await fetchApi<User & { twoFactorRequired?: boolean }>('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, ...(next ? { next } : {}) }),
     })
     return user
   },
