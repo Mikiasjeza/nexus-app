@@ -31,6 +31,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
         logo: true,
         website: true,
         description: true,
+        verifiedAt: true,
       },
     })
 
@@ -46,6 +47,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
         logo: company.logo ?? undefined,
         website: company.website ?? undefined,
         description: company.description ?? undefined,
+        verified: Boolean(company.verifiedAt),
       },
     })
   } catch (e) {

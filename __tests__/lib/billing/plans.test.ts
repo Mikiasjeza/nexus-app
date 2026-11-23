@@ -21,18 +21,18 @@ describe('plan catalogue', () => {
     expect(PLAN_INFO.free.price).toBe(0)
     expect(PLAN_INFO.pro.price).toBe(999)
     expect(PLAN_INFO.career_plus.price).toBe(1999)
-    expect(PLAN_INFO.business.price).toBe(9900)
+    expect(PLAN_INFO.business.price).toBe(4900)
     expect(PLAN_INFO.free.limits.formalAssessments).toBe(1)
     expect(PLAN_INFO.pro.limits.formalAssessments).toBe(5)
     expect(PLAN_INFO.career_plus.limits.formalAssessments).toBe(12)
     expect(PLAN_INFO.business.limits.sponsoredAssessments).toBe(10)
   })
 
-  it('sells only Free and Pro at launch; Career+ and Business are not for sale', () => {
+  it('sells Free, Pro and the Business hiring plan; Career+ is not for sale yet', () => {
     expect(PLAN_INFO.free.availability).toBe('available')
     expect(PLAN_INFO.pro.availability).toBe('available')
     expect(PLAN_INFO.career_plus.availability).toBe('coming_soon')
-    expect(PLAN_INFO.business.availability).toBe('waitlist')
+    expect(PLAN_INFO.business.availability).toBe('available')
     expect(PLAN_INFO.business.audience).toBe('organization')
   })
 

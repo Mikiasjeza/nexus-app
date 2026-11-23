@@ -50,6 +50,10 @@ export interface PlanLimits {
   evidenceUploads: number
   /** Organization plans: candidate assessments the organization sponsors per month. */
   sponsoredAssessments: number
+  /** Company accounts: open job listings at once. -1 = unlimited. */
+  openJobs: number
+  /** Company accounts: people on the team, owner included, plus pending invites. */
+  teamSeats: number
 }
 
 export interface PlanInfo {
@@ -103,6 +107,8 @@ export const PLAN_INFO: Record<SubscriptionPlan, PlanInfo> = {
       skills: -1,
       evidenceUploads: 10,
       sponsoredAssessments: 0,
+      openJobs: 1,
+      teamSeats: 2,
     },
   },
   pro: {
@@ -132,6 +138,8 @@ export const PLAN_INFO: Record<SubscriptionPlan, PlanInfo> = {
       skills: -1,
       evidenceUploads: 100,
       sponsoredAssessments: 0,
+      openJobs: 1,
+      teamSeats: 2,
     },
   },
   career_plus: {
@@ -162,26 +170,28 @@ export const PLAN_INFO: Record<SubscriptionPlan, PlanInfo> = {
       skills: -1,
       evidenceUploads: 250,
       sponsoredAssessments: 0,
+      openJobs: 1,
+      teamSeats: 2,
     },
   },
   business: {
     id: 'business',
     name: 'Business',
-    price: 9900,
+    price: 4900,
     audience: 'organization',
-    availability: 'waitlist',
+    availability: 'available',
     recommended: false,
-    description: 'For hiring teams that assess candidates. Per organization, per month.',
-    features: [],
+    description: 'For companies hiring on Nexus. Per company, per month.',
+    features: [
+      'Unlimited open job listings',
+      'Up to 5 teammates',
+      'Applicants, shortlists and messaging for every role',
+      'Search candidates by verified skill',
+    ],
     comingSoon: [
-      'Employer dashboard',
       '10 candidate assessment invitations per month',
       'Job-specific assessment requests',
       'Candidate assessment reports',
-      'Access to evidence candidates choose to share with you',
-      'Credential verification',
-      'Team member access',
-      'Assessment management and invitation tracking',
     ],
     entitlements: ['employer_assessments'],
     limits: {
@@ -190,6 +200,8 @@ export const PLAN_INFO: Record<SubscriptionPlan, PlanInfo> = {
       skills: -1,
       evidenceUploads: 0,
       sponsoredAssessments: 10,
+      openJobs: -1,
+      teamSeats: 5,
     },
   },
 }

@@ -312,14 +312,17 @@ model StripeWebhookEvent {
 }
 
 model Company {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
-  slug        String   @unique
+  slug        String    @unique
   logo        String?
   website     String?
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  /// Verified badge: set when the owner's confirmed work email matches the website, or by an admin.
+  verifiedAt  DateTime?
+  verifiedVia String? // 'domain' | 'admin'
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   members       CompanyMember[]
   invites       CompanyInvite[]

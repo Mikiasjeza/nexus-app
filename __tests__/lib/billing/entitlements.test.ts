@@ -109,7 +109,7 @@ describe('canCreateEmployerAssessment', () => {
     await expect(canCreateEmployerAssessment('c1')).resolves.toMatchObject({ allowed: false })
   })
 
-  it('stays off while Business is not on sale, even for a paying organization', async () => {
+  it('stays off until employer assessments are ready, even for a paying organization', async () => {
     mockDb.subscription.findUnique.mockResolvedValue({ plan: 'business', status: 'active' })
     await expect(canCreateEmployerAssessment('c1')).resolves.toMatchObject({
       allowed: false,

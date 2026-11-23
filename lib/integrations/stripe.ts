@@ -276,6 +276,88 @@ class StripeService {
     return { state: 'pending', plan }
   }
 
+  /** A Stripe Checkout page for a company's Business plan. */
+  async createCompanyCheckoutSession(input: {
+    companyId: string
+    baseUrl: string
+  }): Promise<{ url: string }> {
+    assertStripeEnv()
+    const { companyId } = input
+    const plan: SubscriptionPlan = 'business'
+    const sale = await purchasability(plan)
+    if (!sale.purchasable) {
+      throw new BillingError(PURCHASE_BLOCK_MESSAGES[sale.block!], 409, sale.block!)
+    }
+    const current = await prisma.subscription.findUnique({
+      where: { companyId },
+      select: { stripeSubscriptionId: true, status: true },
+    })
+    if (current?.stripeSubscriptionId && isLiveStatus(current.status)) {
+      throw new BillingError(
+        'Your company already has a subscription. Use Manage billing to change or cancel it.',
+        409,
+        'already_subscribed'
+      )
+    }
+
+    const base = this.ensureValidAppUrl(input.baseUrl)
+    const customerId = await this.getOrCreateCustomer({ companyId })
+    const expiresAt = new Date(Date.now() + CHECKOUT_MINUTES * 60_000)
+    const metadata: Record<string, string> = { companyId, planId: plan }
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        customer: customerId,
+        client_reference_id: `company:${companyId}`,
+        line_items: [{ price: priceIdFor(plan)!, quantity: 1 }],
+        payment_method_types: ['card'],
+        success_url: `${base}/employer/company?checkout=success#plan`,
+        cancel_url: `${base}/employer/company?checkout=cancelled#plan`,
+        expires_at: Math.floor(expiresAt.getTime() / 1000),
+        metadata,
+        subscription_data: { metadata },
+        custom_text: {
+          submit: {
+            message: `Business renews at ${formatPlanPrice(PLAN_INFO[plan].price)}/month until you cancel. Cancel any time from your company page.`,
+          },
+        },
+        ...(process.env.STRIPE_AUTOMATIC_TAX === 'true' && {
+          automatic_tax: { enabled: true },
+          customer_update: { address: 'auto' as const, name: 'auto' as const },
+        }),
+      })
+      if (!session.url) throw new Error('Stripe returned no checkout URL')
+      return { url: session.url }
+    } catch (error) {
+      console.error('Stripe company checkout error:', error)
+      throw new BillingError(
+        `Failed to create checkout session: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        502,
+        'stripe_error'
+      )
+    }
+  }
+
+  /** Stripe's billing portal for a company: card, invoices, cancellation. */
+  async createCompanyPortalSession(companyId: string, returnUrl: string): Promise<string> {
+    assertStripeEnv()
+    const customerId = await this.getOrCreateCustomer({ companyId })
+    try {
+      const session = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${this.ensureValidAppUrl(returnUrl)}/employer/company#plan`,
+      })
+      return session.url
+    } catch (error) {
+      console.error('Stripe company portal error:', error)
+      throw new BillingError(
+        `Failed to create portal session: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        502,
+        'stripe_error'
+      )
+    }
+  }
+
   /** Stripe's billing portal: payment details, invoices, cancellation. */
   async createBillingPortalSession(userId: string, returnUrl: string): Promise<string> {
     assertStripeEnv()

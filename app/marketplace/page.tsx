@@ -16,6 +16,7 @@ import { CATEGORY_COLORS } from '@/lib/utils/constants'
 import Link from 'next/link'
 import ReportButton from '@/components/UI/ReportButton'
 import ApplyButton from '@/components/Jobs/ApplyButton'
+import VerifiedCompanyBadge from '@/components/Employer/VerifiedCompanyBadge'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 
@@ -28,7 +29,7 @@ interface ApiJob {
   type: string
   salary?: string
   status: string
-  company: { id: string; name: string; slug: string; logo?: string }
+  company: { id: string; name: string; slug: string; logo?: string; verified?: boolean }
   createdAt: string
 }
 
@@ -528,6 +529,7 @@ export default function MarketplacePage() {
                       <Link href={`/company/${job.company.slug}`} className="hover:text-ink">
                         {job.company.name}
                       </Link>
+                      {job.company.verified && <VerifiedCompanyBadge />}
                       {job.location && <span>{job.location}</span>}
                       <span>{job.type.replace('-', ' ')}</span>
                       {job.salary && <span>{job.salary}</span>}

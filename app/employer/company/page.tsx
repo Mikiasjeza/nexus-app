@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import AppPageShell from '@/components/Layout/AppPageShell'
@@ -8,6 +8,8 @@ import PageHeader from '@/components/Layout/PageHeader'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
 import TeamPanel from '@/components/Employer/TeamPanel'
+import PlanPanel from '@/components/Employer/PlanPanel'
+import VerifiedCompanyBadge from '@/components/Employer/VerifiedCompanyBadge'
 import { useToast } from '@/components/UI/ToastProvider'
 import { invalidateUserCache } from '@/lib/hooks/useUser'
 
@@ -19,6 +21,7 @@ type Company = {
   website?: string
   description?: string
   role: string
+  verified?: boolean
 }
 
 type Form = { name: string; website: string; logo: string; description: string }
@@ -253,6 +256,7 @@ export default function CompanyProfilePage() {
                 <p className="truncate font-display text-2xl font-medium">
                   {form.name || 'Company'}
                 </p>
+                {company.verified && <VerifiedCompanyBadge />}
                 {form.website && (
                   <p className="truncate text-sm text-ink-muted">
                     {form.website.replace(/^https?:\/\//, '')}
@@ -263,8 +267,21 @@ export default function CompanyProfilePage() {
             <p className="mt-6 whitespace-pre-line text-sm leading-relaxed text-ink-muted">
               {form.description || 'No description yet.'}
             </p>
+            {!company.verified && (
+              <p className="mt-6 border-t border-line pt-4 text-xs text-ink-faint">
+                Get the Verified badge: set your website above, then confirm an email address on the
+                same domain (for example you@
+                {form.website.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] ||
+                  'yourcompany.com'}
+                ).
+              </p>
+            )}
           </aside>
         </form>
+
+        <Suspense fallback={null}>
+          <PlanPanel />
+        </Suspense>
 
         <TeamPanel />
       </div>
