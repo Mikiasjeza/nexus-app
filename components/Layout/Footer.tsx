@@ -21,6 +21,10 @@ const legal: FooterColumn = {
     { label: 'Privacy', href: '/privacy' },
     { label: 'Cookies', href: '/cookies' },
     { label: 'Cookie settings', onClick: openCookiePreferences },
+    { label: 'How we use AI', href: '/ai' },
+    { label: 'Accessibility', href: '/accessibility' },
+    { label: 'Copyright', href: '/copyright' },
+    { label: 'Security', href: '/security' },
   ],
 }
 
@@ -37,7 +41,7 @@ const candidateColumns: FooterColumn[] = [
   },
   {
     ...company,
-    links: [...company.links, { label: 'For employers', href: '/employer/dashboard' }],
+    links: [...company.links, { label: 'For employers', href: '/employers' }],
   },
   legal,
 ]

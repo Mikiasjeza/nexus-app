@@ -45,6 +45,7 @@ export default function RegisterForm({
     password: '',
     confirmPassword: '',
   })
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -69,6 +70,11 @@ export default function RegisterForm({
       return
     }
 
+    if (!ageConfirmed) {
+      setError('Please confirm you are 16 or older')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -76,7 +82,8 @@ export default function RegisterForm({
         formData.email,
         formData.password,
         formData.name,
-        employer ? { companyName: formData.companyName.trim() } : undefined
+        employer ? { companyName: formData.companyName.trim() } : undefined,
+        ageConfirmed
       )
       invalidateUserCache()
       addToast({
@@ -156,7 +163,7 @@ export default function RegisterForm({
         <>
           <SocialSignIn providers={providers} next={employer ? '/employer/signup' : null} />
           <p className="mt-3 text-xs leading-relaxed metalab-muted">
-            By continuing you agree to our{' '}
+            By continuing you confirm you are 16 or older, agree to our{' '}
             <Link href="/terms" className="metalab-link">
               Terms of Service
             </Link>{' '}
@@ -290,6 +297,18 @@ export default function RegisterForm({
             </button>
           </div>
         </div>
+
+        <label className="flex items-start gap-3 text-sm text-ink" htmlFor="reg-age">
+          <input
+            id="reg-age"
+            type="checkbox"
+            required
+            checked={ageConfirmed}
+            onChange={(e) => setAgeConfirmed(e.target.checked)}
+            className="mt-0.5 size-4 shrink-0 accent-verified"
+          />
+          <span>I am 16 or older</span>
+        </label>
 
         <p className="text-xs leading-relaxed metalab-muted">
           By creating an account you agree to our{' '}
