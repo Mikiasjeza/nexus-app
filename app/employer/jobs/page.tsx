@@ -304,7 +304,10 @@ export default function EmployerJobsPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex gap-1.5 lg:justify-end">
+                <div className="flex flex-wrap gap-1.5 lg:justify-end">
+                  <Link href={`/employer/jobs/${job.id}/applicants`} className="pill">
+                    Applicants
+                  </Link>
                   {job.status === 'active' && (
                     <>
                       <Link

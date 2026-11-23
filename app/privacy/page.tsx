@@ -312,6 +312,13 @@ export default function PrivacyPage() {
           Employers must use what they see only for recruiting, as required by our Terms.
         </p>
         <p>
+          <strong className="text-ink">When you apply to a job:</strong> the company you apply to,
+          and its teammates on Nexus, receive your name, email address, any note you write and your
+          passport, including your skills and their verification status. This is what lets them
+          contact you. You can withdraw an application at any time; they keep what they already saw
+          under their own responsibility for your data.
+        </p>
+        <p>
           We may also disclose data if required by law, or to protect the rights and safety of our
           users, and to a successor if Nexus is merged or acquired (we will notify you first).
         </p>

@@ -16,6 +16,7 @@ const PUBLIC_PATHS = [
   '/contact',
   '/pricing',
   '/employers', // Public page for the hiring side
+  '/employer/invite', // Team invite link; signed-out visitors are offered sign-in
   '/terms',
   '/privacy',
   '/cookies',
