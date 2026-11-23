@@ -94,9 +94,16 @@ export async function canStartFormalAssessment(userId: string): Promise<Assessme
 }
 
 /**
+ * Employer-sponsored assessments are still being built and validated. Business
+ * is on sale for hiring (jobs, applicants, team), but this stays off until the
+ * feature is ready: flip it then, and move it from comingSoon to features.
+ */
+export const EMPLOYER_ASSESSMENTS_READY = false
+
+/**
  * Whether an organization can sponsor another candidate assessment: it needs
- * an active Business plan, Business must be on sale (the employer features
- * exist and are validated), and this month's allowance must have room.
+ * an active Business plan, the feature must be ready, and this month's
+ * allowance must have room.
  */
 export async function canCreateEmployerAssessment(companyId: string): Promise<AccessDecision> {
   const subscription = await prisma.subscription.findUnique({
@@ -106,7 +113,7 @@ export async function canCreateEmployerAssessment(companyId: string): Promise<Ac
   const plan = effectivePlan(subscription)
   const decision = decideFor(plan, 'employer_assessments')
   if (!decision.allowed) return decision
-  if (PLAN_INFO.business.availability !== 'available') {
+  if (!EMPLOYER_ASSESSMENTS_READY) {
     return {
       allowed: false,
       plan,

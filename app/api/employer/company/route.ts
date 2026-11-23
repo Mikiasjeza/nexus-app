@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { refreshDomainVerification } from '@/lib/employer/verification'
 import { GUEST_COMPANY, GUEST_READ_ONLY } from '@/lib/mock/employer'
 import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 
@@ -51,6 +52,7 @@ export async function GET() {
         role: membership.role,
         jobCount: company._count.jobListings,
         poolCount: company._count.talentPools,
+        verified: Boolean(company.verifiedAt),
       },
     })
   } catch (e) {
@@ -130,6 +132,12 @@ export async function PATCH(request: Request) {
       },
     })
 
+    await refreshDomainVerification(company.id)
+    const verified = await prisma.company.findUnique({
+      where: { id: company.id },
+      select: { verifiedAt: true },
+    })
+
     return NextResponse.json({
       company: {
         id: company.id,
@@ -139,6 +147,7 @@ export async function PATCH(request: Request) {
         website: company.website ?? undefined,
         description: company.description ?? undefined,
         role: membership.role,
+        verified: Boolean(verified?.verifiedAt),
       },
     })
   } catch (e) {

@@ -8,6 +8,7 @@
 
 import { createHash, randomBytes } from 'crypto'
 import { prisma } from '@/lib/db'
+import { refreshVerificationForUser } from '@/lib/employer/verification'
 import { emailService } from '@/lib/email/client'
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000
@@ -62,6 +63,7 @@ export async function consumeVerificationToken(
     where: { id: user.id },
     data: { emailVerified: true, emailToken: null },
   })
+  await refreshVerificationForUser(user.id)
   return 'verified'
 }
 
