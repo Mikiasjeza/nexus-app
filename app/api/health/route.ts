@@ -30,7 +30,7 @@ export async function GET() {
         database: db,
         dbLatencyMs,
         configuration: readinessIssues.length === 0 ? 'ready' : 'issues',
-        readinessIssues,
+        readinessIssues: readinessIssues.length,
       },
     }
 

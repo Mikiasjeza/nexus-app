@@ -25,6 +25,7 @@ const legal: FooterColumn = {
     { label: 'Accessibility', href: '/accessibility' },
     { label: 'Copyright', href: '/copyright' },
     { label: 'Security', href: '/security' },
+    { label: 'Status', href: '/status' },
   ],
 }
 

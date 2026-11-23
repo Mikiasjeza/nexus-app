@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import VerifyEmailBanner from '@/components/Auth/VerifyEmailBanner'
 import Header from '@/components/Layout/Header'
 import CookieConsent from '@/components/UI/CookieConsent'
+import ConsentedAnalytics from '@/components/Analytics/ConsentedAnalytics'
 import { ToastProvider } from '@/components/UI/ToastProvider'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { OnboardingGuard } from '@/components/Auth/OnboardingGuard'
@@ -144,6 +145,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             />
           </ToastProvider>
         </ErrorBoundary>
+        <ConsentedAnalytics />
       </body>
     </html>
   )

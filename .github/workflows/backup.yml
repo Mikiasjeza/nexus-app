@@ -1,0 +1,86 @@
+name: Nightly database backup
+
+# Dumps the production database, encrypts it with a passphrase only you
+# know, and keeps it for 30 days. Restore steps: docs/BACKUPS.md.
+#
+# Needs two repository secrets (Settings > Secrets and variables > Actions):
+#   BACKUP_DATABASE_URL  the production database connection string (Neon's
+#                        direct, non-pooled one)
+#   BACKUP_PASSPHRASE    a long random passphrase; keep a copy somewhere safe,
+#                        without it the backups can't be opened
+# Optional, to also copy each backup to S3 (give the bucket a 30-day expiry rule):
+#   BACKUP_S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
+
+on:
+  schedule:
+    - cron: '17 7 * * *' # every day at 07:17 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::notice::Backups are off: add BACKUP_DATABASE_URL and BACKUP_PASSPHRASE secrets to turn them on."
+            echo "SKIP=1" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install PostgreSQL 17 client
+        if: env.SKIP != '1'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          /usr/lib/postgresql/17/bin/pg_dump --version
+
+      - name: Dump and encrypt
+        if: env.SKIP != '1'
+        run: |
+          set -euo pipefail
+          umask 077
+          NAME="nexus-db-$(date -u +%Y-%m-%dT%H%MZ).dump.gpg"
+          /usr/lib/postgresql/17/bin/pg_dump --format=custom --no-owner --no-privileges "$DATABASE_URL" \
+            | gpg --batch --yes --symmetric --cipher-algo AES256 \
+                  --passphrase-fd 3 --output "$NAME" 3<<<"$BACKUP_PASSPHRASE"
+          SIZE=$(stat -c %s "$NAME")
+          if [ "$SIZE" -lt 1024 ]; then
+            echo "::error::Backup is suspiciously small ($SIZE bytes)."
+            exit 1
+          fi
+          echo "NAME=$NAME" >> "$GITHUB_ENV"
+          echo "Backup $NAME: $SIZE bytes"
+
+      - name: Keep for 30 days
+        if: env.SKIP != '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NAME }}
+          path: ${{ env.NAME }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Copy to S3 (optional)
+        if: env.SKIP != '1'
+        env:
+          BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          if [ -z "$BUCKET" ]; then echo "No S3 bucket set; skipping."; exit 0; fi
+          aws s3 cp "$NAME" "s3://$BUCKET/db-backups/$NAME" --only-show-errors

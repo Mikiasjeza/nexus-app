@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { TURNSTILE_FAILED, TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { emailService } from '@/lib/email/client'
+import { hashResetToken } from '@/lib/auth/reset-token'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
       const resetExpires = new Date(Date.now() + 1000 * 60 * 30)
       await prisma.user.update({
         where: { id: user.id },
-        data: { resetToken, resetExpires },
+        // Only the hash is stored; the link in the email carries the token itself.
+        data: { resetToken: hashResetToken(resetToken), resetExpires },
       })
       try {
         await emailService.sendPasswordResetEmail(user.email, resetToken)
