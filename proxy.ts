@@ -16,6 +16,7 @@ const PUBLIC_PATHS = [
   '/contact',
   '/pricing',
   '/employers', // Public page for the hiring side
+  '/employer/invite', // Team invite link; signed-out visitors are offered sign-in
   '/terms',
   '/privacy',
   '/cookies',
@@ -30,7 +31,6 @@ const PUBLIC_PATHS = [
   '/auth/forgot-password',
   '/auth/reset-password',
   '/auth/verify-email', // Link from the confirmation email
-  '/employer/invite', // Team invite link; signed-out visitors are offered sign-in
   '/share/', // Public shareable profiles
   '/assessments', // Catalog, details and practice rounds (attempts are below)
   '/verify', // Public credential checks
