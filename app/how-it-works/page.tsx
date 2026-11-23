@@ -88,7 +88,7 @@ export default function HowItWorksPage() {
               choose to be discoverable.
             </p>
             <Link
-              href="/employer/dashboard"
+              href="/employers"
               className="mt-6 inline-flex text-ink-muted transition-colors hover:text-ink"
             >
               Nexus for employers →

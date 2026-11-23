@@ -16,8 +16,23 @@ const PROTECTED_PATHS = [
 ]
 const ONBOARDING_PATH = '/onboarding'
 
-function isProtectedPath(pathname: string): boolean {
-  return PROTECTED_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+/** The candidate side: employers are sent to their own dashboard instead. */
+const CANDIDATE_ONLY_PATHS = [
+  '/dashboard',
+  '/skills',
+  '/analytics',
+  '/marketplace',
+  '/verification',
+  ONBOARDING_PATH,
+]
+const EMPLOYER_HOME = '/employer/dashboard'
+
+function matches(paths: string[], pathname: string): boolean {
+  return paths.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+}
+
+function isGuarded(pathname: string): boolean {
+  return matches(PROTECTED_PATHS, pathname) || matches(CANDIDATE_ONLY_PATHS, pathname)
 }
 
 export function OnboardingGuard({ children }: { children: React.ReactNode }) {
@@ -26,7 +41,7 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    if (!pathname || pathname === ONBOARDING_PATH || !isProtectedPath(pathname)) {
+    if (!pathname || !isGuarded(pathname)) {
       setChecking(false)
       return
     }
@@ -34,8 +49,19 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
     authApi
       .getCurrentUser()
       .then((user) => {
-        if (user && user.onboardingComplete === false) {
-          router.replace('/onboarding')
+        if (user?.accountType === 'employer') {
+          // Employers have no candidate onboarding and no candidate pages.
+          if (matches(CANDIDATE_ONLY_PATHS, pathname)) {
+            router.replace(EMPLOYER_HOME)
+            return
+          }
+        } else if (
+          user &&
+          user.onboardingComplete === false &&
+          pathname !== ONBOARDING_PATH &&
+          matches(PROTECTED_PATHS, pathname)
+        ) {
+          router.replace(ONBOARDING_PATH)
           return
         }
         setChecking(false)
@@ -43,7 +69,7 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
       .catch(() => setChecking(false))
   }, [pathname, router])
 
-  if (checking && pathname && isProtectedPath(pathname) && pathname !== ONBOARDING_PATH) {
+  if (checking && pathname && isGuarded(pathname)) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <Loader />

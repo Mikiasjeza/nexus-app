@@ -4,6 +4,17 @@ import RegisterForm from './RegisterForm'
 // Which "Continue with …" buttons to show depends on the server's settings.
 export const dynamic = 'force-dynamic'
 
-export default function RegisterPage() {
-  return <RegisterForm providers={providerSummaries()} />
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>
+}) {
+  // /auth/register?type=employer opens on the hiring side.
+  const { type } = await searchParams
+  return (
+    <RegisterForm
+      providers={providerSummaries()}
+      initialSide={type === 'employer' ? 'employer' : 'candidate'}
+    />
+  )
 }

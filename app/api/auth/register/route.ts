@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { createSession, setSessionCookie, clearGuestPreviewCookie } from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { createCompanyForUser } from '@/lib/employer/company'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +19,13 @@ const registerSchema = z.object({
     .min(1, 'Name is required')
     .max(200)
     .transform((v) => v.trim()),
+  /** Which side of Nexus the account is for. Employers also name their company. */
+  accountType: z.enum(['candidate', 'employer']).default('candidate'),
+  companyName: z
+    .string()
+    .max(200)
+    .optional()
+    .transform((v) => v?.trim() || undefined),
 })
 
 export async function POST(request: Request) {
@@ -35,7 +43,10 @@ export async function POST(request: Request) {
       const msg = parsed.error.errors[0]?.message ?? 'Invalid request'
       return NextResponse.json({ error: msg }, { status: 400 })
     }
-    const { email: emailNorm, password, name } = parsed.data
+    const { email: emailNorm, password, name, accountType, companyName } = parsed.data
+    if (accountType === 'employer' && !companyName) {
+      return NextResponse.json({ error: 'Company name is required' }, { status: 400 })
+    }
     const existing = await prisma.user.findUnique({
       where: { email: emailNorm },
     })
@@ -47,24 +58,29 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
-    const user = await prisma.user.create({
-      data: {
-        email: emailNorm,
-        name,
-        passwordHash,
-        onboardingComplete: false,
-      },
-    })
+    const user = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email: emailNorm,
+          name,
+          passwordHash,
+          onboardingComplete: false,
+        },
+      })
 
-    // Create free subscription for new user
-    await prisma.subscription.upsert({
-      where: { userId: user.id },
-      create: {
-        userId: user.id,
-        plan: 'free',
-        status: 'active',
-      },
-      update: {},
+      if (accountType === 'employer' && companyName) {
+        // The employer side: a company with this person as owner, no candidate onboarding.
+        await createCompanyForUser(tx, created.id, companyName)
+        return { ...created, onboardingComplete: true }
+      }
+
+      // Candidates start on the free plan.
+      await tx.subscription.upsert({
+        where: { userId: created.id },
+        create: { userId: created.id, plan: 'free', status: 'active' },
+        update: {},
+      })
+      return created
     })
 
     const token = await createSession(user.id)
@@ -83,6 +99,7 @@ export async function POST(request: Request) {
       emailVerified: user.emailVerified,
       onboardingComplete: user.onboardingComplete,
       createdAt: user.createdAt.toISOString(),
+      accountType,
     })
   } catch (e) {
     console.error('Register error:', e)

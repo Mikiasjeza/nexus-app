@@ -1,6 +1,7 @@
 /**
  * POST /api/employer/register
- * Register current user as employer - creates company and adds user as owner.
+ * Set up the employer side for the signed-in person: creates their company with
+ * them as owner. Someone who already has a company just gets it back.
  */
 
 import { NextResponse } from 'next/server'
@@ -8,20 +9,13 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { getSessionUserId } from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { createCompanyForUser, employerMembership } from '@/lib/employer/company'
 
 export const dynamic = 'force-dynamic'
 
 const bodySchema = z.object({
   companyName: z.string().min(1, 'Company name is required').max(200),
 })
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
 
 export async function POST(request: Request) {
   try {
@@ -42,34 +36,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg }, { status: 400 })
     }
 
-    const { companyName } = parsed.data
-    let baseSlug = slugify(companyName)
-    if (!baseSlug) baseSlug = 'company'
-
-    let slug = baseSlug
-    let suffix = 0
-    while (true) {
-      const existing = await prisma.company.findUnique({ where: { slug } })
-      if (!existing) break
-      suffix++
-      slug = `${baseSlug}-${suffix}`
+    const existing = await employerMembership(prisma, userId)
+    if (existing) {
+      return NextResponse.json({
+        id: existing.company.id,
+        name: existing.company.name,
+        slug: existing.company.slug,
+        role: existing.role,
+      })
     }
 
-    const company = await prisma.company.create({
-      data: {
-        name: companyName.trim(),
-        slug,
-        members: {
-          create: {
-            userId,
-            role: 'owner',
-          },
-        },
-      },
-      include: {
-        members: true,
-      },
-    })
+    const company = await createCompanyForUser(prisma, userId, parsed.data.companyName)
 
     return NextResponse.json({
       id: company.id,

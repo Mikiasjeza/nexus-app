@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, User, Eye, EyeOff, Building2 } from 'lucide-react'
+import { clsx } from 'clsx'
 import { authApi } from '@/lib/api'
 import Link from 'next/link'
 import Button from '@/components/UI/Button'
@@ -10,11 +11,35 @@ import { useToast } from '@/components/UI/ToastProvider'
 import AuthShell from '@/components/Layout/AuthShell'
 import SocialSignIn, { OrDivider } from '@/components/Auth/SocialSignIn'
 import type { ProviderSummary } from '@/lib/auth/oauth/providers'
+import type { AccountType } from '@/lib/types'
+import { invalidateUserCache } from '@/lib/hooks/useUser'
 
-export default function RegisterForm({ providers }: { providers: ProviderSummary[] }) {
+const SIDES: { id: AccountType; title: string; body: string }[] = [
+  {
+    id: 'candidate',
+    title: 'I want to prove my skills',
+    body: 'Build a skills passport, pass assessments, share verified credentials.',
+  },
+  {
+    id: 'employer',
+    title: "I'm hiring",
+    body: 'Find people by verified skills, save shortlists, post roles.',
+  },
+]
+
+export default function RegisterForm({
+  providers,
+  initialSide = 'candidate',
+}: {
+  providers: ProviderSummary[]
+  initialSide?: AccountType
+}) {
   const router = useRouter()
   const { addToast } = useToast()
+  const [side, setSide] = useState<AccountType>(initialSide)
+  const employer = side === 'employer'
   const [formData, setFormData] = useState({
+    companyName: '',
     name: '',
     email: '',
     password: '',
@@ -39,16 +64,29 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
       return
     }
 
+    if (employer && !formData.companyName.trim()) {
+      setError('Company name is required')
+      return
+    }
+
     setLoading(true)
 
     try {
-      await authApi.register(formData.email, formData.password, formData.name)
+      await authApi.register(
+        formData.email,
+        formData.password,
+        formData.name,
+        employer ? { companyName: formData.companyName.trim() } : undefined
+      )
+      invalidateUserCache()
       addToast({
         type: 'success',
-        title: 'Account Created',
-        message: 'Your account has been created successfully.',
+        title: 'Account created',
+        message: employer
+          ? `${formData.companyName.trim()} is set up. Start by finding talent.`
+          : 'Your account has been created successfully.',
       })
-      router.push('/onboarding')
+      router.push(employer ? '/employer/dashboard' : '/onboarding')
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Failed to create account. Please try again.'
@@ -76,6 +114,38 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
         </p>
       </div>
 
+      <fieldset className="mb-8">
+        <legend className="metalab-label">What brings you to Nexus?</legend>
+        <div role="radiogroup" className="grid gap-px border border-rule bg-rule sm:grid-cols-2">
+          {SIDES.map((option) => {
+            const selected = side === option.id
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => {
+                  setSide(option.id)
+                  setError('')
+                }}
+                className={clsx(
+                  'flex flex-col gap-1.5 p-4 text-left transition-colors duration-150',
+                  selected
+                    ? 'bg-ink text-ground'
+                    : 'bg-ground text-ink hover:bg-lavender hover:text-[#0b0b0b]'
+                )}
+              >
+                <span className="text-[0.9375rem] font-medium tracking-[-0.02em]">
+                  {option.title}
+                </span>
+                <span className="text-xs leading-snug opacity-75">{option.body}</span>
+              </button>
+            )
+          })}
+        </div>
+      </fieldset>
+
       {error ? (
         <div className="metalab-alert-error" role="alert">
           <p>{error}</p>
@@ -84,7 +154,7 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
 
       {providers.length > 0 && (
         <>
-          <SocialSignIn providers={providers} />
+          <SocialSignIn providers={providers} next={employer ? '/employer/signup' : null} />
           <p className="mt-3 text-xs leading-relaxed metalab-muted">
             By continuing you agree to our{' '}
             <Link href="/terms" className="metalab-link">
@@ -101,9 +171,32 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {employer && (
+          <div>
+            <label className="metalab-label" htmlFor="reg-company">
+              Company name
+            </label>
+            <div className="relative">
+              <Building2 className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
+              <input
+                id="reg-company"
+                type="text"
+                required
+                autoComplete="organization"
+                value={formData.companyName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, companyName: e.target.value })
+                }
+                className="metalab-input pl-11"
+                placeholder="Acme Inc."
+              />
+            </div>
+          </div>
+        )}
+
         <div>
           <label className="metalab-label" htmlFor="reg-name">
-            Full name
+            {employer ? 'Your name' : 'Full name'}
           </label>
           <div className="relative">
             <User className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
@@ -123,7 +216,7 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
 
         <div>
           <label className="metalab-label" htmlFor="reg-email">
-            Email
+            {employer ? 'Work email' : 'Email'}
           </label>
           <div className="relative">
             <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
@@ -136,7 +229,7 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
                 setFormData({ ...formData, email: e.target.value })
               }
               className="metalab-input pl-11"
-              placeholder="you@example.com"
+              placeholder={employer ? 'you@company.com' : 'you@example.com'}
             />
           </div>
         </div>
@@ -202,7 +295,8 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
           By creating an account you agree to our{' '}
           <Link href="/terms" className="metalab-link">
             Terms of Service
-          </Link>{' '}
+          </Link>
+          {employer ? ', including the employer rules on using candidate data, ' : ' '}
           and acknowledge our{' '}
           <Link href="/privacy" className="metalab-link">
             Privacy Policy
@@ -211,7 +305,7 @@ export default function RegisterForm({ providers }: { providers: ProviderSummary
         </p>
 
         <Button type="submit" disabled={loading} isLoading={loading} fullWidth size="lg">
-          Create account
+          {employer ? 'Create employer account' : 'Create account'}
         </Button>
       </form>
 

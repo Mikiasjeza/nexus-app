@@ -15,6 +15,7 @@ interface Company {
   name: string
   slug: string
   role: string
+  description?: string
   jobCount: number
   poolCount: number
 }
@@ -106,6 +107,25 @@ export default function EmployerDashboardPage() {
     )
   }
 
+  // First steps for a new company, until each one is done.
+  const nextSteps = [
+    !company.description && {
+      href: '/employer/company',
+      label: 'Describe your company',
+      note: 'Candidates see it on shortlists and roles.',
+    },
+    company.jobCount === 0 && {
+      href: '/employer/jobs',
+      label: 'Post your first role',
+      note: 'Nexus ranks discoverable people against it.',
+    },
+    company.poolCount === 0 && {
+      href: '/employer/talent',
+      label: 'Start a shortlist',
+      note: 'Search by verified skill and save the people you like.',
+    },
+  ].filter((step): step is { href: string; label: string; note: string } => Boolean(step))
+
   const verifiedShare = summary.talent.byPillar.reduce(
     (acc, p) => ({ claimed: acc.claimed + p.claimed, verified: acc.verified + p.verified }),
     { claimed: 0, verified: 0 }
@@ -130,6 +150,27 @@ export default function EmployerDashboardPage() {
             </>
           }
         />
+
+        {nextSteps.length > 0 && (
+          <section aria-labelledby="next-steps-heading" className="border-t border-line py-8">
+            <h2 id="next-steps-heading" className="text-sm text-ink-faint">
+              Get set up
+            </h2>
+            <ol className="mt-4 grid gap-px border border-rule bg-rule md:grid-cols-3">
+              {nextSteps.map((step) => (
+                <li key={step.href} className="bg-ground">
+                  <Link
+                    href={step.href}
+                    className="flex h-full flex-col gap-1 p-5 transition-colors duration-150 hover:bg-lavender hover:text-[#0b0b0b]"
+                  >
+                    <span className="font-medium">{step.label} →</span>
+                    <span className="text-sm opacity-75">{step.note}</span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
         <dl className="grid grid-cols-2 border-y border-line md:grid-cols-4">
           {[

@@ -6,6 +6,7 @@ import { dbErrorResponse } from '@/lib/db-error'
 import { env } from '@/lib/config/env'
 import { guestUser } from '@/lib/mock/guest'
 import { isAdminAccount } from '@/lib/auth/admin'
+import { employerMembership } from '@/lib/employer/company'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,6 +41,8 @@ export async function GET() {
     if (!user) {
       return NextResponse.json({ user: null })
     }
+    // Belonging to a company puts the account on the employer side.
+    const membership = await employerMembership(prisma, user.id)
 
     return NextResponse.json({
       user: {
@@ -55,6 +58,8 @@ export async function GET() {
         onboardingComplete: user.onboardingComplete,
         discoverableByEmployers: user.discoverableByEmployers,
         createdAt: user.createdAt.toISOString(),
+        accountType: membership ? 'employer' : 'candidate',
+        ...(membership ? { company: { ...membership.company, role: membership.role } } : {}),
         // Only ever true for the person themselves; shows them the way to /admin.
         ...(isAdminAccount(user) ? { isAdmin: true } : {}),
       },

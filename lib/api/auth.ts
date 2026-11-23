@@ -19,10 +19,19 @@ export const authApi = {
     return user
   },
 
-  register: async (email: string, password: string, name: string): Promise<User> => {
+  register: async (
+    email: string,
+    password: string,
+    name: string,
+    employer?: { companyName: string }
+  ): Promise<User> => {
     const user = await fetchApi<User>('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify(
+        employer
+          ? { email, password, name, accountType: 'employer', companyName: employer.companyName }
+          : { email, password, name }
+      ),
     })
     return user
   },
