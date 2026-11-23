@@ -11,10 +11,33 @@
 import { prisma } from '@/lib/db'
 
 const FREE_EMAIL_DOMAINS = new Set([
-  'gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com', 'live.com', 'msn.com',
-  'yahoo.com', 'ymail.com', 'icloud.com', 'me.com', 'mac.com', 'aol.com', 'proton.me',
-  'protonmail.com', 'pm.me', 'gmx.com', 'gmx.net', 'mail.com', 'zoho.com', 'yandex.com',
-  'yandex.ru', 'qq.com', '163.com', '126.com', 'tutanota.com', 'fastmail.com', 'hey.com',
+  'gmail.com',
+  'googlemail.com',
+  'outlook.com',
+  'hotmail.com',
+  'live.com',
+  'msn.com',
+  'yahoo.com',
+  'ymail.com',
+  'icloud.com',
+  'me.com',
+  'mac.com',
+  'aol.com',
+  'proton.me',
+  'protonmail.com',
+  'pm.me',
+  'gmx.com',
+  'gmx.net',
+  'mail.com',
+  'zoho.com',
+  'yandex.com',
+  'yandex.ru',
+  'qq.com',
+  '163.com',
+  '126.com',
+  'tutanota.com',
+  'fastmail.com',
+  'hey.com',
 ])
 
 /** "https://www.acme.com/careers" -> "acme.com"; null when not a usable web address. */
