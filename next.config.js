@@ -117,16 +117,18 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               process.env.NODE_ENV === 'production'
-                ? "script-src 'self' 'unsafe-inline'"
-                : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                ? "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com"
+                : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
               // Browser code only talks to our own origin (Sentry goes through the
               // /monitoring tunnel). This blocks third-party beacons/trackers.
               process.env.NODE_ENV === 'production'
-                ? "connect-src 'self'"
-                : "connect-src 'self' ws: wss:",
+                ? "connect-src 'self' https://challenges.cloudflare.com"
+                : "connect-src 'self' ws: wss: https://challenges.cloudflare.com",
+              // Cloudflare Turnstile's human check runs in a frame.
+              'frame-src https://challenges.cloudflare.com',
               // Sentry Replay compresses in a blob: worker (only with consent).
               "worker-src 'self' blob:",
               "frame-ancestors 'self'",

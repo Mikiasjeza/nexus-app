@@ -1,5 +1,6 @@
 'use client'
 
+import Turnstile, { turnstileActive } from '@/components/Security/Turnstile'
 import React, { useState } from 'react'
 import { Mail, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -13,6 +14,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -21,7 +23,7 @@ export default function ForgotPasswordPage() {
     try {
       await fetchApi<{ ok: boolean }>('/api/auth/forgot-password', {
         method: 'POST',
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstileToken }),
       })
       setSent(true)
       addToast({
@@ -96,7 +98,13 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
 
-          <Button type="submit" isLoading={loading} fullWidth>
+          <Turnstile onToken={setTurnstileToken} />
+          <Button
+            type="submit"
+            isLoading={loading}
+            disabled={turnstileActive && !turnstileToken}
+            fullWidth
+          >
             Send reset link
           </Button>
         </form>

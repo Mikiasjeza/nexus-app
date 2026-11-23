@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { trustThisDevice } from '@/lib/auth/login-alert'
+import { emailDeliveryConfigured, sendVerificationEmail } from '@/lib/auth/email-verification'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { createSession, setSessionCookie, clearGuestPreviewCookie } from '@/lib/auth/session'
+import { TURNSTILE_FAILED, TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { createCompanyForUser } from '@/lib/employer/company'
 
@@ -42,6 +45,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}))
+    if (!(await verifyTurnstile(body?.[TURNSTILE_FIELD], request))) {
+      return NextResponse.json({ error: TURNSTILE_FAILED }, { status: 400 })
+    }
     const parsed = registerSchema.safeParse(body)
     if (!parsed.success) {
       const msg = parsed.error.errors[0]?.message ?? 'Invalid request'
@@ -90,6 +96,15 @@ export async function POST(request: Request) {
     const token = await createSession(user.id)
     await clearGuestPreviewCookie()
     await setSessionCookie(token)
+    await trustThisDevice()
+
+    // Ask them to confirm their email. A delivery problem never blocks sign-up:
+    // they can resend from the banner.
+    if (emailDeliveryConfigured()) {
+      await sendVerificationEmail(user).catch((err) =>
+        console.error('Verification email failed:', err)
+      )
+    }
 
     return NextResponse.json({
       id: user.id,

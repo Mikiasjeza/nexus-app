@@ -12,6 +12,7 @@ import AuthShell from '@/components/Layout/AuthShell'
 import SocialSignIn, { OrDivider } from '@/components/Auth/SocialSignIn'
 import type { ProviderSummary } from '@/lib/auth/oauth/providers'
 import type { AccountType } from '@/lib/types'
+import Turnstile, { turnstileActive } from '@/components/Security/Turnstile'
 import { invalidateUserCache } from '@/lib/hooks/useUser'
 
 const SIDES: { id: AccountType; title: string; body: string }[] = [
@@ -46,6 +47,7 @@ export default function RegisterForm({
     confirmPassword: '',
   })
   const [ageConfirmed, setAgeConfirmed] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -83,7 +85,8 @@ export default function RegisterForm({
         formData.password,
         formData.name,
         employer ? { companyName: formData.companyName.trim() } : undefined,
-        ageConfirmed
+        ageConfirmed,
+        turnstileToken
       )
       invalidateUserCache()
       addToast({
@@ -323,7 +326,15 @@ export default function RegisterForm({
           . We&apos;ll only email you about your account, never marketing.
         </p>
 
-        <Button type="submit" disabled={loading} isLoading={loading} fullWidth size="lg">
+        <Turnstile onToken={setTurnstileToken} />
+
+        <Button
+          type="submit"
+          disabled={loading || (turnstileActive && !turnstileToken)}
+          isLoading={loading}
+          fullWidth
+          size="lg"
+        >
           {employer ? 'Create employer account' : 'Create account'}
         </Button>
       </form>

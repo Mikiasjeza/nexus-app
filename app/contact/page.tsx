@@ -1,5 +1,6 @@
 'use client'
 
+import Turnstile, { turnstileActive } from '@/components/Security/Turnstile'
 import { useState } from 'react'
 import { Send } from 'lucide-react'
 import Button from '@/components/UI/Button'
@@ -18,6 +19,7 @@ export default function ContactPage() {
   })
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -30,7 +32,7 @@ export default function ContactPage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, turnstileToken }),
       })
 
       const data = await response.json().catch(() => ({}))
@@ -154,9 +156,11 @@ export default function ContactPage() {
                   className="metalab-input resize-none"
                 />
               </div>
+              <Turnstile onToken={setTurnstileToken} />
               <Button
                 type="submit"
                 isLoading={loading}
+                disabled={turnstileActive && !turnstileToken}
                 rightIcon={<Send className="size-4" aria-hidden />}
               >
                 Send message

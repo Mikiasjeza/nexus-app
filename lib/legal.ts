@@ -55,6 +55,14 @@ export const STORAGE_ITEMS: StorageItem[] = [
     duration: '24 hours',
   },
   {
+    name: 'nexus_device',
+    kind: 'Cookie',
+    category: 'essential',
+    purpose:
+      'Recognises a browser you have signed in from, so we can email you when your account is signed in to from a new one. HTTP-only.',
+    duration: '1 year',
+  },
+  {
     name: 'nexus_oauth_state',
     kind: 'Cookie',
     category: 'essential',
@@ -89,6 +97,7 @@ export type Subprocessor = {
 
 /**
  * Third parties that receive personal data. All are called server-side except
+ * Cloudflare Turnstile (the form check) and
  * Sentry, which also runs in the browser (see sentry/instrumentation configs).
  */
 export const SUBPROCESSORS: Subprocessor[] = [
@@ -149,8 +158,16 @@ export const SUBPROCESSORS: Subprocessor[] = [
     policyUrl: 'https://aws.amazon.com/privacy/',
   },
   {
+    name: 'Cloudflare (Turnstile)',
+    purpose:
+      'Checks that sign-up, contact and password-reset forms are sent by a person, not a bot',
+    data: 'Your IP address and browser signals during the check; no cookies for tracking',
+    when: 'When you fill in one of those forms',
+    policyUrl: 'https://www.cloudflare.com/turnstile-privacy-policy/',
+  },
+  {
     name: 'Resend',
-    purpose: 'Transactional email (password reset)',
+    purpose: 'Transactional email (email confirmation, sign-in alerts, password reset)',
     data: 'Email address and the message content',
     when: 'Only when we must email you',
     policyUrl: 'https://resend.com/legal/privacy-policy',

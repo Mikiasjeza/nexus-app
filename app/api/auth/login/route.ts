@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { z } from 'zod'
+import { noteSignIn } from '@/lib/auth/login-alert'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { createSession, setSessionCookie, clearGuestPreviewCookie } from '@/lib/auth/session'
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
     const token = await createSession(user.id)
     await clearGuestPreviewCookie()
     await setSessionCookie(token)
+    await noteSignIn(user, request)
 
     return NextResponse.json(userToJson(user))
   } catch (e) {
