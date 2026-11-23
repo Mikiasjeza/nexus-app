@@ -36,6 +36,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         createdAt: true,
         user: {
           select: {
+            id: true,
             name: true,
             email: true,
             shareableId: true,
@@ -53,6 +54,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         status: a.status,
         message: a.message,
         appliedAt: a.createdAt.toISOString(),
+        candidateId: a.user.id,
         name: a.user.name,
         email: a.user.email,
         passportPath: `/share/${a.user.shareableId}`,

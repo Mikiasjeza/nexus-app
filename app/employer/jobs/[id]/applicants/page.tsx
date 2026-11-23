@@ -15,6 +15,7 @@ type Applicant = {
   status: Status
   message: string | null
   appliedAt: string
+  candidateId: string
   name: string
   email: string
   passportPath: string
@@ -177,13 +178,23 @@ export default function ApplicantsPage() {
                         Verified for this role: {matched.join(', ')}
                       </p>
                     )}
-                    <Link
-                      href={a.passportPath}
-                      target="_blank"
-                      className="mt-2 inline-block text-ink underline underline-offset-2"
-                    >
-                      View passport ↗
-                    </Link>
+                    <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                      <Link
+                        href={a.passportPath}
+                        target="_blank"
+                        className="text-ink underline underline-offset-2"
+                      >
+                        View passport ↗
+                      </Link>
+                      {editable && (
+                        <Link
+                          href={`/messages?to=${encodeURIComponent(a.candidateId)}&name=${encodeURIComponent(a.name)}`}
+                          className="text-ink underline underline-offset-2"
+                        >
+                          Message
+                        </Link>
+                      )}
+                    </span>
                   </div>
                   {editable && (
                     <div className="flex flex-wrap gap-1.5 lg:flex-col lg:items-end">

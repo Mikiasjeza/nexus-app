@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { clsx } from 'clsx'
 import { useUser, invalidateUserCache } from '@/lib/hooks/useUser'
 import NexusLogo from '@/components/UI/NexusLogo'
+import NotificationBell from '@/components/Layout/NotificationBell'
 
 const MARKETING_PATHS = new Set([
   '/',
@@ -47,6 +48,7 @@ const candidateNav = [
   { href: '/verification', label: 'Verification' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/marketplace', label: 'Marketplace' },
+  { href: '/messages', label: 'Messages' },
   { href: '/settings', label: 'Settings' },
 ]
 
@@ -57,6 +59,7 @@ const employerNav = [
   { href: '/employer/pools', label: 'Shortlists' },
   { href: '/employer/jobs', label: 'Jobs' },
   { href: '/employer/company', label: 'Company' },
+  { href: '/messages', label: 'Messages' },
   { href: '/settings', label: 'Settings' },
 ]
 
@@ -201,6 +204,7 @@ export default function Header() {
               ))}
           </div>
 
+          {!marketing && user && user.id !== 'guest-user' && <NotificationBell />}
           {!marketing && user && (
             <div className="relative flex" ref={userMenuRef}>
               <button

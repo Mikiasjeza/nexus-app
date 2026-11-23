@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { mapSkill } from '@/lib/skills-mapper'
-import { isGuestRequest } from '@/lib/auth/session'
+import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
+import { notifyOnce } from '@/lib/notifications'
 import { guestPassport } from '@/lib/mock/employer'
 import { liveCredentials, sampleCredential, type PublicCredential } from '@/lib/assessments/verify'
 
@@ -40,6 +41,31 @@ export async function GET(
     })
     if (!user || !user.publicProfile) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    // Tell the candidate when someone hiring looked (at most once a day per company).
+    try {
+      const viewerId = await getSessionUserId().catch(() => null)
+      if (viewerId && viewerId !== user.id) {
+        const viewer = await prisma.companyMember.findFirst({
+          where: { userId: viewerId },
+          select: { company: { select: { name: true, slug: true } } },
+        })
+        if (viewer) {
+          await notifyOnce(
+            user.id,
+            {
+              type: 'passport_view',
+              title: `${viewer.company.name} viewed your passport`,
+              href: `/company/${viewer.company.slug}`,
+            },
+            24 * 60 * 60 * 1000
+          )
+        }
+      }
+    } catch (error) {
+      // Never let a view notification break the passport page.
+      console.error('Passport view notification failed:', error)
     }
 
     const skills = await prisma.skill.findMany({
