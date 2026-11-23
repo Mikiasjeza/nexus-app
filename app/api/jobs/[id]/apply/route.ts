@@ -8,6 +8,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { notifyCompany } from '@/lib/notifications'
 import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
@@ -46,7 +47,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     const job = await prisma.jobListing.findUnique({
       where: { id },
-      select: { id: true, status: true, companyId: true },
+      select: { id: true, title: true, status: true, companyId: true },
     })
     if (!job || job.status !== 'active') {
       return NextResponse.json({ error: 'This role is no longer open.' }, { status: 404 })
@@ -65,6 +66,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       create: { jobId: job.id, userId, message },
       update: { message, status: 'submitted' },
       select: { id: true, status: true },
+    })
+    const applicant = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    })
+    await notifyCompany(job.companyId, {
+      type: 'applied',
+      title: `${applicant?.name ?? 'Someone'} applied to ${job.title}`,
+      href: `/employer/jobs/${job.id}/applicants`,
     })
     return NextResponse.json({ ok: true, application })
   } catch (e) {

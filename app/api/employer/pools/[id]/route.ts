@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { notify } from '@/lib/notifications'
 import { guestPoolDetail, GUEST_READ_ONLY } from '@/lib/mock/employer'
 import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 
@@ -126,6 +127,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         return NextResponse.json({ error: 'Candidate not found' }, { status: 404 })
       }
       candidateIds.push(candidate.id)
+      const company = await prisma.company.findUnique({
+        where: { id: membership.companyId },
+        select: { name: true, slug: true },
+      })
+      if (company) {
+        await notify([candidate.id], {
+          type: 'saved',
+          title: `${company.name} saved you to a shortlist`,
+          body: 'Keep adding verified skills: it helps companies decide.',
+          href: `/company/${company.slug}`,
+        })
+      }
     }
     if (parsed.data.removeCandidateId) {
       candidateIds = candidateIds.filter((id) => id !== parsed.data.removeCandidateId)

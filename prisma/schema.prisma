@@ -44,6 +44,8 @@ model User {
   waitlistEntries   WaitlistEntry[]
   reportsFiled      Report[]
   jobApplications   JobApplication[]
+  notifications     Notification[]
+  conversations     Conversation[]
 
   @@index([email])
   @@index([shareableId])
@@ -316,6 +318,7 @@ model Company {
 
   members       CompanyMember[]
   invites       CompanyInvite[]
+  conversations Conversation[]
   jobListings   JobListing[]
   talentPools   TalentPool[]
   subscriptions Subscription[]
@@ -598,4 +601,51 @@ model CompanyInvite {
 
   @@index([companyId])
   @@index([email])
+}
+
+/// Something that happened that a person should know about, shown under the bell.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // 'shortlisted' | 'saved' | 'passport_view' | 'applied' | 'message'
+  title     String
+  body      String?
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+}
+
+/// A private thread between a company (any of its team) and one candidate.
+model Conversation {
+  id              String    @id @default(cuid())
+  companyId       String
+  candidateId     String
+  createdAt       DateTime  @default(now())
+  lastMessageAt   DateTime  @default(now())
+  companyReadAt   DateTime?
+  candidateReadAt DateTime?
+
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  candidate User      @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@unique([companyId, candidateId])
+  @@index([candidateId, lastMessageAt])
+  @@index([companyId, lastMessageAt])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String // user id; their side is whether they're the candidate
+  body           String
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }

@@ -312,6 +312,13 @@ export default function PrivacyPage() {
           Employers must use what they see only for recruiting, as required by our Terms.
         </p>
         <p>
+          <strong className="text-ink">Messages:</strong> messages between you and a company are
+          stored so both sides can read the conversation, and everyone on that company&apos;s team
+          on Nexus can see its side. Companies can only start a conversation with you if you applied
+          to one of their jobs or chose to be discoverable. Deleting your account deletes your
+          conversations.
+        </p>
+        <p>
           <strong className="text-ink">When you apply to a job:</strong> the company you apply to,
           and its teammates on Nexus, receive your name, email address, any note you write and your
           passport, including your skills and their verification status. This is what lets them
