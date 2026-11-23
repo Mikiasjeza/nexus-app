@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { prisma } from '@/lib/db'
+import { TURNSTILE_FAILED, TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { emailService } from '@/lib/email/client'
 
@@ -16,6 +17,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}))
+    if (!(await verifyTurnstile(body?.[TURNSTILE_FIELD], request))) {
+      return NextResponse.json({ error: TURNSTILE_FAILED }, { status: 400 })
+    }
     const email = typeof body.email === 'string' ? body.email.toLowerCase().trim() : ''
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })

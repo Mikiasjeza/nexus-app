@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { emailService } from '@/lib/email/client'
 import { getSupportInbox } from '@/lib/config/env'
+import { TURNSTILE_FAILED, TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
 export const dynamic = 'force-dynamic'
@@ -28,6 +29,9 @@ export async function POST(request: Request) {
       request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
 
     const body = await request.json().catch(() => null)
+    if (!(await verifyTurnstile(body?.[TURNSTILE_FIELD], request))) {
+      return NextResponse.json({ error: TURNSTILE_FAILED }, { status: 400 })
+    }
     const parsed = bodySchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(

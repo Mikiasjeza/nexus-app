@@ -5,6 +5,7 @@ import { getMetadataBase, getAppUrl } from '@/lib/config/env'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import dynamic from 'next/dynamic'
+import VerifyEmailBanner from '@/components/Auth/VerifyEmailBanner'
 import Header from '@/components/Layout/Header'
 import CookieConsent from '@/components/UI/CookieConsent'
 import { ToastProvider } from '@/components/UI/ToastProvider'
@@ -122,6 +123,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ToastProvider>
             <Header />
             <main className="w-full flex-1 pt-12">
+              <VerifyEmailBanner />
               <OnboardingGuard>
                 <PageTransition>{children}</PageTransition>
               </OnboardingGuard>

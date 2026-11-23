@@ -29,6 +29,7 @@ const PUBLIC_PATHS = [
   '/auth/register',
   '/auth/forgot-password',
   '/auth/reset-password',
+  '/auth/verify-email', // Link from the confirmation email
   '/share/', // Public shareable profiles
   '/assessments', // Catalog, details and practice rounds (attempts are below)
   '/verify', // Public credential checks

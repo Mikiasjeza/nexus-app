@@ -24,7 +24,8 @@ export const authApi = {
     password: string,
     name: string,
     employer?: { companyName: string },
-    ageConfirmed = false
+    ageConfirmed = false,
+    turnstileToken = ''
   ): Promise<User> => {
     const user = await fetchApi<User>('/api/auth/register', {
       method: 'POST',
@@ -35,10 +36,11 @@ export const authApi = {
               password,
               name,
               ageConfirmed,
+              turnstileToken,
               accountType: 'employer',
               companyName: employer.companyName,
             }
-          : { email, password, name, ageConfirmed }
+          : { email, password, name, ageConfirmed, turnstileToken }
       ),
     })
     return user
@@ -73,12 +75,14 @@ export const authApi = {
   },
 
   verifyEmail: async (token: string): Promise<void> => {
-    void token
-    await Promise.resolve()
+    await fetchApi<{ ok: boolean }>('/api/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    })
   },
 
   resendVerificationEmail: async (): Promise<void> => {
-    await Promise.resolve()
+    await fetchApi<{ ok: boolean }>('/api/auth/verify-email/send', { method: 'POST' })
   },
 
   deleteAccount: async (): Promise<void> => {

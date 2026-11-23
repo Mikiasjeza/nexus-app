@@ -5,6 +5,7 @@
  */
 
 import { NextResponse } from 'next/server'
+import { verifiedForEmployers } from '@/lib/auth/email-verification'
 import { prisma } from '@/lib/db'
 import { guestTalentSearch } from '@/lib/mock/employer'
 import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
@@ -60,6 +61,7 @@ export async function GET(request: Request) {
       where: {
         publicProfile: true,
         discoverableByEmployers: true,
+        ...verifiedForEmployers(),
         id: { not: userId },
         skills: {
           some: {

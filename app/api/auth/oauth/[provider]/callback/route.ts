@@ -22,6 +22,7 @@ import { completeAuthorization } from '@/lib/auth/oauth/flow'
 import { connectProvider, signInWithProvider } from '@/lib/auth/oauth/account'
 import { OAuthError, safeEqual } from '@/lib/auth/oauth/id-token'
 import { safeNextPath } from '@/lib/auth/safe-redirect'
+import { noteSignIn, trustThisDevice } from '@/lib/auth/login-alert'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
 export const dynamic = 'force-dynamic'
@@ -86,6 +87,11 @@ export async function GET(
     const token = await createSession(outcome.userId)
     await clearGuestPreviewCookie()
     await setSessionCookie(token)
+    if (outcome.isNew) {
+      await trustThisDevice()
+    } else if (profile.email) {
+      await noteSignIn({ email: profile.email, name: profile.name }, request)
+    }
     const next = safeNextPath(flow.next)
     // Employers started from the hiring side finish there (naming their company),
     // never in the candidate onboarding.

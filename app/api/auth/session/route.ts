@@ -7,6 +7,7 @@ import { env } from '@/lib/config/env'
 import { guestUser } from '@/lib/mock/guest'
 import { isAdminAccount } from '@/lib/auth/admin'
 import { employerMembership } from '@/lib/employer/company'
+import { emailDeliveryConfigured } from '@/lib/auth/email-verification'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,6 +60,7 @@ export async function GET() {
         discoverableByEmployers: user.discoverableByEmployers,
         createdAt: user.createdAt.toISOString(),
         accountType: membership ? 'employer' : 'candidate',
+        needsEmailVerification: !user.emailVerified && emailDeliveryConfigured(),
         ...(membership ? { company: { ...membership.company, role: membership.role } } : {}),
         // Only ever true for the person themselves; shows them the way to /admin.
         ...(isAdminAccount(user) ? { isAdmin: true } : {}),

@@ -6,6 +6,7 @@
  */
 
 import { NextResponse } from 'next/server'
+import { verifiedForEmployers } from '@/lib/auth/email-verification'
 import { prisma } from '@/lib/db'
 import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
 import { GUEST_CANDIDATES, GUEST_JOBS, guestPoolList } from '@/lib/mock/employer'
@@ -14,7 +15,12 @@ import { normalizeSkillCategory, SKILL_PILLAR_DETAILS } from '@/lib/skills-taxon
 export const dynamic = 'force-dynamic'
 
 /** Candidates employers may see: public profile and opted in to employer search. */
-const EMPLOYER_VISIBLE = { publicProfile: true, discoverableByEmployers: true } as const
+/** Who employers can see: public, discoverable, and (once email works) confirmed. */
+const employerVisible = () => ({
+  publicProfile: true,
+  discoverableByEmployers: true,
+  ...verifiedForEmployers(),
+})
 
 type SkillCount = { category: string; verified: boolean; count: number }
 
@@ -61,13 +67,13 @@ export async function GET() {
     }
 
     const [discoverable, grouped, jobs, pools] = await Promise.all([
-      prisma.user.count({ where: { ...EMPLOYER_VISIBLE, id: { not: userId } } }),
+      prisma.user.count({ where: { ...employerVisible(), id: { not: userId } } }),
       prisma.skill.groupBy({
         by: ['category', 'verified'],
         where: {
           visibility: 'public',
           status: 'published',
-          user: { ...EMPLOYER_VISIBLE, id: { not: userId } },
+          user: { ...employerVisible(), id: { not: userId } },
         },
         _count: { _all: true },
       }),
