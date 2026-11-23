@@ -14,6 +14,7 @@ import type { SkillCategory, User } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 import { CATEGORY_COLORS } from '@/lib/utils/constants'
 import Link from 'next/link'
+import ReportButton from '@/components/UI/ReportButton'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 
@@ -517,6 +518,12 @@ export default function MarketplacePage() {
                       {job.salary && <span>{job.salary}</span>}
                       <span className="text-ink-faint">Posted {job.posted}</span>
                     </p>
+                    <ReportButton
+                      targetType="job"
+                      targetId={job.id}
+                      what="this job"
+                      className="mt-3"
+                    />
                   </div>
 
                   <div className="text-sm">

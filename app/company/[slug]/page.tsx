@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation'
 import { getSkillPillarForName } from '@/lib/skills-taxonomy'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
+import ReportButton from '@/components/UI/ReportButton'
 import Loader from '@/components/UI/Loader'
 
 interface Job {
@@ -111,16 +112,19 @@ export default function CompanyPage() {
                   : 'No open roles at the moment.')
               }
               actions={
-                company.website ? (
-                  <a
-                    href={sanitizeUrl(company.website) || undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="button-base button-secondary min-h-11 px-5"
-                  >
-                    Website ↗
-                  </a>
-                ) : undefined
+                <div className="flex flex-wrap items-center gap-4">
+                  {company.website && (
+                    <a
+                      href={sanitizeUrl(company.website) || undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="button-base button-secondary min-h-11 px-5"
+                    >
+                      Website ↗
+                    </a>
+                  )}
+                  <ReportButton targetType="company" targetId={company.slug} what="this company" />
+                </div>
               }
             />
           </div>
