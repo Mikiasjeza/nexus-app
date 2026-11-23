@@ -8,6 +8,8 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { guestJobList, GUEST_READ_ONLY } from '@/lib/mock/employer'
 import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
+import { canManageHiring } from '@/lib/employer/roles'
+import { openJobBlock } from '@/lib/billing/company'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,7 +38,7 @@ export async function GET(request: Request) {
       where,
       include: {
         company: {
-          select: { id: true, name: true, slug: true, logo: true },
+          select: { id: true, name: true, slug: true, logo: true, verifiedAt: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -53,7 +55,13 @@ export async function GET(request: Request) {
         type: j.type,
         salary: j.salary || undefined,
         status: j.status,
-        company: j.company,
+        company: {
+          id: j.company.id,
+          name: j.company.name,
+          slug: j.company.slug,
+          logo: j.company.logo,
+          verified: Boolean(j.company.verifiedAt),
+        },
         createdAt: j.createdAt.toISOString(),
       })),
     })
@@ -87,6 +95,13 @@ export async function POST(request: Request) {
     })
     if (!membership) {
       return NextResponse.json({ error: 'Employer access required' }, { status: 403 })
+    }
+    if (!canManageHiring(membership.role)) {
+      return NextResponse.json({ error: 'Viewers cannot post jobs.' }, { status: 403 })
+    }
+    const limit = await openJobBlock(membership.companyId)
+    if (limit) {
+      return NextResponse.json({ error: limit, upgrade: true }, { status: 402 })
     }
 
     const body = await request.json().catch(() => ({}))

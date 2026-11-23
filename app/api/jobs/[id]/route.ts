@@ -8,6 +8,8 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { GUEST_READ_ONLY } from '@/lib/mock/employer'
 import { getSessionUserId, isGuestRequest } from '@/lib/auth/session'
+import { canManageHiring } from '@/lib/employer/roles'
+import { openJobBlock } from '@/lib/billing/company'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,6 +39,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!membership) {
       return NextResponse.json({ error: 'Employer access required' }, { status: 403 })
     }
+    if (!canManageHiring(membership.role)) {
+      return NextResponse.json({ error: 'Viewers cannot change jobs.' }, { status: 403 })
+    }
 
     const { id } = await params
     const job = await prisma.jobListing.findFirst({
@@ -53,6 +58,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const parsed = patchSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    }
+    if (parsed.data.status === 'active' && job.status !== 'active') {
+      const limit = await openJobBlock(membership.companyId)
+      if (limit) {
+        return NextResponse.json({ error: limit, upgrade: true }, { status: 402 })
+      }
     }
 
     const updated = await prisma.jobListing.update({
@@ -94,6 +105,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     })
     if (!membership) {
       return NextResponse.json({ error: 'Employer access required' }, { status: 403 })
+    }
+    if (!canManageHiring(membership.role)) {
+      return NextResponse.json({ error: 'Viewers cannot change jobs.' }, { status: 403 })
     }
 
     const { id } = await params

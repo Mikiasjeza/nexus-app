@@ -19,6 +19,7 @@ import {
 } from '@/lib/employer/access'
 import { getAppUrl } from '@/lib/config/env'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { teamSeatBlock } from '@/lib/billing/company'
 
 export const dynamic = 'force-dynamic'
 
@@ -106,6 +107,23 @@ export async function POST(request: Request) {
     })
     if (existingMember) {
       return NextResponse.json({ error: 'They are already on your team.' }, { status: 409 })
+    }
+
+    // Re-sending to someone already invited doesn't take another seat.
+    const alreadyInvited = await prisma.companyInvite.findFirst({
+      where: {
+        companyId: membership.companyId,
+        email,
+        acceptedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: { id: true },
+    })
+    if (!alreadyInvited) {
+      const limit = await teamSeatBlock(membership.companyId)
+      if (limit) {
+        return NextResponse.json({ error: limit, upgrade: true }, { status: 402 })
+      }
     }
 
     // A fresh invite replaces any pending one for the same address.

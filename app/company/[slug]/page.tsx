@@ -10,6 +10,7 @@ import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
 import ReportButton from '@/components/UI/ReportButton'
 import Loader from '@/components/UI/Loader'
+import VerifiedCompanyBadge from '@/components/Employer/VerifiedCompanyBadge'
 
 interface Job {
   id: string
@@ -28,6 +29,7 @@ interface Company {
   logo?: string
   website?: string
   description?: string
+  verified?: boolean
 }
 
 /** Public company profile: who they are and the roles they have open. */
@@ -113,6 +115,7 @@ export default function CompanyPage() {
               }
               actions={
                 <div className="flex flex-wrap items-center gap-4">
+                  {company.verified && <VerifiedCompanyBadge className="text-sm" />}
                   {company.website && (
                     <a
                       href={sanitizeUrl(company.website) || undefined}

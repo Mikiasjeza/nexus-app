@@ -71,8 +71,12 @@ const baseFaqs = [
     a: 'Yes. Upgrade, downgrade or cancel any time from Settings, then Billing. Stripe shows the prorated amount before you confirm a change.',
   },
   {
-    q: 'When will Career+ and Business open?',
-    a: 'Career+ opens once its career-planning features are ready, and Business once employer assessments are ready and validated. Join a waitlist to hear first. We never charge for features that aren’t ready.',
+    q: 'When will Career+ open?',
+    a: 'Career+ opens once its career-planning features are ready. Join the waitlist to hear first. We never charge for features that aren’t ready.',
+  },
+  {
+    q: 'What do employers get?',
+    a: 'Free covers one open job and two people on your team. Business adds unlimited jobs and up to five teammates, billed per company. An owner or admin upgrades or cancels from the company page.',
   },
 ]
 
@@ -213,28 +217,18 @@ export default function PricingPage() {
     }
 
     if (plan === 'business') {
-      const joined = waitlisted.includes('business')
+      // Companies subscribe from their company page, where an owner or admin pays.
       return (
         <div className="space-y-3">
-          <Link href="/contact" className={linkButtonClass('secondary')}>
-            Contact Sales
+          <Link
+            href={signedIn ? '/employer/company#plan' : '/employer/signup'}
+            className={linkButtonClass('primary')}
+          >
+            {signedIn ? 'Get Business' : 'Start hiring free'}
           </Link>
-          {signedIn ? (
-            <Button
-              fullWidth
-              size="lg"
-              variant="ghost"
-              onClick={() => joinWaitlist('business')}
-              isLoading={busy === 'waitlist-business'}
-              disabled={disabled || joined}
-            >
-              {joined ? 'You’re on the waitlist' : 'Join Waitlist'}
-            </Button>
-          ) : (
-            <Link href="/auth/register" className={linkButtonClass('secondary')}>
-              Join Waitlist
-            </Link>
-          )}
+          <Link href="/contact" className="block text-center text-sm text-ink-muted hover:text-ink">
+            Questions? Contact us
+          </Link>
         </div>
       )
     }
