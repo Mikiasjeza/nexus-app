@@ -99,8 +99,10 @@ const nextConfig = {
             value: 'nosniff',
           },
           {
+            // The old browser XSS filter is retired and could itself be abused;
+            // current advice is to switch it off and rely on the CSP below.
             key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            value: '0',
           },
           {
             key: 'Referrer-Policy',
@@ -130,6 +132,8 @@ const nextConfig = {
               "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self'",
+              "object-src 'none'",
+              ...(process.env.NODE_ENV === 'production' ? ['upgrade-insecure-requests'] : []),
             ].join('; '),
           },
         ],

@@ -83,6 +83,11 @@ export const env = {
     anthropicKey: process.env.ANTHROPIC_API_KEY || '',
     // Groq: OpenAI-compatible API with a free (rate-limited) tier.
     groqKey: process.env.GROQ_API_KEY || '',
+    // A self-hosted OpenAI-compatible gateway such as OmniRoute
+    // (AI_PROVIDER=gateway): its /v1 address, its key, and AI_MODEL set to the
+    // model or combo name it should route to.
+    gatewayUrl: process.env.AI_GATEWAY_URL || '',
+    gatewayKey: process.env.AI_GATEWAY_KEY || '',
   },
 }
 
@@ -158,6 +163,12 @@ export function assertAIEnv(): void {
   }
   if (env.ai.provider === 'groq') {
     getRequired('GROQ_API_KEY')
+    return
+  }
+  if (env.ai.provider === 'gateway') {
+    getRequired('AI_GATEWAY_URL')
+    getRequired('AI_GATEWAY_KEY')
+    getRequired('AI_MODEL')
     return
   }
   throw new Error(`Unsupported AI_PROVIDER: ${env.ai.provider}`)

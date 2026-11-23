@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { sanitizeUrl } from '@/lib/utils/sanitize'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -112,7 +113,7 @@ export default function CompanyPage() {
               actions={
                 company.website ? (
                   <a
-                    href={company.website}
+                    href={sanitizeUrl(company.website) || undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="button-base button-secondary min-h-11 px-5"

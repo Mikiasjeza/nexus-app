@@ -73,6 +73,60 @@ const FORMATS: Record<string, Format> = {
 
 export const ALLOWED_EXTENSIONS = Object.keys(FORMATS)
 
+/**
+ * Extensions a server or browser might execute. They are never allowed, and
+ * are refused anywhere in the name too ("shell.php.png", "page.html.txt"), so
+ * a misconfigured server down the line can't be tricked into running them.
+ */
+const DANGEROUS_EXTENSIONS = new Set([
+  'php',
+  'php3',
+  'php4',
+  'php5',
+  'php7',
+  'phtml',
+  'phar',
+  'jsp',
+  'jspx',
+  'jsf',
+  'asp',
+  'aspx',
+  'ashx',
+  'asmx',
+  'cer',
+  'cgi',
+  'pl',
+  'py',
+  'rb',
+  'exe',
+  'dll',
+  'com',
+  'msi',
+  'scr',
+  'bat',
+  'cmd',
+  'ps1',
+  'sh',
+  'bash',
+  'vbs',
+  'jar',
+  'war',
+  'js',
+  'mjs',
+  'html',
+  'htm',
+  'xhtml',
+  'shtml',
+  'svg',
+  'xml',
+  'hta',
+  'htaccess',
+  'swf',
+])
+
+/** Control and bidirectional-override characters used to disguise file names. */
+const DECEPTIVE_CHARACTERS = /[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/
+
 export type UploadCheck = { ok: true; mimeType: string } | { ok: false; error: string }
 
 export function validateUpload(fileName: string, bytes: Uint8Array): UploadCheck {
@@ -82,8 +136,13 @@ export function validateUpload(fileName: string, bytes: Uint8Array): UploadCheck
   if (bytes.length > MAX_UPLOAD_BYTES) {
     return { ok: false, error: `File too large. Max size: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB` }
   }
-  if (!fileName || fileName.length > MAX_FILE_NAME_LENGTH) {
+  if (!fileName || fileName.length > MAX_FILE_NAME_LENGTH || DECEPTIVE_CHARACTERS.test(fileName)) {
     return { ok: false, error: 'Invalid file name' }
+  }
+
+  const nameParts = fileName.toLowerCase().split('.').slice(1)
+  if (nameParts.some((part) => DANGEROUS_EXTENSIONS.has(part.trim()))) {
+    return { ok: false, error: 'This kind of file is not allowed' }
   }
 
   const extension = fileName.split('.').pop()?.toLowerCase() ?? ''
