@@ -66,9 +66,16 @@ export async function requireReviewer(): Promise<string> {
   const userId = await requireUser()
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { email: true, emailVerified: true, createdAt: true },
+    select: { email: true, emailVerified: true, createdAt: true, twoFactorEnabledAt: true },
   })
   if (!user || !isAdminAccount(user)) throw new AssessmentError('Not found', 404)
+  // The admin area shows every user's details, so it needs two-step sign-in.
+  if (process.env.NODE_ENV === 'production' && !user.twoFactorEnabledAt) {
+    throw new AssessmentError(
+      'Turn on two-step sign-in in Settings, then come back to the admin area.',
+      403
+    )
+  }
   return user.email.toLowerCase()
 }
 
