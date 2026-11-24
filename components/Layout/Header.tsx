@@ -47,7 +47,6 @@ const candidateNav = [
   { href: '/assessments', label: 'Assessments' },
   { href: '/verification', label: 'Verification' },
   { href: '/analytics', label: 'Analytics' },
-  { href: '/career', label: 'Career+' },
   { href: '/marketplace', label: 'Marketplace' },
   { href: '/messages', label: 'Messages' },
   { href: '/settings', label: 'Settings' },
