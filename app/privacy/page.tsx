@@ -303,7 +303,10 @@ export default function PrivacyPage() {
         <p>
           <strong className="text-ink">Public profile:</strong> if you turn on public sharing,
           anyone with your link can see your name, bio, avatar and the skills you marked public.
-          Your email is never shown. Turn sharing off in Settings at any time.
+          Your email is never shown. Turn sharing off in Settings at any time. We count views of
+          your public profile so you can see them in Career+; we keep no IP address or visitor
+          identity, only which company viewed it when the viewer is signed in to an employer
+          account.
         </p>
         <p>
           <strong className="text-ink">Employers:</strong> employers on Nexus can search for

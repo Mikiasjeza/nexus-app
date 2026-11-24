@@ -46,10 +46,16 @@ export async function GET(
     // Tell the candidate when someone hiring looked (at most once a day per company).
     try {
       const viewerId = await getSessionUserId().catch(() => null)
-      if (viewerId && viewerId !== user.id) {
-        const viewer = await prisma.companyMember.findFirst({
-          where: { userId: viewerId },
-          select: { company: { select: { name: true, slug: true } } },
+      if (viewerId !== user.id) {
+        const viewer = viewerId
+          ? await prisma.companyMember.findFirst({
+              where: { userId: viewerId },
+              select: { companyId: true, company: { select: { name: true, slug: true } } },
+            })
+          : null
+        // Counted for the owner's Career+ insights. No IP or visitor identity kept.
+        await prisma.passportView.create({
+          data: { userId: user.id, companyId: viewer?.companyId ?? null },
         })
         if (viewer) {
           await notifyOnce(

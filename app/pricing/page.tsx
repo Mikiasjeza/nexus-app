@@ -71,8 +71,8 @@ const baseFaqs = [
     a: 'Yes. Upgrade, downgrade or cancel any time from Settings, then Billing. Stripe shows the prorated amount before you confirm a change.',
   },
   {
-    q: 'When will Career+ open?',
-    a: 'Career+ opens once its career-planning features are ready. Join the waitlist to hear first. We never charge for features that aren’t ready.',
+    q: 'What does Career+ add over Pro?',
+    a: 'A plan for your next role: the roles you are closest to, the skills you are missing for any role, a step-by-step learning plan with AI coaching, and who has been looking at your passport. It also raises your monthly limits.',
   },
   {
     q: 'What do employers get?',

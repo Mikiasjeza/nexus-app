@@ -42,6 +42,7 @@ const DENIED: Record<Entitlement, string> = {
   growth_analytics: 'Skill growth analytics are part of Pro.',
   all_practice_challenges: 'Every practice challenge is part of Pro.',
   career_insights: 'The AI career coach and job matching are part of Pro.',
+  career_plan: 'Career recommendations, skill gaps and learning plans are part of Career+.',
   employer_assessments: 'Employer assessments are part of Business.',
 }
 
@@ -63,6 +64,7 @@ export const canAccessAdvancedFeedback = (userId: string) => decide(userId, 'adv
 export const canExportDetailedReport = (userId: string) => decide(userId, 'detailed_reports')
 export const canAccessGrowthAnalytics = (userId: string) => decide(userId, 'growth_analytics')
 export const canAccessCareerInsights = (userId: string) => decide(userId, 'career_insights')
+export const canAccessCareerPlan = (userId: string) => decide(userId, 'career_plan')
 
 /** Practice is open to guests, who get the Free pool. */
 export async function canUseAllPracticeChallenges(userId: string | null): Promise<boolean> {
