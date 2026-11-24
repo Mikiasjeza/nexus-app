@@ -65,7 +65,7 @@ describe('purchasability', () => {
   it('never sells plans that are not available, whatever is configured', async () => {
     process.env.STRIPE_CAREER_PLUS_PRICE_ID = 'price_cp'
     process.env.STRIPE_BUSINESS_PRICE_ID = 'price_biz'
-    for (const plan of ['free', 'career_plus'] as const) {
+    for (const plan of ['free'] as const) {
       expect((await purchasability(plan)).block).toBe('not_for_sale')
     }
     expect(mockRetrievePrice).not.toHaveBeenCalled()

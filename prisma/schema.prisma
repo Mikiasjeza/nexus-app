@@ -50,6 +50,7 @@ model User {
   reportsFiled      Report[]
   jobApplications   JobApplication[]
   notifications     Notification[]
+  passportViews     PassportView[]
   conversations     Conversation[]
 
   @@index([email])
@@ -656,4 +657,18 @@ model Message {
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
+}
+
+/// One view of a person's public Skill Passport, for their Career+ insights.
+/// No IP address or visitor identity is kept; only whether the viewer was
+/// signed in to a company account, and which company.
+model PassportView {
+  id        String   @id @default(cuid())
+  userId    String
+  companyId String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

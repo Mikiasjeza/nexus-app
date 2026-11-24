@@ -37,6 +37,7 @@ const candidateColumns: FooterColumn[] = [
       { label: 'Skills', href: '/skills' },
       { label: 'Verification', href: '/verification' },
       { label: 'Analytics', href: '/analytics' },
+      { label: 'Career+', href: '/career' },
       { label: 'Marketplace', href: '/marketplace' },
     ],
   },

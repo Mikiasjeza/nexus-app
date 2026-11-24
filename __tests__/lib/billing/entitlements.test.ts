@@ -24,6 +24,7 @@ jest.mock('@/lib/db', () => ({
 import {
   canAccessAdvancedFeedback,
   canAccessCareerInsights,
+  canAccessCareerPlan,
   canCreateEmployerAssessment,
   canExportDetailedReport,
   canStartFormalAssessment,
@@ -55,6 +56,18 @@ describe('feature entitlements', () => {
       expect((await canAccessAdvancedFeedback('u1')).allowed).toBe(true)
       expect((await canExportDetailedReport('u1')).allowed).toBe(true)
     }
+  })
+
+  it('keeps Career+ planning to Career+', async () => {
+    for (const plan of ['free', 'pro']) {
+      mockEffectivePlan.mockResolvedValue(plan)
+      expect(await canAccessCareerPlan('u1')).toMatchObject({
+        allowed: false,
+        upgradeTo: 'career_plus',
+      })
+    }
+    mockEffectivePlan.mockResolvedValue('career_plus')
+    expect((await canAccessCareerPlan('u1')).allowed).toBe(true)
   })
 
   it('gives guests and Free the limited practice pool', async () => {

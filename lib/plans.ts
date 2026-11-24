@@ -28,6 +28,7 @@ export type Entitlement =
   | 'growth_analytics'
   | 'all_practice_challenges'
   | 'career_insights'
+  | 'career_plan'
   | 'employer_assessments'
 
 /** How each entitlement is described to the person who has (or lacks) it. */
@@ -37,6 +38,7 @@ export const ENTITLEMENT_LABELS: Record<Entitlement, string> = {
   growth_analytics: 'Skill growth analytics across your assessments',
   all_practice_challenges: 'Every practice challenge for each skill',
   career_insights: 'The AI career coach and job matching',
+  career_plan: 'Career+ roles, skill gaps, learning plans and passport insights',
   employer_assessments: 'Employer-sponsored candidate assessments',
 }
 
@@ -147,23 +149,22 @@ export const PLAN_INFO: Record<SubscriptionPlan, PlanInfo> = {
     name: 'Career+',
     price: 1999,
     audience: 'individual',
-    availability: 'coming_soon',
+    availability: 'available',
     recommended: false,
-    description: 'Everything in Pro plus deeper career planning. Opening once it is ready.',
+    description:
+      'Everything in Pro, plus a plan for your next role: where you fit, what to learn and who is looking.',
     features: [
       'Everything in Pro',
       '12 formal skill assessments per month',
       '100 AI evidence verifications per month',
-    ],
-    comingSoon: [
       'Personalized career recommendations',
-      'AI-powered skill gap analysis',
-      'Career-specific learning plans',
-      'Advanced portfolio analytics',
-      'Detailed skill improvement recommendations',
-      'Advanced Skill Passport insights',
+      'Skill gap analysis for any role',
+      'Step-by-step learning plans with AI coaching',
+      'Passport analytics: views and employer interest',
+      'Skills employers are asking for, against yours',
     ],
-    entitlements: PRO_ENTITLEMENTS,
+    comingSoon: [],
+    entitlements: [...PRO_ENTITLEMENTS, 'career_plan'],
     limits: {
       formalAssessments: 12,
       aiAnalyses: 100,

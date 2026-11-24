@@ -11,6 +11,7 @@ const PROTECTED_PATHS = [
   '/skills',
   '/settings',
   '/analytics',
+  '/career',
   '/marketplace',
   '/verification',
 ]
@@ -21,6 +22,7 @@ const CANDIDATE_ONLY_PATHS = [
   '/dashboard',
   '/skills',
   '/analytics',
+  '/career',
   '/marketplace',
   '/verification',
   ONBOARDING_PATH,

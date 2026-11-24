@@ -31,7 +31,7 @@ describe('plan catalogue', () => {
   it('sells Free, Pro and the Business hiring plan; Career+ is not for sale yet', () => {
     expect(PLAN_INFO.free.availability).toBe('available')
     expect(PLAN_INFO.pro.availability).toBe('available')
-    expect(PLAN_INFO.career_plus.availability).toBe('coming_soon')
+    expect(PLAN_INFO.career_plus.availability).toBe('available')
     expect(PLAN_INFO.business.availability).toBe('available')
     expect(PLAN_INFO.business.audience).toBe('organization')
   })
