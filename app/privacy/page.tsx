@@ -66,8 +66,12 @@ export default function PrivacyPage() {
             check that the work is your own.
           </li>
           <li>
-            <strong className="text-ink">Onboarding answers (optional):</strong> the goals and
-            starter skills you pick during setup.
+            <strong className="text-ink">Career profile (optional):</strong> education (completed
+            and in progress), work experience, certifications and licenses, career interests and
+            goals, and job preferences such as location, work arrangement and salary range. It is
+            private: we don&apos;t show it to employers or the public, and we don&apos;t mark any of
+            it as verified just because you entered it. You can edit or delete it in Settings, and
+            it is included when you download your data.
           </li>
           <li>
             <strong className="text-ink">AI career assistant:</strong> the messages you type into

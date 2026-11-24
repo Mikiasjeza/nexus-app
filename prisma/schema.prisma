@@ -51,6 +51,10 @@ model User {
   jobApplications   JobApplication[]
   notifications     Notification[]
   passportViews     PassportView[]
+  careerProfile     CareerProfile?
+  educationRecords  EducationRecord[]
+  workExperiences   WorkExperience[]
+  certifications    CertificationRecord[]
   conversations     Conversation[]
 
   @@index([email])
@@ -671,4 +675,95 @@ model PassportView {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+/// A person's career profile: interests, goals and job preferences, plus where
+/// they are in onboarding. Private: never shown to employers or the public.
+model CareerProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  employmentStatus    String?
+  currentlyStudent    Boolean?
+  yearsExperience     Int?
+  interests           String[] @default([])
+  exploring           Boolean  @default(false)
+  desiredTitles       String[] @default([])
+  longTermGoal        String?
+  targetCareer        String?
+  targetSkills        String[] @default([])
+  progression         String?
+  locations           String[] @default([])
+  workArrangements    String[] @default([])
+  salaryMin           Int?
+  salaryMax           Int?
+  salaryCurrency      String   @default("USD")
+  jobTypes            String[] @default([])
+  experienceLevels    String[] @default([])
+  willingToRelocate   Boolean?
+  preferredIndustries String[] @default([])
+  availability        String?
+  onboardingStep      Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Education the person entered. Completed and in-progress are kept apart by
+/// status; verification stays "self_reported" unless Nexus checks it.
+model EducationRecord {
+  id             String    @id @default(cuid())
+  userId         String
+  institution    String?
+  level          String
+  fieldOfStudy   String?
+  status         String
+  startDate      DateTime?
+  graduationDate DateTime?
+  verification   String    @default("self_reported")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Jobs, internships, apprenticeships, freelance and volunteer work the person entered.
+model WorkExperience {
+  id             String    @id @default(cuid())
+  userId         String
+  employer       String
+  title          String
+  industry       String?
+  employmentType String
+  startDate      DateTime?
+  endDate        DateTime?
+  current        Boolean   @default(false)
+  description    String?
+  verification   String    @default("self_reported")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Certifications and professional licenses the person entered.
+model CertificationRecord {
+  id             String    @id @default(cuid())
+  userId         String
+  name           String
+  issuer         String?
+  kind           String    @default("certification")
+  issueDate      DateTime?
+  expirationDate DateTime?
+  verification   String    @default("self_reported")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

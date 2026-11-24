@@ -1,6 +1,8 @@
 /**
  * POST /api/auth/onboarding
- * Marks onboarding as complete for the current user.
+ * Saves onboarding skills and, unless `complete: false`, marks onboarding done.
+ * The new onboarding saves skills at step 5 (complete: false) so leaving
+ * midway keeps them, then finishes on the last step.
  */
 
 import { NextResponse } from 'next/server'
@@ -21,10 +23,12 @@ const bodySchema = z
   .object({
     goals: z.array(z.string()).optional(),
     skills: z.array(z.string()).optional(),
+    complete: z.boolean().optional(),
   })
   .transform((v) => ({
     goals: v.goals ?? [],
     skills: v.skills ?? [],
+    complete: v.complete ?? true,
   }))
 
 export async function POST(request: Request) {
@@ -34,16 +38,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const rl = rateLimit(`auth:onboarding:${userId}`, { maxRequests: 5, windowMs: 60000 })
+    const rl = rateLimit(`auth:onboarding:${userId}`, { maxRequests: 15, windowMs: 60000 })
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
     }
 
     const body = await request.json().catch(() => ({}))
     const parsed = bodySchema.safeParse(body)
-    const { goals, skills } = parsed.success
+    const { goals, skills, complete } = parsed.success
       ? parsed.data
-      : { goals: [] as string[], skills: [] as string[] }
+      : { goals: [] as string[], skills: [] as string[], complete: true }
     const sanitizedGoals = Array.from(new Set(goals.map((goal) => goal.trim()).filter(Boolean)))
     const sanitizedSkills = Array.from(
       new Set(skills.map(normalizeSkillName).filter(Boolean).slice(0, MAX_ONBOARDING_SKILLS))
@@ -52,10 +56,12 @@ export async function POST(request: Request) {
     const skillLimit = PLAN_INFO[await getEffectivePlan(userId)].limits.skills
 
     const result = await prisma.$transaction(async (tx) => {
-      await tx.user.update({
-        where: { id: userId },
-        data: { onboardingComplete: true },
-      })
+      if (complete) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { onboardingComplete: true },
+        })
+      }
 
       const existingSkills = await tx.skill.findMany({
         where: { userId },
@@ -104,17 +110,18 @@ export async function POST(request: Request) {
         nextOrder += 1
       }
 
-      await tx.activity.create({
-        data: {
-          userId,
-          type: 'onboarding_complete',
-          message:
-            createdSkills.length > 0
-              ? `Completed onboarding and added ${createdSkills.length} skills`
-              : 'Completed onboarding',
-          metadata: { goals: sanitizedGoals, skills: sanitizedSkills, createdSkills },
-        },
-      })
+      if (complete)
+        await tx.activity.create({
+          data: {
+            userId,
+            type: 'onboarding_complete',
+            message:
+              createdSkills.length > 0
+                ? `Completed onboarding and added ${createdSkills.length} skills`
+                : 'Completed onboarding',
+            metadata: { goals: sanitizedGoals, skills: sanitizedSkills, createdSkills },
+          },
+        })
 
       return { createdSkills }
     })

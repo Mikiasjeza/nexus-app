@@ -49,6 +49,10 @@ export async function GET() {
         createdAt: true,
         updatedAt: true,
         skills: { include: { evidence: true, history: true } },
+        careerProfile: true,
+        educationRecords: true,
+        workExperiences: true,
+        certifications: true,
         aiAnalyses: {
           select: {
             id: true,
