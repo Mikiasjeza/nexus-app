@@ -268,6 +268,11 @@ export default function PricingPage() {
       return (
         <div className="space-y-3">
           <CurrentPlan />
+          {plan === 'career_plus' && (
+            <Link href="/career" className={linkButtonClass('primary')}>
+              Open Career+
+            </Link>
+          )}
           <Button
             fullWidth
             size="lg"
