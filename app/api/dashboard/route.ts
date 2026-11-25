@@ -49,7 +49,7 @@ export async function GET() {
       }),
       // Verified-flag changes are needed in full: the chart works backwards from today.
       prisma.skillHistory.findMany({
-        where: { skill: { userId } },
+        where: { userId },
         select: { skillId: true, timestamp: true, changes: true },
       }),
       prisma.activity.findMany({
