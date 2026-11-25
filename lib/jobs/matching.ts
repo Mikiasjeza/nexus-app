@@ -73,7 +73,22 @@ export type JobCard = MatchJob & {
   postedAt: Date | null
 }
 
-async function openJobs(): Promise<JobCard[]> {
+// Every match request scores the same open jobs, so keep them in memory for
+// five minutes instead of reloading up to 1,800 rows from the database each time.
+const JOBS_TTL_MS = 5 * 60_000
+let jobsCache: { expires: number; value: Promise<JobCard[]> } | null = null
+
+function openJobs(): Promise<JobCard[]> {
+  if (jobsCache && jobsCache.expires > Date.now()) return jobsCache.value
+  const value = loadOpenJobs()
+  jobsCache = { expires: Date.now() + JOBS_TTL_MS, value }
+  value.catch(() => {
+    jobsCache = null
+  })
+  return value
+}
+
+async function loadOpenJobs(): Promise<JobCard[]> {
   const [external, internal] = await Promise.all([
     prisma.externalJob.findMany({
       where: { active: true },

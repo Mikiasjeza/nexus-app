@@ -137,6 +137,7 @@ model SkillHistory {
 
   @@index([skillId])
   @@index([timestamp])
+  @@index([userId])
 }
 
 model AIAnalysis {
@@ -159,6 +160,8 @@ model AIAnalysis {
   @@index([skillId])
   @@index([userId])
   @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([evidenceId])
 }
 
 model Activity {
@@ -176,6 +179,7 @@ model Activity {
   @@index([userId])
   @@index([timestamp])
   @@index([type])
+  @@index([userId, timestamp])
 }
 
 /// A person's or an organization's plan. Exactly one of userId and companyId is set
@@ -248,6 +252,7 @@ model UsageEvent {
   usagePeriod UsagePeriod @relation(fields: [usagePeriodId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([companyId])
 }
 
 /// Early-adopter pricing, controlled by admins. Eligibility is decided on the server at checkout.
@@ -286,6 +291,7 @@ model PromotionRedemption {
 
   @@unique([promotionId, userId])
   @@index([promotionId, status])
+  @@index([userId])
 }
 
 /// People who asked to hear when a plan that isn't on sale yet opens.
@@ -539,6 +545,7 @@ model AssessmentAppeal {
 
   @@index([attemptId])
   @@index([status])
+  @@index([userId])
 }
 
 /// Who did what to assessment records: reviews, appeals, revocations.
@@ -801,6 +808,7 @@ model ExternalJob {
   @@unique([source, sourceId])
   @@index([active, postedAt])
   @@index([dedupeKey])
+  @@index([active, firstSeenAt])
 }
 
 /// A person's feedback on a job recommendation. "Not relevant" hides the job
@@ -863,6 +871,7 @@ model JobAlert {
   deliveries AlertDelivery[]
 
   @@index([enabled])
+  @@index([userId])
 }
 
 /// Which jobs an alert already sent, so nobody gets the same job twice.

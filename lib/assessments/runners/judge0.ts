@@ -23,7 +23,10 @@ const REQUEST_TIMEOUT_MS = 20_000
 const POLL_INTERVAL_MS = 500
 const POLL_ATTEMPTS = 30
 const LANGUAGE_TTL_MS = 10 * 60_000
-const LANGUAGE_RETRY_MS = 30_000
+// A runner that's down is remembered for 5 minutes, so pages don't keep waiting on it.
+const LANGUAGE_RETRY_MS = 5 * 60_000
+// Checking which languages the runner has should be quick; give up after 4 seconds.
+const LANGUAGE_TIMEOUT_MS = 4_000
 
 export type Judge0Language = 'python' | 'javascript'
 
@@ -63,7 +66,7 @@ function judge0Fetch(path: string, init: RequestInit = {}): Promise<Response> {
   return fetch(`${url}${path}`, {
     ...init,
     headers: { 'Content-Type': 'application/json', ...headers, ...init.headers },
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    signal: init.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     cache: 'no-store',
   })
 }
@@ -129,7 +132,9 @@ export function judge0Languages(refresh = false): Promise<DetectedLanguages> {
   if (!refresh && languageCache && languageCache.expires > Date.now()) return languageCache.value
   const value = (async (): Promise<DetectedLanguages> => {
     try {
-      const response = await judge0Fetch('/languages')
+      const response = await judge0Fetch('/languages', {
+        signal: AbortSignal.timeout(LANGUAGE_TIMEOUT_MS),
+      })
       if (!response.ok) throw new Error(`/languages answered ${response.status}`)
       const list = (await response.json()) as RuntimeInfo[]
       return pickLanguages(Array.isArray(list) ? list : [])
