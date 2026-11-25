@@ -5,7 +5,13 @@
 
 import { prisma } from '@/lib/db'
 
-export type NotificationType = 'shortlisted' | 'saved' | 'passport_view' | 'applied' | 'message'
+export type NotificationType =
+  | 'shortlisted'
+  | 'saved'
+  | 'passport_view'
+  | 'applied'
+  | 'message'
+  | 'job_alert'
 
 export type NotificationInput = {
   type: NotificationType

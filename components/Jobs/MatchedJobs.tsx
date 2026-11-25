@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
 import ApplyButton from '@/components/Jobs/ApplyButton'
+import SaveJobButton from '@/components/Jobs/SaveJobButton'
 import { EXPERIENCE_LEVELS, JOB_TYPES, labelOf } from '@/lib/career/profile-options'
 
 type Status = 'met' | 'not_met' | 'unknown' | 'equivalent'
@@ -234,6 +235,15 @@ function MatchCard({ m, onHide }: { m: Match; onHide: (ref: string) => void }) {
               relevance, not a chance of being hired
             </span>
           </p>
+          <SaveJobButton
+            job={{
+              ref: job.ref,
+              title: job.title,
+              company: job.company,
+              location: job.location,
+              url: job.applyUrl,
+            }}
+          />
           {job.applyUrl ? (
             <a
               href={job.applyUrl}

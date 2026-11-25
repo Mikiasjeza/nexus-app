@@ -15,6 +15,7 @@ import PillarRings from '@/components/Dashboard/PillarRings'
 import RecentChecks from '@/components/Dashboard/RecentChecks'
 import VerifiedGrowth from '@/components/Dashboard/VerifiedGrowth'
 import MonthCalendar from '@/components/UI/MonthCalendar'
+import CareerSection from '@/components/Dashboard/CareerSection'
 
 /**
  * Candidate dashboard: the one thing to do next, then where things stand
@@ -151,6 +152,8 @@ export default function DashboardPage() {
             <MonthCalendar activity={summary.activity} navigable className="mt-6" />
           </section>
         </div>
+
+        {user && user.id !== 'guest-user' && <CareerSection />}
       </div>
     </AppPageShell>
   )

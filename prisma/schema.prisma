@@ -56,6 +56,8 @@ model User {
   workExperiences   WorkExperience[]
   certifications    CertificationRecord[]
   jobFeedback       JobFeedback[]
+  trackedJobs       TrackedJob[]
+  jobAlerts         JobAlert[]
   conversations     Conversation[]
 
   @@index([email])
@@ -814,4 +816,63 @@ model JobFeedback {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobRef])
+}
+
+/// A job the person saved or is tracking (status 'saved' is a bookmark; the
+/// rest is the application tracker). Title and company are copied so the
+/// entry survives the listing closing. Private to the person.
+model TrackedJob {
+  id        String    @id @default(cuid())
+  userId    String
+  jobRef    String? // "ext:<id>" | "nexus:<id>", or null for a job added by hand
+  title     String
+  company   String
+  location  String?
+  url       String?
+  status    String    @default("saved") // saved | applied | interviewing | offer | rejected | withdrawn
+  appliedAt DateTime?
+  nextStep  String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobRef])
+  @@index([userId, status])
+}
+
+/// A personalized job alert, emailed daily or weekly. One-click unsubscribe
+/// via unsubscribeToken (stored as a SHA-256 hash).
+model JobAlert {
+  id               String    @id @default(cuid())
+  userId           String
+  roles            String[]  @default([])
+  locations        String[]  @default([])
+  salaryMin        Int?
+  jobTypes         String[]  @default([])
+  remoteOnly       Boolean   @default(false)
+  frequency        String    @default("weekly") // daily | weekly
+  enabled          Boolean   @default(true)
+  unsubscribeToken String    @unique
+  lastSentAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries AlertDelivery[]
+
+  @@index([enabled])
+}
+
+/// Which jobs an alert already sent, so nobody gets the same job twice.
+model AlertDelivery {
+  id            String   @id @default(cuid())
+  alertId       String
+  externalJobId String
+  sentAt        DateTime @default(now())
+
+  alert JobAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@unique([alertId, externalJobId])
 }

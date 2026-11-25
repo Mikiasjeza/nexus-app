@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { formatDistanceToNowStrict } from 'date-fns'
 import Button from '@/components/UI/Button'
 import Loader from '@/components/UI/Loader'
+import SaveJobButton from '@/components/Jobs/SaveJobButton'
 import { EXPERIENCE_LEVELS, JOB_TYPES, labelOf } from '@/lib/career/profile-options'
 
 type Job = {
@@ -217,7 +218,16 @@ export default function ExternalJobs() {
                     {j.expiresAt && ` · closes ${new Date(j.expiresAt).toLocaleDateString()}`}
                   </p>
                 </div>
-                <div className="md:text-right">
+                <div className="space-y-2 md:text-right">
+                  <SaveJobButton
+                    job={{
+                      ref: `ext:${j.id}`,
+                      title: j.title,
+                      company: j.company,
+                      location: j.location,
+                      url: j.applyUrl,
+                    }}
+                  />
                   <a
                     href={j.applyUrl}
                     target="_blank"

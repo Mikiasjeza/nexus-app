@@ -54,6 +54,20 @@ export async function GET() {
         workExperiences: true,
         certifications: true,
         jobFeedback: { select: { jobRef: true, helpful: true, reason: true, createdAt: true } },
+        trackedJobs: true,
+        jobAlerts: {
+          select: {
+            roles: true,
+            locations: true,
+            salaryMin: true,
+            jobTypes: true,
+            remoteOnly: true,
+            frequency: true,
+            enabled: true,
+            lastSentAt: true,
+            createdAt: true,
+          },
+        },
         aiAnalyses: {
           select: {
             id: true,
