@@ -192,6 +192,14 @@ export default function SettingsPage() {
         />
 
         <div className="border-t border-line">
+          <SettingsSection
+            title="Career profile"
+            description="Education, experience, interests and job preferences. Private."
+          >
+            <Link href="/settings/career" className="button-base button-secondary min-h-11 px-5">
+              Edit career settings
+            </Link>
+          </SettingsSection>
           <SettingsSection title="Profile" description="Your name and a short bio.">
             <div className="space-y-6">
               <div>
