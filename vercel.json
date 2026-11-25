@@ -37,6 +37,10 @@
     {
       "path": "/api/cron/billing-check",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/jobs-sync",
+      "schedule": "30 6 * * *"
     }
   ]
 }

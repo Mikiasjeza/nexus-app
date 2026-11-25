@@ -16,6 +16,7 @@ import { CATEGORY_COLORS } from '@/lib/utils/constants'
 import Link from 'next/link'
 import ReportButton from '@/components/UI/ReportButton'
 import ApplyButton from '@/components/Jobs/ApplyButton'
+import ExternalJobs from '@/components/Jobs/ExternalJobs'
 import VerifiedCompanyBadge from '@/components/Employer/VerifiedCompanyBadge'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
@@ -614,6 +615,8 @@ export default function MarketplacePage() {
             </ul>
           )}
         </section>
+
+        <ExternalJobs />
       </div>
     </AppPageShell>
   )

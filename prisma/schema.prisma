@@ -767,3 +767,35 @@ model CertificationRecord {
 
   @@index([userId])
 }
+
+/// A real job listing synced daily from a public source (USAJOBS, Greenhouse,
+/// Lever). Never invented: every row links to the original posting.
+model ExternalJob {
+  id              String    @id @default(cuid())
+  source          String // 'usajobs' | 'greenhouse' | 'lever'
+  sourceId        String
+  dedupeKey       String // normalized title|company|location, to drop duplicates across sources
+  title           String
+  company         String
+  location        String?
+  remote          Boolean   @default(false)
+  salaryMin       Int?
+  salaryMax       Int?
+  salaryText      String?
+  employmentType  String? // 'full-time' | 'part-time' | 'contract' | 'internship'
+  experienceLevel String? // 'internship' | 'entry' | 'mid' | 'senior'
+  description     String
+  skills          String[]  @default([])
+  /// Structured requirements parsed from the text: education, years, certifications, equivalence, work authorization.
+  requirements    Json?
+  applyUrl        String
+  postedAt        DateTime?
+  expiresAt       DateTime?
+  firstSeenAt     DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
+  active          Boolean   @default(true)
+
+  @@unique([source, sourceId])
+  @@index([active, postedAt])
+  @@index([dedupeKey])
+}
