@@ -119,7 +119,7 @@ export const SUBPROCESSORS: Subprocessor[] = [
   {
     name: 'Groq',
     purpose: 'AI verification, assessment grading, career chat and job matching',
-    data: 'Evidence and assessment work you submit, your skill names/levels, chat messages you type and public job listings — never your name or email',
+    data: 'Evidence and assessment work you submit, your skill names/levels, chat messages you type, public job listings and, if you import one, the text of your resume (which may include your name and contact details; we don’t store it)',
     when: 'Only when you use an AI feature or take an assessment',
     policyUrl: 'https://console.groq.com/docs/your-data',
   },
