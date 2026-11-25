@@ -55,6 +55,7 @@ model User {
   educationRecords  EducationRecord[]
   workExperiences   WorkExperience[]
   certifications    CertificationRecord[]
+  jobFeedback       JobFeedback[]
   conversations     Conversation[]
 
   @@index([email])
@@ -798,4 +799,19 @@ model ExternalJob {
   @@unique([source, sourceId])
   @@index([active, postedAt])
   @@index([dedupeKey])
+}
+
+/// A person's feedback on a job recommendation. "Not relevant" hides the job
+/// for them. jobRef is "ext:<ExternalJob id>" or "nexus:<JobListing id>".
+model JobFeedback {
+  id        String   @id @default(cuid())
+  userId    String
+  jobRef    String
+  helpful   Boolean
+  reason    String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobRef])
 }

@@ -53,6 +53,7 @@ export async function GET() {
         educationRecords: true,
         workExperiences: true,
         certifications: true,
+        jobFeedback: { select: { jobRef: true, helpful: true, reason: true, createdAt: true } },
         aiAnalyses: {
           select: {
             id: true,

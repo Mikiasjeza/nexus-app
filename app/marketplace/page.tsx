@@ -17,6 +17,7 @@ import Link from 'next/link'
 import ReportButton from '@/components/UI/ReportButton'
 import ApplyButton from '@/components/Jobs/ApplyButton'
 import ExternalJobs from '@/components/Jobs/ExternalJobs'
+import MatchedJobs from '@/components/Jobs/MatchedJobs'
 import VerifiedCompanyBadge from '@/components/Employer/VerifiedCompanyBadge'
 import AppPageShell from '@/components/Layout/AppPageShell'
 import PageHeader from '@/components/Layout/PageHeader'
@@ -318,6 +319,12 @@ export default function MarketplacePage() {
             </div>
           ))}
         </dl>
+
+        {!isGuestPreview && user && (
+          <div className="pt-2">
+            <MatchedJobs />
+          </div>
+        )}
 
         <div className="grid gap-12 py-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-10">
           <section aria-labelledby="best-fit-heading">
