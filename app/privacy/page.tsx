@@ -74,6 +74,13 @@ export default function PrivacyPage() {
             it is included when you download your data.
           </li>
           <li>
+            <strong className="text-ink">Resume import (optional):</strong> if you choose to fill
+            your career profile from a resume, we read the file in memory and send its text to our
+            AI provider to pull out your education, experience, certifications and skills. We
+            don&apos;t store the file or its text. Nothing is added to your profile until you review
+            and approve each item.
+          </li>
+          <li>
             <strong className="text-ink">AI career assistant:</strong> the messages you type into
             the chat.
           </li>
