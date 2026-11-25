@@ -74,6 +74,12 @@ export default function PrivacyPage() {
             it is included when you download your data.
           </li>
           <li>
+            <strong className="text-ink">Jobs (optional):</strong> jobs you save, applications you
+            track (status, notes, next steps), feedback on job recommendations, and job alerts you
+            set up (roles, locations, salary, frequency). Private to you. Job alert emails always
+            include a one-click unsubscribe link.
+          </li>
+          <li>
             <strong className="text-ink">Resume import (optional):</strong> if you choose to fill
             your career profile from a resume, we read the file in memory and send its text to our
             AI provider to pull out your education, experience, certifications and skills. We

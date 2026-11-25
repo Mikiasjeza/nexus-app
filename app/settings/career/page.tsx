@@ -8,6 +8,7 @@ import Loader from '@/components/UI/Loader'
 import Button from '@/components/UI/Button'
 import { useToast } from '@/components/UI/ToastProvider'
 import ResumeImport from '@/components/Career/ResumeImport'
+import JobAlerts from '@/components/Career/JobAlerts'
 import {
   CertificationEditor,
   EducationEditor,
@@ -119,6 +120,9 @@ export default function CareerSettingsPage() {
             </Section>
             <Section title="Job preferences">
               <PreferencesEditor value={profile} onChange={patch} />
+            </Section>
+            <Section title="Job alerts">
+              <JobAlerts />
             </Section>
             <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-line bg-ground py-4">
               {dirty && <span className="text-sm text-ink-muted">Unsaved changes</span>}
