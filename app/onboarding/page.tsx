@@ -19,6 +19,7 @@ import {
   PreferencesEditor,
 } from '@/components/Career/ProfileEditors'
 import CareerProfileSummary from '@/components/Career/CareerProfileSummary'
+import ResumeImport from '@/components/Career/ResumeImport'
 import {
   EMPTY_PROFILE,
   useCareerProfile,
@@ -235,7 +236,12 @@ export default function OnboardingPage() {
               </>
             )}
 
-            {step === 1 && <ExperienceEditor rows={data.experience} {...records('experience')} />}
+            {step === 1 && (
+              <>
+                <ResumeImport onSaved={career.reload} />
+                <ExperienceEditor rows={data.experience} {...records('experience')} />
+              </>
+            )}
 
             {step === 2 && <InterestsEditor value={profile} onChange={patch} />}
 
