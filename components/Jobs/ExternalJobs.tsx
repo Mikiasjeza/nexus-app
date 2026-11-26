@@ -85,8 +85,8 @@ export default function ExternalJobs() {
         Jobs from across the web
       </h2>
       <p className="mt-1 max-w-2xl text-sm text-ink-muted">
-        Real openings updated daily from USAJOBS and companies&apos; own careers pages. You apply on
-        the employer&apos;s site.
+        Real openings updated daily from USAJOBS, Adzuna and companies&apos; own careers pages. You
+        apply on the employer&apos;s site.
       </p>
 
       <form onSubmit={search} className="mt-6 grid gap-3 md:grid-cols-6">
@@ -258,6 +258,18 @@ export default function ExternalJobs() {
             </div>
           )}
         </>
+      )}
+      {data?.jobs.some((j) => j.source === 'adzuna') && (
+        <p className="mt-4 text-xs text-ink-faint">
+          <a
+            href="https://www.adzuna.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            Jobs by Adzuna
+          </a>
+        </p>
       )}
     </section>
   )

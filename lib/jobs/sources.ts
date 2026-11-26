@@ -3,6 +3,8 @@
  *   USAJOBS     official US federal jobs (needs USAJOBS_API_KEY and USAJOBS_EMAIL)
  *   Greenhouse  companies' public job boards (no key)
  *   Lever       companies' public job boards (no key)
+ *   Adzuna      job search aggregator (needs ADZUNA_APP_ID and ADZUNA_APP_KEY on a
+ *               paid plan; ADZUNA_PAGES sets how many pages of 50 to fetch, default 5)
  * Company boards come from JOB_BOARDS_GREENHOUSE / JOB_BOARDS_LEVER (comma
  * separated board names) or the defaults below, all checked to exist.
  */
@@ -10,7 +12,7 @@
 import { htmlToText, parseSalary } from './enrich'
 
 export interface RawJob {
-  source: 'usajobs' | 'greenhouse' | 'lever'
+  source: 'usajobs' | 'greenhouse' | 'lever' | 'adzuna'
   sourceId: string
   title: string
   company: string
@@ -208,9 +210,60 @@ export async function fetchLever(board: string): Promise<RawJob[]> {
     })
 }
 
+export async function fetchAdzuna(): Promise<RawJob[]> {
+  const id = process.env.ADZUNA_APP_ID
+  const key = process.env.ADZUNA_APP_KEY
+  if (!id || !key) return []
+  const pages = Math.max(1, Math.min(20, Number(process.env.ADZUNA_PAGES) || 5))
+  const out: RawJob[] = []
+  for (let page = 1; page <= pages; page++) {
+    const params = new URLSearchParams({
+      app_id: id,
+      app_key: key,
+      results_per_page: '50',
+      max_days_old: '3',
+      sort_by: 'date',
+      'content-type': 'application/json',
+    })
+    const data = await getJson(`https://api.adzuna.com/v1/api/jobs/us/search/${page}?${params}`)
+    const items: Array<Record<string, any>> = data?.results ?? []
+    for (const j of items) {
+      if (!j.id || !j.title || !j.redirect_url) continue
+      const location = j.location?.display_name
+        ? String(j.location.display_name).slice(0, 200)
+        : null
+      const time =
+        j.contract_time === 'part_time'
+          ? 'part-time'
+          : j.contract_time === 'full_time'
+            ? 'full-time'
+            : null
+      out.push({
+        source: 'adzuna',
+        sourceId: String(j.id),
+        title: htmlToText(String(j.title)).slice(0, 200),
+        company: String(j.company?.display_name ?? 'Unknown company').slice(0, 200),
+        location,
+        remote: isRemote(location, j.title, j.description),
+        salaryMin: Number(j.salary_min) >= 10_000 ? Math.round(Number(j.salary_min)) : null,
+        salaryMax: Number(j.salary_max) >= 10_000 ? Math.round(Number(j.salary_max)) : null,
+        salaryText: null,
+        employmentType: j.contract_type === 'contract' ? 'contract' : (time ?? typeFrom(j.title)),
+        description: htmlToText(String(j.description ?? '')).slice(0, MAX_DESCRIPTION),
+        applyUrl: String(j.redirect_url),
+        postedAt: date(j.created),
+        expiresAt: null,
+      })
+    }
+    if (items.length < 50) break
+  }
+  return out
+}
+
 export function sourceJobs() {
   return [
     { name: 'usajobs', run: fetchUsajobs },
+    { name: 'adzuna', run: fetchAdzuna },
     ...list(process.env.JOB_BOARDS_GREENHOUSE, DEFAULT_GREENHOUSE).map((b) => ({
       name: `greenhouse:${b}`,
       run: () => fetchGreenhouse(b),

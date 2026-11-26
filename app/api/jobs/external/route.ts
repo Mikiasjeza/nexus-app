@@ -22,6 +22,7 @@ const SOURCE_LABEL: Record<string, string> = {
   usajobs: 'USAJOBS',
   greenhouse: 'Company careers page',
   lever: 'Company careers page',
+  adzuna: 'Adzuna',
 }
 
 export async function GET(request: Request) {
