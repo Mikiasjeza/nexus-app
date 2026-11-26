@@ -226,7 +226,7 @@ export async function fetchAdzuna(): Promise<RawJob[]> {
       'content-type': 'application/json',
     })
     const data = await getJson(`https://api.adzuna.com/v1/api/jobs/us/search/${page}?${params}`)
-    const items: Array<Record<string, any>> = data?.results ?? []  
+    const items: Array<Record<string, any>> = data?.results ?? []
     for (const j of items) {
       if (!j.id || !j.title || !j.redirect_url) continue
       const location = j.location?.display_name
