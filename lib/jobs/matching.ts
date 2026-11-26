@@ -147,7 +147,12 @@ async function loadOpenJobs(): Promise<JobCard[]> {
     ...external.map((j) => ({
       ref: `ext:${j.id}`,
       source: j.source,
-      sourceLabel: j.source === 'usajobs' ? 'USAJOBS' : 'Company careers page',
+      sourceLabel:
+        j.source === 'usajobs'
+          ? 'USAJOBS'
+          : j.source === 'adzuna'
+            ? 'Adzuna'
+            : 'Company careers page',
       title: j.title,
       company: j.company,
       location: j.location,
