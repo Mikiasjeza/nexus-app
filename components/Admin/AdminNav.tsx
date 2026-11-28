@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/admin/reports', label: 'Reports' },
   { href: '/admin/companies', label: 'Companies' },
   { href: '/admin/billing', label: 'Billing' },
+  { href: '/admin/waitlist', label: 'Waitlist' },
 ]
 
 /** The admin screens as pills; sits in each page header's actions. */

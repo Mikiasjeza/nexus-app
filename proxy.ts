@@ -7,10 +7,13 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { env } from '@/lib/config/env'
+import { isPrelaunchPublic, prelaunchEnabled } from '@/lib/prelaunch'
 
 /** Routes that do NOT require authentication */
 const PUBLIC_PATHS = [
   '/', // Landing
+  '/coming-soon', // Pre-launch page (also reachable directly)
+  '/api/waitlist/', // Launch waitlist: join, confirm, unsubscribe
   '/about',
   '/how-it-works',
   '/contact',
@@ -68,7 +71,32 @@ function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some((p) => pathname.startsWith(p))
 }
 
+/**
+ * Pre-launch mode: the homepage shows Coming Soon, public pages stay open,
+ * and everything else needs a signed-in account. Whether that account may
+ * actually use the app (admin, allowlist, paying customer) is decided on the
+ * server in getSessionUserId and the root layout, not here.
+ */
+function prelaunchProxy(request: NextRequest): NextResponse {
+  const { pathname } = request.nextUrl
+  const headers = new Headers(request.headers)
+  headers.set('x-nexus-path', pathname)
+  if (pathname === '/') {
+    return NextResponse.rewrite(new URL('/coming-soon', request.url), { request: { headers } })
+  }
+  if (isPrelaunchPublic(pathname)) return NextResponse.next({ request: { headers } })
+  if (!request.cookies.get('nexus_session')?.value) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Nexus isn’t open yet.' }, { status: 403 })
+    }
+    return NextResponse.redirect(new URL('/coming-soon', request.url))
+  }
+  return NextResponse.next({ request: { headers } })
+}
+
 export function proxy(request: NextRequest) {
+  if (prelaunchEnabled()) return prelaunchProxy(request)
+
   const guestPreview = request.cookies.get('nexus_guest_preview')?.value === 'true'
 
   if (env.isGuestMode || guestPreview) {

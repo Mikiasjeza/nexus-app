@@ -27,4 +27,5 @@ declare module 'next/navigation' {
   export function useSearchParams(): URLSearchParams
   export function useParams(): Record<string, string | string[]>
   export function notFound(): never
+  export function redirect(url: string): never
 }
