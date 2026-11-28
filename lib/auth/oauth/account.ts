@@ -25,11 +25,12 @@ import { randomUUID } from 'crypto'
 import bcrypt from 'bcryptjs'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/db'
+import { prelaunchEnabled, prelaunchSignupAllowed } from '@/lib/prelaunch'
 import type { ProviderProfile, SignInProviderId } from './providers'
 
 export type SignInOutcome =
   | { kind: 'signed_in'; userId: string; isNew: boolean; onboardingComplete: boolean }
-  | { kind: 'refused'; reason: 'email_unverified' | 'account_exists' }
+  | { kind: 'refused'; reason: 'email_unverified' | 'account_exists' | 'prelaunch_closed' }
 
 export type ConnectOutcome = { kind: 'connected' } | { kind: 'refused'; reason: 'already_linked' }
 
@@ -93,6 +94,11 @@ export async function signInWithProvider(
       isNew: false,
       onboardingComplete: taken.onboardingComplete,
     }
+  }
+
+  // Pre-launch: only admins and the allowlist may create accounts.
+  if (prelaunchEnabled() && !prelaunchSignupAllowed(profile.email)) {
+    return { kind: 'refused', reason: 'prelaunch_closed' }
   }
 
   // Nobody knows this password: the account is entered through the provider,

@@ -27,6 +27,8 @@ export function signInErrorMessage(code: string | null, provider: string | null)
       return `An account with that email already exists. Sign in with your password, or use “Forgot password?” to choose a new one. Then connect ${name ?? 'the account'} in Settings.`
     case 'email_unverified':
       return `${name ?? 'That provider'} hasn’t confirmed your email address, so we can’t create an account from it. Create an account with your email and a password instead.`
+    case 'prelaunch_closed':
+      return 'Nexus isn’t open yet. Join the waitlist on our homepage to hear when it launches.'
     case 'oauth_cancelled':
       return name ? `Sign-in with ${name} was cancelled.` : 'Sign-in was cancelled.'
     case 'invalid_state':

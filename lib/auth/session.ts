@@ -6,6 +6,8 @@
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/db'
 import { env } from '@/lib/config/env'
+import { decidePrelaunchAccess, prelaunchEnabled } from '@/lib/prelaunch'
+import { isLiveStatus } from '@/lib/billing/status'
 
 const COOKIE_NAME = 'nexus_session'
 const GUEST_PREVIEW_COOKIE_NAME = 'nexus_guest_preview'
@@ -43,7 +45,38 @@ export async function getSessionUserId(): Promise<string | null> {
   })
   const isExpired = Boolean(session && session.expiresAt < new Date())
   if (!session || isExpired) return null
+  // Pre-launch mode: only admins, the allowlist and paying customers are signed in.
+  if (prelaunchEnabled() && !(await hasPrelaunchAccess(session.userId))) return null
   return session.userId
+}
+
+/** Admin, allowlisted, or a live paid subscription (personal or through their company). */
+export async function hasPrelaunchAccess(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      email: true,
+      emailVerified: true,
+      createdAt: true,
+      subscriptions: { select: { plan: true, status: true } },
+      companyMembers: {
+        select: {
+          company: { select: { subscriptions: { select: { plan: true, status: true } } } },
+        },
+      },
+    },
+  })
+  if (!user) return false
+  const subs = [
+    ...user.subscriptions,
+    ...user.companyMembers.flatMap((m) => m.company.subscriptions),
+  ]
+  return decidePrelaunchAccess({
+    email: user.email,
+    emailVerified: user.emailVerified,
+    createdAt: user.createdAt,
+    livePaidPlans: subs.filter((s) => isLiveStatus(s.status)).map((s) => s.plan),
+  })
 }
 
 export async function createSession(userId: string): Promise<string> {

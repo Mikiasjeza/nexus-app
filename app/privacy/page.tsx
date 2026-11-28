@@ -51,6 +51,12 @@ export default function PrivacyPage() {
             Passwords are stored only as a one-way bcrypt hash.
           </li>
           <li>
+            <strong className="text-ink">Launch waitlist (optional):</strong> if you join the
+            waitlist before Nexus opens, your email address, the consent wording you agreed to, when
+            you agreed and confirmed, and the site that sent you (if the link said). We use it only
+            to email you about the launch. Every email has an unsubscribe link.
+          </li>
+          <li>
             <strong className="text-ink">Optional profile details:</strong> bio, avatar and custom
             profile link, only if you add them.
           </li>
@@ -378,6 +384,11 @@ export default function PrivacyPage() {
           <li>
             <strong className="text-ink">Company, job listings and talent pools:</strong> until
             deleted, or until the last member of the company deletes their account.
+          </li>
+          <li>
+            <strong className="text-ink">Launch waitlist:</strong> until you unsubscribe or ask us
+            to delete it. After you unsubscribe we keep only the address, marked unsubscribed, so we
+            never email you again.
           </li>
           <li>
             <strong className="text-ink">Error reports (Sentry):</strong> up to 90 days.

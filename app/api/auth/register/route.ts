@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { trustThisDevice } from '@/lib/auth/login-alert'
 import { emailDeliveryConfigured, sendVerificationEmail } from '@/lib/auth/email-verification'
+import { prelaunchEnabled, prelaunchSignupAllowed } from '@/lib/prelaunch'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { createSession, setSessionCookie, clearGuestPreviewCookie } from '@/lib/auth/session'
@@ -54,6 +55,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg }, { status: 400 })
     }
     const { email: emailNorm, password, name, accountType, companyName } = parsed.data
+    if (prelaunchEnabled() && !prelaunchSignupAllowed(emailNorm)) {
+      return NextResponse.json(
+        { error: 'Nexus isn’t open yet. Join the waitlist on our homepage to hear first.' },
+        { status: 403 }
+      )
+    }
     if (accountType === 'employer' && !companyName) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 })
     }

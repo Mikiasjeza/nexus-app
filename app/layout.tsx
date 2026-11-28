@@ -12,6 +12,10 @@ import ConsentedAnalytics from '@/components/Analytics/ConsentedAnalytics'
 import { ToastProvider } from '@/components/UI/ToastProvider'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { OnboardingGuard } from '@/components/Auth/OnboardingGuard'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { isPrelaunchPublic, prelaunchEnabled } from '@/lib/prelaunch'
+import { getSessionUserId } from '@/lib/auth/session'
 
 // Lazy load non-critical components
 const Footer = dynamic(() => import('@/components/Layout/Footer'), {
@@ -116,20 +120,29 @@ export function generateMetadata(): Metadata {
   }
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Pre-launch mode: pages outside the public list need an account with access
+  // (admin, allowlist or paying customer). getSessionUserId already returns
+  // null for everyone else, so they're sent to Coming Soon.
+  let bare = false
+  if (prelaunchEnabled()) {
+    const path = (await headers()).get('x-nexus-path') ?? ''
+    if (path && !isPrelaunchPublic(path) && !(await getSessionUserId())) redirect('/coming-soon')
+    bare = path === '/' || path === '/coming-soon'
+  }
   return (
     <html lang="en" className={sans.variable}>
       <body className="flex min-h-screen flex-col bg-ground font-sans text-ink">
         <ErrorBoundary>
           <ToastProvider>
-            <Header />
-            <main className="w-full flex-1 pt-12">
+            {!bare && <Header />}
+            <main className={`w-full flex-1 ${bare ? '' : 'pt-12'}`}>
               <VerifyEmailBanner />
               <OnboardingGuard>
                 <PageTransition>{children}</PageTransition>
               </OnboardingGuard>
             </main>
-            <Footer />
+            {!bare && <Footer />}
             <CookieConsent />
             <Toaster
               position="top-right"
